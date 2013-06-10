@@ -25,6 +25,7 @@
 #include <vector>
 #include <boost/cstdint.hpp>
 #include "Encoder.h"
+#include "pugixml.hpp"
 
 namespace dolfin
 {
@@ -37,12 +38,16 @@ namespace dolfin
   public:
 
     // Mesh writer
-    static void write_mesh(const Mesh& mesh, std::size_t cell_dim, std::string file,
+    static void write_mesh(const Mesh& mesh, std::size_t cell_dim, pugi::xml_document& xml_doc,
+                           bool binary, bool compress);
+
+    // Mesh writer
+    static void write_mesh(const FunctionSpace& functionspace, std::size_t cell_dim, pugi::xml_document& xml_doc,
                            bool binary, bool compress);
 
     // Cell data writer
-    static void write_cell_data(const Function& u, std::string file,
-                                bool binary, bool compress);
+    static void write_cell_data(const Function& u, pugi::xml_document& xml_doc,
+                                bool binary, bool compress, std::vector<std::size_t>& counter);
 
     // Form (compressed) base64 encoded string for VTK
     template<typename T>
@@ -66,14 +71,28 @@ namespace dolfin
 
     // Mesh writer (ascii)
     static void write_ascii_mesh(const Mesh& mesh, std::size_t cell_dim,
-                                 std::string file);
+                                 pugi::xml_document& xml_doc);
+
+    // Mesh writer (ascii) - based on functionspace
+    static void write_ascii_mesh(const FunctionSpace& functionspace, std::size_t cell_dim,
+                                 pugi::xml_document& xml_doc);
 
     // Mesh writer (base64)
     static void write_base64_mesh(const Mesh& mesh, std::size_t cell_dim,
-                                  std::string file, bool compress);
+                                  pugi::xml_document& xml_doc, bool compress);
+
+    // Mesh writer (base64) - based on functionspace
+    static void write_base64_mesh(const FunctionSpace& functionspace, std::size_t cell_dim,
+                                  pugi::xml_document& xml_doc, bool compress);
 
     // Get VTK cell type
     static boost::uint8_t vtk_cell_type(const Mesh& mesh, std::size_t cell_dim);
+
+    // Get VTK cell type - based on functionspace
+    static boost::uint8_t vtk_cell_type(const FunctionSpace& functionspace, std::size_t cell_dim);
+
+    // Get VTK cell node order - based on functionspace
+    static std::vector<std::size_t> vtk_cell_order(const FunctionSpace& functionspace, std::size_t cell_dim);
 
     // Compute base64 encoded stream for VTK
     template<typename T>

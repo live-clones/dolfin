@@ -27,16 +27,19 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <boost/shared_ptr.hpp>
 
 namespace dolfin
 {
 
   class GenericDofMap;
+  class GenericFunction;
   class Function;
   class GenericMatrix;
   class GenericVector;
   class LocalMeshData;
   class Mesh;
+  class FunctionSpace;
   template <typename T> class MeshFunction;
   template <typename T> class MeshValueCollection;
   class Parameters;
@@ -54,6 +57,7 @@ namespace dolfin
 
     // Input
     virtual void operator>> (Mesh& mesh);
+    virtual void operator>> (FunctionSpace& functionspace);
     virtual void operator>> (GenericVector& x);
     virtual void operator>> (GenericMatrix& A);
     virtual void operator>> (GenericDofMap& dofmap);
@@ -82,6 +86,7 @@ namespace dolfin
     virtual void operator<< (const GenericVector& x);
     virtual void operator<< (const GenericMatrix& A);
     virtual void operator<< (const Mesh& mesh);
+    virtual void operator<< (const FunctionSpace& functionspace);
     virtual void operator<< (const GenericDofMap& dofmap);
     virtual void operator<< (const LocalMeshData& data);
     virtual void operator<< (const MeshFunction<int>& mesh_function);
@@ -93,6 +98,7 @@ namespace dolfin
     virtual void operator<< (const MeshValueCollection<double>& mesh_markers);
     virtual void operator<< (const MeshValueCollection<bool>& mesh_markers);
     virtual void operator<< (const Function& u);
+    virtual void operator<< (const std::vector<const Function*>& us);
 
     // Output with time
     virtual void operator<< (const std::pair<const Mesh*, double> mesh);
@@ -101,6 +107,7 @@ namespace dolfin
     virtual void operator<< (const std::pair<const MeshFunction<double>*, double> f);
     virtual void operator<< (const std::pair<const MeshFunction<bool>*, double> f);
     virtual void operator<< (const std::pair<const Function*, double> u);
+    //virtual void operator<< (const std::pair<const std::vector<const Function*>, double> us);
 
     virtual void operator<< (const Parameters& parameters);
     virtual void operator<< (const std::vector<int>& x);
@@ -115,6 +122,10 @@ namespace dolfin
 
     void read();
     virtual void write();
+    virtual void write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, double time);
+    virtual void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time);
+    virtual void write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, double time);
+    virtual void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time);
 
     // Return filename
     std::string name() const

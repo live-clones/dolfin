@@ -4,6 +4,7 @@
 %template(__rshift__) dolfin::File::operator>> <GenericVector>;
 %template(__rshift__) dolfin::File::operator>> <GenericMatrix>;
 %template(__rshift__) dolfin::File::operator>> <Mesh>;
+%template(__rshift__) dolfin::File::operator>> <FunctionSpace>;
 %template(__rshift__) dolfin::File::operator>> <LocalMeshData>;
 %template(__rshift__) dolfin::File::operator>> <MeshFunction<int> >;
 %template(__rshift__) dolfin::File::operator>> <MeshFunction<std::size_t> >;
@@ -20,6 +21,7 @@
 %template(__lshift__) dolfin::File::operator<< <GenericVector>;
 %template(__lshift__) dolfin::File::operator<< <GenericMatrix>;
 %template(__lshift__) dolfin::File::operator<< <Mesh>;
+%template(__lshift__) dolfin::File::operator<< <FunctionSpace>;
 %template(__lshift__) dolfin::File::operator<< <LocalMeshData>;
 %template(__lshift__) dolfin::File::operator<< <MeshFunction<int> >;
 %template(__lshift__) dolfin::File::operator<< <MeshFunction<std::size_t> >;

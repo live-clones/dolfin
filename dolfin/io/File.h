@@ -167,6 +167,12 @@ namespace dolfin
     ///
     void operator<<(const std::pair<const MeshFunction<bool>*, double> f);
 
+    /// Write array of Functions to file
+    void operator<<(const std::vector<const Function*> us);
+
+    ///// Write array of Functions to file
+    //void operator<<(const std::pair<const std::vector<const Function*>, double> us);
+
     /// Write Function to file with time
     ///
     /// *Example*
@@ -182,6 +188,34 @@ namespace dolfin
     {
       file->write();
       *file << t;
+    }
+
+    /// Write Functions to file on the given mesh
+    void write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, double time)
+    {
+      file->write();
+      file->write(us, mesh, time);
+    }
+
+    /// Write Functions to file on the given mesh
+    void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time)
+    {
+      file->write();
+      file->write(us, mesh, time);
+    }
+
+    /// Write Functions to file on the given (scalar Lagrange) functionspace
+    void write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, double time)
+    {
+      file->write();
+      file->write(us, functionspace, time);
+    }
+
+    /// Write Functions to file on the given (scalar Lagrange) functionspace
+    void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time)
+    {
+      file->write();
+      file->write(us, functionspace, time);
     }
 
     /// Check if file exists

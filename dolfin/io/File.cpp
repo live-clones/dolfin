@@ -188,6 +188,26 @@ void File::operator<<(const std::pair<const Function*, double> u)
   *file << u;
 }
 //-----------------------------------------------------------------------------
+void File::operator<<(const std::vector<const Function*> us)
+{
+  std::vector<const Function*>::const_iterator u;
+  for (u = us.begin(); u != us.end(); u++)
+    (*u)->update();
+
+  file->write();
+  *file << us;
+}
+////-----------------------------------------------------------------------------
+//void File::operator<<(const std::pair<const std::vector<const Function*>, double> us)
+//{
+//  std::vector<const Function*>::const_iterator u;
+//  for (u = us.first.begin(); u != us.first.end(); u++)
+//    (*u)->update();
+//
+//  file->write();
+//  *file << us;
+//}
+//-----------------------------------------------------------------------------
 bool File::exists(std::string filename)
 {
   std::ifstream file(filename.c_str());

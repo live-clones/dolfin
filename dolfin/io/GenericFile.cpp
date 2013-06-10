@@ -48,6 +48,11 @@ void GenericFile::operator>> (Mesh& mesh)
   read_not_impl("Mesh");
 }
 //-----------------------------------------------------------------------------
+void GenericFile::operator>> (FunctionSpace& functionspace)
+{
+  read_not_impl("FunctionSpace");
+}
+//-----------------------------------------------------------------------------
 void GenericFile::operator>> (GenericVector& x)
 {
   read_not_impl("Vector");
@@ -168,6 +173,11 @@ void GenericFile::operator<< (const Mesh & mesh)
   write_not_impl("Mesh");
 }
 //-----------------------------------------------------------------------------
+void GenericFile::operator<< (const FunctionSpace& functionspace)
+{
+  write_not_impl("FunctionSpace");
+}
+//-----------------------------------------------------------------------------
 void GenericFile::operator<< (const GenericVector& x)
 {
   write_not_impl("Vector");
@@ -232,6 +242,11 @@ void GenericFile::operator<< (const Function& u)
   write_not_impl("Function");
 }
 //-----------------------------------------------------------------------------
+void GenericFile::operator<< (const std::vector<const Function*>& us)
+{
+  write_not_impl("std::vector<Function*> Function");
+}
+//-----------------------------------------------------------------------------
 void GenericFile::operator<< (const std::pair<const Mesh*, double> mesh)
 {
   write_not_impl("std::pair<Mesh*, double>");
@@ -261,6 +276,11 @@ void GenericFile::operator<< (const std::pair<const Function*, double> u)
 {
   write_not_impl("std::pair<Function*, double>");
 }
+////-----------------------------------------------------------------------------
+//void GenericFile::operator<< (const std::pair<const std::vector<const Function*>, double> us)
+//{
+//  write_not_impl("std::pair<Function*, double>");
+//}
 //-----------------------------------------------------------------------------
 void GenericFile::operator<< (const Parameters& parameters)
 {
@@ -341,6 +361,26 @@ void GenericFile::write()
     file.close();
   }
   opened_write = true;
+}
+//-----------------------------------------------------------------------------
+void GenericFile::write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time)
+{
+  write_not_impl("const std::vector<boost::shared_ptr<GenericFunction> >&, const Mesh&, double time");
+}
+//-----------------------------------------------------------------------------
+void GenericFile::write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, double time)
+{
+  write_not_impl("const std::vector<const GenericFunction*>&, const Mesh&, double time");
+}
+//-----------------------------------------------------------------------------
+void GenericFile::write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time)
+{
+  write_not_impl("const std::vector<boost::shared_ptr<GenericFunction> >&, const FunctionSpace&, double time");
+}
+//-----------------------------------------------------------------------------
+void GenericFile::write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, double time)
+{
+  write_not_impl("const std::vector<const GenericFunction*>&, const FunctionSpace&, double time");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::read_not_impl(const std::string object) const
