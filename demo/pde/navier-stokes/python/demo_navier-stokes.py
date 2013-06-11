@@ -66,6 +66,10 @@ u0 = Function(V)
 u1 = Function(V)
 p1 = Function(Q)
 
+# Rename output
+u1.rename("Velocity", "u")
+p1.rename("Pressure", "p")
+
 # Define coefficients
 k = Constant(dt)
 f = Constant((0, 0))
@@ -93,8 +97,7 @@ A3 = assemble(a3)
 prec = "amg" if has_krylov_solver_preconditioner("amg") else "default"
 
 # Create files for storing solution
-ufile = File("results/velocity.pvd")
-pfile = File("results/pressure.pvd")
+file = File("results/navier-stokes.pvd")
 
 # Time-stepping
 t = dt
@@ -129,8 +132,7 @@ while t < T + DOLFIN_EPS:
     plot(u1, title="Velocity", rescale=True)
 
     # Save to file
-    ufile << u1
-    pfile << p1
+    file << [u1, p1]
 
     # Move to next time step
     u0.assign(u1)
