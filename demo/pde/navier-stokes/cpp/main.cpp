@@ -119,6 +119,13 @@ int main()
   Function u1(V);
   Function p1(Q);
 
+  // Rename output
+  u1.rename("Velocity", "u");
+  p1.rename("Pressure", "p");
+  std::vector<const Function*> output;
+  output.push_back(&u1);
+  output.push_back(&p1);
+
   // Create coefficients
   Constant k(dt);
   Constant f(0, 0);
@@ -149,8 +156,7 @@ int main()
   const std::string prec(has_krylov_solver_preconditioner("amg") ? "amg" : "default");
 
   // Create files for storing solution
-  File ufile("results/velocity.pvd");
-  File pfile("results/pressure.pvd");
+  File file("results/navier-stokes.pvd");
 
   // Time-stepping
   double t = dt;
@@ -184,8 +190,7 @@ int main()
     end();
 
     // Save to file
-    ufile << u1;
-    pfile << p1;
+    file << output;
 
     // Move to next time step
     u0 = u1;
