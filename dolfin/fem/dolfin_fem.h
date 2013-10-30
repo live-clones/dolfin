@@ -13,6 +13,7 @@
 #include <dolfin/fem/PointSource.h>
 #include <dolfin/fem/assemble.h>
 #include <dolfin/fem/LocalSolver.h>
+#include <dolfin/fem/LocalAverageOperator.h>
 #include <dolfin/fem/solve.h>
 #include <dolfin/fem/Form.h>
 #include <dolfin/fem/AssemblerBase.h>
