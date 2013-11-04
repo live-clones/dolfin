@@ -18,6 +18,8 @@
 // First added:
 // Last changed:
 
+#include <Eigen/Dense>
+
 #include <dolfin/log/dolfin_log.h>
 #include <dolfin/common/Timer.h>
 #include <dolfin/mesh/Mesh.h>
@@ -46,11 +48,6 @@ LocalAverageOperator::LocalAverageOperator(const FunctionSpace& V, const Form& t
   weight(new Function(V)), test(reference_to_no_delete_pointer(test))
 {
   compute_lumped_weight(V);
-}
-
-boost::shared_ptr<Function> LocalAverageOperator::get_weight()
-{
-  return weight;
 }
 
 void LocalAverageOperator::compute_avg_weight(const FunctionSpace& V)
@@ -356,4 +353,114 @@ void LocalAverageOperator::solve_lumping(Function& u, const Form& a) const
 
   // Scale tensor by weight  
   u_vector *= (*weight->vector());  
+}
+
+void LocalAverageOperator::solve_ls(GenericVector& x, const Form& a, 
+                                    const Form& L, bool symmetric) const
+{
+  UFC ufc_a(a);
+  UFC ufc_L(L);
+
+  // Set timer
+  Timer timer("Local solver");
+
+  // Extract mesh
+  const Mesh& mesh = a.mesh();
+
+  // Update off-process coefficients
+  const std::vector<boost::shared_ptr<const GenericFunction> >
+    coefficients_a = a.coefficients();
+  for (std::size_t i = 0; i < coefficients_a.size(); ++i)
+    coefficients_a[i]->update();
+  const std::vector<boost::shared_ptr<const GenericFunction> >
+    coefficients_L = L.coefficients();
+  for (std::size_t i = 0; i < coefficients_L.size(); ++i)
+    coefficients_L[i]->update();
+
+  // Form ranks
+  const std::size_t rank_a = ufc_a.form.rank();
+  const std::size_t rank_L = ufc_L.form.rank();
+
+  // Check form ranks
+  dolfin_assert(rank_a == 2);
+  dolfin_assert(rank_L == 1);
+
+  // Collect pointers to dof maps
+  boost::shared_ptr<const GenericDofMap> dofmap_a0
+    = a.function_space(0)->dofmap();
+  boost::shared_ptr<const GenericDofMap> dofmap_a1
+    = a.function_space(1)->dofmap();
+  boost::shared_ptr<const GenericDofMap> dofmap_L
+    = a.function_space(0)->dofmap();
+  dolfin_assert(dofmap_a0);
+  dolfin_assert(dofmap_a1);
+  dolfin_assert(dofmap_L);
+
+  // Initialise vector
+  std::pair<std::size_t, std::size_t> local_range = dofmap_L->ownership_range();
+  x.resize(local_range);
+
+  // Cell integrals
+  ufc::cell_integral* integral_a = ufc_a.default_cell_integral.get();
+  ufc::cell_integral* integral_L = ufc_L.default_cell_integral.get();
+
+  // Eigen data structures
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> A;
+  Eigen::VectorXd b, x_local;
+
+  // Assemble over cells
+  Progress p("Performing local (cell-wise) solve", mesh.num_cells());
+  for (CellIterator cell(mesh); !cell.end(); ++cell)
+  {
+    // Update to current cell
+    ufc_a.update(*cell);
+    ufc_L.update(*cell);
+
+    // Get local-to-global dof maps for cell
+    const std::vector<dolfin::la_index>& dofs_a0
+      = dofmap_a0->cell_dofs(cell->index());
+    const std::vector<dolfin::la_index>& dofs_a1
+      = dofmap_a1->cell_dofs(cell->index());
+    const std::vector<dolfin::la_index>& dofs_L
+      = dofmap_L->cell_dofs(cell->index());
+
+    // Check that local problem is square and a and L match
+    dolfin_assert(dofs_a0.size() == dofs_a1.size());
+    dolfin_assert(dofs_a1.size() == dofs_L.size());
+
+    // Resize A and b
+    A.resize(dofs_a0.size(), dofs_a1.size());
+    b.resize(dofs_L.size());
+
+    // Tabulate A and b on cell
+    integral_a->tabulate_tensor(A.data(),
+                                ufc_a.w(),
+                                &ufc_a.cell.vertex_coordinates[0],
+                                ufc_a.cell.orientation);
+    integral_L->tabulate_tensor(b.data(),
+                                ufc_L.w(),
+                                &ufc_L.cell.vertex_coordinates[0],
+                                ufc_L.cell.orientation);
+
+    // Solve local problem
+    x_local = A.partialPivLu().solve(b);
+
+    // Add solution to global vector
+    x_local *= 1./cell->volume();
+    x.add(x_local.data(), dofs_a0.size(), dofs_a0.data());
+
+    p++;
+  }
+
+  // Finalise vector
+  x.apply("insert");
+  
+  x *= (*weight->vector());  
+
+}
+
+
+boost::shared_ptr<Function> LocalAverageOperator::get_weight()
+{
+  return weight;
 }

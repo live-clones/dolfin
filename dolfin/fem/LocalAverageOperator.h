@@ -37,10 +37,10 @@ namespace dolfin
   ///    1) The zero rank Form is assembled for all cells and the constant
   ///       value for cell i is ci and the volume of the cell is wi.
   ///       The value ci/wi is the approximation of the form on the cell.
-  ///    2) Copy ci/wi * (1/wi) to each dof on the cell for the FunctionSpace
+  ///    2) Add ci/wi * (1/wi) to each dof on the cell for the FunctionSpace
   ///       we are "projecting" into. (1/wi) is the weight chosen such
   ///       that small cells receive large weights.
-  ///       Copy also (1/wi) to a global weight (Coefficient) on the same
+  ///       Add also (1/wi) to a global weight (Coefficient) on the same
   ///       FunctionSpace as the solution.
   ///    3) After running through all cells, divide the solution by the 
   ///       total weight.
@@ -84,6 +84,8 @@ namespace dolfin
     ///   lp = LocalAverageOperator(V, v*dx)
     ///   lp.solve(p, v*p.dx(0)*dx())
     void solve_lumping(Function& u, const Form& a) const;
+    
+    void solve_ls(GenericVector& x, const Form& a, const Form& L, bool symmetric=false) const;
         
     /// Weights are precomputed on construction
     void compute_avg_weight(const FunctionSpace& V);
