@@ -184,8 +184,10 @@ void VTKWriter::write_cell_data(const Function& u, pugi::xml_document& xml_doc,
   if (!binary)
     value << ascii_cell_data(mesh, offset, values, data_dim, rank);
   else
-    value << base64_cell_data(mesh, offset, values, data_dim, rank, compress) << std::endl;
-
+  {
+    value << base64_cell_data(mesh, offset, values, data_dim, rank, compress) 
+          << std::endl;
+  }
   value_node = data_node.append_child(pugi::node_pcdata);
   value_node.set_value(value.str().c_str());
   
@@ -205,7 +207,8 @@ std::string VTKWriter::ascii_cell_data(const Mesh& mesh,
     if (rank == 1 && data_dim == 2)
     {
       // Append 0.0 to 2D vectors to make them 3D
-      ss << values[*cell_offset] << "  " << values[*cell_offset + 1] << " " << 0.0;
+      ss << values[*cell_offset] << "  " << values[*cell_offset + 1] << " "
+         << 0.0;
     }
     else if (rank == 2 && data_dim == 4)
     {
@@ -236,7 +239,8 @@ std::string VTKWriter::ascii_cell_data(const Mesh& mesh,
 std::string VTKWriter::base64_cell_data(const Mesh& mesh,
                                         const std::vector<std::size_t>& offset,
                                         const std::vector<double>& values,
-                                        std::size_t data_dim, std::size_t rank, bool compress)
+                                        std::size_t data_dim, std::size_t rank,
+                                        bool compress)
 {
   const std::size_t num_cells = mesh.num_cells();
 
@@ -359,16 +363,15 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
 
   pugi::xml_node piece_node = xml_doc.child("VTKFile").child("UnstructuredGrid").child("Piece");
 
-  // Create UFC cell object
-  UFCCell ufc_cell(mesh);
   // Coordinates for dofs
   boost::multi_array<double, 2> cellcoords(boost::extents[cdim][gdim]);
+  std::vector<double> vertexcoords;
   std::vector<double> dofcoords(3, 0.0);
   boost::unordered_map<dolfin::la_index, std::vector<double> > coordinatemap;
   for (CellIterator c(mesh); !c.end(); ++c)
   {
-    ufc_cell.update(*c);
-    dofmap.tabulate_coordinates(cellcoords, ufc_cell);
+    c->get_vertex_coordinates(vertexcoords);
+    dofmap.tabulate_coordinates(cellcoords, vertexcoords, *c);
     const std::vector<dolfin::la_index>& dofs = dofmap.cell_dofs(c->index());
     // Loop over all dofs on cell
     for (std::size_t i = 0; i < dofmap.cell_dimension(c->index()); ++i)
@@ -565,16 +568,15 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
 
   pugi::xml_node piece_node = xml_doc.child("VTKFile").child("UnstructuredGrid").child("Piece");
 
-  // Create UFC cell object
-  UFCCell ufc_cell(mesh);
   // Coordinates for dofs
   boost::multi_array<double, 2> cellcoords(boost::extents[cdim][gdim]);
+  std::vector<double> vertexcoords;
   std::vector<double> dofcoords(3, 0.0);
   boost::unordered_map<dolfin::la_index, std::vector<double> > coordinatemap;
   for (CellIterator c(mesh); !c.end(); ++c)
   {
-    ufc_cell.update(*c);
-    dofmap.tabulate_coordinates(cellcoords, ufc_cell);
+    c->get_vertex_coordinates(vertexcoords);
+    dofmap.tabulate_coordinates(cellcoords, vertexcoords, *c);
     const std::vector<dolfin::la_index>& dofs = dofmap.cell_dofs(c->index());
     // Loop over all dofs on cell
     for (std::size_t i = 0; i < dofmap.cell_dimension(c->index()); ++i)
@@ -675,7 +677,8 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
 
 }
 //----------------------------------------------------------------------------
-boost::uint8_t VTKWriter::vtk_cell_type(const Mesh& mesh, std::size_t cell_dim)
+boost::uint8_t VTKWriter::vtk_cell_type(const Mesh& mesh,
+                                        std::size_t cell_dim)
 {
   // Get cell type
   CellType::Type cell_type = mesh.type().cell_type();

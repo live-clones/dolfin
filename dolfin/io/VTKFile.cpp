@@ -169,7 +169,8 @@ void VTKFile::operator<<(const std::pair<const MeshFunction<int>*, double> f)
   mesh_function_write(*(f.first), f.second);
 }
 //----------------------------------------------------------------------------
-void VTKFile::operator<<(const std::pair<const MeshFunction<std::size_t>*, double> f)
+void VTKFile::operator<<(const std::pair<const MeshFunction<std::size_t>*,
+                                         double> f)
 {
   dolfin_assert(f.first);
   mesh_function_write(*(f.first), f.second);
@@ -312,7 +313,8 @@ void VTKFile::write_mesh(const Mesh& mesh, double time)
   std::string vtu_filename = init(xml_doc, mesh, mesh.topology().dim());
 
   // Write local mesh to vtu file
-  VTKWriter::write_mesh(mesh, mesh.topology().dim(), xml_doc, binary, compress);
+  VTKWriter::write_mesh(mesh, mesh.topology().dim(), xml_doc, binary, 
+                        compress);
 
   // Parallel-specific files
   if (MPI::num_processes() > 1 && MPI::process_number() == 0)
@@ -1090,7 +1092,8 @@ void VTKFile::pvtu_write_function(std::size_t dim, std::size_t rank,
   data_array_node.append_attribute("type") = "Float64";
   data_array_node.append_attribute("Name") = name.c_str();
   if (num_components>0)
-    data_array_node.append_attribute("NumberOfComponents") = (unsigned int) num_components;
+    data_array_node.append_attribute("NumberOfComponents")
+      = (unsigned int) num_components;
 
   xml_doc.save_file(filename.c_str(), "  ");
 }
@@ -1111,7 +1114,8 @@ void VTKFile::pvtu_write_mesh(const std::string fname) const
   // Write vtu file list
   for(std::size_t i = 0; i < MPI::num_processes(); i++)
   {
-    const std::string tmp_string = strip_path(vtu_name(i, MPI::num_processes(), counter, ".vtu"));
+    const std::string tmp_string = strip_path(vtu_name(i, MPI::num_processes(),
+                                                       counter, ".vtu"));
     pugi::xml_node piece_node = grid_node.append_child("Piece");
     piece_node.append_attribute("Source") = tmp_string.c_str();
   }
@@ -1224,13 +1228,6 @@ void VTKFile::mesh_function_write(T& meshfunction, double time)
 {
   const Mesh& mesh = *meshfunction.mesh();
   const std::size_t cell_dim = meshfunction.dim();
-
-  //if (cell_dim != mesh.topology().dim() && cell_dim != mesh.topology().dim() - 1 && cell_dim != 0)
-  //{
-  //  dolfin_error("VTKFile.cpp",
-  //               "write mesh function to VTK file",
-  //               "VTK output of mesh functions is implemented for cell-, facet- and vertex-based functions only");
-  //}
 
   pugi::xml_document xml_doc;
 

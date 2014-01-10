@@ -63,7 +63,8 @@ namespace dolfin
     void operator<< (const std::pair<const Mesh*, double> mesh);
     void operator<< (const std::pair<const FunctionSpace*, double> functionspace);
     void operator<< (const std::pair<const MeshFunction<int>*, double> f);
-    void operator<< (const std::pair<const MeshFunction<std::size_t>*, double> f);
+    void
+      operator<< (const std::pair<const MeshFunction<std::size_t>*, double> f);
     void operator<< (const std::pair<const MeshFunction<double>*, double> f);
     void operator<< (const std::pair<const MeshFunction<bool>*, double> f);
     void operator<< (const std::pair<const Function*, double> u);
@@ -110,7 +111,8 @@ namespace dolfin
 
     void pvtu_write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, const std::string pvtu_filename) const;
 
-    void vtk_header_open(std::size_t num_points, std::size_t num_cells, pugi::xml_document& xml_doc) const;
+    void vtk_header_open(std::size_t num_points, std::size_t num_cells, 
+                         pugi::xml_document& xml_doc) const;
 
     std::string vtu_name(const int process, const int num_processes,
                          const int counter, std::string ext) const;
