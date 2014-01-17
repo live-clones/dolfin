@@ -121,7 +121,7 @@ namespace dolfin
     virtual void operator<< (const std::map<std::size_t, std::vector<double> >& array_map);
 
     void read();
-    virtual void write();
+    virtual void write(std::size_t process_number);
     virtual void write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, double time);
     virtual void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time);
     virtual void write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, double time);

@@ -103,16 +103,20 @@ namespace dolfin
     void pvtu_write_function(std::size_t dim, std::size_t rank,
                              const std::string data_location,
                              const std::string name,
-                             const std::string filename,
+                             const std::string fname,
+                             std::size_t num_processes,
                              std::vector<std::size_t>& point_counter,
                              std::vector<std::size_t>& cell_counter) const;
 
-    void pvtu_write_mesh(const std::string fname) const;
+    void pvtu_write_mesh(const std::string pvtu_filename,
+                         const std::size_t num_processes) const;
 
     void pvtu_write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, const std::string pvtu_filename) const;
 
     void vtk_header_open(std::size_t num_points, std::size_t num_cells, 
                          pugi::xml_document& xml_doc) const;
+
+    void vtk_header_close(std::string file) const;
 
     std::string vtu_name(const int process, const int num_processes,
                          const int counter, std::string ext) const;

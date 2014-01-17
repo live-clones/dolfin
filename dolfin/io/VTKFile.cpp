@@ -233,6 +233,9 @@ void VTKFile::write(const std::vector<const GenericFunction*>& us, const Mesh& m
 {
   pugi::xml_document xml_doc;
 
+  // Get MPI communicator
+  const MPI_Comm mpi_comm = mesh.mpi_comm();
+
   // Get vtu file name and intialise
   std::string vtu_filename = init(xml_doc, mesh, mesh.topology().dim());
 
@@ -244,13 +247,14 @@ void VTKFile::write(const std::vector<const GenericFunction*>& us, const Mesh& m
   results_write(us, mesh, xml_doc);
 
   // Parallel-specfic files
-  if (MPI::num_processes() > 1 && MPI::process_number() == 0)
+  const std::size_t num_processes = MPI::num_processes(mpi_comm);
+  if (num_processes > 1 && MPI::process_number(mpi_comm) == 0)
   {
     std::string pvtu_filename = vtu_name(0, 0, counter, ".pvtu");
     pvtu_write(us, mesh, pvtu_filename);
     pvd_file_write(counter, time, pvtu_filename);
   }
-  else if (MPI::num_processes() == 1)
+  else if (num_processes == 1)
     pvd_file_write(counter, time, vtu_filename);
 
   // Finalise and write file
@@ -277,6 +281,9 @@ void VTKFile::write(const std::vector<const GenericFunction*>& us, const Functio
 
   pugi::xml_document xml_doc;
 
+  // Get MPI communicator
+  const MPI_Comm mpi_comm = mesh.mpi_comm();
+
   // Get vtu file name and intialise
   std::string vtu_filename = init(xml_doc, functionspace, mesh.topology().dim());
 
@@ -288,13 +295,14 @@ void VTKFile::write(const std::vector<const GenericFunction*>& us, const Functio
   results_write(us, functionspace, xml_doc);
 
   // Parallel-specfic files
-  if (MPI::num_processes() > 1 && MPI::process_number() == 0)
+  const std::size_t num_processes = MPI::num_processes(mpi_comm);
+  if (num_processes > 1 && MPI::process_number(mpi_comm) == 0)
   {
     std::string pvtu_filename = vtu_name(0, 0, counter, ".pvtu");
     pvtu_write(us, mesh, pvtu_filename);
     pvd_file_write(counter, time, pvtu_filename);
   }
-  else if (MPI::num_processes() == 1)
+  else if (num_processes == 1)
     pvd_file_write(counter, time, vtu_filename);
 
   // Finalise and write file
@@ -309,6 +317,9 @@ void VTKFile::write_mesh(const Mesh& mesh, double time)
 
   pugi::xml_document xml_doc;
 
+  // Get MPI communicator
+  const MPI_Comm mpi_comm = mesh.mpi_comm();
+
   // Get vtu file name and intialise out files
   std::string vtu_filename = init(xml_doc, mesh, mesh.topology().dim());
 
@@ -317,13 +328,14 @@ void VTKFile::write_mesh(const Mesh& mesh, double time)
                         compress);
 
   // Parallel-specific files
-  if (MPI::num_processes() > 1 && MPI::process_number() == 0)
+  const std::size_t num_processes = MPI::num_processes(mpi_comm);
+  if (num_processes > 1 && MPI::process_number(mpi_comm) == 0)
   {
     std::string pvtu_filename = vtu_name(0, 0, counter, ".pvtu");
-    pvtu_write_mesh(pvtu_filename);
+    pvtu_write_mesh(pvtu_filename, num_processes);
     pvd_file_write(counter, time, pvtu_filename);
   }
-  else if (MPI::num_processes() == 1)
+  else if (num_processes == 1)
     pvd_file_write(counter, time, vtu_filename);
 
   // Finalise
@@ -340,6 +352,9 @@ void VTKFile::write_functionspace(const FunctionSpace& functionspace, double tim
 
   pugi::xml_document xml_doc;
 
+  // Get MPI communicator
+  const MPI_Comm mpi_comm = mesh.mpi_comm();
+
   // Get vtu file name and intialise out files
   std::string vtu_filename = init(xml_doc, functionspace, mesh.topology().dim());
 
@@ -347,13 +362,14 @@ void VTKFile::write_functionspace(const FunctionSpace& functionspace, double tim
   VTKWriter::write_mesh(functionspace, mesh.topology().dim(), xml_doc, binary, compress);
 
   // Parallel-specfic files
-  if (MPI::num_processes() > 1 && MPI::process_number() == 0)
+  const std::size_t num_processes = MPI::num_processes(mpi_comm);
+  if (num_processes > 1 && MPI::process_number(mpi_comm) == 0)
   {
     std::string pvtu_filename = vtu_name(0, 0, counter, ".pvtu");
-    pvtu_write_mesh(pvtu_filename);
+    pvtu_write_mesh(pvtu_filename, num_processes);
     pvd_file_write(counter, time, pvtu_filename);
   }
-  else if (MPI::num_processes() == 1)
+  else if (num_processes == 1)
     pvd_file_write(counter, time, vtu_filename);
 
   // Finalise
@@ -365,11 +381,14 @@ void VTKFile::write_functionspace(const FunctionSpace& functionspace, double tim
 //----------------------------------------------------------------------------
 std::string VTKFile::init(pugi::xml_document& xml_doc, const Mesh& mesh, std::size_t cell_dim) const
 {
-  // Get vtu file name and clear file
-  std::string vtu_filename = vtu_name(MPI::process_number(),
-                                      MPI::num_processes(),
-                                      counter,
-                                      ".vtu");
+  // Get MPI communicators
+  const MPI_Comm mpi_comm = mesh.mpi_comm();
+
+  // Get vtu file name
+  std::string vtu_filename = vtu_name(MPI::process_number(mpi_comm),
+                                      MPI::num_processes(mpi_comm),
+                                      counter, ".vtu");
+
   // Number of cells
   const std::size_t num_cells = mesh.topology().size(cell_dim);
 
@@ -388,11 +407,14 @@ std::string VTKFile::init(pugi::xml_document& xml_doc, const FunctionSpace& func
 
   const Mesh& mesh = *functionspace.mesh();
 
-  // Get vtu file name and clear file
-  std::string vtu_filename = vtu_name(MPI::process_number(),
-                                      MPI::num_processes(),
-                                      counter,
-                                      ".vtu");
+  // Get MPI communicators
+  const MPI_Comm mpi_comm = mesh.mpi_comm();
+
+  // Get vtu file name
+  std::string vtu_filename = vtu_name(MPI::process_number(mpi_comm),
+                                      MPI::num_processes(mpi_comm),
+                                      counter, ".vtu");
+
   // Number of cells
   const std::size_t num_cells = mesh.topology().size(cell_dim);
 
@@ -957,7 +979,8 @@ void VTKFile::pvtu_write_mesh(pugi::xml_node xml_node) const
 void VTKFile::pvtu_write_function(std::size_t dim, std::size_t rank,
                                   const std::string data_location,
                                   const std::string name,
-                                  const std::string filename,
+                                  const std::string fname,
+                                  std::size_t num_processes,
                                   std::vector<std::size_t>& point_counter,
                                   std::vector<std::size_t>& cell_counter) const
 {
@@ -978,9 +1001,9 @@ void VTKFile::pvtu_write_function(std::size_t dim, std::size_t rank,
     pvtu_write_mesh(grid_node);
 
     // Write vtu file list
-    for(std::size_t i = 0; i < MPI::num_processes(); i++)
+    for(std::size_t i = 0; i < num_processes; i++)
     {
-      const std::string tmp_string = strip_path(vtu_name(i, MPI::num_processes(), counter, ".vtu"));
+      const std::string tmp_string = strip_path(vtu_name(i, num_processes, counter, ".vtu"));
       pugi::xml_node piece_node = grid_node.append_child("Piece");
       piece_node.append_attribute("Source") = tmp_string.c_str();
     }
@@ -988,7 +1011,7 @@ void VTKFile::pvtu_write_function(std::size_t dim, std::size_t rank,
   }
   else
   {
-    pugi::xml_parse_result result = xml_doc.load_file(filename.c_str());
+    pugi::xml_parse_result result = xml_doc.load_file(fname.c_str());
     if (!result)
     {
       dolfin_error("VTKFile.cpp",
@@ -1095,10 +1118,11 @@ void VTKFile::pvtu_write_function(std::size_t dim, std::size_t rank,
     data_array_node.append_attribute("NumberOfComponents")
       = (unsigned int) num_components;
 
-  xml_doc.save_file(filename.c_str(), "  ");
+  xml_doc.save_file(fname.c_str(), "  ");
 }
 //----------------------------------------------------------------------------
-void VTKFile::pvtu_write_mesh(const std::string fname) const
+void VTKFile::pvtu_write_mesh(const std::string fname,
+                              const std::size_t num_processes) const
 {
   // Create xml doc
   pugi::xml_document xml_doc;
@@ -1112,9 +1136,9 @@ void VTKFile::pvtu_write_mesh(const std::string fname) const
   pvtu_write_mesh(grid_node);
 
   // Write vtu file list
-  for(std::size_t i = 0; i < MPI::num_processes(); i++)
+  for (std::size_t i = 0; i < num_processes; i++)
   {
-    const std::string tmp_string = strip_path(vtu_name(i, MPI::num_processes(),
+    const std::string tmp_string = strip_path(vtu_name(i, num_processes,
                                                        counter, ".vtu"));
     pugi::xml_node piece_node = grid_node.append_child("Piece");
     piece_node.append_attribute("Source") = tmp_string.c_str();
@@ -1123,10 +1147,12 @@ void VTKFile::pvtu_write_mesh(const std::string fname) const
   xml_doc.save_file(fname.c_str(), "  ");
 }
 //----------------------------------------------------------------------------
-void VTKFile::pvtu_write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, const std::string filename) const
+void VTKFile::pvtu_write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, const std::string fname) const
 {
   std::vector<std::size_t> cell_counter(3,0);
   std::vector<std::size_t> point_counter(3,0);
+
+  const std::size_t num_processes = MPI::num_processes(mesh.mpi_comm());
 
   std::vector<const GenericFunction*>::const_iterator u;
   for (u = us.begin(); u != us.end(); u++)
@@ -1159,9 +1185,10 @@ void VTKFile::pvtu_write(const std::vector<const GenericFunction*>& us, const Me
         data_type = "cell";
     }
 
-    pvtu_write_function(dim, rank, data_type, (*u)->name(), filename, 
+    pvtu_write_function(dim, rank, data_type, (*u)->name(), fname, num_processes,
                         point_counter, cell_counter);
   }
+
 }
 //----------------------------------------------------------------------------
 void VTKFile::vtk_header_open(std::size_t num_points, std::size_t num_cells,
@@ -1259,15 +1286,17 @@ void VTKFile::mesh_function_write(T& meshfunction, double time)
   value_node.set_value(value.str().c_str());
 
   // Parallel-specfic files
-  if (MPI::num_processes() > 1 && MPI::process_number() == 0)
+  const std::size_t num_processes = MPI::num_processes(mesh.mpi_comm());
+  const std::size_t process_number = MPI::process_number(mesh.mpi_comm());
+  if (num_processes > 1 && process_number == 0)
   {
     std::string pvtu_filename = vtu_name(0, 0, counter, ".pvtu");
     std::vector<std::size_t> cell_counter(3,0), point_counter(3,0);
     pvtu_write_function(1, 0, "cell", meshfunction.name(), pvtu_filename,
-                        point_counter, cell_counter);
+                        num_processes, point_counter, cell_counter);
     pvd_file_write(counter, time, pvtu_filename);
   }
-  else if (MPI::num_processes() == 1)
+  else if (num_processes == 1)
     pvd_file_write(counter, time, vtu_filename);
 
   // Finalise
