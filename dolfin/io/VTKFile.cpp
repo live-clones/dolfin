@@ -247,8 +247,8 @@ void VTKFile::write(const std::vector<const GenericFunction*>& us, const Mesh& m
   results_write(us, mesh, xml_doc);
 
   // Parallel-specfic files
-  const std::size_t num_processes = MPI::num_processes(mpi_comm);
-  if (num_processes > 1 && MPI::process_number(mpi_comm) == 0)
+  const std::size_t num_processes = MPI::size(mpi_comm);
+  if (num_processes > 1 && MPI::rank(mpi_comm) == 0)
   {
     std::string pvtu_filename = vtu_name(0, 0, counter, ".pvtu");
     pvtu_write(us, mesh, pvtu_filename);
@@ -295,8 +295,8 @@ void VTKFile::write(const std::vector<const GenericFunction*>& us, const Functio
   results_write(us, functionspace, xml_doc);
 
   // Parallel-specfic files
-  const std::size_t num_processes = MPI::num_processes(mpi_comm);
-  if (num_processes > 1 && MPI::process_number(mpi_comm) == 0)
+  const std::size_t num_processes = MPI::size(mpi_comm);
+  if (num_processes > 1 && MPI::rank(mpi_comm) == 0)
   {
     std::string pvtu_filename = vtu_name(0, 0, counter, ".pvtu");
     pvtu_write(us, mesh, pvtu_filename);
@@ -328,8 +328,8 @@ void VTKFile::write_mesh(const Mesh& mesh, double time)
                         compress);
 
   // Parallel-specific files
-  const std::size_t num_processes = MPI::num_processes(mpi_comm);
-  if (num_processes > 1 && MPI::process_number(mpi_comm) == 0)
+  const std::size_t num_processes = MPI::size(mpi_comm);
+  if (num_processes > 1 && MPI::rank(mpi_comm) == 0)
   {
     std::string pvtu_filename = vtu_name(0, 0, counter, ".pvtu");
     pvtu_write_mesh(pvtu_filename, num_processes);
@@ -362,8 +362,8 @@ void VTKFile::write_functionspace(const FunctionSpace& functionspace, double tim
   VTKWriter::write_mesh(functionspace, mesh.topology().dim(), xml_doc, binary, compress);
 
   // Parallel-specfic files
-  const std::size_t num_processes = MPI::num_processes(mpi_comm);
-  if (num_processes > 1 && MPI::process_number(mpi_comm) == 0)
+  const std::size_t num_processes = MPI::size(mpi_comm);
+  if (num_processes > 1 && MPI::rank(mpi_comm) == 0)
   {
     std::string pvtu_filename = vtu_name(0, 0, counter, ".pvtu");
     pvtu_write_mesh(pvtu_filename, num_processes);
@@ -385,8 +385,8 @@ std::string VTKFile::init(pugi::xml_document& xml_doc, const Mesh& mesh, std::si
   const MPI_Comm mpi_comm = mesh.mpi_comm();
 
   // Get vtu file name
-  std::string vtu_filename = vtu_name(MPI::process_number(mpi_comm),
-                                      MPI::num_processes(mpi_comm),
+  std::string vtu_filename = vtu_name(MPI::rank(mpi_comm),
+                                      MPI::size(mpi_comm),
                                       counter, ".vtu");
 
   // Number of cells
@@ -411,8 +411,8 @@ std::string VTKFile::init(pugi::xml_document& xml_doc, const FunctionSpace& func
   const MPI_Comm mpi_comm = mesh.mpi_comm();
 
   // Get vtu file name
-  std::string vtu_filename = vtu_name(MPI::process_number(mpi_comm),
-                                      MPI::num_processes(mpi_comm),
+  std::string vtu_filename = vtu_name(MPI::rank(mpi_comm),
+                                      MPI::size(mpi_comm),
                                       counter, ".vtu");
 
   // Number of cells
@@ -1152,7 +1152,7 @@ void VTKFile::pvtu_write(const std::vector<const GenericFunction*>& us, const Me
   std::vector<std::size_t> cell_counter(3,0);
   std::vector<std::size_t> point_counter(3,0);
 
-  const std::size_t num_processes = MPI::num_processes(mesh.mpi_comm());
+  const std::size_t num_processes = MPI::size(mesh.mpi_comm());
 
   std::vector<const GenericFunction*>::const_iterator u;
   for (u = us.begin(); u != us.end(); u++)
@@ -1286,8 +1286,8 @@ void VTKFile::mesh_function_write(T& meshfunction, double time)
   value_node.set_value(value.str().c_str());
 
   // Parallel-specfic files
-  const std::size_t num_processes = MPI::num_processes(mesh.mpi_comm());
-  const std::size_t process_number = MPI::process_number(mesh.mpi_comm());
+  const std::size_t num_processes = MPI::size(mesh.mpi_comm());
+  const std::size_t process_number = MPI::rank(mesh.mpi_comm());
   if (num_processes > 1 && process_number == 0)
   {
     std::string pvtu_filename = vtu_name(0, 0, counter, ".pvtu");

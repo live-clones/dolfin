@@ -236,35 +236,35 @@ namespace dolfin
     /// Write object to file
     template<typename T> void operator<<(const T& t)
     {
-      file->write(MPI::process_number(_mpi_comm));
+      file->write(MPI::rank(_mpi_comm));
       *file << t;
     }
 
     /// Write Functions to file on the given mesh
     void write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, double time)
     {
-      file->write(MPI::process_number(_mpi_comm));
+      file->write(MPI::rank(_mpi_comm));
       file->write(us, mesh, time);
     }
 
     /// Write Functions to file on the given mesh
     void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time)
     {
-      file->write(MPI::process_number(_mpi_comm));
+      file->write(MPI::rank(_mpi_comm));
       file->write(us, mesh, time);
     }
 
     /// Write Functions to file on the given (scalar Lagrange) functionspace
     void write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, double time)
     {
-      file->write(MPI::process_number(_mpi_comm));
+      file->write(MPI::rank(_mpi_comm));
       file->write(us, functionspace, time);
     }
 
     /// Write Functions to file on the given (scalar Lagrange) functionspace
     void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time)
     {
-      file->write(MPI::process_number(_mpi_comm));
+      file->write(MPI::rank(_mpi_comm));
       file->write(us, functionspace, time);
     }
 
