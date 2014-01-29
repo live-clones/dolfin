@@ -450,6 +450,12 @@ std::size_t PETScKrylovSolver::solve(PETScVector& x, const PETScVector& b)
   if (report && dolfin::MPI::rank(PETSC_COMM_WORLD) == 0)
     write_report(num_iterations, reason);
 
+  std::vector<double> r(_A->size(0)), c(_A->size(0));
+  KSPComputeEigenvaluesExplicitly(_ksp, r.size(), r.data(), c.data());
+  std::cout << "Eigenvalues: " << std::endl;
+  for (std::size_t i = 0; i < r.size(); ++i)
+    std::cout << " " << r[i] << ", " << c[i] << std::endl;
+
   return num_iterations;
 }
 //-----------------------------------------------------------------------------

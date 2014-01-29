@@ -41,6 +41,8 @@ namespace dolfin
   class PETScMatrix;
   class PETScVector;
 
+  class PETScKrylovSolver;
+
   /// This class provides an eigenvalue solver for PETSc matrices.
   /// It is a wrapper for the SLEPc eigenvalue solver.
   ///
@@ -145,6 +147,9 @@ namespace dolfin
     /// Create eigenvalue solver for Ax = \lambda x
     SLEPcEigenSolver(boost::shared_ptr<const PETScMatrix> A,
                      boost::shared_ptr<const PETScMatrix> B);
+
+    ///
+    SLEPcEigenSolver(PETScKrylovSolver& solver);
 
     /// Destructor
     ~SLEPcEigenSolver();

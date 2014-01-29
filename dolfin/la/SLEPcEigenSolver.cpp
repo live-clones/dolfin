@@ -33,6 +33,8 @@
 #include "PETScVector.h"
 #include "SLEPcEigenSolver.h"
 
+#include "PETScKrylovSolver.h"
+
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
@@ -88,6 +90,60 @@ SLEPcEigenSolver::SLEPcEigenSolver(boost::shared_ptr<const PETScMatrix> A,
 
   // Set up solver environment
   EPSCreate(PETSC_COMM_WORLD, &eps);
+}
+//-----------------------------------------------------------------------------
+SLEPcEigenSolver::SLEPcEigenSolver(PETScKrylovSolver& solver)
+{
+  EPSCreate(PETSC_COMM_WORLD, &eps);
+
+  KSP ksp = solver.ksp();
+  Mat Amat, Pmat;
+  KSPGetOperators(ksp, &Amat, &Pmat, NULL);
+  EPSSetOperators(eps, Amat, Pmat);
+  EPSSetProblemType(eps, EPS_GHEP);
+
+  //EPSSetType(eps, EPSPOWER);
+  EPSSetType(eps, EPSKRYLOVSCHUR);
+
+
+  EPSSetTolerances(eps, 1.0e-6, 300);
+
+  PetscInt m(0), n(0);
+  MatGetSize(Amat, &m, &n);
+  EPSSetDimensions(eps, m, PETSC_DECIDE, PETSC_DECIDE);
+
+  ST st;
+  KSP stksp;
+  EPSGetST(eps, &st);
+  STGetKSP(st, &stksp);
+  //STSetType(st, STPRECOND);
+
+  if (stksp)
+  {
+    std:: cout << "**********************" << std::endl;
+    PC pc;
+    KSPGetPC(ksp, &pc);
+    KSPSetPC(stksp, pc);
+  }
+
+  EPSType type;
+  EPSSolve(eps);
+  EPSGetType(eps, &type);
+  std::cout << "Test: type: " << type << std::endl;
+
+  int nev = 0;
+  EPSGetDimensions(eps, &nev, NULL, NULL);
+  std::cout << "Number of eigs: " << nev << std::endl;
+
+  int nc = 0;
+  EPSGetConverged(eps, &nc);
+  double lr, lc;
+  for (int i = 0; i < nc; ++i)
+  {
+    get_eigenvalue(lr, lc, i);
+    std::cout << "Eigen values: " << lr << ", " << lc << std::endl;
+  }
+
 }
 //-----------------------------------------------------------------------------
 SLEPcEigenSolver::~SLEPcEigenSolver()
