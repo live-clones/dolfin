@@ -65,10 +65,13 @@ class DirichletBoundary : public SubDomain
   }
 };
 
-int main()
+int main(int argc, char* argv[])
 {
+  //Parameters parameters = GlobalParameters();
+  parameters.parse(argc, argv);
+
   // Create mesh and function space
-  UnitSquareMesh mesh(32, 32);
+  UnitSquareMesh mesh(3, 3);
   Poisson::FunctionSpace V(mesh);
 
   // Define boundary condition
@@ -87,15 +90,37 @@ int main()
 
   // Compute solution
   Function u(V);
-  solve(a == L, u, bc);
+  //solve(a == L, u, bc);
+
+  PETScMatrix A;
+  PETScVector b;
+  SystemAssembler assembler(a, L, bc);
+  assembler.assemble(A, b);
+
+  KSP ksp;
+  KSPCreate(PETSC_COMM_WORLD, &ksp);
+  KSPSetOperators(ksp, A.mat(), A.mat(), SAME_PRECONDITIONER);
+
+  PETScVector x(b);
+  x.zero();
+
+  KSPSetFromOptions(ksp);
+  KSPSolve(ksp, b.vec(), x.vec());
+
+  std::vector<double> r(A.size(0)), c(A.size(0));
+  KSPComputeEigenvaluesExplicitly(ksp, r.size(), r.data(), c.data());
+  std::cout << "Eigenvalues: " << std::endl;
+  for (std::size_t i = 0; i < r.size(); ++i)
+    std::cout << " " << r[i] << ", " << c[i] << std::endl;
+
 
   // Save solution in VTK format
-  File file("poisson.pvd");
-  file << u;
+  //File file("poisson.pvd");
+  //f/ile << u;
 
   // Plot solution
-  plot(u);
-  interactive();
+  //plot(u);
+  //interactive();
 
   return 0;
 }

@@ -103,9 +103,7 @@ SLEPcEigenSolver::SLEPcEigenSolver(PETScKrylovSolver& solver)
   EPSSetProblemType(eps, EPS_GHEP);
 
   //EPSSetType(eps, EPSPOWER);
-  EPSSetType(eps, EPSKRYLOVSCHUR);
-
-
+  //EPSSetType(eps, EPSKRYLOVSCHUR);
   EPSSetTolerances(eps, 1.0e-6, 300);
 
   PetscInt m(0), n(0);

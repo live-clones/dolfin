@@ -36,8 +36,11 @@ du/dn(x, y) = sin(5*x) for y = 0 or y = 1
 
 from dolfin import *
 
+# Get petsc command line comments
+parameters.parse()
+
 # Create mesh and define function space
-mesh = UnitSquareMesh(32, 32)
+mesh = UnitSquareMesh(3, 3)
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # Define Dirichlet boundary (x = 0 or x = 1)
@@ -58,11 +61,21 @@ L = f*v*dx + g*v*ds
 
 # Compute solution
 u = Function(V)
-solve(a == L, u, bc)
+#solve(a == L, u, bc)
+
+A = PETScMatrix()
+b = PETScVector()
+assembler = SystemAssembler(a, L, [bc])
+assembler.assemble(A, b)
+
+solver = PETScKrylovSolver()
+solver.solve(A, u.vector(), b)
+
+esolver = SLEPcEigenSolver(solver)
 
 # Save solution in VTK format
-file = File("poisson.pvd")
-file << u
+#file = File("poisson.pvd")
+#file << u
 
 # Plot solution
-plot(u, interactive=True)
+#plot(u, interactive=True)
