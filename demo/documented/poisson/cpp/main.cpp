@@ -65,13 +65,18 @@ class DirichletBoundary : public SubDomain
   }
 };
 
+
+
 int main(int argc, char* argv[])
 {
+  SlepcInitialize(&argc,&argv, (char*)0, (char*)0);
+
+
   //Parameters parameters = GlobalParameters();
-  parameters.parse(argc, argv);
+  //parameters.parse(argc, argv);
 
   // Create mesh and function space
-  UnitSquareMesh mesh(3, 3);
+  UnitSquareMesh mesh(6, 6);
   Poisson::FunctionSpace V(mesh);
 
   // Define boundary condition
@@ -92,27 +97,70 @@ int main(int argc, char* argv[])
   Function u(V);
   //solve(a == L, u, bc);
 
-  PETScMatrix A;
-  PETScVector b;
+  PETScMatrix _A;
+  PETScVector _b;
   SystemAssembler assembler(a, L, bc);
-  assembler.assemble(A, b);
+  assembler.assemble(_A, _b);
+
+  PETScVector _x(_b);
+  _x.zero();
+
+  Mat A = _A.mat();
+  Vec b = _b.vec();
+  Vec x = _x.vec();
+
 
   KSP ksp;
   KSPCreate(PETSC_COMM_WORLD, &ksp);
-  KSPSetOperators(ksp, A.mat(), A.mat(), SAME_PRECONDITIONER);
-
-  PETScVector x(b);
-  x.zero();
-
+  KSPSetOperators(ksp, A, A, SAME_PRECONDITIONER);
   KSPSetFromOptions(ksp);
-  KSPSolve(ksp, b.vec(), x.vec());
+  KSPSolve(ksp, b, x);
 
-  std::vector<double> r(A.size(0)), c(A.size(0));
+  PetscInt size = 0;
+  VecGetSize(x, &size);
+  std::vector<double> r(size), c(size);
   KSPComputeEigenvaluesExplicitly(ksp, r.size(), r.data(), c.data());
-  std::cout << "Eigenvalues: " << std::endl;
+  std::cout << "Eigenvalues (explicit computation): " << std::endl;
   for (std::size_t i = 0; i < r.size(); ++i)
     std::cout << " " << r[i] << ", " << c[i] << std::endl;
 
+  EPS eps;
+  EPSCreate(PetscObjectComm((PetscObject)ksp), &eps);
+  Mat Amat, Pmat;
+  KSPGetOperators(ksp, &Amat, &Pmat, NULL);
+  EPSSetOperators(eps, Amat, Pmat);
+
+  ST st;
+  KSP stksp;
+  EPSGetST(eps, &st);
+  STGetKSP(st, &stksp);
+  if (stksp)
+  {
+    std::cout << "***Set pc " << std::endl;
+    PC pc;
+    KSPGetPC(ksp, &pc);
+    KSPSetPC(stksp, pc);
+    KSPSetType(stksp, KSPPREONLY);
+  }
+
+  //EPSSetDimensions(eps, size/4, PETSC_DECIDE, PETSC_DECIDE);
+
+  EPSSetFromOptions(eps);
+
+  EPSSolve(eps);
+
+  int nconv = 0;
+  EPSGetConverged(eps, &nconv);
+  std::cout << "SLEPC, num converged eigenvalues: " << nconv << std::endl;
+  for (int j = 0; j < nconv; j++)
+  {
+    double r, c;
+    Vec xr, xc;
+    EPSGetEigenpair(eps, j, &r, &c, xr, xc);
+    std::cout << r << ", " << c << std::endl;
+  }
+
+  std::cout << "done" << std::endl;
 
   // Save solution in VTK format
   //File file("poisson.pvd");
