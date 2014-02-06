@@ -122,6 +122,13 @@ namespace dolfin
     std::size_t solve(const PETScBaseMatrix& A, PETScVector& x,
                       const PETScVector& b);
 
+    /// Compute eigenvalues of preconditioned operator. If
+    /// direct=false, then computation is approximate and suitable for
+    /// large systems. If direct=true, PETSc uses Lapack to compute
+    /// all eigenvalues (suitable for small systems only).
+    std::vector<std::pair<double, double> >
+      compute_eigenvalues(bool direct=false) const;
+
     /// Return informal string representation (pretty-print)
     std::string str(bool verbose) const;
 
