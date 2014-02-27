@@ -397,9 +397,11 @@ void VTKFile::write_point_data(const GenericFunction& u, const Mesh& mesh,
     if (rank == 1 && dim == 2)
       padding_per_point = 1;
     else if (rank == 2 && dim == 4)
+    {
       padding_per_point = 5;
       indicies[2] = 3;
       indicies[3] = 4;
+    }
 
     // Number of data entries per point and total number
     const std::size_t num_data_per_point = dim + padding_per_point;
