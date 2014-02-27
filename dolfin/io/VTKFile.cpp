@@ -802,12 +802,14 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
     const Function* ul = dynamic_cast<const Function*>(&u);
     if(ul)
     {
-      std::size_t k = 0;
-      for (std::size_t i = 0; i < ul->value_dimension(0); i++)
+      const std::size_t dim0 = ul->value_dimension(0);
+      const std::size_t dim1 = ul->value_dimension(1);
+      for (std::size_t i = 0; i < dim0; i++)
       {
-        for (std::size_t j = 0; j < ul->value_dimension(1); j++)
+        for (std::size_t j = 0; j < dim1; j++)
         {
-          uf.interpolate((*ul)[i][j]);
+          std::size_t k = i*dim1 + j;
+          uf.interpolate((*ul)[k]);
           uf.vector()->get_local(values[k]);
           std::vector<double>::iterator it;
           for (it = values[k].begin(); it != values[k].end(); ++it)
@@ -815,17 +817,18 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
             if (std::abs(*it) < DOLFIN_EPS)
               *it = 0.0;
           }
-          k++;
         }
       }
     }
     else
     {
-      std::size_t k = 0;
-      for (std::size_t i = 0; i < u.value_dimension(0); i++)
+      const std::size_t dim0 = u.value_dimension(0);
+      const std::size_t dim1 = u.value_dimension(1);
+      for (std::size_t i = 0; i < dim0; i++)
       {
-        for (std::size_t j = 0; j < u.value_dimension(1); j++)
+        for (std::size_t j = 0; j < dim1; j++)
         {
+          std::size_t k = i*dim1 + j;
           VTKExpression ue(k, &u);
           uf.interpolate(ue);
           uf.vector()->get_local(values[k]);
@@ -835,7 +838,6 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
             if (std::abs(*it) < DOLFIN_EPS)
               *it = 0.0;
           }
-          k++;
         }
       }
     }
