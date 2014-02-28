@@ -808,6 +808,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
     const Function* ul = dynamic_cast<const Function*>(&u);
     if(ul)
     {
+      const bool symmetric = (ul->function_space()->element()->num_sub_elements() != ul->value_size());
       const std::size_t dim0 = ul->value_dimension(0);
       const std::size_t dim1 = ul->value_dimension(1);
       for (std::size_t i = 0; i < dim0; i++)
@@ -815,7 +816,13 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
         for (std::size_t j = 0; j < dim1; j++)
         {
           std::size_t k = i*dim1 + j;
-          uf.interpolate((*ul)[k]);
+          std::size_t kf = k;
+          if (symmetric)
+            if (j >= i)
+              kf = i*dim1 + j - (i*(i+1))/2;
+            else
+              kf = j*dim1 + i - (j*(j+1))/2;
+          uf.interpolate((*ul)[kf]);
           uf.vector()->get_local(values[k]);
           std::vector<double>::iterator it;
           for (it = values[k].begin(); it != values[k].end(); ++it)
@@ -897,10 +904,16 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
   {
     // Number of zero paddings per point
     std::size_t padding_per_point = 0;
+    std::vector<std::size_t> indicies(dim, 0);
+    std::iota(indicies.begin(), indicies.end(), 0);
     if (rank == 1 && dim == 2)
       padding_per_point = 1;
     else if (rank == 2 && dim == 4)
+    {
       padding_per_point = 5;
+      indicies[2] = 3;
+      indicies[3] = 4;
+    }
 
     // Number of data entries per point and total number
     const std::size_t num_data_per_point = dim + padding_per_point;
@@ -910,7 +923,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
     for (std::size_t index = 0; index < lsize; index++)
     {
       for(std::size_t i = 0; i < dim; i++)
-        data[index*num_data_per_point + i] = values[i][index];
+        data[index*num_data_per_point + indicies[i]] = values[i][index];
     }
 
     // Create encoded stream
