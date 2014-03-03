@@ -70,9 +70,9 @@ namespace dolfin
     void operator<< (const std::pair<const Function*, double> u);
     //void operator<< (const std::pair<const std::vector<const Function*>, double> us);
 
-    void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time);
+    void write(const std::vector<std::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time);
     void write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, double time);
-    void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time);
+    void write(const std::vector<std::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time);
     void write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, double time);
 
   protected:

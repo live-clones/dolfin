@@ -123,9 +123,9 @@ namespace dolfin
     void read();
     virtual void write(std::size_t process_number);
     virtual void write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, double time);
-    virtual void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time);
+    virtual void write(const std::vector<std::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time);
     virtual void write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, double time);
-    virtual void write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time);
+    virtual void write(const std::vector<std::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time);
 
     // Return filename
     std::string name() const

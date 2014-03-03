@@ -363,9 +363,9 @@ void GenericFile::write(std::size_t process_number)
   opened_write = true;
 }
 //-----------------------------------------------------------------------------
-void GenericFile::write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time)
+void GenericFile::write(const std::vector<std::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time)
 {
-  write_not_impl("const std::vector<boost::shared_ptr<GenericFunction> >&, const Mesh&, double time");
+  write_not_impl("const std::vector<std::shared_ptr<GenericFunction> >&, const Mesh&, double time");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, double time)
@@ -373,9 +373,9 @@ void GenericFile::write(const std::vector<const GenericFunction*>& us, const Mes
   write_not_impl("const std::vector<const GenericFunction*>&, const Mesh&, double time");
 }
 //-----------------------------------------------------------------------------
-void GenericFile::write(const std::vector<boost::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time)
+void GenericFile::write(const std::vector<std::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time)
 {
-  write_not_impl("const std::vector<boost::shared_ptr<GenericFunction> >&, const FunctionSpace&, double time");
+  write_not_impl("const std::vector<std::shared_ptr<GenericFunction> >&, const FunctionSpace&, double time");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, double time)

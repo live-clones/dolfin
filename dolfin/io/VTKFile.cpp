@@ -218,10 +218,10 @@ void VTKFile::operator<<(const std::pair<const Function*, double> u)
 //  write(usg, mesh, us.second);
 //}
 //----------------------------------------------------------------------------
-void VTKFile::write(const std::vector< boost::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time)
+void VTKFile::write(const std::vector< std::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time)
 {
   std::vector<const GenericFunction*> usp;
-  std::vector<boost::shared_ptr<GenericFunction> >::const_iterator u;
+  std::vector<std::shared_ptr<GenericFunction> >::const_iterator u;
   for (u = us.begin(); u != us.end(); u++)
   {
     usp.push_back(&(**u));
@@ -263,10 +263,10 @@ void VTKFile::write(const std::vector<const GenericFunction*>& us, const Mesh& m
   log(TRACE, "Saved functions to file %s in VTK format.", _filename.c_str());
 }
 //----------------------------------------------------------------------------
-void VTKFile::write(const std::vector< boost::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time)
+void VTKFile::write(const std::vector< std::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time)
 {
   std::vector<const GenericFunction*> usp;
-  std::vector<boost::shared_ptr<GenericFunction> >::const_iterator u;
+  std::vector<std::shared_ptr<GenericFunction> >::const_iterator u;
   for (u = us.begin(); u != us.end(); u++)
   {
     usp.push_back(&(**u));
