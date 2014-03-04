@@ -66,7 +66,7 @@ list(APPEND petsc_dir_locations "/usr/lib/petscdir/3.1")    # Debian location
 list(APPEND petsc_dir_locations "/usr/lib/petscdir/3.0.0")  # Debian location
 list(APPEND petsc_dir_locations "/opt/local/lib/petsc")     # Macports location
 list(APPEND petsc_dir_locations "/usr/local/lib/petsc")     # User location
-list(APPEND petsc_dir_locations "$ENV{HOME}/petsc")         # User location
+# list(APPEND petsc_dir_locations "$ENV{CRAY_PETSC_PREFIX_DIR}")         # User location
 
 # Add other possible locations for PETSC_DIR
 set(_SYSTEM_LIB_PATHS "${CMAKE_SYSTEM_LIBRARY_PATH};${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}")
@@ -150,19 +150,27 @@ show :
   # Call macro to get the PETSc variables
   petsc_get_variable(PETSC_INCLUDE PETSC_INCLUDE)          # 3.1
   petsc_get_variable(PETSC_CC_INCLUDES PETSC_CC_INCLUDES)  # dev
-  set(PETSC_INCLUDE ${PETSC_INCLUDE} ${PETSC_CC_INCLUDES})
+  set(PETSC_INCLUDE -I${PETSC_DIR}/include)
   petsc_get_variable(PETSC_LIB_BASIC PETSC_LIB_BASIC)
   petsc_get_variable(PETSC_LIB_DIR PETSC_LIB_DIR)
   set(PETSC_LIB "-L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC}")
 
+  message(STATUS ${PETSC_LIB} ${PETSC_LIB_BASIC} ${PETSC_INCLUDE})
+
   # Call macro to get the PETSc 3rd-party libraries
   petsc_get_variable(PETSC_EXTERNAL_LIB_BASIC PETSC_EXTERNAL_LIB_BASIC)
+
+
 
   # Extract include paths and libraries from compile command line
   include(ResolveCompilerPaths)
   resolve_includes(PETSC_INCLUDE_DIRS "${PETSC_INCLUDE}")
   resolve_libraries(PETSC_LIBRARIES "${PETSC_LIB}")
   resolve_libraries(PETSC_EXTERNAL_LIBRARIES "${PETSC_EXTERNAL_LIB_BASIC}")
+ 
+#  set(PETSC_LIBRARIES ${PETSC_DIR}/lib/libcraypetsc_gnu_48_real.so)
+
+  message(STATUS ${PETSC_INCLUDE_DIRS} ${PETSC_EXTERNAL_LIB_BASIC})
 
   # Add some extra libraries on OSX
   if (APPLE)
@@ -232,6 +240,7 @@ int main() {
   return 0;
 }
 ")
+
 
   try_run(
     PETSC_CONFIG_TEST_VERSION_EXITCODE
@@ -354,6 +363,10 @@ int main()
   endif()
 
 endif()
+
+set (PETSC_VERSION_MAJOR 3)
+set (PETSC_VERSION_MINOR 4)
+
 
 # Standard package handling
 include(FindPackageHandleStandardArgs)
