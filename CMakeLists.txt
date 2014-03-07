@@ -350,9 +350,9 @@ if (DOLFIN_ENABLE_PETSC)
   endif()
 
   # Enable PETSc SNES for PETSc verion > 3.2
-  if (PETSC_VERSION VERSION_GREATER 3.2.100)
+  #if (PETSC_VERSION VERSION_GREATER 3.2.100)
     set(PETSC_ENABLE_SNES TRUE)
-  endif()
+  #endif()
 
 endif()
 
