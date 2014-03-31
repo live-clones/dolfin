@@ -24,6 +24,7 @@
 #include <dolfin/common/constants.h>
 #include <dolfin/common/MPI.h>
 #include <dolfin/common/Timer.h>
+#include <dolfin/mesh/LocalMeshData.h>
 #include <dolfin/mesh/MeshPartitioning.h>
 #include <dolfin/mesh/MeshEditor.h>
 #include "BoxMesh.h"
@@ -36,7 +37,7 @@ BoxMesh::BoxMesh(double x0, double y0, double z0,
                  std::size_t nx, std::size_t ny, std::size_t nz)
   : Mesh(MPI_COMM_WORLD)
 {
-  build(x0, y0, z0, x1, y1, z1, nx, ny, nz);
+  build_distributed(x0, y0, z0, x1, y1, z1, nx, ny, nz);
 }
 //-----------------------------------------------------------------------------
 BoxMesh::BoxMesh(MPI_Comm comm,
@@ -45,7 +46,114 @@ BoxMesh::BoxMesh(MPI_Comm comm,
                  std::size_t nx, std::size_t ny, std::size_t nz)
   : Mesh(comm)
 {
-  build(x0, y0, z0, x1, y1, z1, nx, ny, nz);
+  build_distributed(x0, y0, z0, x1, y1, z1, nx, ny, nz);
+}
+//-----------------------------------------------------------------------------
+void BoxMesh::build_distributed(double x0, double y0, double z0,
+                    double x1, double y1, double z1,
+                    std::size_t nx, std::size_t ny, std::size_t nz)
+{
+  Timer timer("Generate Box mesh (distributed)");
+
+  const double a = x0;
+  const double b = x1;
+  const double c = y0;
+  const double d = y1;
+  const double e = z0;
+  const double f = z1;
+
+  if (std::abs(x0 - x1) < DOLFIN_EPS || std::abs(y0 - y1) < DOLFIN_EPS
+      || std::abs(z0 - z1) < DOLFIN_EPS )
+  {
+    dolfin_error("BoxMesh.cpp",
+                 "create box",
+                 "Box seems to have zero width, height or depth. Consider checking your dimensions");
+  }
+
+  if ( nx < 1 || ny < 1 || nz < 1 )
+  {
+    dolfin_error("BoxMesh.cpp",
+                 "create box",
+                 "BoxMesh has non-positive number of vertices in some dimension: number of vertices must be at least 1 in each dimension");
+  }
+
+  LocalMeshData mesh_data(this->mpi_comm());
+  mesh_data.gdim = 3;
+  mesh_data.tdim = 3;
+
+  mesh_data.num_global_vertices = (nx + 1)*(ny + 1)*(nz + 1);
+  const std::pair<std::size_t, std::size_t> local_vertex_range = MPI::local_range(this->mpi_comm(), 
+                                                                                  mesh_data.num_global_vertices);
+  const std::size_t num_local_vertices = local_vertex_range.second - local_vertex_range.first;
+  mesh_data.vertex_coordinates.resize(boost::extents[num_local_vertices][mesh_data.gdim]);
+
+  // Create vertices
+  std::size_t v = 0;
+  for (std::size_t vertex = local_vertex_range.first; 
+       vertex != local_vertex_range.second; ++vertex)
+  {
+    const std::size_t ix = vertex/((ny + 1)*(nz + 1));
+    const std::size_t iy = (vertex - ix*(ny + 1)*(nz + 1))/(nz + 1);
+    const std::size_t iz = vertex - (ix*(ny + 1) + iy)*(nz + 1);
+    
+    mesh_data.vertex_coordinates[v][2] = e + (static_cast<double>(iz))*(f-e) / static_cast<double>(nz);
+    mesh_data.vertex_coordinates[v][1] = c + (static_cast<double>(iy))*(d-c) / static_cast<double>(ny);
+    mesh_data.vertex_coordinates[v][0] = a + (static_cast<double>(ix))*(b-a) / static_cast<double>(nx);
+    ++v;
+  }
+
+  dolfin_assert(v == num_local_vertices);  
+
+  // Create tetrahedra
+  const std::size_t num_cubes = nx*ny*nz;
+  const std::pair<std::size_t, std::size_t> cube_range = MPI::local_range(this->mpi_comm(), num_cubes);
+  mesh_data.num_global_cells = 6*num_cubes;
+  const std::size_t num_local_cells = 6*(cube_range.second - cube_range.first);
+  boost::multi_array<std::size_t, 2>& cells = mesh_data.cell_vertices;
+  mesh_data.num_vertices_per_cell = mesh_data.tdim + 1;
+  cells.resize(boost::extents[num_local_cells][mesh_data.num_vertices_per_cell]);
+  mesh_data.global_cell_indices.resize(num_local_cells);
+
+  std::size_t ci = 0;
+  for (std::size_t cube = cube_range.first; cube != cube_range.second; ++cube)
+  {
+    const std::size_t ix = cube/(ny*nz);
+    const std::size_t iy = (cube - ix*ny*nz)/nz;
+    const std::size_t iz = cube - (ix*ny + iy)*nz;
+
+    const std::size_t v0 = iz*(nx + 1)*(ny + 1) + iy*(nx + 1) + ix;
+    const std::size_t v1 = v0 + 1;
+    const std::size_t v2 = v0 + (nx + 1);
+    const std::size_t v3 = v1 + (nx + 1);
+    const std::size_t v4 = v0 + (nx + 1)*(ny + 1);
+    const std::size_t v5 = v1 + (nx + 1)*(ny + 1);
+    const std::size_t v6 = v2 + (nx + 1)*(ny + 1);
+    const std::size_t v7 = v3 + (nx + 1)*(ny + 1);
+
+    // Note that v0 < v1 < v2 < v3 < vmid.
+    cells[ci][0] = v0; cells[ci][1] = v1; cells[ci][2] = v3; cells[ci][3] = v7;
+    ++ci;
+    cells[ci][0] = v0; cells[ci][1] = v1; cells[ci][2] = v7; cells[ci][3] = v5;
+    ++ci;
+    cells[ci][0] = v0; cells[ci][1] = v5; cells[ci][2] = v7; cells[ci][3] = v4;
+    ++ci;
+    cells[ci][0] = v0; cells[ci][1] = v3; cells[ci][2] = v2; cells[ci][3] = v7;
+    ++ci;
+    cells[ci][0] = v0; cells[ci][1] = v6; cells[ci][2] = v4; cells[ci][3] = v7;
+    ++ci;
+    cells[ci][0] = v0; cells[ci][1] = v2; cells[ci][2] = v6; cells[ci][3] = v7;
+    ++ci;
+  }
+
+  for (unsigned int i = 0; i != num_local_cells; ++i)
+    mesh_data.global_cell_indices[i] = i + cube_range.first * 6;
+
+  dolfin_assert(ci == num_local_cells);
+
+  MeshPartitioning::build_distributed_mesh(*this, mesh_data);
+
+  rename("mesh", "Mesh of the cuboid (a,b) x (c,d) x (e,f)");
+
 }
 //-----------------------------------------------------------------------------
 void BoxMesh::build(double x0, double y0, double z0,
