@@ -26,7 +26,7 @@
 
 #ifdef HAS_TRILINOS
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "GenericMatrix.h"
 #include <Teuchos_RCP.hpp>
 
@@ -61,7 +61,7 @@ namespace dolfin
     explicit EpetraMatrix(Teuchos::RCP<Epetra_FECrsMatrix> A);
 
     /// Create matrix from given Epetra_FECrsMatrix pointer
-    explicit EpetraMatrix(boost::shared_ptr<Epetra_FECrsMatrix> A);
+    explicit EpetraMatrix(std::shared_ptr<Epetra_FECrsMatrix> A);
 
     /// Create matrix from given Epetra_CrsGraph
     explicit EpetraMatrix(const Epetra_CrsGraph& graph);
@@ -103,7 +103,7 @@ namespace dolfin
     //--- Implementation of the GenericMatrix interface ---
 
     /// Return copy of matrix
-    virtual boost::shared_ptr<GenericMatrix> copy() const;
+    virtual std::shared_ptr<GenericMatrix> copy() const;
 
     /// Intialize vector z to be compatible with the matrix-vector
     /// product y = Ax. In the parallel case, both size and layout are
@@ -156,6 +156,9 @@ namespace dolfin
     // Matrix-vector product, y = A^T x
     virtual void transpmult(const GenericVector& x, GenericVector& y) const;
 
+    /// Set diagonal of a matrix
+    virtual void set_diagonal(const GenericVector& x);
+
     /// Multiply matrix by given number
     virtual const EpetraMatrix& operator*= (double a);
 
@@ -173,7 +176,7 @@ namespace dolfin
     //--- Special Epetra functions ---
 
     /// Return Epetra_FECrsMatrix pointer
-    boost::shared_ptr<Epetra_FECrsMatrix> mat() const;
+    std::shared_ptr<Epetra_FECrsMatrix> mat() const;
 
     /// Assignment operator
     const EpetraMatrix& operator= (const EpetraMatrix& x);
@@ -181,7 +184,7 @@ namespace dolfin
   private:
 
     // Epetra_FECrsMatrix pointer
-    boost::shared_ptr<Epetra_FECrsMatrix> _A;
+    std::shared_ptr<Epetra_FECrsMatrix> _matA;
 
     // Epetra_FECrsMatrix pointer, used when initialized with a
     // Teuchos::RCP shared_ptr

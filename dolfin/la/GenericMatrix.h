@@ -105,7 +105,7 @@ namespace dolfin
     //--- Matrix interface ---
 
     /// Return copy of matrix
-    virtual boost::shared_ptr<GenericMatrix> copy() const = 0;
+    virtual std::shared_ptr<GenericMatrix> copy() const = 0;
 
     /// Initialize vector z to be compatible with the matrix-vector
     /// product y = Ax. In the parallel case, both size and layout are
@@ -156,6 +156,9 @@ namespace dolfin
     /// Matrix-vector product, y = A^T x. The y vector must either be
     /// zero-sized or have correct size and parallel layout.
     virtual void transpmult(const GenericVector& x, GenericVector& y) const = 0;
+
+    /// Set diagonal of a matrix
+    virtual void set_diagonal(const GenericVector& x) = 0;
 
     /// Multiply matrix by given number
     virtual const GenericMatrix& operator*= (double a) = 0;

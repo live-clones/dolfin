@@ -27,14 +27,11 @@
 #define __EPETRA_KRYLOV_SOLVER_H
 
 #include <map>
+#include <memory>
 #include <string>
-#include <boost/shared_ptr.hpp>
 #include <dolfin/common/NoDeleter.h>
 #include <dolfin/common/types.h>
 #include "GenericLinearSolver.h"
-
-// Forward declarations
-class AztecOO;
 
 namespace dolfin
 {
@@ -48,15 +45,15 @@ namespace dolfin
   class EpetraUserPreconditioner;
   class TrilinosPreconditioner;
 
-  /// This class implements Krylov methods for linear systems
-  /// of the form Ax = b. It is a wrapper for the Krylov solvers
-  /// of Epetra.
+  /// This class implements Krylov methods for linear systems of the
+  /// form Ax = b. It is a wrapper for the Krylov solvers of Epetra.
 
   class EpetraKrylovSolver : public GenericLinearSolver
   {
   public:
 
-    /// Create Krylov solver for a particular method and preconditioner
+    /// Create Krylov solver for a particular method and
+    /// preconditioner
     EpetraKrylovSolver(std::string method = "default",
                        std::string preconditioner = "default");
 
@@ -69,11 +66,11 @@ namespace dolfin
     ~EpetraKrylovSolver();
 
     /// Set the operator (matrix)
-    void set_operator(const boost::shared_ptr<const GenericLinearOperator> A);
+    void set_operator(std::shared_ptr<const GenericLinearOperator> A);
 
     /// Set the operator (matrix)
-    void set_operators(const boost::shared_ptr<const GenericLinearOperator> A,
-                       const boost::shared_ptr<const GenericLinearOperator> P);
+    void set_operators(std::shared_ptr<const GenericLinearOperator> A,
+                       std::shared_ptr<const GenericLinearOperator> P);
 
     /// Get the operator (matrix)
     const GenericLinearOperator& get_operator() const;
@@ -107,36 +104,30 @@ namespace dolfin
     /// Return informal string representation (pretty-print)
     std::string str(bool verbose) const;
 
-    /// Return pointer to Aztec00
-    boost::shared_ptr<AztecOO> aztecoo() const;
-
   private:
 
     // Solver type
     std::string _method;
 
     // Available solvers
-    static const std::map<std::string, int> _methods;
+    static const std::map<std::string, std::string> _methods;
 
     // Available solvers descriptions
     static const std::vector<std::pair<std::string, std::string> >
       _methods_descr;
 
     // Operator (the matrix)
-    boost::shared_ptr<const EpetraMatrix> _A;
+    std::shared_ptr<const EpetraMatrix> _matA;
 
     // Matrix used to construct the preconditoner
-    boost::shared_ptr<const EpetraMatrix> _P;
+    std::shared_ptr<const EpetraMatrix> _matP;
 
     // Preconditioner
-    boost::shared_ptr<TrilinosPreconditioner> _preconditioner;
-
-    // Underlying solver
-    boost::shared_ptr<AztecOO> solver;
+    std::shared_ptr<TrilinosPreconditioner> _preconditioner;
 
     // Residuals
-    double relative_residual;
-    double absolute_residual;
+    double _relative_residual;
+    double _absolute_residual;
 
   };
 

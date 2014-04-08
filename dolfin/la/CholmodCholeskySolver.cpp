@@ -46,8 +46,8 @@ CholmodCholeskySolver::CholmodCholeskySolver()
   parameters = default_parameters();
 }
 //-----------------------------------------------------------------------------
-CholmodCholeskySolver::CholmodCholeskySolver(boost::shared_ptr<const GenericLinearOperator> A)
-  : _A(A)
+CholmodCholeskySolver::CholmodCholeskySolver(std::shared_ptr<const GenericLinearOperator> A)
+  : _matA(A)
 {
   // Set parameter values
   parameters = default_parameters();
@@ -79,15 +79,15 @@ std::size_t CholmodCholeskySolver::solve(const GenericLinearOperator& A,
 std::size_t CholmodCholeskySolver::factorize(const GenericLinearOperator& A)
 {
   // Need matrix data
-  const GenericMatrix& _A = require_matrix(A);
+  const GenericMatrix& _matA = require_matrix(A);
 
   // Check dimensions and get number of non-zeroes
   boost::tuples::tuple<const std::size_t*,
                        const std::size_t*,
-                       const double*, int> data = _A.data();
-  const std::size_t M = _A.size(0);
+                       const double*, int> data = _matA.data();
+  const std::size_t M = _matA.size(0);
   const std::size_t nnz = boost::tuples::get<3>(data);
-  dolfin_assert(_A.size(0) == _A.size(1));
+  dolfin_assert(_matA.size(0) == _matA.size(1));
 
   dolfin_assert(nnz >= M);
 
@@ -143,7 +143,7 @@ std::size_t CholmodCholeskySolver::solve(const GenericLinearOperator& A,
 {
   warning("CHOLMOD must be installed to peform a Cholesky solve for the current backend. Attemping to use UMFPACK solver.");
 
-  boost::shared_ptr<const GenericLinearOperator> Atmp(&A, NoDeleter());
+  std::shared_ptr<const GenericLinearOperator> Atmp(&A, NoDeleter());
   UmfpackLUSolver solver(Atmp);
   return solver.solve(x, b);
 }

@@ -22,7 +22,7 @@
 // Last changed: 2012-03-15
 
 #include <iostream>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <dolfin/common/Timer.h>
 #include <dolfin/common/NoDeleter.h>
 #include "dolfin/common/utils.h"
@@ -49,14 +49,14 @@ BlockMatrix::~BlockMatrix()
 }
 //-----------------------------------------------------------------------------
 void BlockMatrix::set_block(std::size_t i, std::size_t j,
-                            boost::shared_ptr<GenericMatrix> m)
+                            std::shared_ptr<GenericMatrix> m)
 {
   dolfin_assert(i < matrices.shape()[0]);
   dolfin_assert(j < matrices.shape()[1]);
   matrices[i][j] = m;
 }
 //-----------------------------------------------------------------------------
-const boost::shared_ptr<GenericMatrix>
+std::shared_ptr<const GenericMatrix>
 BlockMatrix::get_block(std::size_t i, std::size_t j) const
 {
   dolfin_assert(i < matrices.shape()[0]);
@@ -64,7 +64,7 @@ BlockMatrix::get_block(std::size_t i, std::size_t j) const
   return matrices[i][j];
 }
 //-----------------------------------------------------------------------------
-boost::shared_ptr<GenericMatrix> BlockMatrix::get_block(std::size_t i,
+std::shared_ptr<GenericMatrix> BlockMatrix::get_block(std::size_t i,
                                                         std::size_t j)
 {
   dolfin_assert(i < matrices.shape()[0]);
@@ -131,8 +131,6 @@ void BlockMatrix::mult(const BlockVector& x, BlockVector& y,
 
   // Create tempory vector
   dolfin_assert(matrices[0][0]);
-  boost::shared_ptr<GenericVector>
-    z_tmp = matrices[0][0]->factory().create_vector();
 
   // Loop over block rows
   for(std::size_t row = 0; row < matrices.shape()[0]; row++)
@@ -140,18 +138,16 @@ void BlockMatrix::mult(const BlockVector& x, BlockVector& y,
     // RHS sub-vector
     GenericVector& _y = *(y.get_block(row));
 
-    const GenericMatrix& _A = *matrices[row][0];
+    const GenericMatrix& _matA = *matrices[row][0];
 
     // Resize y and zero
-    dolfin_assert(matrices[row][0]);
     if (_y.empty())
-      _A.init_vector(_y, 0);
+      _matA.init_vector(_y, 0);
     _y.zero();
 
-    // Resize z_tmp
-    _A.init_vector(*z_tmp, 0);
-
     // Loop over block columns
+    std::shared_ptr<GenericVector>
+      z_tmp = _matA.factory().create_vector();
     for(std::size_t col = 0; col < matrices.shape()[1]; ++col)
     {
       const GenericVector& _x = *(x.get_block(col));
@@ -162,7 +158,7 @@ void BlockMatrix::mult(const BlockVector& x, BlockVector& y,
   }
 }
 //-----------------------------------------------------------------------------
-boost::shared_ptr<GenericMatrix> BlockMatrix::schur_approximation(bool symmetry) const
+std::shared_ptr<GenericMatrix> BlockMatrix::schur_approximation(bool symmetry) const
 {
   // Currently returns [diag(C * diag(A)^-1 * B) - D]
   if (!symmetry)
@@ -178,7 +174,7 @@ boost::shared_ptr<GenericMatrix> BlockMatrix::schur_approximation(bool symmetry)
   GenericMatrix &C = *matrices[1][0];
   GenericMatrix &D = *matrices[1][1];
 
-  boost::shared_ptr<GenericMatrix> S(D.copy());
+  std::shared_ptr<GenericMatrix> S(D.copy());
 
   std::vector<std::size_t> cols_i;
   std::vector<double> vals_i;
