@@ -21,7 +21,7 @@ BRANCH=`git branch | grep '*' | cut -d' ' -f2 | sed s:/:.:g`
 # Set installation and build directory
 INSTALLDIR=/work/e319/shared/packages/dolfin-dev-$BRANCH
 BUILDDIR=$PWD/build.$BRANCH
-echo "On branch '$BRANCH'. Build and install in build.$BRANCH, $INSTALLDIR."
+echo "On branch '$BRANCH'. Build and install in $BUILDDIR, $INSTALLDIR."
 echo
 
 # Configure
@@ -32,8 +32,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$INSTALLDIR \
       -DDOLFIN_SKIP_BUILD_TESTS=ON \
       -DDOLFIN_AUTO_DETECT_MPI=false \
       -DDOLFIN_ENABLE_UNIT_TESTS=false \
-      -DDOLFIN_ENABLE_BENCHMARKS=true \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DDOLFIN_ENABLE_BENCHMARKS=false \
+      -DCMAKE_BUILD_TYPE=Developer \
       -DDOLFIN_DEPRECATION_ERROR=true \
       $CMAKE_EXTRA_ARGS \
       ..
