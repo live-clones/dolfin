@@ -352,7 +352,7 @@ if (DOLFIN_ENABLE_PETSC)
   # Enable PETSc SNES for PETSc verion > 3.3
   if (PETSC_VERSION VERSION_GREATER 3.3.100)
     set(PETSC_ENABLE_SNES TRUE)
-  #endif()
+  endif()
 
   # Enable TAO from PETSc for PETSc verion > 3.4
   if ((PETSC_VERSION VERSION_GREATER 3.4.100) OR (DOLFIN_ENABLE_TAO))
