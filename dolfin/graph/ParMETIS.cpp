@@ -102,7 +102,8 @@ void ParMETIS::compute_partition(const MPI_Comm mpi_comm,
   {
     dolfin_error("ParMETIS.cpp",
                  "compute mesh partitioning using ParMETIS",
-                 "partition model %s is unknown. Must be \"partition\", \"adactive_partition\" or \"refine\"", mode.c_str());
+                 "partition model %s is unknown. Must be \"partition\", \"adactive_partition\" or \"refine\"",
+                 mode.c_str());
   }
 
   MPI_Comm_free(&comm);
