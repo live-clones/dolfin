@@ -691,6 +691,9 @@ void DofMapBuilder::compute_node_ownership(boost::array<set, 3>& node_ownership,
   const MPI_Comm mpi_comm = mesh.mpi_comm();
 
   const std::size_t N = dofmap.global_dimension();
+
+  std::cout << "dofmap.global_dimension() = " << N << "\n";
+
   dolfin_assert(N % block_size == 0);
   const std::size_t num_nodes = N/block_size;
 
@@ -892,6 +895,10 @@ void DofMapBuilder::compute_node_ownership(boost::array<set, 3>& node_ownership,
   else
   {
     const std::size_t _owned_dim = owned_nodes.size();
+    const std::size_t sum_owned_dim = MPI::sum(mpi_comm, _owned_dim);
+
+    std::cout << MPI::rank(mpi_comm) << "] " << sum_owned_dim << "*" << block_size << " == " << N << "\n";
+
     dolfin_assert(block_size*MPI::sum(mpi_comm, _owned_dim)
                   == dofmap.global_dimension());
   }
