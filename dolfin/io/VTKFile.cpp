@@ -124,8 +124,6 @@ void VTKFile::operator<<(const MeshFunction<double>& meshfunction)
 //----------------------------------------------------------------------------
 void VTKFile::operator<<(const Function& u)
 {
-  u.update();
-
   dolfin_assert(u.function_space()->mesh());
   const Mesh& mesh = *u.function_space()->mesh();
 
@@ -141,7 +139,6 @@ void VTKFile::operator<<(const std::vector<const Function*>& us)
   std::vector<const GenericFunction*> usg;
   for (u = us.begin(); u != us.end(); u++)
   {
-    (*u)->update();
     usg.push_back(*u);
   }
 
@@ -191,8 +188,6 @@ void VTKFile::operator<<(const std::pair<const MeshFunction<bool>*, double> f)
 void VTKFile::operator<<(const std::pair<const Function*, double> u)
 {
   dolfin_assert(u.first);
-  u.first->update();
-
   dolfin_assert(u.first->function_space()->mesh());
   const Mesh& mesh = *u.first->function_space()->mesh();
 
@@ -208,7 +203,6 @@ void VTKFile::operator<<(const std::pair<const Function*, double> u)
 //  std::vector<const GenericFunction*> usg;
 //  for (u = us.first.begin(); u != us.first.end(); u++)
 //  {
-//    (*u)->update();
 //    usg.push_back(*u);
 //  }
 //
