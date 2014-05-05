@@ -61,18 +61,26 @@ bool dolfin::has_petsc()
 #endif
 }
 //-------------------------------------------------------------------------
-bool dolfin::has_slepc()
+bool dolfin::has_petsc_snes()
 {
-#ifdef HAS_SLEPC
+#ifdef ENABLE_PETSC_SNES
   return true;
 #else
   return false;
 #endif
 }
 //-------------------------------------------------------------------------
-bool dolfin::has_tao()
+bool dolfin::has_petsc_tao()
 {
-#ifdef HAS_TAO
+#ifdef ENABLE_PETSC_TAO
+  return true;
+#else
+  return false;
+#endif
+}//-------------------------------------------------------------------------
+bool dolfin::has_slepc()
+{
+#ifdef HAS_SLEPC
   return true;
 #else
   return false;
