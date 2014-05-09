@@ -451,11 +451,11 @@ void VTKFile::results_write(const std::vector<const GenericFunction*>& us, const
     // Check that function type can be handled
     if (rank == 1)
     {
-      if (!(dim == 2 || dim == 3))
+      if (!(dim == 1 || dim == 2 || dim == 3))
       {
         dolfin_error("VTKFile.cpp",
                      "write data to VTK file",
-                     "Don't know how to handle vector function with dimension other than 2 or 3");
+                     "Don't know how to handle vector function with dimension other than 1, 2 or 3");
       }
     }
     else if (rank == 2)
@@ -516,11 +516,11 @@ void VTKFile::results_write(const std::vector<const GenericFunction*>& us, const
     // Check that function type can be handled
     if (rank == 1)
     {
-      if (!(dim == 2 || dim == 3))
+      if (!(dim == 1 || dim == 2 || dim == 3))
       {
         dolfin_error("VTKFile.cpp",
                      "write data to VTK file",
-                     "Don't know how to handle vector function with dimension other than 2 or 3");
+                     "Don't know how to handle vector function with dimension other than 1, 2 or 3");
       }
     }
     else if (rank == 2)
@@ -632,12 +632,13 @@ void VTKFile::write_point_data(const GenericFunction& u, const Mesh& mesh,
     value << std::setprecision(16);
     for (VertexIterator vertex(mesh); !vertex.end(); ++vertex)
     {
-      if (rank == 1 && dim == 2)
+      if (rank == 1 && dim < 3)
       {
         // Append 0.0 to 2D vectors to make them 3D
-        for(std::size_t i = 0; i < 2; i++)
+        for(std::size_t i = 0; i < dim; i++)
           value << values[vertex->index() + i*num_vertices] << " ";
-        value << 0.0 << "  ";
+        for(std::size_t i = dim; i < 3; i++)
+          value << 0.0 << "  ";
       }
       else if (rank == 2 && dim == 4)
       {
@@ -671,8 +672,8 @@ void VTKFile::write_point_data(const GenericFunction& u, const Mesh& mesh,
     std::size_t padding_per_point = 0;
     std::vector<std::size_t> indicies(dim, 0);
     std::iota(indicies.begin(), indicies.end(), 0);
-    if (rank == 1 && dim == 2)
-      padding_per_point = 1;
+    if (rank == 1 && dim < 3)
+      padding_per_point = 3-dim;
     else if (rank == 2 && dim == 4)
     {
       padding_per_point = 5;
@@ -861,12 +862,13 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
     value << std::setprecision(16);
     for (std::size_t index = 0; index < lsize; index++)
     {
-      if (rank == 1 && dim == 2)
+      if (rank == 1 && dim < 3)
       {
         // Append 0.0 to 2D vectors to make them 3D
-        for(std::size_t i = 0; i < 2; i++)
+        for(std::size_t i = 0; i < dim; i++)
           value << values[i][index] << " ";
-        value << 0.0 << "  ";
+        for(std::size_t i = dim; i < 3; i++)
+          value << 0.0 << "  ";
       }
       else if (rank == 2 && dim == 4)
       {
@@ -900,8 +902,8 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
     std::size_t padding_per_point = 0;
     std::vector<std::size_t> indicies(dim, 0);
     std::iota(indicies.begin(), indicies.end(), 0);
-    if (rank == 1 && dim == 2)
-      padding_per_point = 1;
+    if (rank == 1 && dim < 3)
+      padding_per_point = 3-dim;
     else if (rank == 2 && dim == 4)
     {
       padding_per_point = 5;
