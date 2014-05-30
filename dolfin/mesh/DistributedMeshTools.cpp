@@ -976,15 +976,17 @@ DistributedMeshTools::compute_num_global_entities(const MPI_Comm mpi_comm,
   std::vector<std::size_t> num_entities_to_number;
   MPI::all_gather(mpi_comm, num_local_entities, num_entities_to_number);
 
+  const std::size_t zero = 0;
+
   // Compute offset
   const std::size_t offset
     = std::accumulate(num_entities_to_number.begin(),
-                      num_entities_to_number.begin() + process_number, 0);
+                      num_entities_to_number.begin() + process_number, zero);
 
   // Compute number of global entities
   const std::size_t num_global = std::accumulate(num_entities_to_number.begin(),
                                                  num_entities_to_number.end(),
-                                                 0);
+                                                 zero);
 
   return std::make_pair(num_global, offset);
 }
