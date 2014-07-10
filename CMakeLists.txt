@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(DOLFIN)
 set(DOLFIN_VERSION_MAJOR "1")
-set(DOLFIN_VERSION_MINOR "3")
+set(DOLFIN_VERSION_MINOR "4")
 set(DOLFIN_VERSION_MICRO "0+")
 set(DOLFIN_VERSION "${DOLFIN_VERSION_MAJOR}.${DOLFIN_VERSION_MINOR}.${DOLFIN_VERSION_MICRO}")
 
@@ -36,6 +36,9 @@ endif()
 if (COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
   cmake_policy(SET CMP0004 OLD)
+  if(POLICY CMP0042)
+    cmake_policy(SET CMP0042 NEW)
+  endif()
 endif()
 
 # Set location of our FindFoo.cmake modules
@@ -286,10 +289,10 @@ set(DOLFIN_BOOST_COMPONENTS filesystem program_options system thread iostreams)
 find_package(Boost COMPONENTS ${DOLFIN_BOOST_COMPONENTS} REQUIRED)
 
 # Check for required package UFC
-find_package(UFC 1.3.0 QUIET HINTS ${UFC_DIR})
+find_package(UFC 1.4.0 QUIET HINTS ${UFC_DIR})
 if (NOT UFC_FOUND)
   message(FATAL_ERROR "Could not find a configuration file for package UFC that is "
-    "compatible with requested version 1.3.0.\n"
+    "compatible with requested version 1.4.0.\n"
     "Set UFC_DIR to the directory containing a CMake configuration file for UFC.")
 else()
   message(STATUS "UFC version: ${UFC_VERSION_STRING}")
@@ -546,7 +549,7 @@ endif()
 
 # Check for VTK
 if (DOLFIN_ENABLE_VTK)
-  find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR})
+  find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} NO_MODULE)
   set(VTK_VERSION "${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
   if (VTK_FOUND)
     if ("${VTK_VERSION}" VERSION_LESS "5.2")
@@ -973,10 +976,10 @@ if (CPPUNIT_FOUND)
   # Add test but do not add to default target
   add_subdirectory(test EXCLUDE_FROM_ALL)
 
-  # Add target "test" for building tests
-  add_custom_target(test
-    COMMAND ${MAKE_PROGRAM}
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test")
+  # Add target "tests" for building tests
+  add_custom_target(tests
+                    COMMAND ${MAKE_PROGRAM}
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test")
 endif()
 
 if (DOLFIN_ENABLE_TESTING)

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011 Anders Logg
+// Copyright (C) 2007-2014 Anders Logg
 //
 // This file is part of DOLFIN.
 //
@@ -19,10 +19,7 @@
 // Modified by Ola Skavhaug 2007-2009
 // Modified by Kent-Andre Mardal 2008
 // Modified by Joachim B Haga 2012
-// Modified by Martin Alnaes 2013
-//
-// First added:  2007-01-17
-// Last changed: 2013-09-19
+// Modified by Martin Alnaes 2013-2014
 
 
 #include <dolfin/log/dolfin_log.h>
@@ -88,7 +85,7 @@ void Assembler::assemble(GenericTensor& A, const Form& a)
   UFC ufc(a);
 
   // Update off-process coefficients
-  const std::vector<std::shared_ptr<const GenericFunction> >
+  const std::vector<std::shared_ptr<const GenericFunction>>
     coefficients = a.coefficients();
 
   // Initialize global tensor
@@ -311,7 +308,7 @@ void Assembler::assemble_interior_facets(GenericTensor& A, const Form& a,
     dofmaps.push_back(a.function_space(i)->dofmap().get());
 
   // Vector to hold dofs for cells, and a vector holding pointers to same
-  std::vector<std::vector<dolfin::la_index> > macro_dofs(form_rank);
+  std::vector<std::vector<dolfin::la_index>> macro_dofs(form_rank);
   std::vector<const std::vector<dolfin::la_index>* > macro_dof_ptrs(form_rank);
   for (std::size_t i = 0; i < form_rank; i++)
     macro_dof_ptrs[i] = &macro_dofs[i];
@@ -423,6 +420,6 @@ void Assembler::add_to_global_tensor(GenericTensor& A,
                                      std::vector<double>& cell_tensor,
                                      std::vector<const std::vector<dolfin::la_index>* >& dofs)
 {
-  A.add(&cell_tensor[0], dofs);
+  A.add_local(&cell_tensor[0], dofs);
 }
 //-----------------------------------------------------------------------------
