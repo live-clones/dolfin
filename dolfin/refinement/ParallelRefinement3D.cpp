@@ -71,23 +71,15 @@ void ParallelRefinement3D::refine(Mesh& new_mesh, const Mesh& mesh,
   ParallelRefinement p(mesh);
 
   // Mark all edges, and create new vertices
-  if (MPI::rank(mesh.mpi_comm())==0)
-    std::cerr << "mark all\n";
   p.mark_all();
-  if (MPI::rank(mesh.mpi_comm())==0)
-    std::cerr << "create new vertices\n";
   p.create_new_vertices();
 
   // Generate new topology
 
-  if (MPI::rank(mesh.mpi_comm())==0)
-    std::cerr << "generate new topology\n";
   for (CellIterator cell(mesh); !cell.end(); ++cell)
     eightfold_division(*cell, p);
 
   t0.stop();
-  if (MPI::rank(mesh.mpi_comm())==0)
-    std::cerr << "partition\n";
   p.partition(new_mesh, redistribute);
 }
 //-----------------------------------------------------------------------------
