@@ -259,6 +259,7 @@ DofMapBuilder::build_sub_map_view(DofMap& sub_dofmap,
                                   const std::vector<std::size_t>& component,
                                   const Mesh& mesh)
 {
+  Timer t0("YY Build submap view");
   // Note: Ownership range is set to zero since dofmap is a view
   dolfin_assert(!component.empty());
 
@@ -349,6 +350,7 @@ std::size_t DofMapBuilder::build_constrained_vertex_indices(
   std::pair<unsigned int, unsigned int>>& slave_to_master_vertices,
   std::vector<std::size_t>& modified_vertex_indices_global)
 {
+  Timer t0("YY Build constrained vertex indices");
   // MPI communicator
   const MPI_Comm mpi_comm = mesh.mpi_comm();
 
@@ -542,6 +544,7 @@ void DofMapBuilder::build_local_ufc_dofmap(
   const ufc::dofmap& ufc_dofmap,
   const Mesh& mesh)
 {
+  Timer t0("YY Build local ufc dofmap");
   // Topological dimension
   const std::size_t D = mesh.topology().dim();
 
@@ -603,6 +606,8 @@ DofMapBuilder::compute_node_ownership(
   const std::vector<std::size_t>& local_to_global,
   const Mesh& mesh)
 {
+  Timer t0("YY Compute node ownership");
+
   log(TRACE, "Determining node ownership for parallel dof map");
 
   // Get number of nodes
@@ -749,6 +754,8 @@ void DofMapBuilder::compute_global_dofs(
   const std::shared_ptr<const ufc::dofmap> ufc_dofmap,
   const std::vector<std::size_t>& num_mesh_entities_local)
 {
+  Timer t0("YY Compute global dofs");
+
   dolfin_assert(ufc_dofmap);
 
   if (ufc_dofmap->num_sub_dofmaps() == 0)
@@ -818,6 +825,7 @@ DofMapBuilder::extract_ufc_sub_dofmap(
   const std::vector<std::size_t>& component,
   const std::vector<std::size_t>& num_mesh_entities)
 {
+  Timer t0("YY Extract ufc subdofmap");
   // Check if there are any sub systems
   if (ufc_dofmap.num_sub_dofmaps() == 0)
   {
@@ -883,6 +891,7 @@ DofMapBuilder::extract_ufc_sub_dofmap(
 //-----------------------------------------------------------------------------
 std::size_t DofMapBuilder::compute_blocksize(const ufc::dofmap& ufc_dofmap)
 {
+  Timer t0("YY Compute blocksize");
   bool has_block_structure = false;
   if (ufc_dofmap.num_sub_dofmaps() > 1)
   {
@@ -1240,6 +1249,7 @@ void DofMapBuilder::compute_constrained_mesh_indices(
   const Mesh& mesh,
   const SubDomain& constrained_domain)
 {
+  Timer t0("YY Compute constrained mesh indices");
   // Topological dimension
   const std::size_t D = mesh.topology().dim();
   dolfin_assert(needs_mesh_entities.size() == (D + 1));
@@ -1305,6 +1315,7 @@ DofMapBuilder::compute_boundary_nodes(std::vector<int>& boundary_nodes,
                                       const Mesh& mesh,
                                       const std::size_t seed)
 {
+  Timer t0("YY Compute boundary nodes");
   // Initialise mesh
   const std::size_t D = mesh.topology().dim();
   mesh.init(D - 1);
@@ -1358,6 +1369,8 @@ void DofMapBuilder::compute_node_reodering(
   const std::set<std::size_t>& global_nodes,
   MPI_Comm mpi_comm)
 {
+  Timer t0("YY Compute node reordering");
+
   // Count number of locally owned nodes
   std::size_t owned_local_size = 0;
   std::size_t unowned_local_size = 0;
@@ -1592,6 +1605,7 @@ void DofMapBuilder::build_dofmap(
   const std::vector<int>& old_to_new_node_local,
   const std::size_t block_size)
 {
+  Timer t0("YY Build dofmap");
   // Build dofmap looping over nodes
   dofmap.resize(node_dofmap.size());
   for (std::size_t i = 0; i < node_dofmap.size(); ++i)
@@ -1615,6 +1629,7 @@ void DofMapBuilder::build_dofmap(
 void DofMapBuilder::get_cell_data_local(ufc::cell& ufc_cell,
                                         const Cell& cell)
 {
+  Timer t0("YY Get cell data local");
   const std::size_t D = cell.mesh().topology().dim();
   ufc_cell.entity_indices.resize(D + 1);
 
@@ -1638,6 +1653,7 @@ void DofMapBuilder::get_cell_data_global_constrained(
   ufc::cell& ufc_cell, const Cell& cell,
   const std::vector<std::vector<std::size_t>>& global_entity_indices)
 {
+  Timer t0("YY Get cell data global constrained");
   const std::size_t D = cell.mesh().topology().dim();
   ufc_cell.entity_indices.resize(D + 1);
 
@@ -1663,6 +1679,7 @@ std::vector<std::size_t>
 DofMapBuilder::compute_num_mesh_entities_local(const Mesh& mesh,
                                                const ufc::dofmap& ufc_dofmap)
 {
+  Timer t0("YY Compute num mesh ent local");
   const std::size_t D = mesh.topology().dim();
   std::vector<std::size_t> num_mesh_entities_local(D + 1);
   for (std::size_t d = 0; d <= D; ++d)
