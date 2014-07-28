@@ -162,9 +162,10 @@ void DofMapBuilder::build(DofMap& dofmap, const Mesh& mesh,
     // ghost nodes are marked as -3
     std::vector<int> shared_nodes;
     compute_shared_nodes(shared_nodes, node_graph0,
-                         node_local_to_global0.size(), *ufc_node_dofmap,
-                         mesh, MPI::rank(mesh.mpi_comm()));
-    /*
+                           node_local_to_global0.size(), 
+                           *ufc_node_dofmap, mesh);
+
+ /*
     int tmp_num_owned_nodes = 0;
     for (std::size_t i = 0; i < shared_nodes.size(); ++i)
     {
@@ -243,7 +244,7 @@ void DofMapBuilder::build(DofMap& dofmap, const Mesh& mesh,
     // (d) Old local node index to new local node index
     std::vector<int> node_old_to_new_local;
     std::vector<std::size_t> node_local_to_global1;
-    compute_node_reodering(dofmap._local_to_global_unowned,
+    compute_node_reordering(dofmap._local_to_global_unowned,
                            dofmap._off_process_owner,
                            node_local_to_global1,
                            node_old_to_new_local,
@@ -676,9 +677,17 @@ DofMapBuilder::compute_node_ownership(
   node_ownership.resize(num_nodes_local);
   std::fill(node_ownership.begin(), node_ownership.end(), 1);
 
-  // Communication buffer
-  std::vector<std::size_t> send_buffer;
+  // Communication buffers
+  const MPI_Comm mpi_comm = mesh.mpi_comm();
+  const std::size_t num_processes = MPI::size(mpi_comm);
+  const std::size_t process_number = MPI::rank(mpi_comm);
+  std::vector<std::vector<std::size_t> > send_buffer(num_processes);
+  std::vector<std::vector<std::size_t> > recv_buffer(num_processes);
 
+  // FIXME: max index value already known?
+  const std::size_t max_index = MPI::max(mpi_comm,
+              *std::max_element(local_to_global.begin(), local_to_global.end())) + 1;
+  
   // Loop over nodes and buffer nodes on process boundaries
   std::vector<bool> boundary_node(num_nodes_local, false);
   for (std::size_t i = 0; i < num_nodes_local; ++i)
@@ -691,13 +700,14 @@ DofMapBuilder::compute_node_ownership(
       node_ownership[i] = 0;
       boundary_node[i] = true;
 
-      // Buffer global index and 'vote'
-      send_buffer.push_back(local_to_global[i]);
-      send_buffer.push_back(shared_nodes[i]);
-
-      // Add to (global node)-to-(local node) map
-      global_to_local.insert(std::make_pair(local_to_global[i], i));
-    }
+      // Send global index
+      const std::size_t global_index = local_to_global[i];
+      const std::size_t dest = MPI::index_owner(mpi_comm,
+                                                global_index,
+                                                max_index);
+      send_buffer[dest].push_back(global_index);
+      global_to_local.insert(std::make_pair(global_index, i));
+  }
     else if (shared_nodes[i] == -2)
     {
       // Owned, but will need to send index to other processes
@@ -719,65 +729,68 @@ DofMapBuilder::compute_node_ownership(
       node_ownership[i] = 1;
   }
 
-  // FIXME: The below algorithm can be improved (made more scalable)
-  //        by distributing (dof, process) pairs to 'owner' range owner,
-  //        then letting each process get the sharing process list. This
-  //        will avoid interleaving communication and computation.
+  MPI::all_to_all(mpi_comm, send_buffer, recv_buffer);
 
-  // Decide ownership of shared nodes
-  // Get MPI communicator
-  const MPI_Comm mpi_comm = mesh.mpi_comm();
-  const std::size_t num_processes = MPI::size(mpi_comm);
-  const std::size_t process_number = MPI::rank(mpi_comm);
-  std::vector<std::size_t> recv_buffer;
-  for (std::size_t k = 1; k < num_processes; ++k)
-  {
-    const std::size_t src
-      = (process_number - k + num_processes) % num_processes;
-    const std::size_t dest = (process_number + k) % num_processes;
-    MPI::send_recv(mpi_comm, send_buffer, dest, recv_buffer, src);
-    for (std::size_t i = 0; i < recv_buffer.size(); i += 2)
+  // Map from global index to sharing processes
+  std::map<std::size_t, std::vector<unsigned int> > global_to_procs;
+  for (unsigned int i = 0; i != num_processes; ++i)
+    for (auto q = recv_buffer[i].begin(); q != recv_buffer[i].end(); ++q)
     {
-      const std::size_t received_node_global = recv_buffer[i];
-      const int received_vote = recv_buffer[i + 1];
-
-      // Get (global, local) node pair. If we have this node, process
-      // for ownership
-      auto it = global_to_local.find(received_node_global);
-      if (it != global_to_local.end())
-      {
-        // Get local node index
-        const int received_node_local = it->second;
-
-        // If received node is shared, decide ownership
-        if (boundary_node[received_node_local] and node_ownership[received_node_local] == 0)
-        {
-          // Let process with lower 'vote' take ownership
-          if (received_vote < shared_nodes[received_node_local])
-          {
-            node_ownership[received_node_local] = -1;
-          }
-          else if (received_vote == shared_nodes[received_node_local]
-                   && process_number > src)
-          {
-            // If votes are equal, let lower rank process take ownership
-            node_ownership[received_node_local] = -1;
-          }
-          else
-            node_ownership[received_node_local] = 0;
-
-          // Store the process sharing of the node
-          shared_node_to_processes[received_node_local].push_back(src);
-        }
-        else if (node_ownership[received_node_local] == -1)
-        {
-          // FIXME: check above 'else if'
-          // Store the process sharing of the node
-          shared_node_to_processes[received_node_local].push_back(src);
-        }
-      }
+      std::pair<std::map<std::size_t, std::vector<unsigned int> >::iterator,
+                bool> map_ins 
+        = global_to_procs.insert(std::make_pair(*q, 
+                                                std::vector<unsigned int>(1, i)));
+      if (!map_ins.second)
+        map_ins.first->second.push_back(i);
     }
-  }
+
+  const std::size_t seed = process_number;
+  // Randomise process order. First process will be owner
+  for (auto p = global_to_procs.begin(); p != global_to_procs.end(); ++p)
+    std::shuffle(p->second.begin(), p->second.end(),
+                 std::default_random_engine(seed));
+  //    std::sort(p->second.begin(), p->second.end());
+
+  // Send response back to originators in same order
+  std::vector<std::vector<std::size_t> > send_response(num_processes);
+  for (unsigned int i = 0; i != num_processes; ++i)
+    for (auto q = recv_buffer[i].begin(); q != recv_buffer[i].end(); ++q)
+    {
+      std::vector<unsigned int>& gprocs = global_to_procs[*q];
+      send_response[i].push_back(gprocs.size());
+      send_response[i].insert(send_response[i].end(), gprocs.begin(), gprocs.end());
+    }
+  
+  MPI::all_to_all(mpi_comm, send_response, recv_buffer);
+  // [n_sharing, owner, others]
+ 
+  for (unsigned int i = 0; i != num_processes; ++i)
+  {
+    auto q = recv_buffer[i].begin();
+    for (auto p = send_buffer[i].begin(); p != send_buffer[i].end(); ++p)
+    {
+      const unsigned int num_sharing = *q;
+      if (num_sharing > 1)
+      {
+        const std::size_t global_index = *p;
+        const std::size_t owner = *(q + 1);
+        std::set<std::size_t> sharing_procs(q + 1, q + 1 + num_sharing);
+        sharing_procs.erase(process_number);
+
+       auto it = global_to_local.find(global_index);
+        dolfin_assert(it != global_to_local.end());
+        const int received_node_local = it->second;
+        if (owner == process_number)
+          node_ownership[received_node_local] = 0;
+        else
+          node_ownership[received_node_local] = -1;
+        shared_node_to_processes[received_node_local] 
+          = std::vector<int>(sharing_procs.begin(), sharing_procs.end());
+      }
+
+      q += num_sharing + 1;      
+    }
+  }  
 
   // Build set of neighbouring processes
   neighbours.clear();
@@ -1408,11 +1421,10 @@ void DofMapBuilder::compute_constrained_mesh_indices(
 //-----------------------------------------------------------------------------
 void
 DofMapBuilder::compute_shared_nodes(std::vector<int>& shared_nodes,
-                                    const std::vector<std::vector<la_index>>& node_dofmap,
-                                    const std::size_t num_nodes_local,
-                                    const ufc::dofmap& ufc_dofmap,
-                                    const Mesh& mesh,
-                                    const std::size_t seed)
+                                  const std::vector<std::vector<la_index>>& node_dofmap,
+                                  const std::size_t num_nodes_local,
+                                  const ufc::dofmap& ufc_dofmap,
+                                  const Mesh& mesh)
 {
   Timer t0("YY Compute boundary nodes");
   // Initialise mesh
@@ -1446,11 +1458,6 @@ DofMapBuilder::compute_shared_nodes(std::vector<int>& shared_nodes,
     }
   }
 
-  // Create a random number generator for ownership 'voting' for nodes
-  // that are shared by processes
-  std::mt19937 engine(seed);
-  std::uniform_int_distribution<> distribution(0,
-                                               std::numeric_limits<int>::max());
 
   // Mark nodes on inter-process boundary
   std::vector<std::size_t> facet_nodes(ufc_dofmap.num_facet_dofs());
@@ -1493,17 +1500,17 @@ DofMapBuilder::compute_shared_nodes(std::vector<int>& shared_nodes,
     {
       for (std::size_t i = 0; i < facet_nodes.size(); ++i)
       {
-        // Get facet node local index and assign votes (positive integer)
+        // Get facet node local index and assign positive integer
         size_t facet_node_local = cell_nodes[facet_nodes[i]];
         if (shared_nodes[facet_node_local] < 0)
-          shared_nodes[facet_node_local] = distribution(engine);
+          shared_nodes[facet_node_local] = 1;
       }
     }
 
   }
 }
 //-----------------------------------------------------------------------------
-void DofMapBuilder::compute_node_reodering(
+void DofMapBuilder::compute_node_reordering(
   std::vector<std::size_t>& local_to_global_unowned,
   std::vector<int>& off_process_owner,
   std::vector<std::size_t>& local_to_global,
@@ -1683,14 +1690,6 @@ void DofMapBuilder::compute_node_reodering(
     if (node_ownership[old_node_index_local] == 0)
     {
       // Buffer old and new global indices to send
-      /*
-      if (MPI::rank(mpi_comm) == 0)
-      {
-        std::cout << "buffer: " << old_local_to_global[old_node_index_local]
-                  << ", " << process_offset + node_remap[counter]
-                  << std::endl;
-      }
-      */
       send_buffer.push_back(old_local_to_global[old_node_index_local]);
       send_buffer.push_back(process_offset + node_remap[counter]);
     }
