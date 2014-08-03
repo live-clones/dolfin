@@ -372,7 +372,7 @@ PetscErrorCode PETScSNESSolver::FormFunction(SNES snes, Vec x, Vec f, void* ctx)
   return 0;
 }
 //-----------------------------------------------------------------------------
-#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 4
+#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 4
 PetscErrorCode PETScSNESSolver::FormJacobian(SNES snes, Vec x, Mat* A, Mat* P,
                                              MatStructure* flag, void* ctx)
 {
@@ -587,7 +587,7 @@ void PETScSNESSolver::set_bounds(GenericVector& x)
       VecDuplicate(_x.vec(), &lb);
       if (sign == "nonnegative")
       {
-        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 4
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 4
         VecSet(ub, SNES_VI_INF);
         #else
         VecSet(ub, PETSC_INFINITY);
@@ -599,7 +599,7 @@ void PETScSNESSolver::set_bounds(GenericVector& x)
       {
         VecSet(ub, 0.0);
 
-        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 4
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 4
         VecSet(lb, SNES_VI_INF);
         #else
         VecSet(lb, PETSC_INFINITY);

@@ -362,6 +362,8 @@ endif()
 if (DOLFIN_ENABLE_PETSC)
   find_package(PETSc 3.3)
 
+  set (PETSC_VERSION 3.5.1)
+
   if (PETSC_FOUND AND DOLFIN_ENABLE_SLEPC)
     find_package(SLEPc 3.3)
   endif()
@@ -380,14 +382,14 @@ if (DOLFIN_ENABLE_PETSC)
   endif()
 
   # Enable PETSc SNES for PETSc verion > 3.3
-#  if (PETSC_VERSION VERSION_GREATER 3.3.100)
+  if (PETSC_VERSION VERSION_GREATER 3.3.100)
   set(PETSC_ENABLE_SNES TRUE)
-#  endif()
+  endif()
 
   # Enable TAO from PETSc for PETSc verion > 3.4
-#  if ((PETSC_VERSION VERSION_GREATER 3.4.100) OR (DOLFIN_ENABLE_TAO))
+  if ((PETSC_VERSION VERSION_GREATER 3.4.100) OR (DOLFIN_ENABLE_TAO))
     set(PETSC_ENABLE_TAO TRUE)
-#  endif()
+  endif()
 
 endif()
 
