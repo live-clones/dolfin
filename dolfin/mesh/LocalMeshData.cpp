@@ -223,7 +223,7 @@ void LocalMeshData::broadcast_mesh_data(const MPI_Comm mpi_comm)
     MPI::scatter(mpi_comm, send_values, vertex_indices);
   }
 
-  //  dolfin_debug("check");
+  dolfin_debug("check");
   // Broadcast cell vertices
   {
     std::vector<std::vector<std::size_t> > send_values(num_processes);
@@ -250,7 +250,7 @@ void LocalMeshData::broadcast_mesh_data(const MPI_Comm mpi_comm)
 //-----------------------------------------------------------------------------
 void LocalMeshData::receive_mesh_data(const MPI_Comm mpi_comm)
 {
-  //  dolfin_debug("check");
+  dolfin_debug("check");
   // Receive simple scalar data
   {
     std::vector<std::size_t> values;
@@ -263,7 +263,7 @@ void LocalMeshData::receive_mesh_data(const MPI_Comm mpi_comm)
     num_vertices_per_cell = values[4];
   }
 
-  //  dolfin_debug("check");
+  dolfin_debug("check");
   // Receive coordinates for vertices
   {
     std::vector<std::vector<double> > send_values;
@@ -272,14 +272,14 @@ void LocalMeshData::receive_mesh_data(const MPI_Comm mpi_comm)
     unpack_vertex_coordinates(values);
   }
 
-  //  dolfin_debug("check");
+  dolfin_debug("check");
   // Receive global vertex indices
   {
     std::vector<std::vector<std::size_t> > send_values;
     MPI::scatter(mpi_comm, send_values, vertex_indices);
   }
 
-  //  dolfin_debug("check");
+  dolfin_debug("check");
   /// Receive coordinates for vertices
   {
     std::vector<std::vector<std::size_t> > send_values;

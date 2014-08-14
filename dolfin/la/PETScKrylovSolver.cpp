@@ -24,7 +24,6 @@
 
 #ifdef HAS_PETSC
 
-
 #include <petsclog.h>
 
 #include <dolfin/common/MPI.h>
@@ -524,7 +523,7 @@ void PETScKrylovSolver::set_petsc_operators()
   PetscErrorCode ierr;
 
   // Get parameter
-  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 4
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 4
   const std::string mat_structure = parameters("preconditioner")["structure"];
 
   // Set operators with appropriate option

@@ -172,13 +172,14 @@ namespace dolfin
       const std::vector<std::vector<la_index>>& node_dofmap,
       const std::size_t num_nodes_local,
       const ufc::dofmap& ufc_dofmap,
-      const Mesh& mesh);
+      const Mesh& mesh,
+      const std::size_t seed);
 
-    static void compute_node_reordering(
+    static void compute_node_reodering(
       std::vector<std::size_t>& local_to_global_unowned,
       std::vector<int>& off_process_owner,
+      std::vector<std::size_t>& local_to_global,
       std::vector<int>& old_to_new_local,
-      const std::unordered_map<int, std::vector<int>>& node_to_sharing_processes,
       const std::vector<std::size_t>& old_local_to_global,
       const std::vector<std::vector<la_index>>& node_dofmap,
       const std::vector<short int>& node_ownership,
