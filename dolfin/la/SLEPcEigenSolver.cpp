@@ -49,7 +49,8 @@ SLEPcEigenSolver::SLEPcEigenSolver(const PETScMatrix& A)
 }
 //-----------------------------------------------------------------------------
 SLEPcEigenSolver::SLEPcEigenSolver(const PETScMatrix& A, const PETScMatrix& B)
-  : _matA(reference_to_no_delete_pointer(A)), _matB(reference_to_no_delete_pointer(B))
+  : _matA(reference_to_no_delete_pointer(A)),
+    _matB(reference_to_no_delete_pointer(B))
 {
   dolfin_assert(A.size(0) == A.size(1));
   dolfin_assert(B.size(0) == A.size(0));
@@ -110,7 +111,8 @@ void SLEPcEigenSolver::solve(std::size_t n)
   dolfin_assert(_matA->size(0) == _matA->size(1));
   if (_matB)
   {
-    dolfin_assert(_matB->size(0) == _matB->size(1) && _matB->size(0) == _matA->size(0));
+    dolfin_assert(_matB->size(0) == _matB->size(1)
+                  && _matB->size(0) == _matA->size(0));
     EPSSetOperators(eps, _matA->mat(), _matB->mat());
   }
   else
