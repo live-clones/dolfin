@@ -18,11 +18,12 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 #
 # First added:  2014-02-16
-# Last changed: 2014-02-24
+# Last changed: 2014-05-30
 
 import unittest
 import numpy
 from dolfin import *
+from six.moves import xrange as range
 
 def triangulation_to_mesh_2d(triangulation):
     editor = MeshEditor()
@@ -32,9 +33,9 @@ def triangulation_to_mesh_2d(triangulation):
     num_vertices = len(triangulation) / 2
     editor.init_cells(num_cells)
     editor.init_vertices(num_vertices)
-    for i in xrange(num_cells):
+    for i in range(num_cells):
         editor.add_cell(i, 3*i, 3*i + 1, 3*i + 2)
-    for i in xrange(num_vertices):
+    for i in range(num_vertices):
         editor.add_vertex(i, triangulation[2*i], triangulation[2*i + 1])
     editor.close()
     return mesh
@@ -47,9 +48,9 @@ def triangulation_to_mesh_2d_3d(triangulation):
     num_vertices = len(triangulation)/3
     editor.init_cells(num_cells)
     editor.init_vertices(num_vertices)
-    for i in xrange(num_cells):
+    for i in range(num_cells):
         editor.add_cell(i, 3*i, 3*i+1, 3*i+2)
-    for i in xrange(num_vertices):
+    for i in range(num_vertices):
         editor.add_vertex(i, triangulation[3*i], triangulation[3*i+1], triangulation[3*i+2])
     editor.close()
     return mesh
@@ -62,18 +63,17 @@ def triangulation_to_mesh_3d(triangulation):
     num_vertices = len(triangulation)/3
     editor.init_cells(num_cells)
     editor.init_vertices(num_vertices)
-    for i in xrange(num_cells):
+    for i in range(num_cells):
         editor.add_cell(i, 4*i, 4*i+1, 4*i+2, 4*i+3)
-    for i in xrange(num_vertices):
+    for i in range(num_vertices):
         editor.add_vertex(i, triangulation[3*i], triangulation[3*i+1], triangulation[3*i+2])
     editor.close()
     return mesh
 
+@unittest.skipIf(MPI.size(mpi_comm_world()) > 1, "Skipping unit test(s) not working in parallel")
 class TriangulateTest(unittest.TestCase):
 
     def test_triangulate_intersection_2d(self):
-
-        if MPI.size(mpi_comm_world()) > 1: return
 
         # Create two meshes of the unit square
         mesh_0 = UnitSquareMesh(1, 1)
@@ -81,7 +81,7 @@ class TriangulateTest(unittest.TestCase):
 
         # Translate second mesh randomly
         #dx = Point(numpy.random.rand(),numpy.random.rand())
-        dx = Point(0.278498, 0.546881, 0.957506)
+        dx = Point(0.278498, 0.546881)
         mesh_1.translate(dx)
 
         exactvolume = (1 - abs(dx[0]))*(1 - abs(dx[1]))
@@ -103,8 +103,6 @@ class TriangulateTest(unittest.TestCase):
 
         # Note: this test will fail if the triangle mesh is aligned
         # with the tetrahedron mesh
-
-        if MPI.size(mpi_comm_world()) > 1: return
 
         # Create a unit cube
         mesh_0 = UnitCubeMesh(1,1,1)
@@ -148,8 +146,6 @@ class TriangulateTest(unittest.TestCase):
         self.assertAlmostEqual(volume, exactvolume, 7, errorstring)
 
     def test_triangulate_intersection_3d(self):
-
-        if MPI.size(mpi_comm_world()) > 1: return
 
         # Create two meshes of the unit cube
         mesh_0 = UnitCubeMesh(1, 1, 1)

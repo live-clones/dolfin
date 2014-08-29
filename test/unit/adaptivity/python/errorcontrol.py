@@ -18,10 +18,10 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 #
 # First added:  2011-04-05
-# Last changed: 2011-06-17
+# Last changed: 2014-05-28
 
+from __future__ import print_function
 import unittest
-#from unittest import skipIf # Awaiting Python 2.7
 from ufl.algorithms import replace
 
 from dolfin import *
@@ -38,8 +38,7 @@ def reconstruct_refined_form(form, functions, mesh):
     newform = replace_integral_domains(replace(form, function_mapping), domain)
     return newform, function_mapping
 
-
-#@skipIf("Skipping error control test in parallel", MPI.size() > 1)
+@unittest.skipIf(MPI.size(mpi_comm_world()) > 1, "Skipping unit test(s) not working in parallel")
 class ErrorControlTest(unittest.TestCase):
 
     def setUp(self):
@@ -85,9 +84,6 @@ class ErrorControlTest(unittest.TestCase):
 
     def test_error_estimation(self):
 
-        if MPI.size(self.mesh.mpi_comm()) > 1:
-            return
-
         # Solve variational problem once
         solver = LinearVariationalSolver(self.problem)
         solver.solve()
@@ -100,9 +96,6 @@ class ErrorControlTest(unittest.TestCase):
         self.assertAlmostEqual(error_estimate, reference)
 
     def test_error_indicators(self):
-
-        if MPI.size(self.mesh.mpi_comm()) > 1:
-            return
 
         # Solve variational problem once
         solver = LinearVariationalSolver(self.problem)
@@ -117,9 +110,6 @@ class ErrorControlTest(unittest.TestCase):
         self.assertAlmostEqual(indicators.sum(), reference)
 
     def test_adaptive_solve(self):
-
-        if MPI.size(self.mesh.mpi_comm()) > 1:
-            return
 
         # Solve problem adaptively
         solver = AdaptiveLinearVariationalSolver(self.problem, self.goal)
@@ -136,7 +126,7 @@ class ErrorControlTest(unittest.TestCase):
         self.assertAlmostEqual(assemble(M), reference)
 
 if __name__ == "__main__":
-    print ""
-    print "Testing automated adaptivity operations"
-    print "------------------------------------------------"
+    print("")
+    print("Testing automated adaptivity operations")
+    print("------------------------------------------------")
     unittest.main()

@@ -20,8 +20,8 @@
 // First added:  2010-09-16
 // Last changed: 2011-03-23
 
+#include <memory>
 #include <Eigen/Dense>
-#include <boost/scoped_ptr.hpp>
 
 #include <dolfin/common/NoDeleter.h>
 #include <dolfin/common/Timer.h>
@@ -30,7 +30,6 @@
 #include <dolfin/fem/assemble.h>
 #include <dolfin/fem/DirichletBC.h>
 #include <dolfin/fem/GenericDofMap.h>
-#include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/Form.h>
 #include <dolfin/fem/UFC.h>
 #include <dolfin/fem/LinearVariationalProblem.h>
@@ -476,7 +475,7 @@ const std::vector<std::shared_ptr<const DirichletBC> > bcs)
     // (Sub-spaces need special handling, and boundary conditions can
     // be defined and handled in many different ways -- hence the
     // level of logic.)
-    boost::scoped_ptr<DirichletBC> e_bc;
+    std::unique_ptr<DirichletBC> e_bc;
     if (component.empty())
     {
       if (sub_domain)

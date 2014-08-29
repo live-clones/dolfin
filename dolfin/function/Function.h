@@ -26,11 +26,10 @@
 #ifndef __FUNCTION_H
 #define __FUNCTION_H
 
+#include <memory>
 #include <utility>
 #include <vector>
 #include <boost/ptr_container/ptr_map.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <memory>
 
 #include <dolfin/common/types.h>
 #include <dolfin/common/Hierarchical.h>
@@ -188,14 +187,14 @@ namespace dolfin
     ///         Return a linear combination of Functions
     FunctionAXPY operator+(const FunctionAXPY& axpy) const;
 
-    /// Substraction operator with other function
+    /// Subtraction operator with other function
     ///
     /// *Returns*
     ///     _FunctionAXPY_
     ///         Return a linear combination of Functions
     FunctionAXPY operator-(const Function& other) const;
 
-    /// Substraction operator with other linear combination of functions
+    /// Subtraction operator with other linear combination of functions
     ///
     /// *Returns*
     ///     _FunctionAXPY_
