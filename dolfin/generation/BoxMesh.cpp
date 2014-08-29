@@ -117,9 +117,9 @@ void BoxMesh::build_distributed(double x0, double y0, double z0,
   std::size_t ci = 0;
   for (std::size_t cube = cube_range.first; cube != cube_range.second; ++cube)
   {
-    const std::size_t ix = cube/(ny*nz);
-    const std::size_t iy = (cube - ix*ny*nz)/nz;
-    const std::size_t iz = cube - (ix*ny + iy)*nz;
+    const std::size_t iz = cube/(ny*nx);
+    const std::size_t iy = (cube - iz*ny*nx)/nx;
+    const std::size_t ix = cube - (iz*ny + iy)*nx;
 
     const std::size_t v0 = iz*(nx + 1)*(ny + 1) + iy*(nx + 1) + ix;
     const std::size_t v1 = v0 + 1;
