@@ -17,9 +17,9 @@
 //
 // Modified by Garth N. Wells, 2007.
 // Modified by Nuno Lopes, 2008.
+// Modified by Chris Richardson, 2014.
 //
 // First added:  2005-12-02
-// Last changed: 2014-02-06
 
 #include <dolfin/common/constants.h>
 #include <dolfin/common/MPI.h>
@@ -87,22 +87,31 @@ void BoxMesh::build_distributed(double x0, double y0, double z0,
   const std::size_t num_local_vertices = local_vertex_range.second - local_vertex_range.first;
   mesh_data.vertex_coordinates.resize(boost::extents[num_local_vertices][mesh_data.gdim]);
 
-  // Create vertices
-  std::size_t v = 0;
-  for (std::size_t vertex = local_vertex_range.first; 
-       vertex != local_vertex_range.second; ++vertex)
+  for (unsigned int rank = 0; rank != MPI::size(this->mpi_comm()); ++rank)
   {
-    const std::size_t ix = vertex/((ny + 1)*(nz + 1));
-    const std::size_t iy = (vertex - ix*(ny + 1)*(nz + 1))/(nz + 1);
-    const std::size_t iz = vertex - (ix*(ny + 1) + iy)*(nz + 1);
-    
-    mesh_data.vertex_coordinates[v][2] = e + (static_cast<double>(iz))*(f-e) / static_cast<double>(nz);
-    mesh_data.vertex_coordinates[v][1] = c + (static_cast<double>(iy))*(d-c) / static_cast<double>(ny);
-    mesh_data.vertex_coordinates[v][0] = a + (static_cast<double>(ix))*(b-a) / static_cast<double>(nx);
-    ++v;
+    if (MPI::rank(this->mpi_comm()) == rank)
+    {
+      
+      // Create vertices
+      std::size_t v = 0;
+      for (std::size_t vertex = local_vertex_range.first; 
+           vertex != local_vertex_range.second; ++vertex)
+      {
+        const std::size_t ix = vertex/((ny + 1)*(nz + 1));
+        const std::size_t iy = (vertex - ix*(ny + 1)*(nz + 1))/(nz + 1);
+        const std::size_t iz = vertex - (ix*(ny + 1) + iy)*(nz + 1);
+        std::cout << rank << ": idx = " << (ix*(ny+1) + iy)*(nz+1) + iz << "\n";
+      
+        mesh_data.vertex_coordinates[v][2] = e + (static_cast<double>(iz))*(f-e) / static_cast<double>(nz);
+        mesh_data.vertex_coordinates[v][1] = c + (static_cast<double>(iy))*(d-c) / static_cast<double>(ny);
+        mesh_data.vertex_coordinates[v][0] = a + (static_cast<double>(ix))*(b-a) / static_cast<double>(nx);
+        ++v;
+      }
+    }
+  
+    MPI::barrier(this->mpi_comm());
   }
-
-  dolfin_assert(v == num_local_vertices);  
+  
 
   // Create tetrahedra
   const std::size_t num_cubes = nx*ny*nz;
