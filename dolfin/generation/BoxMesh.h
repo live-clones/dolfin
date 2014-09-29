@@ -116,6 +116,14 @@ namespace dolfin
     void build(double x0, double y0, double z0, double x1, double y1, double z1,
                std::size_t nx, std::size_t ny, std::size_t nz);
 
+    // Build mesh
+    void build_distributed(double x0, double y0, double z0, double x1, double y1, double z1,
+               std::size_t nx, std::size_t ny, std::size_t nz);
+
+    std::pair<std::size_t, std::size_t> local_range(const std::size_t N,
+			    const std::size_t block,
+			    const std::size_t nblocks) const;
+
   };
 
 }
