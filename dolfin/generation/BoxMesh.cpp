@@ -92,9 +92,12 @@ void BoxMesh::build_distributed(double x0, double y0, double z0,
   for (std::size_t vertex = local_vertex_range.first; 
        vertex != local_vertex_range.second; ++vertex)
   {
-    const std::size_t ix = vertex/((ny + 1)*(nz + 1));
-    const std::size_t iy = (vertex - ix*(ny + 1)*(nz + 1))/(nz + 1);
-    const std::size_t iz = vertex - (ix*(ny + 1) + iy)*(nz + 1);
+    const std::size_t nx1ny1 = (nx + 1)*(ny + 1);
+    const std::size_t iz = vertex / nx1ny1;
+    const std::size_t iy = (vertex % nx1ny1)/(nx + 1);
+    const std::size_t ix = (vertex % nx1ny1)%(nx + 1);
+    const std::size_t v0 = iz*(nx + 1)*(ny + 1) + iy*(nx + 1) + ix;
+    dolfin_assert(v0 == vertex);
     
     mesh_data.vertex_coordinates[v][2] = e + (static_cast<double>(iz))*(f-e) / static_cast<double>(nz);
     mesh_data.vertex_coordinates[v][1] = c + (static_cast<double>(iy))*(d-c) / static_cast<double>(ny);
@@ -104,47 +107,83 @@ void BoxMesh::build_distributed(double x0, double y0, double z0,
 
   // Create tetrahedra
   const std::size_t num_cubes = nx*ny*nz;
-  const std::pair<std::size_t, std::size_t> cube_range = MPI::local_range(this->mpi_comm(), num_cubes);
+
+  // Find a suitable x/y/z subdivision of processes for cube
+  // May crash if one dimension is small
+  const std::size_t mpi_size = MPI::size(this->mpi_comm());
+  const std::size_t mpi_rank = MPI::rank(this->mpi_comm());
+  std::size_t npx = (int)(pow(mpi_size, 1.0/3.0) + 0.5);
+  while (mpi_size%npx != 0 or npx > nx)
+    npx--;
+  std::size_t npy = (int)(pow(mpi_size/npx, 0.5) + 0.5);
+  while ((mpi_size/npx)%npy != 0 or npy > ny)
+    npy--;
+  const std::size_t npz = mpi_size/npx/npy;
+
+  std::cout << "np = " << npx << " " << npy << " " << npz <<" \n";
+
+  const std::size_t xpos = mpi_rank/(npy*npz);
+  const std::size_t ypos = (mpi_rank%(npy*npz)/npz);
+  const std::size_t zpos = mpi_rank - xpos*npy*npz - ypos*npz;
+  std::pair<std::size_t, std::size_t> rx = local_range(nx, xpos, npx);
+  std::pair<std::size_t, std::size_t> ry = local_range(ny, ypos, npy);
+  std::pair<std::size_t, std::size_t> rz = local_range(nz, zpos, npz);
+  
+  std::cout << mpi_rank;
+  std::cout << " (" << rx.first << ", " << rx.second << ") ";
+  std::cout << " (" << ry.first << ", " << ry.second << ") ";
+  std::cout << " (" << rz.first << ", " << rz.second << ")\n";
+
   mesh_data.num_global_cells = 6*num_cubes;
-  const std::size_t num_local_cells = 6*(cube_range.second - cube_range.first);
+  const std::size_t num_local_cells = 6*(rx.second - rx.first)
+    *(ry.second - ry.first)*(rz.second - rz.first);
+  
   boost::multi_array<std::size_t, 2>& cells = mesh_data.cell_vertices;
   mesh_data.num_vertices_per_cell = mesh_data.tdim + 1;
   cells.resize(boost::extents[num_local_cells][mesh_data.num_vertices_per_cell]);
   mesh_data.global_cell_indices.resize(num_local_cells);
 
   std::size_t ci = 0;
-  for (std::size_t cube = cube_range.first; cube != cube_range.second; ++cube)
-  {
-    const std::size_t iz = cube/(ny*nx);
-    const std::size_t iy = (cube - iz*ny*nx)/nx;
-    const std::size_t ix = cube - (iz*ny + iy)*nx;
+  for (std::size_t ix = rx.first; ix != rx.second; ++ix)
+    for (std::size_t iy = ry.first; iy != ry.second; ++iy)
+      for (std::size_t iz = rz.first; iz != rz.second; ++iz)
+	{
+	  const std::size_t v0 = iz*(nx + 1)*(ny + 1) + iy*(nx + 1) + ix;
+	  const std::size_t v1 = v0 + 1;
+	  const std::size_t v2 = v0 + (nx + 1);
+	  const std::size_t v3 = v1 + (nx + 1);
+	  const std::size_t v4 = v0 + (nx + 1)*(ny + 1);
+	  const std::size_t v5 = v1 + (nx + 1)*(ny + 1);
+	  const std::size_t v6 = v2 + (nx + 1)*(ny + 1);
+	  const std::size_t v7 = v3 + (nx + 1)*(ny + 1);
 
-    const std::size_t v0 = iz*(nx + 1)*(ny + 1) + iy*(nx + 1) + ix;
-    const std::size_t v1 = v0 + 1;
-    const std::size_t v2 = v0 + (nx + 1);
-    const std::size_t v3 = v1 + (nx + 1);
-    const std::size_t v4 = v0 + (nx + 1)*(ny + 1);
-    const std::size_t v5 = v1 + (nx + 1)*(ny + 1);
-    const std::size_t v6 = v2 + (nx + 1)*(ny + 1);
-    const std::size_t v7 = v3 + (nx + 1)*(ny + 1);
+	  // Note that v0 < v1 < v2 < v3 < vmid.
+	  cells[ci][0] = v0; cells[ci][1] = v1; cells[ci][2] = v3; cells[ci][3] = v7;
+	  ++ci;
+	  cells[ci][0] = v0; cells[ci][1] = v1; cells[ci][2] = v7; cells[ci][3] = v5;
+	  ++ci;
+	  cells[ci][0] = v0; cells[ci][1] = v5; cells[ci][2] = v7; cells[ci][3] = v4;
+	  ++ci;
+	  cells[ci][0] = v0; cells[ci][1] = v3; cells[ci][2] = v2; cells[ci][3] = v7;
+	  ++ci;
+	  cells[ci][0] = v0; cells[ci][1] = v6; cells[ci][2] = v4; cells[ci][3] = v7;
+	  ++ci;
+	  cells[ci][0] = v0; cells[ci][1] = v2; cells[ci][2] = v6; cells[ci][3] = v7;
+	  ++ci;
+	}
 
-    // Note that v0 < v1 < v2 < v3 < vmid.
-    cells[ci][0] = v0; cells[ci][1] = v1; cells[ci][2] = v3; cells[ci][3] = v7;
-    ++ci;
-    cells[ci][0] = v0; cells[ci][1] = v1; cells[ci][2] = v7; cells[ci][3] = v5;
-    ++ci;
-    cells[ci][0] = v0; cells[ci][1] = v5; cells[ci][2] = v7; cells[ci][3] = v4;
-    ++ci;
-    cells[ci][0] = v0; cells[ci][1] = v3; cells[ci][2] = v2; cells[ci][3] = v7;
-    ++ci;
-    cells[ci][0] = v0; cells[ci][1] = v6; cells[ci][2] = v4; cells[ci][3] = v7;
-    ++ci;
-    cells[ci][0] = v0; cells[ci][1] = v2; cells[ci][2] = v6; cells[ci][3] = v7;
-    ++ci;
-  }
+  const std::size_t cell_offset = MPI::global_offset(this->mpi_comm(), ci, true);
+
+  dolfin_assert(*std::max_element(cells.data(), 
+				  cells.data() 
+				  + cells.shape()[0]*cells.shape()[1]) 
+		< mesh_data.num_global_vertices);
 
   for (unsigned int i = 0; i != num_local_cells; ++i)
-    mesh_data.global_cell_indices[i] = i + cube_range.first * 6;
+    {
+      mesh_data.global_cell_indices[i] = i + cell_offset;
+      mesh_data.cell_partition.push_back(mpi_rank);
+    }
 
   dolfin_assert(ci == num_local_cells);
 
@@ -152,6 +191,25 @@ void BoxMesh::build_distributed(double x0, double y0, double z0,
 
   rename("mesh", "Mesh of the cuboid (a,b) x (c,d) x (e,f)");
 
+}
+//-----------------------------------------------------------------------------
+std::pair<std::size_t, std::size_t> BoxMesh::local_range(const std::size_t N,
+							 const std::size_t block,
+							 const std::size_t nblocks) const
+{
+  std::pair<std::size_t, std::size_t> range;
+
+  const std::size_t n = N / nblocks;
+  const std::size_t r = N % nblocks;
+
+  if (block < r)
+    range = std::make_pair<std::size_t, std::size_t>
+      (block*(n + 1), (block + 1)*(n + 1));
+  else
+    range = std::make_pair<std::size_t, std::size_t>
+      (block*n + r, (block + 1)*n + r);
+    
+    return range;
 }
 //-----------------------------------------------------------------------------
 void BoxMesh::build(double x0, double y0, double z0,
