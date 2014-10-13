@@ -129,11 +129,6 @@ void BoxMesh::build_distributed(double x0, double y0, double z0,
   std::pair<std::size_t, std::size_t> ry = local_range(ny, ypos, npy);
   std::pair<std::size_t, std::size_t> rz = local_range(nz, zpos, npz);
   
-  std::cout << mpi_rank;
-  std::cout << " (" << rx.first << ", " << rx.second << ") ";
-  std::cout << " (" << ry.first << ", " << ry.second << ") ";
-  std::cout << " (" << rz.first << ", " << rz.second << ")\n";
-
   mesh_data.num_global_cells = 6*num_cubes;
   const std::size_t num_local_cells = 6*(rx.second - rx.first)
     *(ry.second - ry.first)*(rz.second - rz.first);
@@ -158,21 +153,28 @@ void BoxMesh::build_distributed(double x0, double y0, double z0,
 	  const std::size_t v7 = v3 + (nx + 1)*(ny + 1);
 
 	  // Note that v0 < v1 < v2 < v3 < vmid.
-	  cells[ci][0] = v0; cells[ci][1] = v1; cells[ci][2] = v3; cells[ci][3] = v7;
+	  cells[ci][0] = v0; cells[ci][1] = v1; 
+          cells[ci][2] = v3; cells[ci][3] = v7;
 	  ++ci;
-	  cells[ci][0] = v0; cells[ci][1] = v1; cells[ci][2] = v7; cells[ci][3] = v5;
+	  cells[ci][0] = v0; cells[ci][1] = v1; 
+          cells[ci][2] = v7; cells[ci][3] = v5;
 	  ++ci;
-	  cells[ci][0] = v0; cells[ci][1] = v5; cells[ci][2] = v7; cells[ci][3] = v4;
+	  cells[ci][0] = v0; cells[ci][1] = v5; 
+          cells[ci][2] = v7; cells[ci][3] = v4;
 	  ++ci;
-	  cells[ci][0] = v0; cells[ci][1] = v3; cells[ci][2] = v2; cells[ci][3] = v7;
+	  cells[ci][0] = v0; cells[ci][1] = v3; 
+          cells[ci][2] = v2; cells[ci][3] = v7;
 	  ++ci;
-	  cells[ci][0] = v0; cells[ci][1] = v6; cells[ci][2] = v4; cells[ci][3] = v7;
+	  cells[ci][0] = v0; cells[ci][1] = v6; 
+          cells[ci][2] = v4; cells[ci][3] = v7;
 	  ++ci;
-	  cells[ci][0] = v0; cells[ci][1] = v2; cells[ci][2] = v6; cells[ci][3] = v7;
+	  cells[ci][0] = v0; cells[ci][1] = v2; 
+          cells[ci][2] = v6; cells[ci][3] = v7;
 	  ++ci;
 	}
 
-  const std::size_t cell_offset = MPI::global_offset(this->mpi_comm(), ci, true);
+  const std::size_t cell_offset 
+    = MPI::global_offset(this->mpi_comm(), ci, true);
 
   dolfin_assert(*std::max_element(cells.data(), 
 				  cells.data() 
@@ -180,17 +182,16 @@ void BoxMesh::build_distributed(double x0, double y0, double z0,
 		< mesh_data.num_global_vertices);
 
   for (unsigned int i = 0; i != num_local_cells; ++i)
-    {
-      mesh_data.global_cell_indices[i] = i + cell_offset;
-      mesh_data.cell_partition.push_back(mpi_rank);
-    }
-
+  {
+    mesh_data.global_cell_indices[i] = i + cell_offset;
+    mesh_data.cell_partition.push_back(mpi_rank);
+  }
+  
   dolfin_assert(ci == num_local_cells);
 
   MeshPartitioning::build_distributed_mesh(*this, mesh_data);
-
+  
   rename("mesh", "Mesh of the cuboid (a,b) x (c,d) x (e,f)");
-
 }
 //-----------------------------------------------------------------------------
 std::pair<std::size_t, std::size_t> BoxMesh::local_range(const std::size_t N,
