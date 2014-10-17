@@ -384,6 +384,14 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
 
   std::map<dolfin::la_index, std::vector<double> > ordered_coordinatemap(coordinatemap.begin(), coordinatemap.end());
 
+  std::map<dolfin::la_index, dolfin::la_index> local_dofmap;
+  dolfin::la_index index = 0;
+  for (std::map<dolfin::la_index, std::vector<double> >::const_iterator c = ordered_coordinatemap.begin(); 
+         c != ordered_coordinatemap.end(); c++)
+  {
+    local_dofmap.emplace(c->first, index++);
+  }
+
   pugi::xml_node data_node, value_node;
   std::stringstream value;
 
@@ -420,7 +428,7 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
   {
     const std::vector<dolfin::la_index>& dofs = dofmap.cell_dofs(c->index());
     for (std::size_t i = 0; i < dofmap.cell_dimension(c->index()); ++i)
-      value << dofs[_vtk_cell_order[i]] << " ";
+      value << local_dofmap[dofs[_vtk_cell_order[i]]] << " ";
     value << " ";
   }
   value_node = data_node.append_child(pugi::node_pcdata);
@@ -587,7 +595,15 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
     }
   }
 
-  std::map<std::size_t, std::vector<double> > ordered_coordinatemap(coordinatemap.begin(), coordinatemap.end());
+  std::map<dolfin::la_index, std::vector<double> > ordered_coordinatemap(coordinatemap.begin(), coordinatemap.end());
+
+  std::map<dolfin::la_index, dolfin::la_index> local_dofmap;
+  dolfin::la_index index = 0;
+  for (std::map<dolfin::la_index, std::vector<double> >::const_iterator c = ordered_coordinatemap.begin(); 
+         c != ordered_coordinatemap.end(); c++)
+  {
+    local_dofmap.emplace(c->first, index++);
+  }
 
   pugi::xml_node data_node, value_node;
   std::stringstream value;
@@ -602,7 +618,7 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
 
   std::vector<double> vertex_data(3*ordered_coordinatemap.size());
   std::vector<double>::iterator vertex_entry = vertex_data.begin();
-  for (std::map<std::size_t, std::vector<double> >::const_iterator c = ordered_coordinatemap.begin();
+  for (std::map<dolfin::la_index, std::vector<double> >::const_iterator c = ordered_coordinatemap.begin();
         c != ordered_coordinatemap.end(); c++)
   {
     *vertex_entry++ = c->second[0];
@@ -632,7 +648,7 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   {
     const std::vector<dolfin::la_index>& dofs = dofmap.cell_dofs(c->index());
     for (std::size_t i = 0; i < dofmap.cell_dimension(c->index()); ++i)
-      *cell_entry++ = dofs[_vtk_cell_order[i]];
+      *cell_entry++ = local_dofmap[dofs[_vtk_cell_order[i]]];
   }
 
   // Create encoded stream

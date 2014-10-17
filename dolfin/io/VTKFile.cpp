@@ -397,7 +397,8 @@ std::string VTKFile::init(pugi::xml_document& xml_doc, const FunctionSpace& func
   dolfin_assert(functionspace.element()->num_sub_elements() == 0);
   dolfin_assert(functionspace.element()->value_rank() == 0);
 
-  dolfin_assert(functionspace.dofmap());
+  std::shared_ptr<const GenericDofMap> dofmap = functionspace.dofmap();
+  dolfin_assert(dofmap);
 
   const Mesh& mesh = *functionspace.mesh();
 
@@ -412,8 +413,26 @@ std::string VTKFile::init(pugi::xml_document& xml_doc, const FunctionSpace& func
   // Number of cells
   const std::size_t num_cells = mesh.topology().size(cell_dim);
 
+  // Create vector to hold dofs
+  std::vector<la_index> dofs;
+  dofs.reserve(num_cells*dofmap->max_cell_dimension());
+
+  std::vector<dolfin::la_index> cell_dofs;
+  for (dolfin::CellIterator cell(mesh); !cell.end(); ++cell)       // loop over the cells in the mesh
+  {
+    cell_dofs = dofmap->cell_dofs((*cell).index());
+
+    dofs.insert(dofs.end(), cell_dofs.begin(), cell_dofs.end());
+  }
+
+  // Sort dofs (required to later remove duplicates)
+  std::sort(dofs.begin(), dofs.end());
+
+  // Remove duplicates
+  dofs.erase(std::unique(dofs.begin(), dofs.end()), dofs.end());
+
   // Write headers
-  vtk_header_open(functionspace.dofmap()->global_dimension(), num_cells, xml_doc);
+  vtk_header_open(dofs.size(), num_cells, xml_doc);
 
   return vtu_filename;
 }
@@ -719,10 +738,38 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
   else
     point_node = piece_node.child("PointData");
 
+  std::shared_ptr<const GenericDofMap> dofmap = functionspace.dofmap();
+  dolfin_assert(dofmap);
+
+  const Mesh& mesh = *functionspace.mesh();
+
+  // Create vector to hold dofs
+  std::vector<la_index> dofs;
+  dofs.reserve(mesh.num_cells()*dofmap->max_cell_dimension());
+
+  std::vector<dolfin::la_index> cell_dofs;
+  for (dolfin::CellIterator cell(mesh); !cell.end(); ++cell)       // loop over the cells in the mesh
+  {
+    cell_dofs = dofmap->cell_dofs((*cell).index());
+
+    dofs.insert(dofs.end(), cell_dofs.begin(), cell_dofs.end());
+  }
+
+  // Sort dofs (required to later remove duplicates)
+  std::sort(dofs.begin(), dofs.end());
+
+  // Remove duplicates
+  dofs.erase(std::unique(dofs.begin(), dofs.end()), dofs.end());
   
   // Allocate memory for function values at functionspace dofs
   Function uf(functionspace);
   std::vector< std::vector<double> > values(dim);
+  for (std::vector< std::vector<double> >::iterator v = values.begin();
+                                                    v != values.end();
+                                                    v++)
+  {
+    v->resize(dofs.size());
+  }
 
   if (rank == 0)
   {
@@ -735,7 +782,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
     data_node.append_attribute("format") = encode_string.c_str();
 
     uf.interpolate(u);
-    uf.vector()->get_local(values[0]);
+    uf.vector()->get_local(values[0].data(), dofs.size(), dofs.data());
     std::vector<double>::iterator it;
     for (it = values[0].begin(); it != values[0].end(); ++it)
     {
@@ -762,7 +809,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
       for (std::size_t i = 0; i < dim; i++)
       {
         uf.interpolate((*ul)[i]);
-        uf.vector()->get_local(values[i]);
+        uf.vector()->get_local(values[i].data(), dofs.size(), dofs.data());
         std::vector<double>::iterator it;
         for (it = values[i].begin(); it != values[i].end(); ++it)
         {
@@ -777,7 +824,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
       {
         VTKExpression ue(i, &u);
         uf.interpolate(ue);
-        uf.vector()->get_local(values[i]);
+        uf.vector()->get_local(values[i].data(), dofs.size(), dofs.data());
         std::vector<double>::iterator it;
         for (it = values[i].begin(); it != values[i].end(); ++it)
         {
@@ -818,7 +865,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
             else
               kf = j*dim1 + i - (j*(j+1))/2;
           uf.interpolate((*ul)[kf]);
-          uf.vector()->get_local(values[k]);
+          uf.vector()->get_local(values[k].data(), dofs.size(), dofs.data());
           std::vector<double>::iterator it;
           for (it = values[k].begin(); it != values[k].end(); ++it)
           {
@@ -839,7 +886,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
           std::size_t k = i*dim1 + j;
           VTKExpression ue(k, &u);
           uf.interpolate(ue);
-          uf.vector()->get_local(values[k]);
+          uf.vector()->get_local(values[k].data(), dofs.size(), dofs.data());
           std::vector<double>::iterator it;
           for (it = values[k].begin(); it != values[k].end(); ++it)
           {
@@ -1035,7 +1082,8 @@ void VTKFile::pvtu_write_function(std::size_t dim, std::size_t rank,
                    "write data to pvtu file",
                    "XML parsing error when reading from existing file");
     }
-    grid_node = xml_doc.child("PUnstructuredGrid");
+    grid_node = xml_doc.child("VTKFile").child("PUnstructuredGrid");
+    dolfin_assert(grid_node);
   }
 
   // Add function data
