@@ -378,7 +378,7 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
     {
       for (std::size_t j = 0; j < gdim; ++j)
         dofcoords[j] = cellcoords[i][j];
-      coordinatemap.emplace(dofs[i], dofcoords);
+      coordinatemap.insert( boost::unordered_map<dolfin::la_index, std::vector<double> >::value_type(dofs[i], dofcoords) );
     }
   }
 
@@ -389,7 +389,7 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
   for (std::map<dolfin::la_index, std::vector<double> >::const_iterator c = ordered_coordinatemap.begin(); 
          c != ordered_coordinatemap.end(); c++)
   {
-    local_dofmap.emplace(c->first, index++);
+    local_dofmap.insert( std::map<dolfin::la_index, dolfin::la_index>::value_type(c->first, index++) );
   }
 
   pugi::xml_node data_node, value_node;
@@ -591,7 +591,7 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
     {
       for (std::size_t j = 0; j < gdim; ++j)
         dofcoords[j] = cellcoords[i][j];
-      coordinatemap.emplace(dofs[i], dofcoords);
+      coordinatemap.insert( boost::unordered_map<dolfin::la_index, std::vector<double> >::value_type(dofs[i], dofcoords) );
     }
   }
 
@@ -602,7 +602,7 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   for (std::map<dolfin::la_index, std::vector<double> >::const_iterator c = ordered_coordinatemap.begin(); 
          c != ordered_coordinatemap.end(); c++)
   {
-    local_dofmap.emplace(c->first, index++);
+    local_dofmap.insert( std::map<dolfin::la_index, dolfin::la_index>::value_type(c->first, index++) );
   }
 
   pugi::xml_node data_node, value_node;
