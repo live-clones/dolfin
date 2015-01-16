@@ -16,13 +16,12 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // Modified by Nuno Lopes, 2008.
-// Modified by Mikael Mortensen, 2014.
+// Modified by Mikael Mortensen, 2014
+// Modified by Chris Richardson, 2015
 //
-// First added:  2005-12-02
-// Last changed: 2014-02-17
 
-#ifndef __BOX_H
-#define __BOX_H
+#ifndef __BOXMESH_DISTRIBUTED_H
+#define __BOXMESH_DISTRIBUTED_H
 
 #include <cstddef>
 #include <dolfin/common/MPI.h>
@@ -36,7 +35,7 @@ namespace dolfin
   /// direction, the total number of tetrahedra will be 6*nx*ny*nz and
   /// the total number of vertices will be (nx + 1)*(ny + 1)*(nz + 1).
 
-  class BoxMesh : public Mesh
+  class BoxMeshDistributed : public Mesh
   {
   public:
 
@@ -68,9 +67,10 @@ namespace dolfin
     ///
     ///         // Mesh with 6 cells in each direction on the
     ///         // set [-1,2] x [-1,2] x [-1,2].
-    ///         BoxMesh mesh(-1, -1, -1, 2, 2, 2, 6, 6, 6);
+    ///         BoxMeshDistributed mesh(-1, -1, -1, 2, 2, 2, 6, 6, 6);
     ///
-    BoxMesh(double x0, double y0, double z0, double x1, double y1, double z1,
+    BoxMeshDistributed(double x0, double y0, double z0,
+                       double x1, double y1, double z1,
             std::size_t nx, std::size_t ny, std::size_t nz);
 
     /// Create a uniform finite element _Mesh_ over the rectangular prism
@@ -103,18 +103,23 @@ namespace dolfin
     ///
     ///         // Mesh with 6 cells in each direction on the
     ///         // set [-1,2] x [-1,2] x [-1,2].
-    ///         BoxMesh mesh(MPI_COMM_WORLD, -1, -1, -1, 2, 2, 
+    ///         BoxMeshDistributed mesh(MPI_COMM_WORLD, -1, -1, -1, 2, 2,
     ///                      2, 6, 6, 6);
     ///
-    BoxMesh(MPI_Comm comm,
+    BoxMeshDistributed(MPI_Comm comm,
             double x0, double y0, double z0, double x1, double y1, double z1,
             std::size_t nx, std::size_t ny, std::size_t nz);
 
   private:
 
     // Build mesh
-    void build(double x0, double y0, double z0, double x1, double y1, double z1,
-               std::size_t nx, std::size_t ny, std::size_t nz);
+    void build_distributed(double x0, double y0, double z0,
+                           double x1, double y1, double z1,
+                           std::size_t nx, std::size_t ny, std::size_t nz);
+
+    std::pair<std::size_t, std::size_t> local_range(const std::size_t N,
+                                          const std::size_t block,
+                                          const std::size_t nblocks) const;
 
   };
 

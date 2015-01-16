@@ -121,6 +121,7 @@
 %shared_ptr(dolfin::UnitTriangleMesh)
 %shared_ptr(dolfin::UnitSquareMesh)
 %shared_ptr(dolfin::BoxMesh)
+%shared_ptr(dolfin::BoxMeshDistributed)
 %shared_ptr(dolfin::Box)
 %shared_ptr(dolfin::RectangleMesh)
 %shared_ptr(dolfin::Rectangle)

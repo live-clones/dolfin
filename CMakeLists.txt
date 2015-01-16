@@ -415,8 +415,8 @@ if (DOLFIN_ENABLE_PETSC)
     if (PETSC4PY_FOUND)
       if (NOT ("${PETSC4PY_VERSION_MAJOR}" EQUAL "${PETSC_VERSION_MAJOR}"
                AND "${PETSC4PY_VERSION_MINOR}" EQUAL "${PETSC_VERSION_MINOR}"))
-        message(WARNING "PETSc version ${PETSC_VERSION} and petsc4py version ${PETSC4PY_VERSION} do not match.  But not disabling petsc4py support")
-#        set(PETSC4PY_FOUND FALSE)
+        message(WARNING "PETSc version ${PETSC_VERSION} and petsc4py version ${PETSC4PY_VERSION} do not match.  Disabling petsc4py support")
+        set(PETSC4PY_FOUND FALSE)
       endif()
     endif()
   endif()
@@ -437,9 +437,9 @@ if (DOLFIN_ENABLE_PETSC)
   endif()
 
   # Enable PETSc SNES for PETSc verion > 3.3
-#  if (PETSC_VERSION VERSION_GREATER 3.3.100)
+  if (PETSC_VERSION VERSION_GREATER 3.3.100)
     set(PETSC_ENABLE_SNES TRUE)
-#  endif()
+  endif()
 
   # Enable TAO from PETSc for PETSc verion > 3.4
   if ((PETSC_VERSION VERSION_GREATER 3.4.100) OR (DOLFIN_ENABLE_TAO))
