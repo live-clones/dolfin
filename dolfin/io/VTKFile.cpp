@@ -804,7 +804,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
     data_node.append_attribute("format") = encode_string.c_str();
 
     const Function* ul = dynamic_cast<const Function*>(&u);
-    if(ul)
+    if(ul && (ul->function_space()->element()->num_sub_elements()==dim))
     {
       for (std::size_t i = 0; i < dim; i++)
       {
@@ -818,7 +818,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
         }
       }
     }
-    else
+    else // FIXME: Functions with no sub elements are very costly to evaluate here
     {
       for (std::size_t i = 0; i < dim; i++)
       {
@@ -848,7 +848,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
     data_node.append_attribute("format") = encode_string.c_str();
 
     const Function* ul = dynamic_cast<const Function*>(&u);
-    if(ul)
+    if(ul && (ul->function_space()->element()->num_sub_elements() > 0))
     {
       const bool symmetric = (ul->function_space()->element()->num_sub_elements() != ul->value_size());
       const std::size_t dim0 = ul->value_dimension(0);
@@ -875,7 +875,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
         }
       }
     }
-    else
+    else // FIXME: Functions with no sub elements are very costly to evaluate here
     {
       const std::size_t dim0 = u.value_dimension(0);
       const std::size_t dim1 = u.value_dimension(1);
