@@ -26,14 +26,14 @@
 // Modified by Jan Blechta 2013
 //
 // First added:  2006-05-08
-// Last changed: 2013-06-27
+// Last changed: 2014-08-11
 
 #ifndef __MESH_H
 #define __MESH_H
 
+#include <memory>
 #include <string>
 #include <utility>
-#include <memory>
 
 #include <dolfin/ale/MeshDisplacement.h>
 #include <dolfin/common/Hierarchical.h>
@@ -49,7 +49,6 @@ namespace dolfin
 {
   class BoundaryMesh;
   class CellType;
-  class CSGGeometry;
   class Expression;
   class GenericFunction;
   class LocalMeshData;
@@ -133,25 +132,6 @@ namespace dolfin
     ///     local_mesh_data (_LocalMeshData_)
     ///         Data from which to build the mesh.
     Mesh(MPI_Comm comm, LocalMeshData& local_mesh_data);
-
-    /// Create mesh defined by Constructive Solid Geometry (CSG)
-    ///
-    /// *Arguments*
-    ///     geometry (_CSGGeometry_)
-    ///         The CSG geometry
-    ///     resolution (std::size_t)
-    ///         An integer specifying the mesh resolution
-    Mesh(const CSGGeometry& geometry, std::size_t resolution);
-
-    /// Create mesh defined by Constructive Solid Geometry (CSG)
-    ///
-    /// *Arguments*
-    ///     geometry (_CSGGeometry_)
-    ///         The CSG geometry
-    ///     resolution (std::size_t)
-    ///         An integer specifying the mesh resolution
-    Mesh(std::shared_ptr<const CSGGeometry> geometry,
-         std::size_t resolution);
 
     /// Destructor.
     ~Mesh();
@@ -547,7 +527,7 @@ namespace dolfin
     /// *Arguments*
     ///     coloring_type (std::vector<std::size_t>)
     ///         Coloring type given as list of topological dimensions,
-    ///         specifying what relation makes two mesh entinties neighbors.
+    ///         specifying what relation makes two mesh entities neighbors.
     ///
     /// *Returns*
     ///     std::vector<std::size_t>
@@ -632,18 +612,13 @@ namespace dolfin
     ///         No example code available for this function.
     std::string str(bool verbose) const;
 
-    /// Return cell_orientations
-    ///
-    /// *Returns*
-    ///     std::vector<int>
-    ///         Map from cell index to orientation of cell
-    std::vector<int>& cell_orientations();
-
     /// Return cell_orientations (const version)
     ///
     /// *Returns*
     ///     std::vector<int>
-    ///         Map from cell index to orientation of cell
+
+    ///         Map from cell index to orientation of cell. Is empty
+    ///         if cell orientations have not been computed.
     const std::vector<int>& cell_orientations() const;
 
     /// Compute and initialize cell_orientations relative to a given
@@ -685,7 +660,7 @@ namespace dolfin
     mutable std::shared_ptr<BoundingBoxTree> _tree;
 
     // Cell type
-    CellType* _cell_type;
+    std::unique_ptr<CellType> _cell_type;
 
     // True if mesh has been ordered
     mutable bool _ordered;

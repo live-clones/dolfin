@@ -367,7 +367,7 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
   boost::multi_array<double, 2> cellcoords(boost::extents[cdim][gdim]);
   std::vector<double> vertexcoords;
   std::vector<double> dofcoords(3, 0.0);
-  boost::unordered_map<dolfin::la_index, std::vector<double> > coordinatemap;
+  std::unordered_map<dolfin::la_index, std::vector<double> > coordinatemap;
   for (CellIterator c(mesh); !c.end(); ++c)
   {
     c->get_vertex_coordinates(vertexcoords);
@@ -378,7 +378,7 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
     {
       for (std::size_t j = 0; j < gdim; ++j)
         dofcoords[j] = cellcoords[i][j];
-      coordinatemap.insert( boost::unordered_map<dolfin::la_index, std::vector<double> >::value_type(dofs[i], dofcoords) );
+      coordinatemap.insert( std::unordered_map<dolfin::la_index, std::vector<double> >::value_type(dofs[i], dofcoords) );
     }
   }
 
@@ -580,7 +580,7 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   boost::multi_array<double, 2> cellcoords(boost::extents[cdim][gdim]);
   std::vector<double> vertexcoords;
   std::vector<double> dofcoords(3, 0.0);
-  boost::unordered_map<dolfin::la_index, std::vector<double> > coordinatemap;
+  std::unordered_map<dolfin::la_index, std::vector<double> > coordinatemap;
   for (CellIterator c(mesh); !c.end(); ++c)
   {
     c->get_vertex_coordinates(vertexcoords);
@@ -591,7 +591,7 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
     {
       for (std::size_t j = 0; j < gdim; ++j)
         dofcoords[j] = cellcoords[i][j];
-      coordinatemap.insert( boost::unordered_map<dolfin::la_index, std::vector<double> >::value_type(dofs[i], dofcoords) );
+      coordinatemap.insert( std::unordered_map<dolfin::la_index, std::vector<double> >::value_type(dofs[i], dofcoords) );
     }
   }
 

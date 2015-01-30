@@ -16,14 +16,14 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2013-02-15
-// Last changed: 2014-03-10
+// Last changed: 2014-10-01
 
 #ifndef __POINTINTEGRALSOLVER_H
 #define __POINTINTEGRALSOLVER_H
 
-#include <vector>
-#include <set>
 #include <memory>
+#include <set>
+#include <vector>
 
 #include <dolfin/common/Variable.h>
 #include <dolfin/fem/Assembler.h>
@@ -45,7 +45,8 @@ namespace dolfin
   public:
 
     /// Constructor
-    /// FIXME: Include version where one can pass a Solver and/or Parameters
+    /// FIXME: Include version where one can pass a Solver and/or
+    /// Parameters
     PointIntegralSolver(std::shared_ptr<MultiStageScheme> scheme);
 
     /// Destructor
@@ -75,11 +76,12 @@ namespace dolfin
       pn.add("always_recompute_jacobian", false);
       pn.add("recompute_jacobian_each_solve", false);
       pn.add("relaxation_parameter", 1., 0., 1.);
-      pn.add("relative_tolerance", 1e-10, 1e-20, 1e-3);
+      pn.add("relative_tolerance", 1e-10, 1e-20, 2.);
+      pn.add("absolute_tolerance", 1e-15, 1e-20, 2.);
 
       pn.add("kappa", 0.1, 0.05, 1.0);
       pn.add("eta_0", 1., 1e-15, 1.0);
-      pn.add("max_relative_previous_residual", 1e-1, 1e-5, 1.0);
+      pn.add("max_relative_previous_residual", 1e-1, 1e-5, 1.);
       pn.add("reset_each_step", true);
       pn.add("report", false);
       pn.add("report_vertex", 0, 0, 32767);
@@ -104,7 +106,7 @@ namespace dolfin
 
   private:
 
-    // Convergence critera for simplified Newton solver
+    // Convergence criteria for simplified Newton solver
     enum convergence_criteria_t
     {
 
@@ -119,13 +121,14 @@ namespace dolfin
     void _lu_factorize(std::vector<double>& A);
 
     // Forward backward substitution, assume that mat is already
-    // inplace LU factorized
+    // in place LU factorized
     void _forward_backward_subst(const std::vector<double>& A,
 				 const std::vector<double>& b,
 				 std::vector<double>& x) const;
 
     // Compute jacobian using passed UFC form
-    void _compute_jacobian(std::vector<double>& jac, const std::vector<double>& u,
+    void _compute_jacobian(std::vector<double>& jac,
+                           const std::vector<double>& u,
 			   unsigned int local_vert, UFC& loc_ufc,
 			   const Cell& cell, const ufc::cell& ufc_cell,
 			   int coefficient_index,
@@ -138,8 +141,8 @@ namespace dolfin
     // test functions
     void _check_forms();
 
-    // Build map between vertices, cells and the correspondning local vertex
-    // and initialize UFC data for each form
+    // Build map between vertices, cells and the corresponding local
+    // vertex and initialize UFC data for each form
     void _init();
 
     // Solve an explicit stage
@@ -152,9 +155,10 @@ namespace dolfin
 			       const Cell& cell, const ufc::cell& ufc_cell,
 			       const std::vector<double>& vertex_coordinates);
 
-    void _simplified_newton_solve(std::size_t vert_ind, unsigned int stage,
-				  const Cell& cell, const ufc::cell& ufc_cell,
-				  const std::vector<double>& vertex_coordinates);
+    void
+      _simplified_newton_solve(std::size_t vert_ind, unsigned int stage,
+                               const Cell& cell, const ufc::cell& ufc_cell,
+                               const std::vector<double>& vertex_coordinates);
 
     // The MultiStageScheme
     std::shared_ptr<MultiStageScheme> _scheme;
@@ -178,10 +182,12 @@ namespace dolfin
     // Local to local dofs to be used in tabulate entity dofs
     std::vector<std::size_t> _local_to_local_dofs;
 
-    // Vertex map between vertices, cells and corresponding local vertex
+    // Vertex map between vertices, cells and corresponding local
+    // vertex
     std::vector<std::pair<std::size_t, unsigned int> > _vertex_map;
 
-    // Local to global dofs used when solution is fanned out to global vector
+    // Local to global dofs used when solution is fanned out to global
+    // vector
     std::vector<dolfin::la_index> _local_to_global_dofs;
 
     // Local stage solutions
@@ -209,7 +215,8 @@ namespace dolfin
     std::vector<std::vector<double> > _jacobians;
 
     // Variable used in the estimation of the error of the newton
-    // iteration for the first iteration (Important for linear problems!)
+    // iteration for the first iteration (important for linear
+    // problems!)
     double _eta;
 
     // Number of computations of Jacobian

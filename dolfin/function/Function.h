@@ -17,11 +17,8 @@
 //
 // Modified by Garth N. Wells, 2005-2010.
 // Modified by Kristian B. Oelgaard, 2007.
-// Modified by Martin Sandve Alnes, 2008.
+// Modified by Martin Sandve Alnes, 2008-2014.
 // Modified by Andre Massing, 2009.
-//
-// First added:  2003-11-28
-// Last changed: 2013-10-22
 
 #ifndef __FUNCTION_H
 #define __FUNCTION_H
@@ -187,14 +184,14 @@ namespace dolfin
     ///         Return a linear combination of Functions
     FunctionAXPY operator+(const FunctionAXPY& axpy) const;
 
-    /// Substraction operator with other function
+    /// Subtraction operator with other function
     ///
     /// *Returns*
     ///     _FunctionAXPY_
     ///         Return a linear combination of Functions
     FunctionAXPY operator-(const Function& other) const;
 
-    /// Substraction operator with other linear combination of functions
+    /// Subtraction operator with other linear combination of functions
     ///
     /// *Returns*
     ///     _FunctionAXPY_
@@ -370,9 +367,6 @@ namespace dolfin
     ///     vertex_values (_Array_ <double>)
     ///         The values at all vertices.
     void compute_vertex_values(std::vector<double>& vertex_values);
-
-    /// Update off-process ghost coefficients
-    virtual void update() const;
 
   private:
 

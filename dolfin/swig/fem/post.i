@@ -108,15 +108,16 @@ def tabulate_coordinates(self, cell, coordinates=None):
     import numpy as np
 
     # Check coordinate argument
-    shape = (self.max_cell_dimension(), self.geometric_dimension())
+    gdim = cell.mesh().geometry().dim()
+    shape = (self.max_cell_dimension(), gdim)
     if coordinates is None:
         coordinates = np.zeros(shape, 'd')
     if not isinstance(coordinates, np.ndarray) or \
        not (coordinates.flags.c_contiguous and \
             coordinates.dtype == np.dtype('d') and \
             coordinates.shape==shape):
-        raise TypeError, "expected a C-contiguous numpy array " \
-              "of 'double' (dtype='d') with shape %s"%str(shape)
+        raise TypeError("expected a C-contiguous numpy array " \
+              "of 'double' (dtype='d') with shape %s"%str(shape))
 
     # Call the extended method
     self._tabulate_coordinates(coordinates, cell)
@@ -175,21 +176,3 @@ HIERARCHICAL_FEM_EXTENDS(LinearVariationalProblem)
 HIERARCHICAL_FEM_EXTENDS(NonlinearVariationalProblem)
 HIERARCHICAL_FEM_EXTENDS(Form)
 HIERARCHICAL_FEM_EXTENDS(DirichletBC)
-
-//-----------------------------------------------------------------------------
-// Reveal reset_sparsity as bool in python
-// TODO: Remove this when reset_sparsity is removed
-//-----------------------------------------------------------------------------
-%rename(reset_sparsity) dolfin::AssemblerBase::_reset_sparsity;
-%extend dolfin::AssemblerBase {
-    bool _reset_sparsity;
-}
-%{
-bool dolfin_AssemblerBase__reset_sparsity_get(dolfin::AssemblerBase* obj) {
-    return obj->reset_sparsity;
-}
-bool dolfin_AssemblerBase__reset_sparsity_set(dolfin::AssemblerBase* obj, bool value) {
-    obj->reset_sparsity = value;
-    return value;
-}
-%}

@@ -20,7 +20,7 @@
 // Modified by Joachim B Haga 2012
 //
 // First added:  2012-05-23
-// Last changed: 2012-11-14
+// Last changed: 2014-08-11
 
 #include <dolfin/common/Array.h>
 #include <dolfin/common/Timer.h>
@@ -31,7 +31,6 @@
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/Vertex.h>
-#include <dolfin/generation/CSGGeometry.h>
 #include "ExpressionWrapper.h"
 #include "VTKPlotter.h"
 
@@ -42,7 +41,6 @@
 #include "VTKPlottableMesh.h"
 #include "VTKPlottableMeshFunction.h"
 #include "VTKPlottableDirichletBC.h"
-#include "VTKPlottableCSGGeometry.h"
 
 #ifdef HAS_QVTK
 #include <QApplication>
@@ -94,7 +92,6 @@ namespace dolfin
         return CreateVTKPlottable(t);                                   \
     } while (0)
 
-    DISPATCH(CSGGeometry);
     DISPATCH(DirichletBC);
     DISPATCH(ExpressionWrapper);
     DISPATCH(Function);
@@ -336,7 +333,8 @@ std::string VTKPlotter::get_helptext()
   text << "   s: Synchronize cameras (keep pressed for continuous sync)\n";
   text << "   m: Toggle mesh overlay\n";
   text << "   b: Toggle bounding box\n";
-  text << "  cv: Toggle cell or vertex indices\n";
+  if (_plottable->dim() <= 2)
+    text << "  cv: Toggle cell or vertex indices\n";
   text << "   w: Toggle between wireframe/point/surface view\n";
   text << "  +-: Resize widths (points and lines)\n";
   text << "C-+-: Rescale plot (glyphs and warping)\n";
@@ -420,6 +418,9 @@ bool VTKPlotter::key_pressed(int modifiers, char key, std::string keysym)
 
   case 'v': // Toggle vertex labels
     {
+      if (_plottable->dim() > 2)
+        return false;
+
       // Check if label actor is present. If not get from plottable.
       vtkSmartPointer<vtkActor2D> labels = _plottable->get_vertex_label_actor(vtk_pipeline->get_renderer());
 
@@ -436,6 +437,9 @@ bool VTKPlotter::key_pressed(int modifiers, char key, std::string keysym)
 
   case 'c': // Toggle cell labels
     {
+      if (_plottable->dim() > 2)
+        return false;
+
       // Check if label actor is present. If not get from plottable. If it
       // is, toggle off
       vtkSmartPointer<vtkActor2D> labels = _plottable->get_cell_label_actor(vtk_pipeline->get_renderer());
@@ -792,7 +796,13 @@ namespace dolfin
   class VTKWindowOutputStage {}; // dummy class
 }
 
-VTKPlotter::VTKPlotter(std::shared_ptr<const Variable>, QVTKWidget*) { init(); }
+VTKPlotter::VTKPlotter(std::shared_ptr<const Variable>, QVTKWidget*):
+  _initialized(false),
+  _frame_counter(0),
+  no_plot(false)
+{
+  init();
+}
 VTKPlotter::VTKPlotter(std::shared_ptr<const Expression>,
 		       std::shared_ptr<const Mesh>, QVTKWidget*)  { init(); }
 VTKPlotter::~VTKPlotter() {}

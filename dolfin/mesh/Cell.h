@@ -21,7 +21,7 @@
 // Modified by Jan Blechta 2013
 //
 // First added:  2006-06-01
-// Last changed: 2014-02-16
+// Last changed: 2014-04-24
 
 #ifndef __CELL_H
 #define __CELL_H
@@ -65,6 +65,10 @@ namespace dolfin
     /// Return type of cell
     CellType::Type type() const
     { return _mesh->type().cell_type(); }
+
+    /// Return number of vertices of cell
+    std::size_t num_vertices() const
+    { return _mesh->type().num_vertices(); }
 
     /// Compute orientation of cell
     ///
@@ -320,10 +324,23 @@ namespace dolfin
 
     // FIXME: This function is part of a UFC transition
     /// Get cell vertex coordinates
+    void get_vertex_coordinates(double* coordinates) const
+    {
+      dolfin_assert(coordinates);
+      const std::size_t gdim = _mesh->geometry().dim();
+      const std::size_t num_vertices = this->num_vertices();
+      const unsigned int* vertices = this->entities(0);
+      for (std::size_t i = 0; i < num_vertices; i++)
+        for (std::size_t j = 0; j < gdim; j++)
+          coordinates[i*gdim + j] = _mesh->geometry().x(vertices[i])[j];
+    }
+
+    // FIXME: This function is part of a UFC transition
+    /// Get cell vertex coordinates
     void get_vertex_coordinates(std::vector<double>& coordinates) const
     {
       const std::size_t gdim = _mesh->geometry().dim();
-      const std::size_t num_vertices = this->num_entities(0);
+      const std::size_t num_vertices = this->num_vertices();
       const unsigned int* vertices = this->entities(0);
       coordinates.resize(num_vertices*gdim);
       for (std::size_t i = 0; i < num_vertices; i++)
@@ -335,9 +352,15 @@ namespace dolfin
     /// Fill UFC cell with miscellaneous data
     void get_cell_data(ufc::cell& ufc_cell, int local_facet=-1) const
     {
-      ufc_cell.geometric_dimension = _mesh->geometry().dim();;
+      ufc_cell.geometric_dimension = _mesh->geometry().dim();
       ufc_cell.local_facet = local_facet;
-      ufc_cell.orientation = _mesh->cell_orientations()[index()];
+      if (_mesh->cell_orientations().empty())
+        ufc_cell.orientation = -1;
+      else
+      {
+        dolfin_assert(index() < _mesh->cell_orientations().size());
+        ufc_cell.orientation = _mesh->cell_orientations()[index()];
+      }
       ufc_cell.mesh_identifier = mesh_id();
       ufc_cell.index = index();
     }
@@ -350,8 +373,13 @@ namespace dolfin
 
       const std::size_t tdim = topology.dim();
       ufc_cell.topological_dimension = tdim;
-      ufc_cell.orientation = _mesh->cell_orientations()[index()];
-
+      if (_mesh->cell_orientations().empty())
+        ufc_cell.orientation = -1;
+      else
+      {
+        dolfin_assert(index() < _mesh->cell_orientations().size());
+        ufc_cell.orientation = _mesh->cell_orientations()[index()];
+      }
       ufc_cell.entity_indices.resize(tdim + 1);
       for (std::size_t d = 0; d < tdim; d++)
       {
@@ -370,8 +398,10 @@ namespace dolfin
         }
       }
       ufc_cell.entity_indices[tdim].resize(1);
-
-      ufc_cell.entity_indices[tdim][0] = index();
+      if (topology.have_global_indices(tdim))
+        ufc_cell.entity_indices[tdim][0] = global_index();
+      else
+        ufc_cell.entity_indices[tdim][0] = index();
 
       // FIXME: Using the local cell index is inconsistent with UFC, but
       //        necessary to make DOLFIN run

@@ -92,8 +92,10 @@ void LocalSolver::solve(GenericVector& x, const Form& a, const Form& L,
     // Update to current cell
     cell->get_vertex_coordinates(vertex_coordinates);
     cell->get_cell_data(ufc_cell);
-    ufc_a.update(*cell, vertex_coordinates, ufc_cell);
-    ufc_L.update(*cell, vertex_coordinates, ufc_cell);
+    ufc_a.update(*cell, vertex_coordinates, ufc_cell,
+                 integral_a->enabled_coefficients());
+    ufc_L.update(*cell, vertex_coordinates, ufc_cell,
+                 integral_L->enabled_coefficients());
 
     // Get local-to-global dof maps for cell
     const std::vector<dolfin::la_index>& dofs_a0
@@ -125,7 +127,7 @@ void LocalSolver::solve(GenericVector& x, const Form& a, const Form& L,
     x_local = A.partialPivLu().solve(b);
 
     // Set solution in global vector
-    x.set(x_local.data(), dofs_a0.size(), dofs_a0.data());
+    x.set_local(x_local.data(), dofs_a0.size(), dofs_a0.data());
 
     p++;
   }
