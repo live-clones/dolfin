@@ -83,6 +83,7 @@ option(DOLFIN_ENABLE_BENCHMARKS "Enable benchmark programs." OFF)
 option(DOLFIN_ENABLE_DOCS "Enable generation of documentation." ON)
 option(DOLFIN_SKIP_BUILD_TESTS "Skip build tests." OFF)
 option(DOLFIN_DEPRECATION_ERROR "Turn deprecation warnings into errors." OFF)
+option(DOLFIN_LINK_STATIC "Turn on build and linking of only static libraries (typically used for some HPC systems)." OFF)
 #------------------------------------------------------------------------------
 # This should be removed when petsc version > 3.4 is out
 
@@ -132,6 +133,16 @@ endif()
 
 #------------------------------------------------------------------------------
 # Compiler flags
+
+# Switch to static library searchs
+if (DOLFIN_LINK_STATIC)
+  set(BUILD_SHARED_LIBS OFF)
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+  set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
+  set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
+  set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
+  set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
+endif()
 
 # Default build type (can be overridden by user)
 if (NOT CMAKE_BUILD_TYPE)
