@@ -130,7 +130,8 @@ endif()
 if (FOUND_PETSC_CONF)
 
   # Find PETSc config file
-  find_file(PETSC_VARIABLES_FILE NAMES variables PATHS ${PETSC_DIR}/lib/petsc-conf ${PETSC_DIR}/conf)
+  find_file(PETSC_VARIABLES_FILE NAMES variables petscvariables
+    PATHS ${PETSC_DIR}/lib/petsc-conf ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc-conf ${PETSC_DIR}/conf)
 
   # Create a temporary Makefile to probe the PETSc configuration
   set(petsc_config_makefile ${PROJECT_BINARY_DIR}/Makefile.petsc)
@@ -175,9 +176,14 @@ show :
     # with clang (the libs may be required by 3rd party Fortran libraries)
     find_program(GFORTRAN_EXECUTABLE gfortran)
     if (GFORTRAN_EXECUTABLE)
-      execute_process(COMMAND ${GFORTRAN_EXECUTABLE} -print-file-name=libgfortran.dylib
-      OUTPUT_VARIABLE GFORTRAN_LIBRARY
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
+      if (DOLFIN_LINK_STATIC)
+        set(LIBGFORTRANFILENAME libgfortran.a)
+      else ()
+        set(LIBGFORTRANFILENAME libgfortran.dylib)
+      endif()
+      execute_process(COMMAND ${GFORTRAN_EXECUTABLE} -print-file-name=${LIBGFORTRANFILENAME}
+        OUTPUT_VARIABLE GFORTRAN_LIBRARY
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
       if (EXISTS "${GFORTRAN_LIBRARY}")
         list(APPEND PETSC_EXTERNAL_LIBRARIES ${GFORTRAN_LIBRARY})
@@ -211,6 +217,7 @@ if (DOLFIN_SKIP_BUILD_TESTS)
   set(PETSC_TEST_RUNS TRUE)
   set(PETSC_VERSION "UNKNOWN")
   set(PETSC_VERSION_OK TRUE)
+  set(PETSC_LIBRARIES ${PETSC_LIBRARIES} ${PETSC_EXTERNAL_LIBRARIES})
 elseif (FOUND_PETSC_CONF)
 
   # Set flags for building test program
