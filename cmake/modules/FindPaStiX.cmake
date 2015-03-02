@@ -61,7 +61,12 @@ set(PASTIX_LIBRARIES ${PASTIX_LIBRARIES} ${BLAS_LIBRARIES})
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   find_program(GFORTRAN_EXECUTABLE gfortran)
   if (GFORTRAN_EXECUTABLE)
-    execute_process(COMMAND ${GFORTRAN_EXECUTABLE} -print-file-name=libgfortran.so
+    if (DOLFIN_LINK_STATIC)
+      set(LIBGFORTRANFILENAME libgfortran.a)
+    else ()
+      set(LIBGFORTRANFILENAME libgfortran.so)
+    endif()
+    execute_process(COMMAND ${GFORTRAN_EXECUTABLE} -print-file-name=${LIBGFORTRANFILENAME}
       OUTPUT_VARIABLE GFORTRAN_LIBRARY
       OUTPUT_STRIP_TRAILING_WHITESPACE)
     if (EXISTS "${GFORTRAN_LIBRARY}")
