@@ -100,7 +100,7 @@ the boundary conditions. This makes it easy to add new boundary
 conditions or use this demo program to solve the Navier-Stokes
 equations on other geometries.
 
-We next define the functions and the coefficients that will be used
+We next define (and rename) the functions and the coefficients that will be used
 below:
 
 .. code-block:: python
@@ -109,6 +109,10 @@ below:
     u0 = Function(V)
     u1 = Function(V)
     p1 = Function(Q)
+
+    # Rename output
+    u1.rename("Velocity", "u")
+    p1.rename("Pressure", "p")
 
     # Define coefficients
     k = Constant(dt)
@@ -161,8 +165,7 @@ signals that the solution should be stored in VTK format:
 .. code-block:: python
 
     # Create files for storing solution
-    ufile = File("results/velocity.pvd")
-    pfile = File("results/pressure.pvd")
+    file = File("results/navier-stokes.pvd")
 
 The time-stepping loop is now implemented as follows:
 
@@ -222,8 +225,7 @@ solution to file, and update values for the next time step:
    plot(u1, title="Velocity", rescale=True)
 
    # Save to file
-   ufile << u1
-   pfile << p1
+   file << [u1, p1]
 
    # Move to next time step
    u0.assign(u1)

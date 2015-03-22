@@ -273,7 +273,7 @@ the boundary conditions. This makes it easy to add new boundary
 conditions or use this demo program to solve the Navier-Stokes
 equations on other geometries.
 
-We next define the functions and the coefficients that will be used
+We next define (and rename) the functions and the coefficients that will be used
 below:
 
 .. code-block:: c++
@@ -282,6 +282,13 @@ below:
     Function u0(V);
     Function u1(V);
     Function p1(Q);
+
+    // Rename output
+    u1.rename("Velocity", "u");
+    p1.rename("Pressure", "p");
+    std::vector<const Function*> output;
+    output.push_back(&u1);
+    output.push_back(&p1);
 
     // Create coefficients
     Constant k(dt);
@@ -340,8 +347,7 @@ signals that the solution should be stored in VTK format:
 .. code-block:: c++
 
     // Create files for storing solution
-    File ufile("results/velocity.pvd");
-    File pfile("results/pressure.pvd");
+    File file("results/navier-stokes.pvd");
 
 The time-stepping loop is now implemented as follows:
 
@@ -400,8 +406,7 @@ and update values for the next time step:
 .. code-block:: c++
 
     // Save to file
-    ufile << u1;
-    pfile << p1;
+    file << output;
 
     // Move to next time step
     u0 = u1;
