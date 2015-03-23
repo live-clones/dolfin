@@ -19,6 +19,7 @@
 #include <Eigen/Dense>
 #include <boost/multi_array.hpp>
 
+#include <dolfin/common/MPI.h>
 #include <dolfin/mesh/Cell.h>
 #include <dolfin/mesh/Edge.h>
 #include <dolfin/mesh/Vertex.h>
@@ -47,9 +48,15 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
                  "Not yet implemented");
   }
 
+  if (MPI::size(mesh.mpi_comm()) > 1)
+  {
+    dolfin_error("MeshImprovement.cpp",
+                 "collapse in parallel",
+                 "Not yet implemented");
+  }
+
   // Fix on 2D for now
   dolfin_assert(tdim == 2);
-  dolfin_assert(gdim == 2);
 
   // Copy topological data
   boost::multi_array<std::size_t, 2> topo(boost::extents[mesh.num_cells()][tdim + 1]);
@@ -63,13 +70,15 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
   std::vector<std::pair<double, std::size_t> > candidates;
   std::set<std::size_t> v_ext;
 
+  // Go through all edges, looking for any which meet criteria
+  // Also note external edges in v_ext set
   for (EdgeIterator e(mesh); !e.end(); ++e)
   {
     const std::size_t v0 = e->entities(0)[0];
     const std::size_t v1 = e->entities(0)[1];
-    const std::size_t num_cells = e->num_entities(tdim);
     const double l_local = 0.5*(lideal[v0] + lideal[v1]);
     const std::pair<double, std::size_t> elen(e->length()/l_local, e->index());
+    const std::size_t num_cells = e->num_entities(tdim);
     if (elen.first < 1.0 && num_cells == 2)
       candidates.push_back(elen);
     if (num_cells == 1)
@@ -78,6 +87,7 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
       v_ext.insert(v1);
     }
   }
+  // Sort into ascending order
   std::sort(candidates.begin(), candidates.end());
 
   mesh.init(0, tdim);
@@ -150,10 +160,13 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
   if (collapse_count == 0)
     return mesh;
 
+  // Generate updated mesh, removing killed cells and vertices
+
   Mesh mesh2;
   MeshEditor ed;
   ed.open(mesh2, tdim, gdim);
 
+  // Vertices
   const std::size_t nverts = mesh.num_vertices() - kill_verts.size();
   std::sort(kill_verts.begin(), kill_verts.end());
 
@@ -174,6 +187,7 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
     }
   }
 
+  // Cells
   std::size_t ncells = mesh.num_cells() - kill_cells.size();
   std::sort(kill_cells.begin(), kill_cells.end());
 
@@ -234,9 +248,8 @@ Mesh MeshImprovement::flip(const Mesh& mesh, const MeshFunction<double>& lideal)
                  "Not implemented");
   }
 
-
+  // Fix on 2D for now
   dolfin_assert(tdim == 2);
-  dolfin_assert(gdim == 2);
 
   // Copy topological data
   boost::multi_array<std::size_t, 2> topo(boost::extents[mesh.num_cells()][tdim + 1]);
@@ -244,7 +257,8 @@ Mesh MeshImprovement::flip(const Mesh& mesh, const MeshFunction<double>& lideal)
   // Make ref to geometry data
   boost::const_multi_array_ref<double, 2> geom(mesh.coordinates().data(),
                                                boost::extents[mesh.num_vertices()][gdim]);
-  mesh.init(1, 2);
+
+  mesh.init(1, tdim);
 
   std::vector<std::pair<double, std::size_t> > candidates;
   for (EdgeIterator e(mesh); !e.end(); ++e)
@@ -252,12 +266,12 @@ Mesh MeshImprovement::flip(const Mesh& mesh, const MeshFunction<double>& lideal)
     const std::size_t v0 = e->entities(0)[0];
     const std::size_t v1 = e->entities(0)[1];
     const std::size_t num_cells = e->num_entities(tdim);
-    const double l_local = 0.5*(lideal[v0] + lideal[v1]);
-    const std::pair<double, std::size_t> elen(e->length()/l_local, e->index());
-    if (elen.first > 2.8 && num_cells == 2)
+    const double l_local = 2.8*0.5*(lideal[v0] + lideal[v1]);
+    const std::pair<double, std::size_t> elen(l_local/e->length(), e->index());
+    if (elen.first < 1.0 && num_cells == 2)
       candidates.push_back(elen);
   }
-  // FIXME : reverse order
+  // Sort into ascending order
   std::sort(candidates.begin(), candidates.end());
 
   // Go through and try to flip
@@ -314,11 +328,12 @@ Mesh MeshImprovement::flip(const Mesh& mesh, const MeshFunction<double>& lideal)
           topo[c1][1] = vidx[2];
           topo[c1][2] = vidx[1];
 
+          // Prevent cells from being touched again
+          // FIXME: do we need this?
           for (CellIterator c(e); !c.end(); ++c)
             can_flip[*c] = false;
         }
       }
-
     }
   }
 
