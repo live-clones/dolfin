@@ -66,6 +66,8 @@
 // ale
 %shared_ptr(dolfin::MeshDisplacement)
 
+%shared_ptr(dolfin::MeshImprovement)
+
 // common
 %shared_ptr(dolfin::Variable)
 

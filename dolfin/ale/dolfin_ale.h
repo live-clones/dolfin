@@ -5,5 +5,6 @@
 
 #include <dolfin/ale/ALE.h>
 #include <dolfin/ale/MeshDisplacement.h>
+#include <dolfin/ale/MeshImprovement.h>
 
 #endif
