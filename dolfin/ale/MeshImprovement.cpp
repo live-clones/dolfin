@@ -97,10 +97,14 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
     // If vertex to be deleted is external, swap
     std::size_t ext_count = v_ext.count(kvert);
     if (ext_count == 1)
+    {
+      ext_count += v_ext.count(svert);
       std::swap(kvert, svert);
+    }
+    else
+      ext_count += v_ext.count(svert);
 
     // If both vertices are external, cannot collapse edge
-    ext_count += v_ext.count(kvert);
     if (ext_count == 2)
       continue;
 
