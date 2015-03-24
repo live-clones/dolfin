@@ -20,6 +20,8 @@
 #include <boost/multi_array.hpp>
 
 #include <dolfin/common/MPI.h>
+#include <dolfin/common/Timer.h>
+
 #include <dolfin/mesh/Cell.h>
 #include <dolfin/mesh/Edge.h>
 #include <dolfin/mesh/Vertex.h>
@@ -33,13 +35,21 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lideal)
+std::shared_ptr<Mesh> MeshImprovement::collapse(std::shared_ptr<const Mesh> mesh,
+                                         const MeshFunction<double>& lideal)
 {
   // L(ideal) should be defined on vertices
   dolfin_assert(lideal.dim() == 0);
 
-  std::size_t tdim = mesh.topology().dim();
-  std::size_t gdim = mesh.geometry().dim();
+  std::size_t tdim = mesh->topology().dim();
+  std::size_t gdim = mesh->geometry().dim();
+
+  if (tdim == 1)
+  {
+    dolfin_error("MeshImprovement.cpp",
+                 "collapse edges in 1D",
+                 "Not defined");
+  }
 
   if (tdim != gdim)
   {
@@ -48,31 +58,33 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
                  "Not yet implemented");
   }
 
-  if (MPI::size(mesh.mpi_comm()) > 1)
+  if (MPI::size(mesh->mpi_comm()) > 1)
   {
     dolfin_error("MeshImprovement.cpp",
                  "collapse in parallel",
                  "Not yet implemented");
   }
 
-  // Fix on 2D for now
-  dolfin_assert(tdim == 2);
+  Timer t0a("Collapse: init data");
 
   // Copy topological data
-  boost::multi_array<std::size_t, 2> topo(boost::extents[mesh.num_cells()][tdim + 1]);
-  std::copy(mesh.cells().begin(), mesh.cells().end(), topo.data());
+  boost::multi_array<std::size_t, 2> topo(boost::extents[mesh->num_cells()][tdim + 1]);
+  std::copy(mesh->cells().begin(), mesh->cells().end(), topo.data());
   // Copy geometry data
-  boost::multi_array<double, 2> geom(boost::extents[mesh.num_vertices()][gdim]);
-  std::copy(mesh.coordinates().begin(), mesh.coordinates().end(), geom.data());
+  boost::multi_array<double, 2> geom(boost::extents[mesh->num_vertices()][gdim]);
+  std::copy(mesh->coordinates().begin(), mesh->coordinates().end(), geom.data());
 
-  mesh.init(1, tdim);
+  mesh->init(1, tdim);
+
+  t0a.stop();
+  Timer t0("Collapse: candidates");
 
   std::vector<std::pair<double, std::size_t> > candidates;
   std::set<std::size_t> v_ext;
 
   // Go through all edges, looking for any which meet criteria
   // Also note external edges in v_ext set
-  for (EdgeIterator e(mesh); !e.end(); ++e)
+  for (EdgeIterator e(*mesh); !e.end(); ++e)
   {
     const std::size_t v0 = e->entities(0)[0];
     const std::size_t v1 = e->entities(0)[1];
@@ -90,41 +102,40 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
   // Sort into ascending order
   std::sort(candidates.begin(), candidates.end());
 
-  mesh.init(0, tdim);
-  std::vector<bool> can_collapse(mesh.num_cells(), true);
+  t0.stop();
+
+  Timer t1("Collapse: operate");
+
+  mesh->init(0, tdim);
+  std::vector<bool> can_collapse(mesh->num_cells(), true);
   std::vector<std::size_t> kill_cells;
   std::vector<std::size_t> kill_verts;
 
   std::size_t collapse_count = 0;
   for (auto it : candidates)
   {
-    std::set<std::size_t> cell_block;
-    Edge e(mesh, it.second);
-
+    // Get edge and two vertices, to 'kill' and 'save'
+    Edge e(*mesh, it.second);
     std::size_t kvert = e.entities(0)[0];
     std::size_t svert = e.entities(0)[1];
+    Vertex vk(*mesh, kvert);
+    Vertex vs(*mesh, svert);
 
     // If vertex to be deleted is external, swap
-    std::size_t ext_count = v_ext.count(kvert);
-    if (ext_count == 1)
-    {
-      ext_count += v_ext.count(svert);
+    std::size_t kext_count = v_ext.count(kvert);
+    std::size_t ext_count = kext_count + v_ext.count(svert);
+    if (kext_count == 1)
       std::swap(kvert, svert);
-    }
-    else
-      ext_count += v_ext.count(svert);
 
     // If both vertices are external, cannot collapse edge
     if (ext_count == 2)
       continue;
 
     // Get all affected cells
-    Vertex v0(mesh, kvert);
-    cell_block.insert(v0.entities(tdim),
-                      v0.entities(tdim) + v0.num_entities(tdim));
-    Vertex v1(mesh, svert);
-    cell_block.insert(v1.entities(tdim),
-                      v1.entities(tdim) + v1.num_entities(tdim));
+    std::set<std::size_t> cell_block(vk.entities(tdim),
+                      vk.entities(tdim) + vk.num_entities(tdim));
+    cell_block.insert(vs.entities(tdim),
+                      vs.entities(tdim) + vs.num_entities(tdim));
 
     // Check all cells are not already involved in a collapse
     bool go_collapse = true;
@@ -137,45 +148,47 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
       for (auto idx : cell_block)
         can_collapse[idx] = false;
 
+      // Record deleted cells and vertex
       for (CellIterator c(e); !c.end(); ++c)
         kill_cells.push_back(c->index());
-
       kill_verts.push_back(kvert);
 
       // If neither vertex is external, choose midpoint
       if (ext_count == 0)
       {
-        double *midpt = e.midpoint().coordinates();
-        std::copy(midpt, midpt + gdim, geom[svert].begin());
+        const Point midpt = e.midpoint();
+        std::copy(midpt.coordinates(), midpt.coordinates() + gdim,
+                  geom[svert].begin());
       }
 
       // Update all surrounding cells
-      for (CellIterator c(Vertex(mesh, kvert)); !c.end(); ++c)
+      for (CellIterator c(vk); !c.end(); ++c)
         std::replace(topo[c->index()].begin(), topo[c->index()].end(), kvert, svert);
     }
   }
 
-  std::cout << "Collapse count = " << collapse_count << std::endl;
+  t1.stop();
 
-  if (collapse_count == 0)
-    return mesh;
+  Timer t2("Collapse: new mesh");
+
+  std::cout << "Collapse count = " << collapse_count << std::endl;
 
   // Generate updated mesh, removing killed cells and vertices
 
-  Mesh mesh2;
+  std::shared_ptr<Mesh> mesh2(new Mesh);
   MeshEditor ed;
-  ed.open(mesh2, tdim, gdim);
+  ed.open(*mesh2, tdim, gdim);
 
   // Vertices
-  const std::size_t nverts = mesh.num_vertices() - kill_verts.size();
+  const std::size_t nverts = mesh->num_vertices() - kill_verts.size();
   std::sort(kill_verts.begin(), kill_verts.end());
 
   ed.init_vertices(nverts);
 
   std::size_t kidx = 0;
   const std::size_t kimax = kill_verts.size();
-  std::vector<int> new_map(mesh.num_vertices(), -1);
-  for (std::size_t i = 0; i != mesh.num_vertices(); ++i)
+  std::vector<int> new_map(mesh->num_vertices(), -1);
+  for (std::size_t i = 0; i != mesh->num_vertices(); ++i)
   {
     if (kidx < kimax and kill_verts[kidx] == i)
       ++kidx;
@@ -183,26 +196,34 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
     {
       std::size_t idx = i - kidx;
       new_map[i] = idx;
-      ed.add_vertex(idx, geom[i][0], geom[i][1]);
+      if (gdim == 2)
+        ed.add_vertex(idx, geom[i][0], geom[i][1]);
+      else
+        ed.add_vertex(idx, geom[i][0], geom[i][1], geom[i][2]);
     }
   }
 
   // Cells
-  std::size_t ncells = mesh.num_cells() - kill_cells.size();
+  std::size_t ncells = mesh->num_cells() - kill_cells.size();
   std::sort(kill_cells.begin(), kill_cells.end());
 
   ed.init_cells(ncells);
 
   std::size_t cidx = 0;
   const std::size_t cimax = kill_cells.size();
-  for (std::size_t i = 0; i != mesh.num_cells(); ++i)
+  for (std::size_t i = 0; i != mesh->num_cells(); ++i)
   {
     if (cidx < cimax and kill_cells[cidx] == i)
       ++cidx;
     else
     {
       std::size_t idx = i - cidx;
-      ed.add_cell(idx, new_map[topo[i][0]], new_map[topo[i][1]], new_map[topo[i][2]]);
+      if (tdim == 2)
+        ed.add_cell(idx, new_map[topo[i][0]],
+                    new_map[topo[i][1]], new_map[topo[i][2]]);
+      else
+        ed.add_cell(idx, new_map[topo[i][0]],
+           new_map[topo[i][1]], new_map[topo[i][2]], new_map[topo[i][3]]);
     }
   }
 
@@ -214,6 +235,9 @@ Mesh MeshImprovement::collapse(const Mesh& mesh, const MeshFunction<double>& lid
 //-----------------------------------------------------------------------------
 Eigen::Vector2d calc_crossover(const Mesh& mesh, std::vector<std::size_t> vidx)
 {
+  // Calculate the crossing point of the vectors AB and CD, to check it lies
+  // inside the quadrilateral ACBD
+
   Eigen::Vector2d a, b, c, d;
   Point p = Vertex(mesh, vidx[0]).point();
   a << p.x(), p.y();
@@ -236,10 +260,11 @@ Eigen::Vector2d calc_crossover(const Mesh& mesh, std::vector<std::size_t> vidx)
   return x;
 }
 //-----------------------------------------------------------------------------
-Mesh MeshImprovement::flip(const Mesh& mesh, const MeshFunction<double>& lideal)
+std::shared_ptr<Mesh> MeshImprovement::flip(std::shared_ptr<const Mesh> mesh,
+                                            const MeshFunction<double>& lideal)
 {
-  const std::size_t tdim = mesh.topology().dim();
-  const std::size_t gdim = mesh.geometry().dim();
+  const std::size_t tdim = mesh->topology().dim();
+  const std::size_t gdim = mesh->geometry().dim();
 
   if (tdim != gdim)
   {
@@ -248,20 +273,32 @@ Mesh MeshImprovement::flip(const Mesh& mesh, const MeshFunction<double>& lideal)
                  "Not implemented");
   }
 
+  if (MPI::size(mesh->mpi_comm()) > 1)
+  {
+    dolfin_error("MeshImprovement.cpp",
+                 "flip in parallel",
+                 "Not yet implemented");
+  }
+
+  Timer t0a("Flip: init data");
+
   // Fix on 2D for now
   dolfin_assert(tdim == 2);
 
   // Copy topological data
-  boost::multi_array<std::size_t, 2> topo(boost::extents[mesh.num_cells()][tdim + 1]);
-  std::copy(mesh.cells().begin(), mesh.cells().end(), topo.data());
+  boost::multi_array<std::size_t, 2> topo(boost::extents[mesh->num_cells()][tdim + 1]);
+  std::copy(mesh->cells().begin(), mesh->cells().end(), topo.data());
   // Make ref to geometry data
-  boost::const_multi_array_ref<double, 2> geom(mesh.coordinates().data(),
-                                               boost::extents[mesh.num_vertices()][gdim]);
+  boost::const_multi_array_ref<double, 2> geom(mesh->coordinates().data(),
+                                               boost::extents[mesh->num_vertices()][gdim]);
 
-  mesh.init(1, tdim);
+  mesh->init(1, tdim);
+
+  t0a.stop();
+  Timer t0("Flip: candidates");
 
   std::vector<std::pair<double, std::size_t> > candidates;
-  for (EdgeIterator e(mesh); !e.end(); ++e)
+  for (EdgeIterator e(*mesh); !e.end(); ++e)
   {
     const std::size_t v0 = e->entities(0)[0];
     const std::size_t v1 = e->entities(0)[1];
@@ -274,13 +311,16 @@ Mesh MeshImprovement::flip(const Mesh& mesh, const MeshFunction<double>& lideal)
   // Sort into ascending order
   std::sort(candidates.begin(), candidates.end());
 
+  t0.stop();
+  Timer t1("Flip: operate");
+
   // Go through and try to flip
-  CellFunction<bool> can_flip(mesh, true);
+  CellFunction<bool> can_flip(*mesh, true);
   std::size_t flip_count = 0;
   std::vector<std::size_t> vidx;
   for (auto it : candidates)
   {
-    const Edge e(mesh, it.second);
+    const Edge e(*mesh, it.second);
 
     // Check if cells have already been flipped
     bool go_flip = true;
@@ -304,15 +344,15 @@ Mesh MeshImprovement::flip(const Mesh& mesh, const MeshFunction<double>& lideal)
           }
       }
 
-      Point d = Vertex(mesh, vidx[2]).point()
-              - Vertex(mesh, vidx[3]).point();
+      Point d = Vertex(*mesh, vidx[2]).point()
+              - Vertex(*mesh, vidx[3]).point();
 
       // Check flip is advantageous
       if (d.norm() < e.length())
       {
         // Final check that crossover is inside cell, and
         // close to centre of quadrilateral
-        Eigen::Vector2d x = calc_crossover(mesh, vidx);
+        Eigen::Vector2d x = calc_crossover(*mesh, vidx);
 
         // Set tolerance (in range 0.0 - 0.5)
         const double al = 0.2;
@@ -337,37 +377,40 @@ Mesh MeshImprovement::flip(const Mesh& mesh, const MeshFunction<double>& lideal)
     }
   }
 
+  t1.stop();
+  Timer t2("Flip: new mesh");
+
   std::cout << "Flip count = " << flip_count << std::endl;
 
-  if (flip_count == 0)
-    return mesh;
-
-  Mesh mesh2;
+  std::shared_ptr<Mesh> mesh2(new Mesh);
   MeshEditor ed;
-  ed.open(mesh2, tdim, gdim);
-  ed.init_vertices(mesh.num_vertices());
-  for (unsigned int i = 0; i != mesh.num_vertices(); ++i)
+  ed.open(*mesh2, tdim, gdim);
+  ed.init_vertices(mesh->num_vertices());
+  for (unsigned int i = 0; i != mesh->num_vertices(); ++i)
     ed.add_vertex(i, geom[i][0], geom[i][1]);
 
-  ed.init_cells(mesh.num_cells());
-  for (unsigned int i = 0; i != mesh.num_cells(); ++i)
+  ed.init_cells(mesh->num_cells());
+  for (unsigned int i = 0; i != mesh->num_cells(); ++i)
     ed.add_cell(i, topo[i][0], topo[i][1], topo[i][2]);
   ed.close();
 
   return mesh2;
 }
 //-----------------------------------------------------------------------------
-Mesh MeshImprovement::split(const Mesh& mesh, const MeshFunction<double>& lideal)
+std::shared_ptr<const Mesh> MeshImprovement::split(std::shared_ptr<const Mesh> mesh,
+                                             const MeshFunction<double>& lideal)
 {
-  const std::size_t tdim = mesh.topology().dim();
+  const std::size_t tdim = mesh->topology().dim();
 
   dolfin_assert(tdim == 2);
 
-  mesh.init(1, tdim);
-  EdgeFunction<bool> split(mesh, false);
+  mesh->init(1, tdim);
+  EdgeFunction<bool> split(*mesh, false);
+
+  Timer t0("Split: candidates");
 
   std::size_t sct = 0;
-  for (EdgeIterator e(mesh); !e.end(); ++e)
+  for (EdgeIterator e(*mesh); !e.end(); ++e)
   {
     const std::size_t v0 = e->entities(0)[0];
     const std::size_t v1 = e->entities(0)[1];
@@ -379,12 +422,15 @@ Mesh MeshImprovement::split(const Mesh& mesh, const MeshFunction<double>& lideal
     }
   }
 
+  t0.stop();
+  Timer t1("Split: refine and new mesh");
+
   if (sct == 0)
     return mesh;
 
   // Marker refine
-  Mesh mesh2;
-  refine(mesh2, mesh, split, false);
+  std::shared_ptr<Mesh> mesh2(new Mesh);
+  refine(*mesh2, *mesh, split, false);
 
   return mesh2;
 }
