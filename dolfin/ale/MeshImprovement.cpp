@@ -35,6 +35,35 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
+int orientation(const std::vector<Point>& pts)
+{
+  double vol;
+
+  if (pts.size() == 3)
+  {
+    Point v0 = pts[1] - pts[0];
+    Point v1 = pts[2] - pts[0];
+    Eigen::Matrix2d A;
+    A << v0.x(), v0.y(),
+         v1.x(), v1.y();
+
+    vol = A.determinant();
+  }
+  else
+  {
+    Point v0 = pts[1] - pts[0];
+    Point v1 = pts[2] - pts[0];
+    Point v2 = pts[3] - pts[0];
+    Eigen::Matrix3d A;
+    A << v0.x(), v0.y(), v0.z(),
+      v1.x(), v1.y(), v1.z(),
+      v2.x(), v2.y(), v2.z();
+    vol = A.determinant();
+  }
+
+  return (vol > 0) ? +1 : -1;
+}
+//-----------------------------------------------------------------------------
 std::shared_ptr<Mesh> MeshImprovement::collapse(std::shared_ptr<const Mesh> mesh,
                                          const MeshFunction<double>& lideal)
 {
@@ -118,8 +147,8 @@ std::shared_ptr<Mesh> MeshImprovement::collapse(std::shared_ptr<const Mesh> mesh
     Edge e(*mesh, it.second);
     std::size_t kvert = e.entities(0)[0];
     std::size_t svert = e.entities(0)[1];
-    Vertex vk(*mesh, kvert);
-    Vertex vs(*mesh, svert);
+
+    dolfin_assert(kvert != svert);
 
     // If vertex to be deleted is external, swap
     std::size_t kext_count = v_ext.count(kvert);
@@ -132,39 +161,68 @@ std::shared_ptr<Mesh> MeshImprovement::collapse(std::shared_ptr<const Mesh> mesh
       continue;
 
     // Get all affected cells
+    Vertex vk(*mesh, kvert);
+    Vertex vs(*mesh, svert);
     std::set<std::size_t> cell_block(vk.entities(tdim),
                       vk.entities(tdim) + vk.num_entities(tdim));
     cell_block.insert(vs.entities(tdim),
                       vs.entities(tdim) + vs.num_entities(tdim));
 
     // Check all cells are not already involved in a collapse
-    bool go_collapse = true;
+    bool check_ok = true;
     for (auto idx : cell_block)
-      go_collapse &= can_collapse[idx];
+      check_ok &= can_collapse[idx];
 
-    if (go_collapse)
+    if (!check_ok)
+      continue;
+
+    // If both endpoints are internal, use midpoint
+    Point midpt;
+    if (ext_count == 0)
+      midpt = e.midpoint();
+    else
+      midpt = vs.point();
+
+    // Check for inverted cells
+    check_ok = true;
+    std::vector<Point> pts;
+    for (CellIterator c(vk); !c.end(); ++c)
     {
-      collapse_count++;
-      for (auto idx : cell_block)
-        can_collapse[idx] = false;
-
-      // Record deleted cells and vertex
-      for (CellIterator c(e); !c.end(); ++c)
-        kill_cells.push_back(c->index());
-      kill_verts.push_back(kvert);
-
-      // If neither vertex is external, choose midpoint
-      if (ext_count == 0)
+      pts.clear();
+      for (VertexIterator v(*c); !v.end(); ++v)
       {
-        const Point midpt = e.midpoint();
-        std::copy(midpt.coordinates(), midpt.coordinates() + gdim,
-                  geom[svert].begin());
+        if (v->index() != kvert)
+          pts.push_back(v->point());
       }
-
-      // Update all surrounding cells
-      for (CellIterator c(vk); !c.end(); ++c)
-        std::replace(topo[c->index()].begin(), topo[c->index()].end(), kvert, svert);
+      pts.push_back(vk.point());
+      int cell_orient = orientation(pts);
+      pts.back() = midpt;
+      if (cell_orient != orientation(pts))
+        check_ok = false;
     }
+
+    if (!check_ok)
+      continue;
+
+    // All checks passed, so go ahead with collapse
+    collapse_count++;
+
+    // Update geometry
+    std::copy(midpt.coordinates(), midpt.coordinates() + gdim,
+              geom[svert].begin());
+
+    // Update topology
+    for (CellIterator c(vk); !c.end(); ++c)
+      std::replace(topo[c->index()].begin(), topo[c->index()].end(), kvert, svert);
+
+    // Prevent cells from being collapsed again during this pass
+    for (auto idx : cell_block)
+      can_collapse[idx] = false;
+
+    // Record deleted cells and vertex
+    for (CellIterator c(e); !c.end(); ++c)
+      kill_cells.push_back(c->index());
+    kill_verts.push_back(kvert);
   }
 
   t1.stop();
