@@ -324,6 +324,14 @@ namespace dolfin
       _mesh->_topology.set_global_index(_tdim, local_index, global_index);
     }
 
+    /// Add some known data to MeshConnectivity
+    void add_topological_connectivity(std::size_t d0, std::size_t d1,
+                   const std::vector<std::vector<unsigned int>>& data);
+
+    void add_topological_connectivity(std::size_t d0, std::size_t d1,
+                   const boost::const_multi_array_ref<unsigned int, 2> conn);
+
+
     /// Close mesh, finish editing, and order entities locally
     ///
     /// *Arguments*

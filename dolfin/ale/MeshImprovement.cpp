@@ -103,6 +103,7 @@ std::shared_ptr<Mesh> MeshImprovement::collapse(std::shared_ptr<const Mesh> mesh
   boost::multi_array<double, 2> geom(boost::extents[mesh->num_vertices()][gdim]);
   std::copy(mesh->coordinates().begin(), mesh->coordinates().end(), geom.data());
 
+  // Edge - cell connectivity
   mesh->init(1, tdim);
 
   t0a.stop();
@@ -352,6 +353,22 @@ std::shared_ptr<Mesh> MeshImprovement::flip(std::shared_ptr<const Mesh> mesh,
 
   mesh->init(1, tdim);
 
+  // Get edge to vertex connectivity array
+  const std::vector<unsigned int>& e2v_data = mesh->topology()(1, 0)();
+  boost::multi_array<unsigned int, 2> edge_to_vertex(boost::extents[mesh->num_edges()][2]);
+  std::copy(e2v_data.begin(), e2v_data.end(), edge_to_vertex.data());
+
+  const std::vector<unsigned int>& c2e_data = mesh->topology()(tdim, 1)();
+  boost::multi_array<unsigned int, 2> cell_to_edge(boost::extents[mesh->num_cells()][tdim*3 - 3]);
+  std::copy(c2e_data.begin(), c2e_data.end(), cell_to_edge.data());
+
+  // for (auto it: cell_to_edge)
+  // {
+  //   for (auto it2: it)
+  //     std::cout << it2 << " ";
+  //   std::cout << "\n";
+  // }
+
   t0a.stop();
   Timer t0("Flip: candidates");
 
@@ -392,14 +409,17 @@ std::shared_ptr<Mesh> MeshImprovement::flip(std::shared_ptr<const Mesh> mesh,
       vidx.push_back(e.entities(0)[1]);
 
       // Get indices of 'off-edge' points
+      std::vector<std::size_t> cidx;
       for (CellIterator c(e); !c.end(); ++c)
       {
-        for (VertexIterator v(*c); !v.end(); ++v)
-          if (v->index() != vidx[0] and
-              v->index() != vidx[1])
-          {
-            vidx.push_back(v->index());
-          }
+        const auto& cell_edges = cell_to_edge[c->index()];
+
+        auto it_edge = std::find(cell_edges.begin(),
+                                 cell_edges.end(), it.second);
+        dolfin_assert(it_edge != cell_edges.end());
+        const std::size_t i = it_edge - cell_edges.begin();
+        cidx.push_back(i);
+        vidx.push_back(topo[c->index()][i]);
       }
 
       Point d = Vertex(*mesh, vidx[2]).point()
@@ -419,12 +439,45 @@ std::shared_ptr<Mesh> MeshImprovement::flip(std::shared_ptr<const Mesh> mesh,
           ++flip_count;
           const std::size_t c0 = e.entities(tdim)[0];
           const std::size_t c1 = e.entities(tdim)[1];
-          topo[c0][0] = vidx[2];
-          topo[c0][1] = vidx[3];
-          topo[c0][2] = vidx[0];
-          topo[c1][0] = vidx[3];
-          topo[c1][1] = vidx[2];
-          topo[c1][2] = vidx[1];
+
+          // Shared edge in cell 0
+          std::size_t ic0 = cidx[0];
+
+          // ic0 points to the shared edge, and vertex opposite
+          dolfin_assert(topo[c0][ic0] == vidx[2]);
+
+          // Find vidx[0] on shared edge -> ic1
+          std::size_t ic1 = (ic0 + 1)%3;
+          if (topo[c0][ic1] != vidx[0])
+            ic1 = (ic0 + 2)%3;
+          std::size_t ic2 = 3 - ic1 - ic0;
+          topo[c0][ic2] = vidx[3];
+
+          // Cell 0 now contains vidx[2, 0, 3]
+          std::swap(cell_to_edge[c0][ic1], cell_to_edge[c0][ic0]);
+          //          cell_to_edge[c0][ic2] - unchanged.
+
+          // Locate shared edge in cell 1
+          std::size_t ic3 = cidx[1];
+
+          // ic1 points to the shared edge, and vertex opposite
+          dolfin_assert(topo[c1][ic3] == vidx[3]);
+
+          // Find vidx[1] on shared edge -> ic4
+          std::size_t ic4 = (ic3 + 1)%3;
+          if (topo[c1][ic4] != vidx[1])
+            ic4 = (ic3 + 2)%3;
+          std::size_t ic5 = 3 - ic4 - ic3;
+          topo[c1][ic5] = vidx[2];
+          // Cell 1 now contains vidx[3, 1, 2]
+
+          std::swap(cell_to_edge[c1][ic4], cell_to_edge[c1][ic3]);
+          // cell_to_edge[c1][ic5] - unchanged
+          std::swap(cell_to_edge[c0][ic0], cell_to_edge[c1][ic3]);
+
+          // Update topology
+          edge_to_vertex[it.second][0] = vidx[2];
+          edge_to_vertex[it.second][1] = vidx[3];
 
           // Prevent cells from being touched again
           // FIXME: do we need this?
@@ -450,7 +503,18 @@ std::shared_ptr<Mesh> MeshImprovement::flip(std::shared_ptr<const Mesh> mesh,
   ed.init_cells(mesh->num_cells());
   for (unsigned int i = 0; i != mesh->num_cells(); ++i)
     ed.add_cell(i, topo[i][0], topo[i][1], topo[i][2]);
+
+  ed.add_topological_connectivity(1, 0, edge_to_vertex);
+  ed.add_topological_connectivity(tdim, 1, cell_to_edge);
+
   ed.close();
+
+  // for (auto it: cell_to_edge)
+  // {
+  //   for (auto it2: it)
+  //     std::cout << it2 << " ";
+  //   std::cout << "\n";
+  // }
 
   return mesh2;
 }

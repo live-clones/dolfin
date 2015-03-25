@@ -345,3 +345,23 @@ void MeshEditor::clear()
   _vertices.clear();
 }
 //-----------------------------------------------------------------------------
+void MeshEditor::add_topological_connectivity(std::size_t d0, std::size_t d1,
+                           const std::vector<std::vector<unsigned int> >& conn)
+{
+  // Adds known connectivity from d0 to d1
+  _mesh->_topology.init(d0, conn.size(), conn.size());
+  MeshConnectivity& meshconn = _mesh->_topology(d0, d1);
+  meshconn.set(conn);
+}
+//-----------------------------------------------------------------------------
+void MeshEditor::add_topological_connectivity(std::size_t d0, std::size_t d1,
+                       const boost::const_multi_array_ref<unsigned int, 2> conn)
+{
+  std::vector<std::vector<unsigned int> > v;
+  v.reserve(conn.size());
+  for (auto it : conn)
+    v.push_back(std::vector<unsigned int>(it.begin(), it.end()));
+
+  add_topological_connectivity(d0, d1, v);
+}
+//-----------------------------------------------------------------------------

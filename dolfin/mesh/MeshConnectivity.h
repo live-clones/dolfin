@@ -104,7 +104,7 @@ namespace dolfin
     /// Set given connection for given entity
     void set(std::size_t entity, std::size_t connection, std::size_t pos);
 
-    /// Set all connections for given entity. T is a contains,
+    /// Set all connections for given entity. T is a container,
     /// e.g. std::vector<std::size_t>
     template<typename T>
     void set(std::size_t entity, const T& connections)
