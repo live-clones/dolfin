@@ -97,6 +97,49 @@ Mesh::Mesh(MPI_Comm comm, LocalMeshData& local_mesh_data)
   MeshPartitioning::build_distributed_mesh(*this, local_mesh_data);
 }
 //-----------------------------------------------------------------------------
+Mesh::Mesh(std::shared_ptr<Mesh> mvmesh, std::size_t tdim,
+           const std::vector<std::size_t>& indices)
+  : Variable("mesh", "DOLFIN mesh view"), Hierarchical<Mesh>(*this),
+    _mvmesh(mvmesh)
+{
+  _mv_index.resize(tdim + 1);
+  _mv_index[tdim] = indices;
+  _topology.init(tdim);
+  _cell_type.reset(CellType::create(mvmesh->_cell_type->cell_type()));
+
+  // Reverse mapping from full Mesh to MeshView
+  std::map<std::size_t, std::size_t> mvindex;
+  const MeshConnectivity& mvconn = mvmesh->topology()(tdim, 0);
+
+  std::size_t ct = 0;
+  std::vector<std::vector<std::size_t> > new_cells(indices.size());
+  for (unsigned int j = 0; j != indices.size(); ++j)
+  {
+    const std::size_t idx = indices[j];
+    const std::size_t nv = mvconn.size(idx);
+    for (unsigned int i = 0; i != nv; ++i)
+    {
+      auto mapit = mvindex.insert(std::pair<std::size_t, std::size_t>
+                                  (mvconn(idx)[i], ct));
+      if (mapit.second)
+      {
+        // Insert forward mapping for vertices
+        _mv_index[0].push_back(ct);
+        ++ct;
+      }
+
+      new_cells[j].push_back(mapit.first->second);
+    }
+  }
+  _topology(tdim, 0).set(new_cells);
+  // FIXME: set num_global_cells correctly
+  _topology.init(tdim, indices.size(), indices.size());
+  _topology.init(0, ct, ct);
+  // FIXME: how to deal with ghosts?
+  _topology.init_ghost(0, ct);
+  _topology.init_ghost(tdim, indices.size());
+}
+//-----------------------------------------------------------------------------
 Mesh::~Mesh()
 {
   // Do nothing
@@ -153,6 +196,9 @@ std::size_t Mesh::init(std::size_t dim) const
   // Skip if already computed
   if (_topology.size(dim) > 0)
     return _topology.size(dim);
+
+  if (is_view())
+    std::cout << "MeshView::init(" << dim << ")\n";
 
   // Skip vertices and cells (should always exist)
   if (dim == 0 || dim == _topology.dim())

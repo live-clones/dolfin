@@ -116,7 +116,14 @@ Point MeshEntity::midpoint() const
 {
   // Special case: a vertex is its own midpoint (don't check neighbors)
   if (_dim == 0)
+  {
+    if (_mesh.is_view())
+    {
+      const std::size_t idx = _mesh->mv_index(0)[_local_index];
+      return _mesh->mvmesh()->geometry().point(idx);
+    }
     return _mesh->geometry().point(_local_index);
+  }
 
   // Other wise iterate over incident vertices and compute average
   std::size_t num_vertices = 0;
@@ -155,7 +162,7 @@ unsigned int MeshEntity::owner() const
     dolfin_error("MeshEntity.cpp",
                  "get ownership of entity",
                  "Ownership of non-ghost cells is local process");
-  
+
   return _mesh->topology().cell_owner()[_local_index - offset];
 }
 //-----------------------------------------------------------------------------

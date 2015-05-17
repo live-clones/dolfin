@@ -228,7 +228,7 @@ namespace dolfin
         return map_it->second;
     }
 
-    /// Determine if an entity is shared or not    
+    /// Determine if an entity is shared or not
     bool is_shared() const
     {
       if (_mesh->topology().have_shared_entities(_dim))
@@ -242,7 +242,7 @@ namespace dolfin
 
     /// Get ownership of this entity - only really valid for cells
     unsigned int owner() const;
-    
+
     // Note: Not a subclass of Variable for efficiency!
     /// Return informal string representation (pretty-print)
     ///
