@@ -117,7 +117,7 @@ Point MeshEntity::midpoint() const
   // Special case: a vertex is its own midpoint (don't check neighbors)
   if (_dim == 0)
   {
-    if (_mesh.is_view())
+    if (_mesh->is_view())
     {
       const std::size_t idx = _mesh->mv_index(0)[_local_index];
       return _mesh->mvmesh()->geometry().point(idx);

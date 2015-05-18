@@ -266,8 +266,22 @@ void HDF5File::write(const Mesh& mesh, std::size_t cell_dim,
 
     // Copy coordinates and indices and remove off-process values
     const std::size_t gdim = mesh.geometry().dim();
-    const std::vector<double> vertex_coords
-      = DistributedMeshTools::reorder_vertices_by_global_indices(mesh);
+
+     std::vector<double> vertex_coords;
+
+     if (mesh.is_view())
+     {
+       for (auto &p : mesh.mv_index(0))
+       {
+         vertex_coords.insert(vertex_coords.end(),
+                              mesh.geometry().x(p),
+                              mesh.geometry().x(p) + gdim);
+       }
+     }
+     else
+     {
+       vertex_coords = DistributedMeshTools::reorder_vertices_by_global_indices(mesh);
+     }
 
     // Write coordinates out from each process
     std::vector<std::size_t> global_size(2);
@@ -383,7 +397,7 @@ void HDF5File::write(const Mesh& mesh, std::size_t cell_dim,
                                  "partition", partitions);
 
     // ---------- Markers
-    for (std::size_t d = 0; d <= mesh.domains().max_dim(); d++)
+    for (std::size_t d = 0; d < mesh.domains().max_dim(); d++)
     {
       const std::map<std::size_t, std::size_t>& domain
         = mesh.domains().markers(d);

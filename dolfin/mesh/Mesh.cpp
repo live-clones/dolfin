@@ -99,8 +99,8 @@ Mesh::Mesh(MPI_Comm comm, LocalMeshData& local_mesh_data)
 //-----------------------------------------------------------------------------
 Mesh::Mesh(std::shared_ptr<Mesh> mvmesh, std::size_t tdim,
            const std::vector<std::size_t>& indices)
-  : Variable("mesh", "DOLFIN mesh view"), Hierarchical<Mesh>(*this),
-    _mvmesh(mvmesh)
+  : Variable("meshview", "DOLFIN mesh view"), Hierarchical<Mesh>(*this),
+    _mvmesh(mvmesh), _mpi_comm(mvmesh->_mpi_comm)
 {
   _mv_index.resize(tdim + 1);
   _mv_index[tdim] = indices;
@@ -119,22 +119,38 @@ Mesh::Mesh(std::shared_ptr<Mesh> mvmesh, std::size_t tdim,
     const std::size_t nv = mvconn.size(idx);
     for (unsigned int i = 0; i != nv; ++i)
     {
+      const std::size_t main_idx = mvconn(idx)[i];
       auto mapit = mvindex.insert(std::pair<std::size_t, std::size_t>
-                                  (mvconn(idx)[i], ct));
+                                  (main_idx, ct));
       if (mapit.second)
       {
         // Insert forward mapping for vertices
-        _mv_index[0].push_back(ct);
+        _mv_index[0].push_back(main_idx);
         ++ct;
       }
-
       new_cells[j].push_back(mapit.first->second);
     }
   }
+
+
   _topology(tdim, 0).set(new_cells);
-  // FIXME: set num_global_cells correctly
-  _topology.init(tdim, indices.size(), indices.size());
-  _topology.init(0, ct, ct);
+  _topology.init(tdim, indices.size(), MPI::sum(_mpi_comm, indices.size()));
+  // FIXME: set num_global_vertices correctly (some are shared)
+  _topology.init(0, ct, MPI::sum(_mpi_comm, ct));
+
+  // Generate some global indices
+  const std::size_t cell_offset
+    = MPI::global_offset(_mpi_comm, indices.size(), true);
+  _topology.init_global_indices(tdim, indices.size());
+  for (std::size_t i = 0; i != indices.size(); ++i)
+    _topology.set_global_index(tdim, i, i + cell_offset);
+
+  const std::size_t vertex_offset
+    = MPI::global_offset(_mpi_comm, ct, true);
+  _topology.init_global_indices(0, ct);
+  for (std::size_t i = 0; i != ct; ++i)
+    _topology.set_global_index(0, i, i + vertex_offset);
+
   // FIXME: how to deal with ghosts?
   _topology.init_ghost(0, ct);
   _topology.init_ghost(tdim, indices.size());

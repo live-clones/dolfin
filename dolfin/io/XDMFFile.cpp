@@ -467,8 +467,8 @@ void XDMFFile::operator<< (const Mesh& mesh)
   const std::size_t gdim = mesh.geometry().dim();
   const std::size_t cell_dim = mesh.topology().dim();
 
-  // Make sure entities are numbered
-  DistributedMeshTools::number_entities(mesh, cell_dim);
+  // Make sure cells are numbered
+  //  DistributedMeshTools::number_entities(mesh, cell_dim);
 
   // Get number of global cells and vertices
   const std::size_t num_global_cells   = mesh.size_global(cell_dim);
