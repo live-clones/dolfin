@@ -49,36 +49,15 @@ namespace dolfin
 
     /// Return value of vertex coordinate i
     double x(std::size_t i) const
-    {
-      if (_mesh->is_view())
-      {
-        const std::size_t idx = _mesh->mv_index(0)[_local_index];
-        return _mesh->mvmesh()->geometry().x(idx, i);
-      }
-      return _mesh->geometry().x(_local_index, i);
-    }
+    { return _mesh->geometry().x(_local_index, i); }
 
     /// Return vertex coordinates as a 3D point value
     Point point() const
-    {
-      if (_mesh->is_view())
-      {
-        const std::size_t idx = _mesh->mv_index(0)[_local_index];
-        return _mesh->mvmesh()->geometry().point(idx);
-      }
-      return _mesh->geometry().point(_local_index);
-    }
+    { return _mesh->geometry().point(_local_index); }
 
     /// Return array of vertex coordinates (const version)
     const double* x() const
-    {
-      if (_mesh->is_view())
-      {
-        const std::size_t idx = _mesh->mv_index(0)[_local_index];
-        return _mesh->mvmesh()->geometry().x(idx);
-      }
-      return _mesh->geometry().x(_local_index);
-    }
+    { return _mesh->geometry().x(_local_index); }
 
   };
 

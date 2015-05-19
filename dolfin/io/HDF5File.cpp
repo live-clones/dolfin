@@ -46,6 +46,7 @@
 #include <dolfin/mesh/MeshEntityIterator.h>
 #include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/MeshValueCollection.h>
+#include <dolfin/mesh/MeshView.h>
 #include <dolfin/mesh/Vertex.h>
 #include "HDF5Attribute.h"
 #include "HDF5Interface.h"
@@ -271,11 +272,12 @@ void HDF5File::write(const Mesh& mesh, std::size_t cell_dim,
 
      if (mesh.is_view())
      {
-       for (auto &p : mesh.mv_index(0))
+       // MeshView coordinates are already sorted in order?
+       for (VertexIterator v(mesh); !v.end(); ++v)
        {
          vertex_coords.insert(vertex_coords.end(),
-                              mesh.geometry().x(p),
-                              mesh.geometry().x(p) + gdim);
+                              v->x(),
+                              v->x() + gdim);
        }
      }
      else

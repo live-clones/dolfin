@@ -12,6 +12,7 @@
 #include <dolfin/mesh/MeshEntity.h>
 #include <dolfin/mesh/MeshEntityIterator.h>
 #include <dolfin/mesh/MeshEntityIteratorBase.h>
+#include <dolfin/mesh/MeshView.h>
 #include <dolfin/mesh/SubsetIterator.h>
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/Edge.h>

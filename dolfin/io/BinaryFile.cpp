@@ -116,8 +116,8 @@ void BinaryFile::operator>> (Mesh& mesh)
   MeshGeometry& g = mesh._geometry;
   g._dim = read_uint();
   const std::size_t size = read_uint();
-  g.coordinates.resize(g._dim*size);
-  read_array(g._dim*size, g.coordinates.data());
+  g.coordinates->resize(g._dim*size);
+  read_array(g._dim*size, g.coordinates->data());
 
   g.local_index_to_position.resize(size);
   for (std::size_t i = 0; i < size; ++i)
@@ -213,7 +213,7 @@ void BinaryFile::operator<< (const Mesh& mesh)
   const MeshGeometry& g = mesh._geometry;
   write_uint(g._dim);
   write_uint(g.size());
-  write_array(g._dim*g.size(), g.coordinates.data());
+  write_array(g._dim*g.size(), g.coordinates->data());
 
   // Write cell type
   write_uint(static_cast<std::size_t>(mesh._cell_type->cell_type()));

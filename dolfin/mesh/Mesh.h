@@ -133,10 +133,6 @@ namespace dolfin
     ///         Data from which to build the mesh.
     Mesh(MPI_Comm comm, LocalMeshData& local_mesh_data);
 
-    /// Create a view into an existing Mesh
-    Mesh(std::shared_ptr<Mesh> mvmesh, std::size_t tdim,
-         const std::vector<std::size_t>& indices);
-
     /// Destructor.
     ~Mesh();
 
@@ -240,19 +236,11 @@ namespace dolfin
     ///
     ///         No example code available for this function.
     std::vector<double>& coordinates()
-    {
-      if (is_view())
-        return _mvmesh->_geometry.x();
-      return _geometry.x();
-    }
+    { return _geometry.x(); }
 
     /// Return coordinates of all vertices (const version).
     const std::vector<double>& coordinates() const
-    {
-      if (is_view())
-        return _mvmesh->_geometry.x();
-      return _geometry.x();
-    }
+    { return _geometry.x(); }
 
     /// Get cell connectivity.
     ///
@@ -319,34 +307,18 @@ namespace dolfin
     ///     _MeshGeometry_
     ///         The geometry object associated with the mesh.
     MeshGeometry& geometry()
-    {
-      if (is_view())
-        return _mvmesh->_geometry;
-      return _geometry;
-    }
+    { return _geometry; }
 
     /// Get mesh geometry (const version).
     const MeshGeometry& geometry() const
-    {
-      if (is_view())
-        return _mvmesh->_geometry;
-      return _geometry;
-    }
+    { return _geometry; }
 
     /// Check if this is a view into another Mesh.
     /// *Returns*
     ///     bool
     ///         True if this is a view into another Mesh.
-    bool is_view() const
-    { return (_mvmesh != NULL); }
-
-    const std::vector<std::size_t>& mv_index(std::size_t dim) const
-    {
-      return _mv_index[dim];
-    }
-
-    std::shared_ptr<Mesh> mvmesh() const
-    { return _mvmesh; }
+    virtual bool is_view() const
+    { return false; }
 
     /// Get mesh (sub)domains.
     ///
@@ -693,12 +665,6 @@ namespace dolfin
     // and other objects. The tree is initialized to a zero pointer
     // and is allocated and built when bounding_box_tree() is called.
     mutable std::shared_ptr<BoundingBoxTree> _tree;
-
-    // Pointer to possible mesh which this is a view of
-    std::shared_ptr<Mesh> _mvmesh;
-
-    // Index into mesh from meshview for each dim
-    std::vector<std::vector<std::size_t>> _mv_index;
 
     // Cell type
     std::unique_ptr<CellType> _cell_type;

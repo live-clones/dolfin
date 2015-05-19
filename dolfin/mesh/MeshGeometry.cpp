@@ -32,7 +32,7 @@ using namespace dolfin;
 //-----------------------------------------------------------------------------
 MeshGeometry::MeshGeometry() : _dim(0)
 {
-  // Do nothing
+  coordinates.reset(new std::vector<double>());
 }
 //-----------------------------------------------------------------------------
 MeshGeometry::MeshGeometry(const MeshGeometry& geometry) : _dim(0)
@@ -50,7 +50,6 @@ const MeshGeometry& MeshGeometry::operator= (const MeshGeometry& geometry)
   // Copy data
   _dim = geometry._dim;
   coordinates             = geometry.coordinates;
-  position_to_local_index = geometry.position_to_local_index;
   local_index_to_position = geometry.local_index_to_position;
 
   return *this;
@@ -76,8 +75,7 @@ Point MeshGeometry::point(std::size_t n) const
 void MeshGeometry::clear()
 {
   _dim  = 0;
-  coordinates.clear();
-  position_to_local_index.clear();
+  coordinates->clear();
   local_index_to_position.clear();
 }
 //-----------------------------------------------------------------------------
@@ -87,10 +85,9 @@ void MeshGeometry::init(std::size_t dim, std::size_t size)
   clear();
 
   // Allocate new data
-  coordinates.resize(dim*size);
+  coordinates->resize(dim*size);
 
   // Allocate new data
-  position_to_local_index.resize(size);
   local_index_to_position.resize(size);
 
   // Save dimension and size
@@ -101,20 +98,22 @@ void MeshGeometry::set(std::size_t local_index,
                        const std::vector<double>& x)
 {
   dolfin_assert(x.size() == _dim);
-  std::copy(x.begin(), x.end(), coordinates.begin() + local_index*_dim);
-
-  dolfin_assert(local_index < position_to_local_index.size());
-  position_to_local_index[local_index] = local_index;
+  std::copy(x.begin(), x.end(), coordinates->begin() + local_index*_dim);
 
   dolfin_assert(local_index < local_index_to_position.size());
   local_index_to_position[local_index] = local_index;
+}
+//-----------------------------------------------------------------------------
+void MeshGeometry::set_indices(const std::vector<std::size_t>& local_indices)
+{
+  local_index_to_position = local_indices;
 }
 //-----------------------------------------------------------------------------
 std::size_t MeshGeometry::hash() const
 {
   // Compute local hash
   boost::hash<std::vector<double>> dhash;
-  const std::size_t local_hash = dhash(coordinates);
+  const std::size_t local_hash = dhash(*coordinates);
   return local_hash;
 }
 //-----------------------------------------------------------------------------

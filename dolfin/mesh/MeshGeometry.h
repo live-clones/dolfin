@@ -60,8 +60,8 @@ namespace dolfin
     /// Return number of coordinates
     std::size_t size() const
     {
-      dolfin_assert(coordinates.size() % _dim == 0);
-      return coordinates.size()/_dim;
+      dolfin_assert(coordinates->size() % _dim == 0);
+      return coordinates->size()/_dim;
     }
 
     /// Return value of coordinate with local index n in direction i
@@ -69,7 +69,7 @@ namespace dolfin
     {
       dolfin_assert(n < local_index_to_position.size());
       dolfin_assert(i < _dim);
-      return coordinates[local_index_to_position[n]*_dim + i];
+      return (*coordinates)[local_index_to_position[n]*_dim + i];
     }
 
     /// Return value of coordinate with local index n in direction i
@@ -77,30 +77,30 @@ namespace dolfin
     {
       dolfin_assert(n < local_index_to_position.size());
       dolfin_assert(i < _dim);
-      return coordinates[local_index_to_position[n]*_dim + i];
+      return (*coordinates)[local_index_to_position[n]*_dim + i];
     }
 
     /// Return array of values for coordinate with local index n
     double* x(std::size_t n)
     {
       dolfin_assert(n < local_index_to_position.size());
-      return &coordinates[local_index_to_position[n]*_dim];
+      return &(*coordinates)[local_index_to_position[n]*_dim];
     }
 
     /// Return array of values for coordinate with local index n
     const double* x(std::size_t n) const
     {
       dolfin_assert(n < local_index_to_position.size());
-      return &coordinates[local_index_to_position[n]*_dim];
+      return &(*coordinates)[local_index_to_position[n]*_dim];
     }
 
     /// Return array of values for all coordinates
     std::vector<double>& x()
-    { return coordinates; }
+    { return *coordinates; }
 
     /// Return array of values for all coordinates
     const std::vector<double>& x() const
-    { return coordinates; }
+    { return *coordinates; }
 
     /// Return coordinate with local index n as a 3D point value
     Point point(std::size_t n) const;
@@ -114,6 +114,10 @@ namespace dolfin
     /// Set value of coordinate
     //void set(std::size_t n, std::size_t i, double x);
     void set(std::size_t local_index, const std::vector<double>& x);
+
+    /// Set indices (possibly referring to a subset of points, e.g.
+    /// for MeshView)
+    void set_indices(const std::vector<std::size_t>& local_indices);
 
     /// Hash of coordinate values
     ///
@@ -130,19 +134,15 @@ namespace dolfin
 
     // Friends
     friend class BinaryFile;
-    friend class MeshRenumbering;
 
     // Euclidean dimension
     std::size_t _dim;
 
     // Coordinates for all vertices stored as a contiguous array
-    std::vector<double> coordinates;
-
-    // Local coordinate indices (array position -> index)
-    std::vector<unsigned int> position_to_local_index;
+    std::shared_ptr<std::vector<double> > coordinates;
 
     // Local coordinate indices (local index -> array position)
-    std::vector<unsigned int> local_index_to_position;
+    std::vector<std::size_t> local_index_to_position;
 
   };
 
