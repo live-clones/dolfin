@@ -31,7 +31,16 @@ MeshView::MeshView(std::shared_ptr<Mesh> mvmesh, std::size_t tdim,
 
   // Set cell type, tdim, gdim here
   MeshEditor editor;
-  editor.open(*this, mvmesh->type().cell_type(), tdim,
+
+  CellType::Type cell_type = CellType::point;
+  if (tdim == mvmesh->topology().dim())
+    cell_type = mvmesh->type().cell_type();
+  else if (tdim == mvmesh->topology().dim() - 1)
+    cell_type = mvmesh->type().facet_type();
+  else if (tdim == 1)
+    cell_type = CellType::interval;
+
+  editor.open(*this, cell_type, tdim,
               mvmesh->geometry().dim());
   editor.close();
 
