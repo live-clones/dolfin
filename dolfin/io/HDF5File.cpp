@@ -269,20 +269,26 @@ void HDF5File::write(const Mesh& mesh, std::size_t cell_dim,
     const std::size_t gdim = mesh.geometry().dim();
 
      std::vector<double> vertex_coords;
+     vertex_coords.reserve(gdim*mesh.num_vertices());
 
      if (mesh.is_view())
      {
-       // MeshView coordinates are already sorted in order?
+
        for (VertexIterator v(mesh); !v.end(); ++v)
        {
          vertex_coords.insert(vertex_coords.end(),
                               v->x(),
                               v->x() + gdim);
        }
+
+       DistributedMeshTools::reorder_values_by_global_indices
+         (mesh, vertex_coords, gdim);
+
      }
      else
      {
-       vertex_coords = DistributedMeshTools::reorder_vertices_by_global_indices(mesh);
+       vertex_coords
+         = DistributedMeshTools::reorder_vertices_by_global_indices(mesh);
      }
 
     // Write coordinates out from each process

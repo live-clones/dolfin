@@ -32,10 +32,11 @@ namespace dolfin
     MeshView()
     {};
 
-    /// Constructor from existing Mesh, topological dimension and indices
+    /// Constructor from existing Mesh, topological dimension and cell indices
     MeshView(std::shared_ptr<Mesh> mesh,
              std::size_t dim, const std::vector<std::size_t>& indices);
 
+    /// MeshView is a view into a Mesh
     bool is_view() const
     { return true; }
 
