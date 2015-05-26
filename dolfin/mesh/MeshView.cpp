@@ -130,7 +130,7 @@ MeshView::MeshView(std::shared_ptr<Mesh> mvmesh, std::size_t tdim,
       auto map_find = main_global_to_view.find(q);
       if (map_find == main_global_to_view.end())
       {
-        // Not found - shared, but not part of local MeshView, yet
+        // Not found - shared, but not part of local MeshView, yet.
         // This Vertex has no locally associated Cell
         auto mgl_find = main_global_to_local.find(q);
         dolfin_assert(mgl_find != main_global_to_local.end());
@@ -139,6 +139,10 @@ MeshView::MeshView(std::shared_ptr<Mesh> mvmesh, std::size_t tdim,
         vertex_global_index.push_back(local_count);
         main_global_to_view.insert
           (std::pair<std::size_t, std::size_t>(q, vertex_num));
+        const auto shared_it = mvshared.find(main_idx);
+        dolfin_assert(shared_it != mvshared.end());
+        view_shared.insert
+          (std::pair<unsigned int, std::set<unsigned int>>(vertex_num, shared_it->second));
         ++local_count;
         ++vertex_num;
       }
