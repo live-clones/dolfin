@@ -274,11 +274,12 @@ void HDF5File::write(const Mesh& mesh, std::size_t cell_dim,
      if (mesh.is_view())
      {
 
-       for (VertexIterator v(mesh); !v.end(); ++v)
+       for (std::size_t i = 0; i != mesh.size(0); ++i)
        {
+         Vertex v(mesh, i);
          vertex_coords.insert(vertex_coords.end(),
-                              v->x(),
-                              v->x() + gdim);
+                              v.x(),
+                              v.x() + gdim);
        }
 
        DistributedMeshTools::reorder_values_by_global_indices
@@ -698,12 +699,12 @@ template <typename T>
 void HDF5File::write_mesh_function(const MeshFunction<T>& meshfunction,
                                    const std::string name)
 {
-  if (meshfunction.size() == 0)
-  {
-    dolfin_error("HDF5File.cpp",
-                 "save empty MeshFunction",
-                 "No values in MeshFunction");
-  }
+  // if (meshfunction.size() == 0)
+  // {
+  //   dolfin_error("HDF5File.cpp",
+  //                "save empty MeshFunction",
+  //                "No values in MeshFunction");
+  // }
 
   const Mesh& mesh = *meshfunction.mesh();
   const std::size_t cell_dim = meshfunction.dim();

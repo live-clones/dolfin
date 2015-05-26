@@ -72,7 +72,7 @@ namespace dolfin
       : _entity(), _pos(0), pos_end(0), index(0)
     {
       // Check if mesh is empty
-      if (mesh.num_vertices() == 0)
+      if (mesh.num_cells() == 0)
         return;
 
       // Initialize mesh entity
@@ -89,14 +89,14 @@ namespace dolfin
       : _entity(), _pos(0), pos_end(0), index(0)
     {
       // Check if mesh is empty
-      if (mesh.num_vertices() == 0)
+      if (mesh.num_cells() == 0)
         return;
 
       // Initialize mesh entity
       _entity.init(mesh, dim, 0);
       mesh.init(dim);
 
-      pos_end = mesh.topology().size(dim); 
+      pos_end = mesh.topology().size(dim);
       if (opt == "regular")
         pos_end = mesh.topology().ghost_offset(dim);
       else if (opt == "ghost")

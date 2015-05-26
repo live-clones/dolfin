@@ -614,12 +614,12 @@ void XDMFFile::write_mesh_function(const MeshFunction<T>& meshfunction)
     hdf5_filemode = "w";
   }
 
-  if (meshfunction.size() == 0)
-  {
-    dolfin_error("XDMFFile.cpp",
-                 "save empty MeshFunction",
-                 "No values in MeshFunction");
-  }
+  // if (meshfunction.size() == 0)
+  // {
+  //   dolfin_error("XDMFFile.cpp",
+  //                "save empty MeshFunction",
+  //                "No values in MeshFunction");
+  // }
 
   const std::size_t cell_dim = meshfunction.dim();
   dolfin_assert(cell_dim <= mesh.topology().dim());

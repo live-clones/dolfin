@@ -62,54 +62,86 @@ MeshView::MeshView(std::shared_ptr<Mesh> mvmesh, std::size_t tdim,
     }
   }
 
-  // Sort out shared vertices
-  const std::size_t mpi_size = MPI::size(mpi_comm());
-  const auto& mvshared = mvmesh->topology().shared_entities(0);
-  auto& view_shared = topology().shared_entities(0);
-  const auto& mvglobal = mvmesh->topology().global_indices(0);
-  const std::size_t num_global_main = mvmesh->topology().size_global(0);
-  std::size_t local_count = 0;
-  std::vector<std::size_t> vertex_global_index(vertex_num);
+  // FIXME: divide into separate function - MeshView::init_global_index .......
 
-  // For MPI::all_to_all to communicate shared vertex numbering
+  const std::size_t mpi_size = MPI::size(mpi_comm());
+  const std::size_t mpi_rank = MPI::rank(mpi_comm());
+
+  // Create sharing map for MeshView
+  auto& view_shared = topology().shared_entities(0);
+  const auto& mvshared = mvmesh->topology().shared_entities(0);
+  const auto& mvglobal = mvmesh->topology().global_indices(0);
+  std::size_t local_count = 0;
+  // and global numbering, as far as possible
+  std::vector<std::size_t> vertex_global_index(vertex_num);
   std::vector<std::vector<std::size_t>> send_vertex_numbering(mpi_size);
   std::vector<std::vector<std::size_t>> recv_vertex_numbering(mpi_size);
 
-  // Mapping back from main global index to local view index
+  // Map from global vertices on main mesh to local on view
   std::map<std::size_t, std::size_t> main_global_to_view;
 
   for (unsigned int i = 0; i != vertex_num; ++i)
   {
     const std::size_t main_idx = mv_index[0][i];
     const auto shared_it = mvshared.find(main_idx);
-    if (shared_it != mvshared.end())
-    {
-      view_shared.insert
-        (std::pair<unsigned int, std::set<unsigned int>>(i, shared_it->second));
-      // Send to index owner, for consistent numbering across processes
-      const std::size_t dest = MPI::index_owner(mpi_comm(), mvglobal[main_idx], num_global_main);
-      send_vertex_numbering[dest].push_back(mvglobal[main_idx]);
-      main_global_to_view.insert(std::pair<std::size_t, std::size_t>
-                                 (mvglobal[main_idx], i));
-    }
-    else
+    if (shared_it == mvshared.end())
     {
       // Unshared vertex, numbered locally
       vertex_global_index[i] = local_count;
       ++local_count;
     }
+    else
+    {
+      view_shared.insert
+        (std::pair<unsigned int, std::set<unsigned int>>(i, shared_it->second));
+      // Send to remote 'owner' for numbering.
+      std::size_t dest = *(shared_it->second.begin());
+      if (dest > mpi_rank)
+      {
+        // Shared, but local - number locally
+        vertex_global_index[i] = local_count;
+        ++local_count;
+      }
+      else
+        send_vertex_numbering[dest].push_back(mvglobal[main_idx]);
+
+      main_global_to_view.insert(std::pair<std::size_t, std::size_t>
+                                 (mvglobal[main_idx], i));
+    }
   }
 
-  // Communicate remotely numbered indices
   MPI::all_to_all(mpi_comm(), send_vertex_numbering, recv_vertex_numbering);
-  std::map<std::size_t, std::size_t> global_index_set;
-  // Create map from all received main global indices to local_count
+
+  // Make sure all received vertices exist locally in MeshView
+
+  // Create global->local map for all shared vertices of main mesh
+  std::map<std::size_t, std::size_t> main_global_to_local;
+  for (auto it : mvshared)
+  {
+    const std::size_t idx = it.first;
+    main_global_to_local.insert
+      (std::pair<std::size_t, std::size_t>(mvglobal[idx], idx));
+  }
+
+  // Search for received vertices in MeshView
   for (auto &proc : recv_vertex_numbering)
     for (auto &q : proc)
     {
-      auto map_insert = global_index_set.insert(std::pair<std::size_t, std::size_t>(q, local_count));
-      if (map_insert.second)
+      auto map_find = main_global_to_view.find(q);
+      if (map_find == main_global_to_view.end())
+      {
+        // Not found - shared, but not part of local MeshView, yet
+        // This Vertex has no locally associated Cell
+        auto mgl_find = main_global_to_local.find(q);
+        dolfin_assert(mgl_find != main_global_to_local.end());
+        const std::size_t main_idx = mgl_find->second;
+        mv_index[0].push_back(main_idx);
+        vertex_global_index.push_back(local_count);
+        main_global_to_view.insert
+          (std::pair<std::size_t, std::size_t>(q, vertex_num));
         ++local_count;
+        ++vertex_num;
+      }
     }
 
   // Correct for global vertex index offset
@@ -117,23 +149,21 @@ MeshView::MeshView(std::shared_ptr<Mesh> mvmesh, std::size_t tdim,
     = MPI::global_offset(mpi_comm(), local_count, true);
   for (auto &v : vertex_global_index)
     v += vertex_offset;
-  for (auto &v : global_index_set)
-    v.second += vertex_offset;
 
-  // Convert incoming main global index to meshview global index
+  // Convert incoming main global index to MeshView global index
   for (auto &proc : recv_vertex_numbering)
     for (auto &q : proc)
     {
-      auto map_it = global_index_set.find(q);
-      dolfin_assert(map_it != global_index_set.end());
-      q = map_it->second;
+      auto map_it = main_global_to_view.find(q);
+      dolfin_assert(map_it != main_global_to_view.end());
+      q = vertex_global_index[map_it->second];
     }
 
   // Send reply back to originator
   std::vector<std::vector<std::size_t>> reply_vertex_numbering(mpi_size);
   MPI::all_to_all(mpi_comm(), recv_vertex_numbering, reply_vertex_numbering);
 
-  // Convert main global back to meshview local and save new meshview global
+  // Convert main global back to MeshView local and save new MeshView global
   // index
   for (unsigned int i = 0; i != mpi_size; ++i)
   {
@@ -145,8 +175,7 @@ MeshView::MeshView(std::shared_ptr<Mesh> mvmesh, std::size_t tdim,
     {
       auto map_it = main_global_to_view.find(send_v[j]);
       dolfin_assert(map_it != main_global_to_view.end());
-      vertex_global_index[map_it->second]
-        = reply_v[j];
+      vertex_global_index[map_it->second] = reply_v[j];
     }
   }
 

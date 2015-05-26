@@ -1162,12 +1162,12 @@ void DistributedMeshTools::reorder_values_by_global_indices(const Mesh& mesh,
   std::vector<double> reduced_data;
 
   // Remove clashing data with multiple copies on different processes
-  for (VertexIterator v(mesh); !v.end(); ++v)
+  for (std::size_t vidx = 0; vidx != mesh.size(0); ++vidx)
   {
-    const std::size_t vidx = v->index();
     if (non_local_vertices.find(vidx) == non_local_vertices.end())
     {
-      global_indices.push_back(v->global_index());
+      Vertex v(mesh, vidx);
+      global_indices.push_back(v.global_index());
       reduced_data.insert(reduced_data.end(),
                  data_array[vidx].begin(), data_array[vidx].end());
     }
@@ -1193,9 +1193,11 @@ void DistributedMeshTools::reorder_values_by_global_indices(MPI_Comm mpi_comm,
 
   // Calculate size of overall global vector by finding max index value
   // anywhere
-  const std::size_t global_vector_size
-    = MPI::max(mpi_comm, *std::max_element(global_indices.begin(),
-                                           global_indices.end())) + 1;
+  const auto it = std::max_element(global_indices.begin(),
+                                   global_indices.end());
+  const std::size_t max_val = (it == global_indices.end()) ? 0 : *it;
+
+  const std::size_t global_vector_size = MPI::max(mpi_comm, max_val + 1);
 
   // Send unwanted values off process
   const std::size_t mpi_size = MPI::size(mpi_comm);
