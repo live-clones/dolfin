@@ -59,10 +59,7 @@ namespace dolfin
 
     /// Return number of coordinates
     std::size_t size() const
-    {
-      dolfin_assert(coordinates->size() % _dim == 0);
-      return coordinates->size()/_dim;
-    }
+    { return local_index_to_position.size(); }
 
     /// Return value of coordinate with local index n in direction i
     double& x(std::size_t n, std::size_t i)

@@ -156,11 +156,19 @@ void ParallelRefinement::create_new_vertices()
   const std::size_t mpi_rank = MPI::rank(_mesh.mpi_comm());
 
   // Copy over existing mesh vertices
-  new_vertex_coordinates = _mesh.coordinates();
+  const std::size_t gdim = _mesh.geometry().dim();
+  const std::size_t npoints = _mesh.geometry().size();
+  new_vertex_coordinates.clear();
+  new_vertex_coordinates.reserve(gdim*npoints);
+  for (unsigned int i = 0; i != npoints; ++i)
+  {
+    const double *x = _mesh.geometry().x(i);
+    new_vertex_coordinates.insert
+      (new_vertex_coordinates.end(), x, x + gdim);
+  }
 
   // Tally up unshared marked edges, and shared marked edges which are
   // owned on this process.  Index them sequentially from zero.
-  const std::size_t gdim = _mesh.geometry().dim();
   std::size_t n = 0;
   for (std::size_t local_i = 0 ; local_i < _mesh.num_edges(); ++local_i)
   {
