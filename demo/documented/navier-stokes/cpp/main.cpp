@@ -83,6 +83,8 @@ int main()
   // Create function spaces
   VelocityUpdate::FunctionSpace V(mesh);
   PressureUpdate::FunctionSpace Q(mesh);
+  // and an output functionspace
+  FunctionSpace O = *(*V[0]).collapse();
 
   // Set parameter values
   double dt = 0.01;
@@ -116,7 +118,7 @@ int main()
   // Rename output
   u1.rename("Velocity", "u");
   p1.rename("Pressure", "p");
-  std::vector<const Function*> output;
+  std::vector<const GenericFunction*> output;
   output.push_back(&u1);
   output.push_back(&p1);
 
@@ -183,8 +185,8 @@ int main()
     solve(A3, *u1.vector(), b3, "gmres", "default");
     end();
 
-    // Save to file
-    file << output;
+    // Save to file on a P2 function space
+    file.write(output, O, t);
 
     // Move to next time step
     u0 = u1;

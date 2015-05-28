@@ -38,6 +38,9 @@
 %ignore dolfin::GenericFile::operator<< (const std::map<std::size_t, std::vector<std::size_t> >& array_map);
 %ignore dolfin::GenericFile::operator<< (const std::map<std::size_t, std::vector<double> >& array_map);
 
+%ignore dolfin::File::write(const std::vector<std::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time);
+%ignore dolfin::File::write(const std::vector<std::shared_ptr<GenericFunction> >& us, const FunctionSpace& functionspace, double time);
+
 %ignore dolfin::HDF5Attribute::get;
 %ignore dolfin::HDF5Attribute::set;
 

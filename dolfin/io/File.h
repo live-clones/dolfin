@@ -241,7 +241,7 @@ namespace dolfin
     }
 
     /// Write Functions to file on the given mesh
-    void write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, double time)
+    void write(const std::vector<const GenericFunction*> us, const Mesh& mesh, double time)
     {
       file->write(MPI::rank(_mpi_comm));
       file->write(us, mesh, time);
@@ -255,7 +255,7 @@ namespace dolfin
     }
 
     /// Write Functions to file on the given (scalar Lagrange) functionspace
-    void write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, double time)
+    void write(const std::vector<const GenericFunction*> us, const FunctionSpace& functionspace, double time)
     {
       file->write(MPI::rank(_mpi_comm));
       file->write(us, functionspace, time);

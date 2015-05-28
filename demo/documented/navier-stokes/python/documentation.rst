@@ -46,6 +46,8 @@ spaces:
     # Define function spaces (P2-P1)
     V = VectorFunctionSpace(mesh, "Lagrange", 2)
     Q = FunctionSpace(mesh, "Lagrange", 1)
+    # and an output function space (P2)
+    O = FunctionSpace(mesh, "Lagrange", 2)
 
     # Define trial and test functions
     u = TrialFunction(V)
@@ -224,8 +226,8 @@ solution to file, and update values for the next time step:
    plot(p1, title="Pressure", rescale=True)
    plot(u1, title="Velocity", rescale=True)
 
-   # Save to file
-   file << [u1, p1]
+   # Save to file on a P2 function space
+   file.write([u1, p1], O, t)
 
    # Move to next time step
    u0.assign(u1)

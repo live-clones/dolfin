@@ -215,6 +215,8 @@ spaces:
     // Create function spaces
     VelocityUpdate::FunctionSpace V(mesh);
     PressureUpdate::FunctionSpace Q(mesh);
+    // and an output functionspace
+    FunctionSpace O = *(*V[0]).collapse();
 
 The time step and the length of the interval are defined by:
 
@@ -286,7 +288,7 @@ below:
     // Rename output
     u1.rename("Velocity", "u");
     p1.rename("Pressure", "p");
-    std::vector<const Function*> output;
+    std::vector<const GenericFunction*> output;
     output.push_back(&u1);
     output.push_back(&p1);
 
@@ -405,8 +407,8 @@ and update values for the next time step:
 
 .. code-block:: c++
 
-    // Save to file
-    file << output;
+    // Save to file on a P2 function space
+    file.write(output, O, t);
 
     // Move to next time step
     u0 = u1;

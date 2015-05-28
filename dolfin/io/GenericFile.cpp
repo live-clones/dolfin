@@ -244,7 +244,7 @@ void GenericFile::operator<< (const Function& u)
 //-----------------------------------------------------------------------------
 void GenericFile::operator<< (const std::vector<const Function*>& us)
 {
-  write_not_impl("std::vector<Function*> Function");
+  write_not_impl("std::vector<const Function*>&");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::operator<< (const std::pair<const Mesh*, double> mesh)
