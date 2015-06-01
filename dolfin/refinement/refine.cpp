@@ -20,7 +20,9 @@
 // First added:  2010-02-10
 // Last changed: 2013-01-13
 
+#include <dolfin/parameter/GlobalParameters.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshHierarchy.h>
 #include <dolfin/mesh/MeshFunction.h>
 #include "UniformMeshRefinement.h"
 #include "LocalMeshRefinement.h"
@@ -37,18 +39,31 @@ dolfin::Mesh dolfin::refine(const Mesh& mesh, bool redistribute)
   return refined_mesh;
 }
 //-----------------------------------------------------------------------------
+std::shared_ptr<const MeshHierarchy> dolfin::refine(
+                    const MeshHierarchy& hierarchy,
+                    const MeshFunction<bool>& markers)
+{
+  return hierarchy.refine(markers);
+}
+//-----------------------------------------------------------------------------
 void dolfin::refine(Mesh& refined_mesh, const Mesh& mesh, bool redistribute)
 {
   // Topological dimension
   const std::size_t D = mesh.topology().dim();
 
+  const std::string refinement_algorithm = parameters["refinement_algorithm"];
+  bool parent_facets = (refinement_algorithm == "plaza_with_parent_facets");
+  bool serial = (MPI::size(mesh.mpi_comm()) == 1);
+
   // Dispatch to appropriate refinement function
-  if(MPI::size(mesh.mpi_comm()) == 1)
+  if (serial and (D == 1 or refinement_algorithm == "regular_cut"))
     UniformMeshRefinement::refine(refined_mesh, mesh);
-  else if(D == 2)
-    PlazaRefinementND::refine(refined_mesh, mesh, redistribute, false);
-  else if(D == 3)
-    PlazaRefinementND::refine(refined_mesh, mesh, redistribute, false);
+  else if(D == 2 or D == 3)
+  {
+    if (refinement_algorithm == "regular_cut")
+      warning("Using Plaza algorithm in parallel");
+    PlazaRefinementND::refine(refined_mesh, mesh, redistribute, parent_facets);
+  }
   else
   {
     dolfin_error("refine.cpp",
@@ -72,18 +87,20 @@ void dolfin::refine(Mesh& refined_mesh, const Mesh& mesh,
   // Topological dimension
   const std::size_t D = mesh.topology().dim();
 
+  const std::string refinement_algorithm = parameters["refinement_algorithm"];
+  bool parent_facets = (refinement_algorithm == "plaza_with_parent_facets");
+  bool serial = (MPI::size(mesh.mpi_comm()) == 1);
+
   // Dispatch to appropriate refinement function
-  if (MPI::size(mesh.mpi_comm()) == 1)
+  if (serial and (D == 1 or refinement_algorithm == "regular_cut"))
     LocalMeshRefinement::refine(refined_mesh, mesh, cell_markers);
-  else if (D == 2)
+  else if (D == 2 or D == 3)
   {
+    if (refinement_algorithm == "regular_cut")
+      warning("Using Plaza algorithm in parallel");
+
     PlazaRefinementND::refine(refined_mesh, mesh, cell_markers,
-                              redistribute, false);
-  }
-  else if (D == 3)
-  {
-    PlazaRefinementND::refine(refined_mesh, mesh, cell_markers,
-                              redistribute, false);
+                              redistribute, parent_facets);
   }
   else
   {

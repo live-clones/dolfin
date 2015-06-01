@@ -23,10 +23,9 @@
 //
 
 #include <vector>
-#include <Eigen/Dense>
 #include <ufc.h>
 
-#include <dolfin/common/Array.h>
+#include <dolfin/common/ArrayView.h>
 #include <dolfin/common/Timer.h>
 #include <dolfin/fem/BasisFunction.h>
 #include <dolfin/fem/DirichletBC.h>
@@ -37,6 +36,7 @@
 #include <dolfin/log/log.h>
 #include <dolfin/mesh/BoundaryMesh.h>
 #include <dolfin/mesh/Cell.h>
+#include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/FacetCell.h>
 #include "Extrapolation.h"
 
@@ -71,7 +71,7 @@ void Extrapolation::extrapolate(Function& w, const Function& v)
   std::vector<double> vertex_coordinates0;
 
   // List of values for each dof of w (multivalued until we average)
-  std::vector<std::vector<double> > coefficients;
+  std::vector<std::vector<double>> coefficients;
   coefficients.resize(W.dim());
 
   // Iterate over cells in mesh
@@ -83,7 +83,7 @@ void Extrapolation::extrapolate(Function& w, const Function& v)
     cell0->get_cell_data(c0);
 
     // Tabulate dofs for w on cell and store values
-    const std::vector<dolfin::la_index>& dofs
+    const ArrayView<const dolfin::la_index> dofs
       = W.dofmap()->cell_dofs(cell0->index());
 
     // Compute coefficients on this cell
@@ -96,16 +96,16 @@ void Extrapolation::extrapolate(Function& w, const Function& v)
   average_coefficients(w, coefficients);
 }
 //-----------------------------------------------------------------------------
-void
-Extrapolation::compute_coefficients(std::vector<std::vector<double> >& coefficients,
-                                    const Function& v,
-                                    const FunctionSpace& V,
-                                    const FunctionSpace& W,
-                                    const Cell& cell0,
-                                    const std::vector<double>& vertex_coordinates0,
-                                    const ufc::cell& c0,
-                                    const std::vector<dolfin::la_index>& dofs,
-                                    std::size_t& offset)
+void Extrapolation::compute_coefficients(
+  std::vector<std::vector<double>>& coefficients,
+  const Function& v,
+  const FunctionSpace& V,
+  const FunctionSpace& W,
+  const Cell& cell0,
+  const std::vector<double>& vertex_coordinates0,
+  const ufc::cell& c0,
+  const ArrayView<const dolfin::la_index>& dofs,
+  std::size_t& offset)
 {
   // Call recursively for mixed elements
   dolfin_assert(V.element());
@@ -121,7 +121,7 @@ Extrapolation::compute_coefficients(std::vector<std::vector<double> >& coefficie
   }
 
   // Build data structures for keeping track of unique dofs
-  std::map<std::size_t, std::map<std::size_t, std::size_t> > cell2dof2row;
+  std::map<std::size_t, std::map<std::size_t, std::size_t>> cell2dof2row;
   std::set<std::size_t> unique_dofs;
   build_unique_dofs(unique_dofs, cell2dof2row, cell0, V);
 
@@ -143,23 +143,31 @@ Extrapolation::compute_coefficients(std::vector<std::vector<double> >& coefficie
   Eigen::VectorXd b(M);
 
   // Add equations on cell and neighboring cells
-  add_cell_equations(A, b, cell0, cell0,
-                     vertex_coordinates0, vertex_coordinates0,
-                     c0, c0, V, W, v, cell2dof2row[cell0.index()]);
   dolfin_assert(V.mesh());
   ufc::cell c1;
   std::vector<double> vertex_coordinates1;
-  for (CellIterator cell1(cell0); !cell1.end(); ++cell1)
+
+  // Get unique set of surrounding cells (including cell0)
+  std::set<std::size_t> cell_set;
+  for (VertexIterator vtx(cell0); !vtx.end(); ++vtx)
   {
-    if (cell2dof2row[cell1->index()].empty())
+    for (CellIterator cell1(*vtx); !cell1.end(); ++cell1)
+      cell_set.insert(cell1->index());
+  }
+
+  for (auto cell_it : cell_set)
+  {
+    if (cell2dof2row[cell_it].empty())
       continue;
 
-    cell1->get_vertex_coordinates(vertex_coordinates1);
-    cell1->get_cell_data(c1);
-    add_cell_equations(A, b, cell0, *cell1,
+    Cell cell1(cell0.mesh(), cell_it);
+
+    cell1.get_vertex_coordinates(vertex_coordinates1);
+    cell1.get_cell_data(c1);
+    add_cell_equations(A, b, cell0, cell1,
                        vertex_coordinates0, vertex_coordinates1,
                        c0, c1, V, W, v,
-                       cell2dof2row[cell1->index()]);
+                       cell2dof2row[cell_it]);
   }
 
   // Solve least squares system
@@ -168,32 +176,39 @@ Extrapolation::compute_coefficients(std::vector<std::vector<double> >& coefficie
 
   // Insert resulting coefficients into global coefficient vector
   dolfin_assert(W.dofmap());
-  for (std::size_t i = 0; i < W.dofmap()->cell_dimension(cell0.index()); ++i)
+  for (std::size_t i = 0; i < W.dofmap()->num_element_dofs(cell0.index()); ++i)
     coefficients[dofs[i + offset]].push_back(x[i]);
 
   // Increase offset
-  offset += W.dofmap()->cell_dimension(cell0.index());
+  offset += W.dofmap()->num_element_dofs(cell0.index());
 }
 //-----------------------------------------------------------------------------
-void
-Extrapolation::build_unique_dofs(std::set<std::size_t>& unique_dofs,
-                                 std::map<std::size_t, std::map<std::size_t, std::size_t> >& cell2dof2row,
-                                 const Cell& cell0,
-                                 const FunctionSpace& V)
+void Extrapolation::build_unique_dofs(
+  std::set<std::size_t>& unique_dofs,
+  std::map<std::size_t, std::map<std::size_t, std::size_t>>& cell2dof2row,
+  const Cell& cell0,
+  const FunctionSpace& V)
 {
   // Counter for matrix row index
   std::size_t row = 0;
   dolfin_assert(V.mesh());
 
-  // Compute unique dofs on center cell
-  cell2dof2row[cell0.index()] = compute_unique_dofs(cell0, V, row, unique_dofs);
-
-  // Compute unique dofs on neighbouring cells
-  for (CellIterator cell1(cell0); !cell1.end(); ++cell1)
+  // Get unique set of surrounding cells (including cell0)
+  std::set<std::size_t> cell_set;
+  for (VertexIterator vtx(cell0); !vtx.end(); ++vtx)
   {
-    cell2dof2row[cell1->index()] = compute_unique_dofs(*cell1, V, row,
-                                                       unique_dofs);
+    for (CellIterator cell1(*vtx); !cell1.end(); ++cell1)
+      cell_set.insert(cell1->index());
   }
+
+  // Compute unique dofs on patch
+  for (auto cell_it : cell_set)
+  {
+    Cell cell1(cell0.mesh(), cell_it);
+    cell2dof2row[cell_it] = compute_unique_dofs(cell1, V, row,
+                                                unique_dofs);
+  }
+
 }
 //-----------------------------------------------------------------------------
 void
@@ -250,13 +265,13 @@ Extrapolation::compute_unique_dofs(const Cell& cell,
                                    std::set<std::size_t>& unique_dofs)
 {
   dolfin_assert(V.dofmap());
-  const std::vector<dolfin::la_index>& dofs
+  const ArrayView<const dolfin::la_index> dofs
     = V.dofmap()->cell_dofs(cell.index());
 
   // Data structure for current cell
   std::map<std::size_t, std::size_t> dof2row;
 
-  for (std::size_t i = 0; i < V.dofmap()->cell_dimension(cell.index()); ++i)
+  for (std::size_t i = 0; i < V.dofmap()->num_element_dofs(cell.index()); ++i)
   {
     // Ignore if this degree of freedom is already considered
     if (unique_dofs.find(dofs[i]) != unique_dofs.end())
@@ -275,8 +290,9 @@ Extrapolation::compute_unique_dofs(const Cell& cell,
   return dof2row;
 }
 //-----------------------------------------------------------------------------
-void Extrapolation::average_coefficients(Function& w,
-                                         std::vector<std::vector<double> >& coefficients)
+void Extrapolation::average_coefficients(
+  Function& w,
+  std::vector<std::vector<double>>& coefficients)
 {
   const FunctionSpace& W = *w.function_space();
   std::vector<double> dof_values(W.dim());

@@ -31,7 +31,7 @@
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/la/GenericLinearAlgebraFactory.h>
 #include <dolfin/la/TensorLayout.h>
-#include <dolfin/log/dolfin_log.h>
+#include <dolfin/log/log.h>
 #include <dolfin/common/MPI.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/Cell.h>
@@ -117,7 +117,7 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
                                 a.ufc_form()->has_cell_integrals(),
                                 a.ufc_form()->has_interior_facet_integrals(),
                                 a.ufc_form()->has_exterior_facet_integrals(),
-                                a.ufc_form()->has_point_integrals(),
+                                a.ufc_form()->has_vertex_integrals(),
                                 keep_diagonal);
     }
     t0.stop();

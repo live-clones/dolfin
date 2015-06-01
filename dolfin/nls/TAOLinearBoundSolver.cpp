@@ -20,9 +20,9 @@
 #include <petsclog.h>
 
 #include <dolfin/common/Timer.h>
-#include <dolfin/log/dolfin_log.h>
 #include <dolfin/common/MPI.h>
 #include <dolfin/common/NoDeleter.h>
+#include <dolfin/log/log.h>
 #include "dolfin/la/GenericMatrix.h"
 #include "dolfin/la/GenericVector.h"
 #include "dolfin/la/PETScMatrix.h"
@@ -34,8 +34,6 @@
 #include "petscvec.h"
 #include "petscmat.h"
 #include "petsctao.h"
-
-#include <dolfin/common/timing.h>
 
 using namespace dolfin;
 
@@ -53,7 +51,7 @@ const std::map<std::string, const KSPType> TAOLinearBoundSolver::_ksp_methods
     {"bicgstab",   KSPBCGS} };
 //-----------------------------------------------------------------------------
 // Mapping from method string to description
-const std::vector<std::pair<std::string, std::string> >
+const std::map<std::string, std::string>
   TAOLinearBoundSolver::_methods_descr
 = { {"default"  ,  "Default Tao method (tao_tron)"},
     {"tron" ,  "Newton Trust Region method"},
@@ -61,19 +59,19 @@ const std::vector<std::pair<std::string, std::string> >
     {"gpcg" ,  "Gradient Projection Conjugate Gradient"},
     {"blmvm",  "Limited memory variable metric method"} };
 //-----------------------------------------------------------------------------
-std::vector<std::pair<std::string, std::string> >
+std::map<std::string, std::string>
 TAOLinearBoundSolver::methods()
 {
   return TAOLinearBoundSolver::_methods_descr;
 }
 //-----------------------------------------------------------------------------
-std::vector<std::pair<std::string, std::string> >
+std::map<std::string, std::string>
 TAOLinearBoundSolver::krylov_solvers()
 {
   return PETScKrylovSolver::methods();
 }
 //-----------------------------------------------------------------------------
-std::vector<std::pair<std::string, std::string> >
+std::map<std::string, std::string>
 TAOLinearBoundSolver::preconditioners()
 {
   return PETScPreconditioner::preconditioners();

@@ -44,7 +44,19 @@ typedef struct {
 %template(max) dolfin::MPI::max<double>;
 %template(min) dolfin::MPI::min<double>;
 %template(sum) dolfin::MPI::sum<double>;
+%template(max) dolfin::MPI::max<int>;
+%template(min) dolfin::MPI::min<int>;
+%template(sum) dolfin::MPI::sum<int>;
+%template(max) dolfin::MPI::max<unsigned int>;
+%template(min) dolfin::MPI::min<unsigned int>;
 %template(sum) dolfin::MPI::sum<unsigned int>;
+%template(max) dolfin::MPI::max<std::size_t>;
+%template(min) dolfin::MPI::min<std::size_t>;
+%template(sum) dolfin::MPI::sum<std::size_t>;
+%template(max) dolfin::MPI::max<dolfin::Table>;
+%template(min) dolfin::MPI::min<dolfin::Table>;
+%template(sum) dolfin::MPI::sum<dolfin::Table>;
+%template(avg) dolfin::MPI::avg<dolfin::Table>;
 
 //-----------------------------------------------------------------------------
 // Ignore const array interface (Used if the Array type is a const)
@@ -63,32 +75,31 @@ typedef struct {
 //
 // TYPE          : The Array template type
 // TEMPLATE_NAME : The Template name
-// TYPE_NAME     : The name of the pointer type, 'double' for 'double', 'uint' for
-//                 'dolfin::uint'
+// TYPE_NAME     : The name of the pointer type, 'double' for 'double',
+//                 'uint' for 'dolfin::uint'
 //-----------------------------------------------------------------------------
 
 %define ARRAY_EXTENSIONS(TYPE, TEMPLATE_NAME, TYPE_NAME)
 
 // Construct value wrapper for dolfin::Array<TYPE>
-// Valuewrapper is used so a return by value Array does not make an extra copy
-// in any typemaps
+// Valuewrapper is used so a return by value Array does not make an
+// extra copy in any typemaps
 %feature("valuewrapper") dolfin::Array<TYPE>;
 
 // Cannot construct an Array from another Array.
 // Use NumPy Array instead
 %ignore dolfin::Array<TYPE>::Array(const Array& other);
-
 %template(TEMPLATE_NAME ## Array) dolfin::Array<TYPE>;
-
 %feature("docstring") dolfin::Array::__getitem__ "Missing docstring";
 %feature("docstring") dolfin::Array::__setitem__ "Missing docstring";
 %feature("docstring") dolfin::Array::array "Missing docstring";
-
-%extend dolfin::Array<TYPE> {
+%extend dolfin::Array<TYPE>
+{
   TYPE _getitem(unsigned int i) const { return (*self)[i]; }
   void _setitem(unsigned int i, const TYPE& val) { (*self)[i] = val; }
 
-  PyObject * _array(){
+  PyObject * _array()
+  {
     return %make_numpy_array(1, TYPE_NAME)(self->size(), self->data(), true);
   }
 
@@ -130,7 +141,6 @@ def __len__(self):
 //-----------------------------------------------------------------------------
 CONST_ARRAY_IGNORES(double)
 ARRAY_EXTENSIONS(double, Double, double)
-//ARRAY_EXTENSIONS(const double, ConstDouble, double)
 ARRAY_EXTENSIONS(unsigned int, UInt, uint)
 ARRAY_EXTENSIONS(int, Int, int)
 

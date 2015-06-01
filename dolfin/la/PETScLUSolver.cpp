@@ -24,12 +24,10 @@
 
 #ifdef HAS_PETSC
 
-#include <dolfin/common/Timer.h>
-
 #include <dolfin/common/constants.h>
 #include <dolfin/common/NoDeleter.h>
 #include <dolfin/common/Timer.h>
-#include <dolfin/log/dolfin_log.h>
+#include <dolfin/log/log.h>
 #include <dolfin/common/MPI.h>
 #include <dolfin/parameter/GlobalParameters.h>
 #include "LUSolver.h"
@@ -76,7 +74,7 @@ PETScLUSolver::_methods_cholesky
     {MAT_SOLVER_SUPERLU_DIST, false},
     {MAT_SOLVER_PETSC,        true} };
 //-----------------------------------------------------------------------------
-const std::vector<std::pair<std::string, std::string> >
+const std::map<std::string, std::string>
 PETScLUSolver::_methods_descr
 = { {"default", "default LU solver"},
 #if PETSC_HAVE_UMFPACK || PETSC_HAVE_SUITESPARSE
@@ -97,7 +95,7 @@ PETScLUSolver::_methods_descr
     {"petsc", "PETSc built in LU solver"} };
 
 //-----------------------------------------------------------------------------
-std::vector<std::pair<std::string, std::string> >
+std::map<std::string, std::string>
 PETScLUSolver::methods()
 {
   return PETScLUSolver::_methods_descr;

@@ -61,7 +61,8 @@ void VTKWriter::write_cell_data(const Function& u, std::string filename,
   dolfin_assert(u.function_space()->dofmap());
   const Mesh& mesh = *u.function_space()->mesh();
   const GenericDofMap& dofmap = *u.function_space()->dofmap();
-  const std::size_t num_cells = mesh.num_cells();
+  const std::size_t tdim = mesh.topology().dim();
+  const std::size_t num_cells = mesh.topology().ghost_offset(tdim);
 
   std::string encode_string;
   if (!binary)
@@ -89,8 +90,8 @@ void VTKWriter::write_cell_data(const Function& u, std::string filename,
   if (rank == 0)
   {
     fp << "<CellData  Scalars=\"" << u.name() << "\"> " << std::endl;
-    fp << "<DataArray  type=\"Float64\"  Name=\"" << u.name() << "\"  format=\""
-       << encode_string <<"\">";
+    fp << "<DataArray  type=\"Float64\"  Name=\"" << u.name()
+       << "\"  format=\"" << encode_string <<"\">";
   }
   else if (rank == 1)
   {
@@ -127,12 +128,14 @@ void VTKWriter::write_cell_data(const Function& u, std::string filename,
   for (CellIterator cell(mesh); !cell.end(); ++cell)
   {
     // Tabulate dofs
-    const std::vector<dolfin::la_index>& dofs = dofmap.cell_dofs(cell->index());
-    for(std::size_t i = 0; i < dofmap.cell_dimension(cell->index()); ++i)
+    const ArrayView<const dolfin::la_index>
+      dofs = dofmap.cell_dofs(cell->index());
+    for(std::size_t i = 0; i < dofmap.num_element_dofs(cell->index()); ++i)
       dof_set.push_back(dofs[i]);
 
     // Add local dimension to cell offset and increment
-    *(cell_offset + 1) = *(cell_offset) + dofmap.cell_dimension(cell->index());
+    *(cell_offset + 1)
+      = *(cell_offset) + dofmap.num_element_dofs(cell->index());
     ++cell_offset;
   }
 
@@ -231,7 +234,7 @@ std::string VTKWriter::base64_cell_data(const Mesh& mesh,
 void VTKWriter::write_ascii_mesh(const Mesh& mesh, std::size_t cell_dim,
                                  std::string filename)
 {
-  const std::size_t num_cells = mesh.topology().size(cell_dim);
+  const std::size_t num_cells = mesh.topology().ghost_offset(cell_dim);
   const std::size_t num_cell_vertices = mesh.type().num_vertices(cell_dim);
 
   // Get VTK cell type

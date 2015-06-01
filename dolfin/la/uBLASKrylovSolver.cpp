@@ -30,8 +30,7 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-std::vector<std::pair<std::string, std::string> >
-uBLASKrylovSolver::methods()
+std::map<std::string, std::string> uBLASKrylovSolver::methods()
 {
   return { {"default",  "default Krylov method"},
            {"cg",       "Conjugate gradient method"},
@@ -39,8 +38,7 @@ uBLASKrylovSolver::methods()
            {"bicgstab", "Biconjugate gradient stabilized method"} };
 }
 //-----------------------------------------------------------------------------
-std::vector<std::pair<std::string, std::string> >
-uBLASKrylovSolver::preconditioners()
+std::map<std::string, std::string> uBLASKrylovSolver::preconditioners()
 {
   return { {"default", "default preconditioner"},
            {"none",    "No preconditioner"},
@@ -101,13 +99,12 @@ std::size_t uBLASKrylovSolver::solve(GenericVector& x, const GenericVector& b)
   dolfin_assert(_matP);
 
   // Try to first use operator as a uBLAS matrix
-  if (has_type<const uBLASMatrix<ublas_sparse_matrix> >(*_matA))
+  if (has_type<const uBLASMatrix<ublas_sparse_matrix>>(*_matA))
   {
-    std::shared_ptr<const uBLASMatrix<ublas_sparse_matrix> > A
-      = as_type<const uBLASMatrix<ublas_sparse_matrix> >(_matA);
-    std::shared_ptr<const uBLASMatrix<ublas_sparse_matrix> > P
-      = as_type<const uBLASMatrix<ublas_sparse_matrix> >(_matP);
-
+    std::shared_ptr<const uBLASMatrix<ublas_sparse_matrix>> A
+      = as_type<const uBLASMatrix<ublas_sparse_matrix>>(_matA);
+    std::shared_ptr<const uBLASMatrix<ublas_sparse_matrix>> P
+      = as_type<const uBLASMatrix<ublas_sparse_matrix>>(_matP);
     dolfin_assert(A);
     dolfin_assert(P);
 

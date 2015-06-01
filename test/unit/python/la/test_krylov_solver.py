@@ -98,18 +98,20 @@ def test_krylov_samg_solver_elasticity():
     PETScOptions.set("mg_levels_ksp_type", "chebyshev")
     PETScOptions.set("mg_levels_pc_type", "jacobi")
 
-    # Improve estimate of eigenvalues for Chebyshev smoothing
+    # Improve estimate of eigenvalues for Chebyshev smoothing (PETSc
+    # version<3.6 option)
     PETScOptions.set("mg_levels_est_ksp_type", "cg")
     PETScOptions.set("mg_levels_est_ksp_max_it", 50)
     PETScOptions.set("gamg_est_ksp_type", "cg")
     PETScOptions.set("gamg_est_ksp_max_it", 50)
 
-    # Get list of available preconditioners
-    pcs = [pc[0] for pc in PETScPreconditioner.preconditioners()]
+    # Improve estimate of eigenvalues for Chebyshev smoothing (more
+    # recent PETSc option)
+    PETScOptions.set("mg_levels_ksp_chebyshev_esteig_steps", 50)
 
     # Build list of smoothed aggregation preconditioners
     methods = ["petsc_amg"]
-    if "ml_amg" in pcs:
+    if "ml_amg" in PETScPreconditioner.preconditioners():
         methods.append("ml_amg")
 
     # Test iteration count with increasing mesh size for each

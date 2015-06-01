@@ -244,25 +244,6 @@ if (DOLFIN_ENABLE_VTK AND VTK_FOUND)
     endif()
   endif()
 
-  # FIXME: This is a poor(no) test and leads to builds breaking on some
-  #  systems. VTK-Exodus support is therefore disabled. See
-  #  https://bitbucket.org/fenics-project/dolfin/issue/104.
-  # Check if the VTK-Exodus library is found.
-  #
-  # Normally, it should be included in libvtkParallel.so (check out the output
-  # of
-  #     $ nm -D /usr/lib/libvtkParallel.so | grep ExodusIIWriter
-  # but on some systems, this doesn't seem to be the case. Check if the
-  # appropriate header exists and store this information in HAS_VTK_EXODUS.
-  #include(CheckIncludeFileCXX)
-  #set(CMAKE_REQUIRED_INCLUDES "${VTK_INCLUDE_DIRS}")
-  #CHECK_INCLUDE_FILE_CXX(vtkExodusIIWriter.h  HAS_VTK_EXODUS)
-  #if (HAS_VTK_EXODUS)
-  #  list(APPEND DOLFIN_CXX_DEFINITIONS "-DHAS_VTK_EXODUS")
-  #else()
-  #  message(STATUS "vtkExodusIIWriter not found, disabling Exodus file writing")
-  #endif()
-
   # Append to EXTRA libraries, so they are not linked with demos (this fails
   # with VTK6 unless the vtk macros are also installed).
   list(APPEND DOLFIN_EXTRA_TARGET_LINK_LIBRARIES ${DOLFIN_VTK_LIBRARIES})
@@ -277,8 +258,10 @@ include_directories(SYSTEM ${DOLFIN_DEP_SYSTEM_INCLUDE_DIRECTORIES})
 
 # Add CXX definitions
 add_definitions(${DOLFIN_CXX_DEFINITIONS})
-add_definitions(-DDOLFIN_VERSION="${DOLFIN_VERSION}"
-  -DDOLFIN_GIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
+add_definitions(-DDOLFIN_VERSION="${DOLFIN_VERSION}")
+
+# Just add git revision flag to the one affected file, to help ccache performance
+set_source_files_properties(common/defines.cpp PROPERTIES COMPILE_FLAGS -DDOLFIN_GIT_COMMIT_HASH=\\\"${GIT_COMMIT_HASH}\\\")
 
 # Add flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")

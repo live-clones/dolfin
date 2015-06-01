@@ -25,7 +25,7 @@
 #include <algorithm>
 
 #include <dolfin/geometry/Point.h>
-#include <dolfin/log/dolfin_log.h>
+#include <dolfin/log/log.h>
 #include "Cell.h"
 #include "CellType.h"
 #include "IntervalCell.h"
@@ -132,6 +132,17 @@ std::string CellType::type2string(Type type)
   }
 
   return "";
+}
+//-----------------------------------------------------------------------------
+CellType::Type CellType::entity_type(std::size_t i) const
+{
+  if (i == dim())
+    return _cell_type;
+  else if (i == dim() - 1)
+    return _facet_type;
+  else if (i == 1)
+    return Type::interval;
+ return Type::point;
 }
 //-----------------------------------------------------------------------------
 bool CellType::ordered(const Cell& cell, const std::vector<std::size_t>&

@@ -93,21 +93,15 @@ void GenericMatrix::compressed(GenericMatrix& B) const
   std::vector<std::size_t> global_dimensions(2);
   global_dimensions[0] = size(0);
   global_dimensions[1] = size(1);
-  std::vector<std::pair<std::size_t, std::size_t> > local_range(2);
+  std::vector<std::pair<std::size_t, std::size_t>> local_range(2);
   local_range[0] = this->local_range(0);
   local_range[1] = this->local_range(0);
 
   // With the row-by-row algorithm used here there is no need for
   // inserting non_local rows and as such we can simply use a dummy
   // for off_process_owner
-  std::vector<const std::vector<std::size_t>* > local_to_global(2);
-  std::vector<const std::vector<int>* > off_process_owner(2);
-  const std::vector<int> dummy0;
-  off_process_owner[0] = &dummy0;
-  off_process_owner[1] = &dummy0;
-  const std::vector<std::size_t> dummy1;
-  local_to_global[0] = &dummy1;
-  local_to_global[1] = &dummy1;
+  std::vector<ArrayView<const std::size_t>> local_to_global(2);
+  std::vector<ArrayView<const int>> off_process_owner(2);
   const std::pair<std::size_t, std::size_t> row_range = local_range[0];
   const std::size_t m = row_range.second - row_range.first;
 
@@ -138,9 +132,9 @@ void GenericMatrix::compressed(GenericMatrix& B) const
   offset[0] = 0;
   std::vector<dolfin::la_index> thisrow(1);
   std::vector<dolfin::la_index> thiscolumn;
-  std::vector<const std::vector<dolfin::la_index>* > dofs(2);
-  dofs[0] = &thisrow;
-  dofs[1] = &thiscolumn;
+  std::vector<ArrayView<const dolfin::la_index>> dofs(2);
+  dofs[0] = ArrayView<const dolfin::la_index>(1, thisrow.data());
+  //dofs[1] = &thiscolumn;
 
   // Iterate over rows
   for (std::size_t i = 0; i < m; i++)
@@ -168,7 +162,10 @@ void GenericMatrix::compressed(GenericMatrix& B) const
 
     // Build new compressed sparsity pattern
     if (new_sparsity_pattern)
+    {
+      dofs[1] = ArrayView<const la_index>(thiscolumn.size(), thiscolumn.data());
       new_sparsity_pattern->insert_global(dofs);
+    }
   }
 
   // Finalize sparsity pattern
@@ -183,7 +180,7 @@ void GenericMatrix::compressed(GenericMatrix& B) const
   {
     const dolfin::la_index global_row = i + row_range.first;
     B.set(&allvalues[offset[i]], 1, &global_row,
-        offset[i+1] - offset[i], &allcolumns[offset[i]]);
+          offset[i+1] - offset[i], &allcolumns[offset[i]]);
   }
   B.apply("insert");
 }
