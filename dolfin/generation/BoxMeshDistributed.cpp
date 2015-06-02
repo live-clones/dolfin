@@ -126,8 +126,6 @@ void BoxMeshDistributed::build_distributed(double x0, double y0, double z0,
     npy--;
   const std::size_t npz = mpi_size/npx/npy;
 
-  std::cout << "np = " << npx << " " << npy << " " << npz <<" \n";
-
   const std::size_t xpos = mpi_rank/(npy*npz);
   const std::size_t ypos = (mpi_rank%(npy*npz)/npz);
   const std::size_t zpos = mpi_rank - xpos*npy*npz - ypos*npz;
