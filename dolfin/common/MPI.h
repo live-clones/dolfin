@@ -89,6 +89,12 @@ namespace dolfin
     /// Set a barrier (synchronization point)
     static void barrier(MPI_Comm comm);
 
+    /// Split an MPI_Comm
+    static MPI_Comm split(const MPI_Comm comm, int color);
+
+    static bool is_null(const MPI_Comm comm)
+    { return (comm==MPI_COMM_NULL); }
+
     /// Send in_values[p0] to process p0 and receive values from
     /// process p1 in out_values[p1]
     template<typename T>

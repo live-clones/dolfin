@@ -48,7 +48,7 @@ namespace dolfin
     /// have an entry in ghost_procs pointing to the set of sharing
     /// process numbers.
     static void compute_partition(
-      const MPI_Comm mpi_comm,
+      const std::size_t nparts,
       std::vector<std::size_t>& cell_partition,
       std::map<std::size_t, dolfin::Set<unsigned int> >& ghost_procs,
       const LocalMeshData& mesh_data);
@@ -75,6 +75,7 @@ namespace dolfin
     // Compute cell partitions from distributed dual graph
     static void partition(
       const MPI_Comm mpi_comm,
+      const std::size_t npart,
       const std::vector<std::set<std::size_t> >& local_graph,
       const std::vector<std::size_t>& node_weights,
       const std::set<std::size_t>& ghost_vertices,

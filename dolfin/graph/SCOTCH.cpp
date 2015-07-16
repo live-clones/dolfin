@@ -50,24 +50,26 @@ using namespace dolfin;
 
 //-----------------------------------------------------------------------------
 void SCOTCH::compute_partition(
-  const MPI_Comm mpi_comm,
+  const std::size_t nparts,
   std::vector<std::size_t>& cell_partition,
   std::map<std::size_t, dolfin::Set<unsigned int>>& ghost_procs,
   const LocalMeshData& mesh_data)
 {
+  if (mesh_data.mpi_comm() == MPI_COMM_NULL)
+    return;
+
   // Create data structures to hold graph
   std::vector<std::set<std::size_t>> local_graph;
   std::set<std::size_t> ghost_vertices;
 
   // Compute local dual graph
-  GraphBuilder::compute_dual_graph(mpi_comm, mesh_data, local_graph,
-                                   ghost_vertices);
+  GraphBuilder::compute_dual_graph(mesh_data.mpi_comm(), mesh_data,
+                                   local_graph, ghost_vertices);
 
   // Compute partitions
-  partition(mpi_comm, local_graph, mesh_data.cell_weight,
+  partition(mesh_data.mpi_comm(), nparts, local_graph, mesh_data.cell_weight,
             ghost_vertices, mesh_data.global_cell_indices,
             mesh_data.num_global_cells, cell_partition, ghost_procs);
-
 }
 //-----------------------------------------------------------------------------
 std::vector<int> SCOTCH::compute_gps(const Graph& graph,
@@ -195,6 +197,7 @@ void SCOTCH::compute_reordering(const Graph& graph,
 //-----------------------------------------------------------------------------
 void SCOTCH::partition(
   const MPI_Comm mpi_comm,
+  const std::size_t npart,
   const std::vector<std::set<std::size_t>>& local_graph,
   const std::vector<std::size_t>& node_weights,
   const std::set<std::size_t>& ghost_vertices,
@@ -308,9 +311,6 @@ void SCOTCH::partition(
   }
   #endif
 
-  // Number of partitions (set equal to number of processes)
-  const SCOTCH_Num npart = num_processes;
-
   // Partitioning strategy
   SCOTCH_Strat strat;
   SCOTCH_stratInit(&strat);
@@ -332,7 +332,8 @@ void SCOTCH::partition(
   SCOTCH_randomReset();
 
   // Partition graph
-  if (SCOTCH_dgraphPart(&dgrafdat, npart, &strat, _cell_partition.data()))
+  if (SCOTCH_dgraphPart(&dgrafdat, (SCOTCH_Num)npart,
+                        &strat, _cell_partition.data()))
   {
     dolfin_error("SCOTCH.cpp",
                  "partition mesh using SCOTCH",
