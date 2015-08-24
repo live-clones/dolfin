@@ -25,6 +25,7 @@
 
 #include <string>
 #include "RectangleMesh.h"
+#include "MeshFactory.h"
 
 namespace dolfin
 {
@@ -37,7 +38,7 @@ namespace dolfin
   /// std::string diagonal ("left", "right", "right/left", "left/right",
   /// or "crossed") indicates the direction of the diagonals.
 
-  class UnitSquareMesh : public RectangleMesh
+  class UnitSquareMesh : public Mesh
   {
   public:
 
@@ -60,7 +61,7 @@ namespace dolfin
     ///         UnitSquareMesh mesh2(32, 32, "crossed");
     ///
     UnitSquareMesh(std::size_t nx, std::size_t ny, std::string diagonal="right")
-      : RectangleMesh(Point(0.0, 0.0), Point(1.0, 1.0), nx, ny, diagonal) {}
+      : Mesh(*MeshFactory::UnitSquareMesh(MPI_COMM_WORLD, nx, ny)) {}
 
     /// Create a uniform finite element _Mesh_ over the unit square
     /// [0,1] x [0,1].
@@ -84,7 +85,7 @@ namespace dolfin
     ///
     UnitSquareMesh(MPI_Comm comm, std::size_t nx, std::size_t ny,
                    std::string diagonal="right")
-      : RectangleMesh(comm, Point(0.0, 0.0), Point(1.0, 1.0), nx, ny, diagonal) {}
+      : Mesh(*MeshFactory::UnitSquareMesh(comm, nx, ny)) {}
 
   };
 

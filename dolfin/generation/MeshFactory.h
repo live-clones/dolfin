@@ -57,12 +57,12 @@ namespace dolfin
 
     static std::shared_ptr<Mesh>
       UnitSquareMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
-                               MeshOptions options=MeshOptions::left);
+                     MeshOptions options=MeshOptions::right);
 
     static std::shared_ptr<Mesh>
       RectangleMesh(MPI_Comm mpi_comm, Point p0, Point p1,
                     std::size_t nx, std::size_t ny,
-                    MeshOptions options=MeshOptions::left);
+                    MeshOptions options=MeshOptions::right);
 
   private:
     // Generate a rectangle mesh of size nx*ny between points p0 and p1
