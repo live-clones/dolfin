@@ -51,8 +51,8 @@ namespace dolfin
     /// *Example*
     ///     .. code-block:: c++
     ///
-    ///         UnitSquareMesh mesh1(MPI_COMM_WORLD, 32, 32);
-    ///         UnitSquareMesh mesh2(MPI_COMM_WORLD, 32, 32, MeshOptions::crossed);
+    ///         mesh1 = MeshFactory::UnitSquareMesh(MPI_COMM_WORLD, 32, 32);
+    ///         mesh2 = MeshFactory::UnitSquareMesh(MPI_COMM_WORLD, 32, 32, MeshOptions::crossed);
     ///
 
     static std::shared_ptr<Mesh>
