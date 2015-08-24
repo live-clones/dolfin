@@ -57,6 +57,8 @@ using namespace dolfin;
 Mesh::Mesh() : Variable("mesh", "DOLFIN mesh"), Hierarchical<Mesh>(*this),
                _ordered(false), _mpi_comm(MPI_COMM_WORLD)
 {
+  std::cout << "Mesh::Mesh()\n";
+
   // Do nothing
 }
 //-----------------------------------------------------------------------------
@@ -64,6 +66,8 @@ Mesh::Mesh(MPI_Comm comm) : Variable("mesh", "DOLFIN mesh"),
                             Hierarchical<Mesh>(*this), _ordered(false),
                             _mpi_comm(comm)
 {
+  std::cout << "Mesh::Mesh(comm)\n";
+
   // Do nothing
 }
 //-----------------------------------------------------------------------------
@@ -71,6 +75,8 @@ Mesh::Mesh(const Mesh& mesh) : Variable("mesh", "DOLFIN mesh"),
                                Hierarchical<Mesh>(*this), _ordered(false),
                                _mpi_comm(MPI_COMM_WORLD)
 {
+  std::cout << "Mesh::Mesh(mesh)\n";
+
   *this = mesh;
 }
 //-----------------------------------------------------------------------------
@@ -99,11 +105,14 @@ Mesh::Mesh(MPI_Comm comm, LocalMeshData& local_mesh_data)
 //-----------------------------------------------------------------------------
 Mesh::~Mesh()
 {
+  std::cout << "Mesh::~Mesh()\n";
+
   // Do nothing
 }
 //-----------------------------------------------------------------------------
 const Mesh& Mesh::operator=(const Mesh& mesh)
 {
+  std::cout << "Mesh::operator=(mesh)\n";
   // Assign data
   _topology = mesh._topology;
   _geometry = mesh._geometry;
