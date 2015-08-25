@@ -24,7 +24,7 @@
 #define __UNIT_SQUARE_MESH_H
 
 #include <string>
-#include "RectangleMesh.h"
+
 #include "MeshFactory.h"
 
 namespace dolfin

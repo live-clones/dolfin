@@ -24,8 +24,8 @@
 #define __RECTANGLE_MESH_H
 
 #include <string>
-#include <dolfin/common/MPI.h>
-#include <dolfin/mesh/Mesh.h>
+
+#include "MeshFactory.h"
 
 namespace dolfin
 {
@@ -62,7 +62,8 @@ namespace dolfin
     ///
     RectangleMesh(const Point& p0, const Point& p1,
                   std::size_t nx, std::size_t ny,
-                  std::string diagonal="right");
+                  std::string diagonal="right")
+      : Mesh(*MeshFactory::RectangleMesh(MPI_COMM_WORLD, p0, p1, nx, ny)) {}
 
     /// *Arguments*
     ///     comm (MPI_Comm)
@@ -90,14 +91,8 @@ namespace dolfin
     RectangleMesh(MPI_Comm comm,
                   const Point& p0, const Point& p1,
                   std::size_t nx, std::size_t ny,
-                  std::string diagonal="right");
-
-  private:
-
-    // Build mesh
-    void build(const Point& p0, const Point& p1,
-               std::size_t nx, std::size_t ny,
-               std::string diagonal="right");
+                  std::string diagonal="right")
+      : Mesh(*MeshFactory::RectangleMesh(comm, p0, p1, nx, ny)) {}
 
   };
 

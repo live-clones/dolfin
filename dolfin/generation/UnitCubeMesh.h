@@ -25,8 +25,8 @@
 #define __UNIT_CUBE_MESH_H
 
 #include <cstddef>
-#include <dolfin/common/MPI.h>
-#include "BoxMesh.h"
+
+#include "MeshFactory.h"
 
 namespace dolfin
 {
@@ -36,7 +36,7 @@ namespace dolfin
   /// the total number of tetrahedra will be 6*nx*ny*nz and the
   /// total number of vertices will be (nx + 1)*(ny + 1)*(nz + 1).
 
-  class UnitCubeMesh : public BoxMesh
+  class UnitCubeMesh : public Mesh
   {
   public:
 
@@ -57,7 +57,7 @@ namespace dolfin
     ///         UnitCubeMesh mesh(32, 32, 32);
     ///
     UnitCubeMesh(std::size_t nx, std::size_t ny, std::size_t nz)
-      : BoxMesh(Point(0.0, 0.0, 0.0), Point(1.0, 1.0, 1.0), nx, ny, nz) {}
+      : Mesh(*MeshFactory::UnitCubeMesh(MPI_COMM_WORLD, nx, ny, nz)) {}
 
     /// Create a uniform finite element _Mesh_ over the unit cube
     /// [0,1] x [0,1] x [0,1].
@@ -78,7 +78,7 @@ namespace dolfin
     ///         UnitCubeMesh mesh(MPI_COMM_WORLD, 32, 32, 32);
     ///
     UnitCubeMesh(MPI_Comm comm, std::size_t nx, std::size_t ny, std::size_t nz)
-      : BoxMesh(comm, Point(0.0, 0.0, 0.0), Point(1.0, 1.0, 1.0), nx, ny, nz) {}
+      : Mesh(*MeshFactory::UnitCubeMesh(comm, nx, ny, nz)) {}
 
   };
 

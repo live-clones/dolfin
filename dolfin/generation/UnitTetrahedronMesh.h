@@ -23,27 +23,19 @@
 #ifndef __UNIT_TETRAHEDRON_MESH_H
 #define __UNIT_TETRAHEDRON_MESH_H
 
-#include <dolfin/mesh/Mesh.h>
+#include "MeshFactory.h"
 
 namespace dolfin
 {
 
-  /// A mesh consisting of a single tetrahedron with vertices at
-  ///
-  ///   (0, 0, 0)
-  ///   (1, 0, 0)
-  ///   (0, 1, 0)
-  ///   (0, 0, 1)
-  ///
   /// This class is useful for testing.
 
   class UnitTetrahedronMesh : public Mesh
   {
   public:
-
     /// Create mesh of unit tetrahedron
-    UnitTetrahedronMesh();
-
+    UnitTetrahedronMesh()
+      : Mesh(*MeshFactory::UnitTetrahedronMesh(MPI_COMM_WORLD)) {};
   };
 
 }

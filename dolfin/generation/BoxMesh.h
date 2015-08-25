@@ -25,8 +25,8 @@
 #define __BOX_H
 
 #include <cstddef>
-#include <dolfin/common/MPI.h>
-#include <dolfin/mesh/Mesh.h>
+
+#include "MeshFactory.h"
 
 namespace dolfin
 {
@@ -67,8 +67,8 @@ namespace dolfin
     ///         Point p1(2, 2, 2);
     ///         BoxMesh mesh(p0, p1, 8, 8, 8);
     ///
-    BoxMesh(const Point& p0, const Point& p1,
-            std::size_t nx, std::size_t ny, std::size_t nz);
+    BoxMesh(const Point& p0, const Point& p1, std::size_t nx, std::size_t ny, std::size_t nz)
+      : Mesh(*MeshFactory::BoxMesh(MPI_COMM_WORLD, p0, p1, nx, ny, nz)) {}
 
     /// Create a uniform finite element _Mesh_ over the rectangular
     /// prism spanned by the two _Point_s p0 and p1. The order of the
@@ -100,13 +100,8 @@ namespace dolfin
     ///
     BoxMesh(MPI_Comm comm,
             const Point& p0, const Point& p1,
-            std::size_t nx, std::size_t ny, std::size_t nz);
-
-  private:
-
-    // Build mesh
-    void build(const Point& p0, const Point& p1,
-               std::size_t nx, std::size_t ny, std::size_t nz);
+            std::size_t nx, std::size_t ny, std::size_t nz)
+      : Mesh(*MeshFactory::BoxMesh(comm, p0, p1, nx, ny, nz)) {}
 
   };
 
