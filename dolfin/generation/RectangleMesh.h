@@ -63,7 +63,7 @@ namespace dolfin
     RectangleMesh(const Point& p0, const Point& p1,
                   std::size_t nx, std::size_t ny,
                   std::string diagonal="right")
-      : Mesh(*MeshFactory::RectangleMesh(MPI_COMM_WORLD, p0, p1, nx, ny)) {}
+      : Mesh(*MeshFactory::RectangleMesh(MPI_COMM_WORLD, p0, p1, nx, ny, diagonal)) {}
 
     /// *Arguments*
     ///     comm (MPI_Comm)
@@ -92,7 +92,7 @@ namespace dolfin
                   const Point& p0, const Point& p1,
                   std::size_t nx, std::size_t ny,
                   std::string diagonal="right")
-      : Mesh(*MeshFactory::RectangleMesh(comm, p0, p1, nx, ny)) {}
+      : Mesh(*MeshFactory::RectangleMesh(comm, p0, p1, nx, ny, diagonal)) {}
 
   };
 

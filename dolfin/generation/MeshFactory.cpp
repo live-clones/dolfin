@@ -57,10 +57,16 @@ std::shared_ptr<Mesh> MeshFactory::UnitSquareMesh(MPI_Comm mpi_comm,
                                                   std::size_t nx, std::size_t ny,
                                                   MeshOptions options)
 {
-  std::shared_ptr<Mesh> mesh = std::shared_ptr<Mesh>(new Mesh(mpi_comm));
-  build_rectangle_mesh(mesh, Point(0.0, 0.0), Point(1.0, 1.0),
-                       nx, ny, options);
-  return mesh;
+  return MeshFactory::RectangleMesh(mpi_comm, Point(0.0, 0.0), Point(1.0, 1.0),
+                                    nx, ny, options);
+}
+//-----------------------------------------------------------------------------
+std::shared_ptr<Mesh> MeshFactory::UnitSquareMesh(MPI_Comm mpi_comm,
+                                                  std::size_t nx, std::size_t ny,
+                                                  std::string diagonal)
+{
+  return MeshFactory::RectangleMesh(mpi_comm, Point(0.0, 0.0), Point(1.0, 1.0),
+                                    nx, ny, diagonal);
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<Mesh> MeshFactory::RectangleMesh(MPI_Comm mpi_comm,
@@ -69,7 +75,36 @@ std::shared_ptr<Mesh> MeshFactory::RectangleMesh(MPI_Comm mpi_comm,
                                                  MeshOptions options)
 {
   std::shared_ptr<Mesh> mesh = std::shared_ptr<Mesh>(new Mesh(mpi_comm));
-  build_rectangle_mesh(mesh, p0, p1, nx, ny, options);
+  // Check options
+  std::string diagonal;
+  if ((options&MeshOptions::alternating) == MeshOptions::alternating)
+  {
+    if ((options&MeshOptions::left) == MeshOptions::left)
+      diagonal = "left/right";
+    else
+      diagonal = "right/left";
+  }
+  else if ((options&MeshOptions::crossed) == MeshOptions::crossed)
+    diagonal = "crossed";
+  else if ((options&MeshOptions::left) == MeshOptions::left)
+    diagonal = "left";
+  else if ((options&MeshOptions::right) == MeshOptions::right)
+    diagonal = "right";
+  else
+    dolfin_error("MeshFactory.cpp",
+                 "determine mesh options",
+                 "Unknown mesh diagonal definition: allowed MeshOptions are \"left\", \"right\", \"alternating\" and \"crossed\"");
+  build_rectangle_mesh(mesh, p0, p1, nx, ny, diagonal);
+  return mesh;
+}
+//-----------------------------------------------------------------------------
+std::shared_ptr<Mesh> MeshFactory::RectangleMesh(MPI_Comm mpi_comm,
+                                                 const Point& p0, const Point& p1,
+                                                 std::size_t nx, std::size_t ny,
+                                                 std::string diagonal)
+{
+  std::shared_ptr<Mesh> mesh = std::shared_ptr<Mesh>(new Mesh(mpi_comm));
+  build_rectangle_mesh(mesh, p0, p1, nx, ny, diagonal);
   return mesh;
 }
 //-----------------------------------------------------------------------------
@@ -117,28 +152,8 @@ std::shared_ptr<Mesh> MeshFactory::UnitTetrahedronMesh(MPI_Comm mpi_comm,
 void MeshFactory::build_rectangle_mesh(std::shared_ptr<Mesh> mesh,
                                        const Point& p0, const Point& p1,
                                        std::size_t nx, std::size_t ny,
-                                       MeshOptions options)
+                                       std::string diagonal)
 {
-  // Check options
-  std::string diagonal;
-  if ((options&MeshOptions::alternating) == MeshOptions::alternating)
-  {
-    if ((options&MeshOptions::left) == MeshOptions::left)
-      diagonal = "left/right";
-    else
-      diagonal = "right/left";
-  }
-  else if ((options&MeshOptions::crossed) == MeshOptions::crossed)
-    diagonal = "crossed";
-  else if ((options&MeshOptions::left) == MeshOptions::left)
-    diagonal = "left";
-  else if ((options&MeshOptions::right) == MeshOptions::right)
-    diagonal = "right";
-  else
-    dolfin_error("MeshFactory.cpp",
-                 "determine mesh options",
-                 "Unknown mesh diagonal definition: allowed MeshOptions are \"left\", \"right\", \"alternating\" and \"crossed\"");
-
   // Receive mesh according to parallel policy
   if (MPI::is_receiver(mesh->mpi_comm()))
   {

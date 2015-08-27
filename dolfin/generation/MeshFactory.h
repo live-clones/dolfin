@@ -119,6 +119,11 @@ namespace dolfin
       UnitSquareMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
                      MeshOptions options=MeshOptions::right);
 
+    /// Alternative version of UnitSquareMesh with string for options for backward compatibility
+    static std::shared_ptr<Mesh>
+      UnitSquareMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
+                     std::string diagonal);
+
     /// *Arguments*
     ///     comm (MPI_Comm)
     ///         MPI communicator
@@ -148,6 +153,12 @@ namespace dolfin
                     std::size_t nx, std::size_t ny,
                     MeshOptions options=MeshOptions::right);
 
+    /// Alternative version of RectangleMesh with string for options for backwards compatibility
+    static std::shared_ptr<Mesh>
+      RectangleMesh(MPI_Comm mpi_comm, const Point& p0, const Point& p1,
+                    std::size_t nx, std::size_t ny,
+                    std::string diagonal);
+
     /// A mesh consisting of a single tetrahedron with vertices at
     ///
     ///   (0, 0, 0)
@@ -163,7 +174,7 @@ namespace dolfin
     static void build_rectangle_mesh(std::shared_ptr<Mesh> mesh,
                                      const Point& p0, const Point& p1,
                                      std::size_t nx, std::size_t ny,
-                                     MeshOptions options);
+                                     std::string diagonal);
 
     // Generate a box mesh of size nx*ny*nz between points p0 and p1
     static void build_box_mesh(std::shared_ptr<Mesh> mesh,

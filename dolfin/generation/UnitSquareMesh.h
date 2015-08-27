@@ -61,7 +61,7 @@ namespace dolfin
     ///         UnitSquareMesh mesh2(32, 32, "crossed");
     ///
     UnitSquareMesh(std::size_t nx, std::size_t ny, std::string diagonal="right")
-      : Mesh(*MeshFactory::UnitSquareMesh(MPI_COMM_WORLD, nx, ny))
+      : Mesh(*MeshFactory::UnitSquareMesh(MPI_COMM_WORLD, nx, ny, diagonal))
     {
       deprecation("UnitSquareMesh()", "1.7.0", "1.8.0", "Use MeshFactory::UnitSquareMesh() instead");
     }
@@ -88,7 +88,7 @@ namespace dolfin
     ///
     UnitSquareMesh(MPI_Comm comm, std::size_t nx, std::size_t ny,
                    std::string diagonal="right")
-      : Mesh(*MeshFactory::UnitSquareMesh(comm, nx, ny))
+      : Mesh(*MeshFactory::UnitSquareMesh(comm, nx, ny, diagonal))
     {
       deprecation("UnitSquareMesh()", "1.7.0", "1.8.0", "Use MeshFactory::UnitSquareMesh() instead");
     }
