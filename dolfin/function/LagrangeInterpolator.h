@@ -86,7 +86,8 @@ namespace dolfin
     ///     u0 (_Function_)
     ///         The Function to be interpolated.
     void interpolate(Function& u, const Function& u0);
-
+    void interpolateall(Function& u, const Function& u0);
+    
   private:
 
     // Create a map from coordinates to a list of dofs that share the coordinate

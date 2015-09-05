@@ -101,4 +101,4 @@ print("Solution vector norm (0): {!r}".format(u.vector().norm("l2")))
 #file << u
 
 # Plot solution
-#plot(u, interactive=True)
+plot(u, interactive=True)
