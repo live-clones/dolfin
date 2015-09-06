@@ -201,9 +201,6 @@ void LagrangeInterpolator::interpolate(Function& u, const Function& u0)
   std::map<std::vector<double>, std::vector<std::size_t>, lt_coordinate>
     coords_to_dofs = tabulate_coordinates_to_dofs(dofmap, mesh1);
 
-  static std::map<std::vector<double>, std::vector<double>, lt_coordinate>
-    coords_to_values(lt_coordinate(1.0e-12));
-    
   // Get a map from global dofs to component number in mixed space
   std::unordered_map<std::size_t, std::size_t> dof_component_map;
   int component = -1;
@@ -222,7 +219,6 @@ void LagrangeInterpolator::interpolate(Function& u, const Function& u0)
       std::vector<std::size_t> dofs = map_it.second;
       for (const auto &d : map_it.second)
         local_u_vector[d] = values[dof_component_map[d]];
-      coords_to_values.insert(std::make_pair(x, values));
     }
     catch (std::exception &e)
     {
@@ -320,98 +316,16 @@ void LagrangeInterpolator::interpolate(Function& u, const Function& u0)
         dolfin_assert(d <  local_u_vector.size());
         local_u_vector[d]
           = vals[j*u0.value_size() + dof_component_map[d]];
-      }      
-      
-      for (uint i = 0; i < u0.value_size(); i++)
-      {
-        values[i] = vals[j*u0.value_size() + i];
-      }      
-
-      coords_to_values.insert(std::make_pair(x, values));
+      }            
     }
   }
   
-//   // Set and finalize
-//  u.vector()->set_local(local_u_vector);
-//  u.vector()->apply("insert");
-
-  for (const auto &map_it : coords_to_values)
-  {
-    cout << "x = " ;
-    for (uint i =0; i < map_it.first.size(); i++)
-    {
-       cout << map_it.first[i] << " " ;
-    }
-    for (uint j=0; j < map_it.second.size(); j++)
-    {
-       cout << map_it.second[j] << " " ;        
-    }
-    cout << coords_to_dofs[map_it.first][0] ;
-    cout << endl;
-  }
-    
-  class WrapperFunction : public Expression
-  {
-  public:
-      
-    WrapperFunction(int value_shape) : Expression(value_shape) {};
-    
-    mutable std::vector<double> _xx;
-
-    void eval(Array<double>& values, const Array<double>& x) const
-    {
-       _xx.resize(x.size());
-       for (uint j = 0; j < x.size(); j++)
-         _xx[j] = x[j];
-       
-       const std::vector<double>& v = coords_to_values[_xx];
-       for (std::size_t j = 0; j < v.size(); j++)
-       {
-         values[j] = v[j];
-//           cout << j << " " << values[j] << endl;
-       }
-    }
-
-  };
-  
-  WrapperFunction wrapper(u.value_size());
-  wrapper._xx = x;
-  
-  // Iterate over mesh and interpolate on each cell
-  ufc::cell ufc_cell;
-  std::vector<double> vertex_coordinates;
-  std::vector<double> cell_coefficients(dofmap.max_element_dofs());
-  
-  const std::size_t local_size = dofmap.ownership_range().second
-                               - dofmap.ownership_range().first;
-  for (CellIterator cell(mesh1); !cell.end(); ++cell)
-  {
-    // Update to current cell
-    cell->get_vertex_coordinates(vertex_coordinates);
-    cell->get_cell_data(ufc_cell);
-
-    // Restrict function to cell
-    element.evaluate_dofs(cell_coefficients.data(), wrapper,
-               vertex_coordinates.data(), ufc_cell.orientation, ufc_cell);
-
-    // Tabulate dofs
-    const ArrayView<const dolfin::la_index> cell_dofs
-      = dofmap.cell_dofs(cell->index());
-
-    for (uint i = 0; i < cell_dofs.size(); i++)
-    {
-        uint d = cell_dofs[i];
-        if (d < local_size)
-        {
-            local_u_vector[d] = cell_coefficients[i];
-        }
-    }
-  }
   // Set and finalize
   u.vector()->set_local(local_u_vector);
   u.vector()->apply("insert");
-  
+
 }
+//-----------------------------------------------------------------------------
 void LagrangeInterpolator::interpolateall(Function& u, const Function& u0)
 {
   // Interpolate from Function u0 to Function u.
@@ -419,19 +333,18 @@ void LagrangeInterpolator::interpolateall(Function& u, const Function& u0)
   //
   // The algorithm is briefly
   //
-  //   1) Create a map from all different coordinates of u's dofs to
-  //      the dofs living on that coordinate. This is done such that
-  //      one only need to visit (and distribute) each interpolation
-  //      point once.
-  //   2) Create bounding boxes for the partitioned mesh of u0 and
+  //   1) Create a set of all different coordinates of u's that will
+  //      require an eval (like tabulate_all_coordinates)
+  //   2) Create global bounding boxes for the partitioned mesh of u0 and
   //      distribute to all processors.
   //   3) Using bounding boxes, compute the processes that *may* own
-  //      the dofs of u.
+  //      the points in need of eval.
   //   4) Distribute interpolation points to potential owners who
   //      subsequently tries to evaluate u0. If successful, return
-  //      values of u0 to owner.
-  //   5) Wrap the results of the global function evals (the u0 evals)
-  //      in an Expression
+  //      values (result of eval) of u0 to owner.
+  //   5) Wrap the results of the global function evals in an Expression.
+  //      Now this Expression contains all global eval results that will
+  //      be required
   //   6) Call evaluate_dofs for all cells on local mesh using the
   //      wrapped function as the ufc function.
   //   7) Update coefficients of local vector with results from 
@@ -509,9 +422,12 @@ void LagrangeInterpolator::interpolateall(Function& u, const Function& u0)
   const GenericDofMap& dofmap = *V1.dofmap();
 
   // Create map from coordinates to dofs sharing that coordinate
+  // Fixme. No need for map to dofs, just need the keys. Using tabulate_coordinates_to_dofs
+  // to reuse code (tabulate_all_coordinates does not work here without modification)
   std::map<std::vector<double>, std::vector<std::size_t>, lt_coordinate>
     coords_to_dofs = tabulate_coordinates_to_dofs(dofmap, mesh1);
-
+    
+  // Create map from coordinate to global result of eval
   static std::map<std::vector<double>, std::vector<double>, lt_coordinate>
     coords_to_values(lt_coordinate(1.0e-12));
       
@@ -623,7 +539,7 @@ void LagrangeInterpolator::interpolateall(Function& u, const Function& u0)
   }
   
   // Create an Expression wrapping coords_to_values such that these
-  // results will be available when calling evaluate_dofs
+  // results will be retrieved when calling evaluate_dofs
   class WrapperFunction : public Expression
   {
   public:
@@ -634,7 +550,6 @@ void LagrangeInterpolator::interpolateall(Function& u, const Function& u0)
 
     void eval(Array<double>& values, const Array<double>& x) const
     {
-       _xx.resize(x.size());
        for (uint j = 0; j < x.size(); j++)
          _xx[j] = x[j];
        
