@@ -57,7 +57,10 @@ namespace dolfin
     ///         UnitCubeMesh mesh(32, 32, 32);
     ///
     UnitCubeMesh(std::size_t nx, std::size_t ny, std::size_t nz)
-      : Mesh(*MeshFactory::UnitCubeMesh(MPI_COMM_WORLD, nx, ny, nz)) {}
+      : Mesh(*MeshFactory::UnitCubeMesh(MPI_COMM_WORLD, nx, ny, nz))
+    {
+      deprecation("UnitCubeMesh()", "1.7.0", "1.8.0", "Use MeshFactory::UnitCubeMesh() instead");
+    }
 
     /// Create a uniform finite element _Mesh_ over the unit cube
     /// [0,1] x [0,1] x [0,1].
@@ -78,7 +81,10 @@ namespace dolfin
     ///         UnitCubeMesh mesh(MPI_COMM_WORLD, 32, 32, 32);
     ///
     UnitCubeMesh(MPI_Comm comm, std::size_t nx, std::size_t ny, std::size_t nz)
-      : Mesh(*MeshFactory::UnitCubeMesh(comm, nx, ny, nz)) {}
+      : Mesh(*MeshFactory::UnitCubeMesh(comm, nx, ny, nz))
+    {
+      deprecation("UnitCubeMesh()", "1.7.0", "1.8.0", "Use MeshFactory::UnitCubeMesh() instead");
+    }
 
   };
 

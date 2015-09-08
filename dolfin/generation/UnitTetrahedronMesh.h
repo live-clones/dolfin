@@ -35,7 +35,10 @@ namespace dolfin
   public:
     /// Create mesh of unit tetrahedron
     UnitTetrahedronMesh()
-      : Mesh(*MeshFactory::UnitTetrahedronMesh(MPI_COMM_WORLD)) {};
+      : Mesh(*MeshFactory::UnitTetrahedronMesh(MPI_COMM_WORLD))
+    {
+      deprecation("UnitTetrahedronMesh()", "1.7.0", "1.8.0", "Use MeshFactory::UnitTetrahedronMesh() instead");
+    };
   };
 
 }

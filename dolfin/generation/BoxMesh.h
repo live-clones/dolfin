@@ -68,7 +68,10 @@ namespace dolfin
     ///         BoxMesh mesh(p0, p1, 8, 8, 8);
     ///
     BoxMesh(const Point& p0, const Point& p1, std::size_t nx, std::size_t ny, std::size_t nz)
-      : Mesh(*MeshFactory::BoxMesh(MPI_COMM_WORLD, p0, p1, nx, ny, nz)) {}
+      : Mesh(*MeshFactory::BoxMesh(MPI_COMM_WORLD, p0, p1, nx, ny, nz))
+    {
+      deprecation("BoxMesh()", "1.7.0", "1.8.0", "Use MeshFactory::BoxMesh() instead");
+    }
 
     /// Create a uniform finite element _Mesh_ over the rectangular
     /// prism spanned by the two _Point_s p0 and p1. The order of the
@@ -101,7 +104,10 @@ namespace dolfin
     BoxMesh(MPI_Comm comm,
             const Point& p0, const Point& p1,
             std::size_t nx, std::size_t ny, std::size_t nz)
-      : Mesh(*MeshFactory::BoxMesh(comm, p0, p1, nx, ny, nz)) {}
+      : Mesh(*MeshFactory::BoxMesh(comm, p0, p1, nx, ny, nz))
+    {
+      deprecation("BoxMesh()", "1.7.0", "1.8.0", "Use MeshFactory::BoxMesh() instead");
+    }
 
   };
 

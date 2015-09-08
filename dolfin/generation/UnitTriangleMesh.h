@@ -41,7 +41,10 @@ namespace dolfin
   public:
 
     /// Create mesh of unit triangle
-    UnitTriangleMesh();
+    UnitTriangleMesh() : Mesh(*MeshFactory::UnitTriangleMesh(MPI_COMM_WORLD))
+    {
+      deprecation("UnitTriangleMesh()", "1.7.0", "1.8.0", "Use MeshFactory::UnitTriangleMesh() instead");
+    };
 
   };
 

@@ -149,6 +149,42 @@ std::shared_ptr<Mesh> MeshFactory::UnitTetrahedronMesh(MPI_Comm mpi_comm,
   return mesh;
 }
 //-----------------------------------------------------------------------------
+std::shared_ptr<Mesh> MeshFactory::UnitTriangleMesh(MPI_Comm mpi_comm,
+                                                    MeshOptions options)
+{
+  if (MPI::size(mpi_comm) != 1)
+    dolfin_error("MeshFactory.cpp",
+                 "generate UnitTriangleMesh",
+                 "Cannot generate distributed mesh");
+
+  std::shared_ptr<Mesh> mesh = std::shared_ptr<Mesh>(new Mesh(mpi_comm));
+
+  // Open mesh for editing
+  MeshEditor editor;
+  editor.open(*mesh, CellType::triangle, 2, 2);
+
+  // Create vertices
+  editor.init_vertices_global(3, 3);
+  std::vector<double> x(2);
+  x[0] = 0.0; x[1] = 0.0;
+  editor.add_vertex(0, x);
+  x[0] = 1.0; x[1] = 0.0;
+  editor.add_vertex(1, x);
+  x[0] = 0.0; x[1] = 1.0;
+  editor.add_vertex(2, x);
+
+  // Create cells
+  editor.init_cells_global(1, 1);
+  std::vector<std::size_t> cell_data(3);
+  cell_data[0] = 0; cell_data[1] = 1; cell_data[2] = 2;
+  editor.add_cell(0, cell_data);
+
+  // Close mesh editor
+  editor.close();
+
+  return mesh;
+}
+//-----------------------------------------------------------------------------
 void MeshFactory::build_rectangle_mesh(std::shared_ptr<Mesh> mesh,
                                        const Point& p0, const Point& p1,
                                        std::size_t nx, std::size_t ny,
