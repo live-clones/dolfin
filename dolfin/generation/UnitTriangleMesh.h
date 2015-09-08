@@ -23,7 +23,7 @@
 #ifndef __UNIT_TRIANGLE_MESH_H
 #define __UNIT_TRIANGLE_MESH_H
 
-#include <dolfin/mesh/Mesh.h>
+#include "MeshFactory.h"
 
 namespace dolfin
 {

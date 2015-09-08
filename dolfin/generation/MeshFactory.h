@@ -169,6 +169,16 @@ namespace dolfin
     static std::shared_ptr<Mesh>
       UnitTetrahedronMesh(MPI_Comm mpi_comm, MeshOptions options=MeshOptions::none);
 
+
+    /// A mesh consisting of a single triangle with vertices at
+    ///
+    ///   (0, 0)
+    ///   (1, 0)
+    ///   (0, 1)
+    /// Useful for testing
+    static std::shared_ptr<Mesh>
+      UnitTriangleMesh(MPI_Comm mpi_comm, MeshOptions options=MeshOptions::none);
+
   private:
     // Generate a rectangle mesh of size nx*ny between points p0 and p1
     static void build_rectangle_mesh(std::shared_ptr<Mesh> mesh,
