@@ -55,7 +55,10 @@ namespace dolfin
     ///         // Create a mesh of 25 cells in the interval [-1,1]
     ///         IntervalMesh mesh(25, -1.0, 1.0);
     ///
-    IntervalMesh(std::size_t nx, double a, double b);
+    IntervalMesh(std::size_t nx, double a, double b) : Mesh(*MeshFactory::IntervalMesh(MPI_COMM_WORLD, nx, a, b))
+    {
+      deprecation("IntervalMesh()", "1.7.0", "1.8.0", "Use MeshFactory::IntervalMesh() instead");
+    }
 
     /// Constructor
     ///
@@ -75,12 +78,10 @@ namespace dolfin
     ///         // Create a mesh of 25 cells in the interval [-1,1]
     ///         IntervalMesh mesh(MPI_COMM_WORLD, 25, -1.0, 1.0);
     ///
-    IntervalMesh(MPI_Comm comm, std::size_t nx, double a, double b);
-
-  private:
-
-    // Build mesh
-    void build(std::size_t nx, double a, double b);
+    IntervalMesh(MPI_Comm comm, std::size_t nx, double a, double b) : Mesh(*MeshFactory::IntervalMesh(comm, nx, a, b))
+    {
+      deprecation("IntervalMesh()", "1.7.0", "1.8.0", "Use MeshFactory::IntervalMesh() instead");
+    }
 
   };
 

@@ -159,6 +159,14 @@ std::size_t Mesh::init(std::size_t dim) const
     return 0;
   }
 
+  // Sanity check
+  if (dim > _topology.dim())
+  {
+    dolfin_error("Mesh.cpp",
+                 "initialise mesh entities",
+                 "Cannot initialise entities of dimension %d", dim);
+  }
+
   // Skip if already computed
   if (_topology.size(dim) > 0)
     return _topology.size(dim);

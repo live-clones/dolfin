@@ -159,6 +159,53 @@ namespace dolfin
                     std::size_t nx, std::size_t ny,
                     std::string diagonal);
 
+    /// Create a uniform finite element _Mesh_ over the unit interval
+    /// [0,1].
+    ///
+    /// *Arguments*
+    ///     mpi_comm (MPI_Comm)
+    ///         MPI communicator
+    ///     nx (std::size_t)
+    ///         Number of cells in horizontal direction.
+    ///     options
+    ///         Options argument.
+    ///
+    /// *Example*
+    ///     .. code-block:: c++
+    ///
+    ///         std::shared_ptr<Mesh> mesh1 = MeshFactory::UnitIntervalMesh(MPI_COMM_WORLD, 32);
+    ///
+    static std::shared_ptr<Mesh>
+      UnitIntervalMesh(MPI_Comm mpi_comm, std::size_t nx,
+                       MeshOptions options=MeshOptions::none)
+    {
+      return MeshFactory::IntervalMesh(mpi_comm, nx, 0.0, 1.0, options);
+    }
+
+    /// *Arguments*
+    ///     comm (MPI_Comm)
+    ///         MPI communicator
+    ///     p0 (_Point_)
+    ///         First point.
+    ///     p1 (_Point_)
+    ///         Second point.
+    ///     nx (double)
+    ///         Number of cells in :math:`x`-direction.
+    ///     ny (double)
+    ///         Number of cells in :math:`y`-direction.
+    ///     options
+    ///         Options argument.
+    ///
+    /// *Example*
+    ///     .. code-block:: c++
+    ///
+    ///         double a = 1, b = 2;
+    ///         std::shared_ptr<Mesh> mesh = MeshFactory::IntervalMesh(MPI_COMM_WORLD, a, b, 8);
+    ///
+    static std::shared_ptr<Mesh>
+      IntervalMesh(MPI_Comm mpi_comm, std::size_t nx, double a, double b,
+                   MeshOptions options=MeshOptions::right);
+
     /// A mesh consisting of a single tetrahedron with vertices at
     ///
     ///   (0, 0, 0)
