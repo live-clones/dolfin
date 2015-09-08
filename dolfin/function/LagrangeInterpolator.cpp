@@ -421,22 +421,57 @@ void LagrangeInterpolator::interpolateall(Function& u, const Function& u0)
   dolfin_assert(V1.dofmap());
   const GenericDofMap& dofmap = *V1.dofmap();
 
-  // Create map from coordinates to dofs sharing that coordinate
-  // Fixme. No need for map to dofs, just need the keys. Using tabulate_coordinates_to_dofs
-  // to reuse code (tabulate_all_coordinates does not work here without modification)
-  std::map<std::vector<double>, std::vector<std::size_t>, lt_coordinate>
-    coords_to_dofs = tabulate_coordinates_to_dofs(dofmap, mesh1);
-    
   // Create map from coordinate to global result of eval
   static std::map<std::vector<double>, std::vector<double>, lt_coordinate>
     coords_to_values(lt_coordinate(1.0e-12));
-      
+    
+  // Create an Expression wrapping the set of coordinates
+  // Objective is to obtain all points in need of evaluation.
+  static std::set<std::vector<double>> coords;
+  class CordFunction : public Expression
+  {
+  public:
+    CordFunction(int value_shape) : Expression(value_shape) {};
+    mutable std::vector<double> _xx;
+    void eval(Array<double>& values, const Array<double>& x) const
+    {
+      for (uint j = 0; j < x.size(); j++)
+        _xx[j] = x[j];
+      coords.insert(_xx);
+    }
+  };
+
+  CordFunction cord(u.value_size());
+  cord._xx = x;
+  ufc::cell ufc_cell;
+  std::vector<double> vertex_coordinates;
+  std::vector<double> cell_coefficients(dofmap.max_element_dofs());  
+  const std::size_t local_size = dofmap.ownership_range().second
+                               - dofmap.ownership_range().first;
+  for (CellIterator cell(mesh1); !cell.end(); ++cell)
+  {
+    // Update to current cell
+    cell->get_vertex_coordinates(vertex_coordinates);
+    cell->get_cell_data(ufc_cell);
+
+    // Call evaluate_dofs with wrapper function to extract points
+    element.evaluate_dofs(cell_coefficients.data(), cord,
+               vertex_coordinates.data(), ufc_cell.orientation, ufc_cell);
+  }
+//   for (auto it = coords.begin(); it != coords.end(); ++it)
+//   {
+//        for (auto y = it->begin(); y != it->end(); ++y)
+//           std::cout << *y << " ";
+//       std::cout << std::endl;
+//   }        
+//   std::cout << coords.size() << " " << coords_to_dofs.size() << std::endl;    
+
   // Search this process first for all coordinates in u's local mesh
   std::vector<double> points_not_found;
-  for (const auto &map_it : coords_to_dofs)
+  for (auto it = coords.begin(); it != coords.end(); ++it)
   {
     // Place interpolation point in x
-    std::copy(map_it.first.begin(), map_it.first.end(), x.begin());
+    std::copy(it->begin(), it->end(), x.begin());
 
     try
     { // Store values when point is found
@@ -543,33 +578,32 @@ void LagrangeInterpolator::interpolateall(Function& u, const Function& u0)
   class WrapperFunction : public Expression
   {
   public:
-      
+        
     WrapperFunction(int value_shape) : Expression(value_shape) {};
-    
+        
     mutable std::vector<double> _xx;
 
     void eval(Array<double>& values, const Array<double>& x) const
     {
-       for (uint j = 0; j < x.size(); j++)
-         _xx[j] = x[j];
-       
-       const std::vector<double>& v = coords_to_values[_xx];
-       for (std::size_t j = 0; j < v.size(); j++)
-         values[j] = v[j];
+      for (uint j = 0; j < x.size(); j++)
+            _xx[j] = x[j];
+        
+      const std::vector<double>& v = coords_to_values[_xx];
+      for (std::size_t j = 0; j < v.size(); j++)
+        values[j] = v[j];
     }
-
   };
-  
+
   WrapperFunction wrapper(u.value_size());
   wrapper._xx = x;
   
   // Iterate over mesh and interpolate on each cell
-  ufc::cell ufc_cell;
-  std::vector<double> vertex_coordinates;
-  std::vector<double> cell_coefficients(dofmap.max_element_dofs());
-  
-  const std::size_t local_size = dofmap.ownership_range().second
-                               - dofmap.ownership_range().first;
+//   ufc::cell ufc_cell;
+//   std::vector<double> vertex_coordinates;
+//   std::vector<double> cell_coefficients(dofmap.max_element_dofs());
+//   
+//   const std::size_t local_size = dofmap.ownership_range().second
+//                                - dofmap.ownership_range().first;
   for (CellIterator cell(mesh1); !cell.end(); ++cell)
   {
     // Update to current cell
