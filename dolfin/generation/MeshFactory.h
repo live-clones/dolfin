@@ -226,6 +226,18 @@ namespace dolfin
     static std::shared_ptr<Mesh>
       UnitTriangleMesh(MPI_Comm mpi_comm, MeshOptions options=MeshOptions::none);
 
+    /// NB: this code is experimental, just for testing, and will generally not
+    /// work with anything else
+    static std::shared_ptr<Mesh>
+      UnitHexMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny, std::size_t nz,
+                  MeshOptions options=MeshOptions::none);
+
+    /// NB: this code is experimental, just for testing, and will generally not
+    /// work with anything else
+    static std::shared_ptr<Mesh>
+      UnitQuadMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
+                   MeshOptions options=MeshOptions::none);
+
   private:
     // Generate a rectangle mesh of size nx*ny between points p0 and p1
     static void build_rectangle_mesh(std::shared_ptr<Mesh> mesh,
