@@ -100,7 +100,7 @@ namespace dolfin
     ///         Number of cells in horizontal direction.
     ///     ny (std::size_t)
     ///         Number of cells in vertical direction.
-    ///     options
+    ///     options (std::string)
     ///         Options argument: 'left', 'right', or 'crossed' indicating
     ///         the direction of the diagonals.
     ///
@@ -125,7 +125,7 @@ namespace dolfin
     ///         Number of cells in :math:`x`-direction.
     ///     ny (double)
     ///         Number of cells in :math:`y`-direction.
-    ///     options
+    ///     options (std::string)
     ///         Options argument: 'left', 'right', or 'crossed' indicating
     ///         the direction of the diagonals.
     ///
@@ -151,7 +151,7 @@ namespace dolfin
     ///         MPI communicator
     ///     nx (std::size_t)
     ///         Number of cells in horizontal direction.
-    ///     options
+    ///     options (std::string)
     ///         Options argument.
     ///
     /// *Example*
@@ -177,7 +177,7 @@ namespace dolfin
     ///         Number of cells in :math:`x`-direction.
     ///     ny (double)
     ///         Number of cells in :math:`y`-direction.
-    ///     options
+    ///     options (std::string)
     ///         Options argument.
     ///
     /// *Example*
