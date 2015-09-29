@@ -33,7 +33,7 @@ std::shared_ptr<Mesh> MeshFactory::UnitCubeMesh(MPI_Comm mpi_comm,
                                                 std::size_t nx,
                                                 std::size_t ny,
                                                 std::size_t nz,
-                                                MeshOptions options)
+                                                std::string options)
 {
   std::shared_ptr<Mesh> mesh(new Mesh(mpi_comm));
   build_box_mesh(mesh, Point(0.0, 0.0, 0.0), Point(1.0, 1.0, 1.0),
@@ -46,7 +46,7 @@ std::shared_ptr<Mesh> MeshFactory::BoxMesh(MPI_Comm mpi_comm,
                                            std::size_t nx,
                                            std::size_t ny,
                                            std::size_t nz,
-                                           MeshOptions options)
+                                           std::string options)
 {
   std::shared_ptr<Mesh> mesh(new Mesh(mpi_comm));
   build_box_mesh(mesh, p0, p1, nx, ny, nz, options);
@@ -54,63 +54,50 @@ std::shared_ptr<Mesh> MeshFactory::BoxMesh(MPI_Comm mpi_comm,
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<Mesh> MeshFactory::UnitSquareMesh(MPI_Comm mpi_comm,
-                                                  std::size_t nx, std::size_t ny,
-                                                  MeshOptions options)
+                                                  std::size_t nx,
+                                                  std::size_t ny,
+                                                  std::string options)
 {
   return MeshFactory::RectangleMesh(mpi_comm, Point(0.0, 0.0), Point(1.0, 1.0),
                                     nx, ny, options);
 }
 //-----------------------------------------------------------------------------
-std::shared_ptr<Mesh> MeshFactory::UnitSquareMesh(MPI_Comm mpi_comm,
-                                                  std::size_t nx, std::size_t ny,
-                                                  std::string diagonal)
-{
-  return MeshFactory::RectangleMesh(mpi_comm, Point(0.0, 0.0), Point(1.0, 1.0),
-                                    nx, ny, diagonal);
-}
-//-----------------------------------------------------------------------------
 std::shared_ptr<Mesh> MeshFactory::RectangleMesh(MPI_Comm mpi_comm,
-                                                 const Point& p0, const Point& p1,
-                                                 std::size_t nx, std::size_t ny,
-                                                 MeshOptions options)
+                                                 const Point& p0,
+                                                 const Point& p1,
+                                                 std::size_t nx,
+                                                 std::size_t ny,
+                                                 std::string options)
 {
   std::shared_ptr<Mesh> mesh(new Mesh(mpi_comm));
   // Check options
   std::string diagonal;
-  if ((options&MeshOptions::alternating) == MeshOptions::alternating)
-  {
-    if ((options&MeshOptions::left) == MeshOptions::left)
-      diagonal = "left/right";
-    else
-      diagonal = "right/left";
-  }
-  else if ((options&MeshOptions::crossed) == MeshOptions::crossed)
-    diagonal = "crossed";
-  else if ((options&MeshOptions::left) == MeshOptions::left)
-    diagonal = "left";
-  else if ((options&MeshOptions::right) == MeshOptions::right)
-    diagonal = "right";
-  else
+
+  if (options != "left/right" and
+      options != "right/left" and
+      options != "crossed" and
+      options != "left" and
+      options != "right")
     dolfin_error("MeshFactory.cpp",
                  "determine mesh options",
-                 "Unknown mesh diagonal definition: allowed MeshOptions are \"left\", \"right\", \"alternating\" and \"crossed\"");
-  build_rectangle_mesh(mesh, p0, p1, nx, ny, diagonal);
+                 "Unknown mesh diagonal definition: allowed options are \"left\", \"right\", \"left/right\" and \"crossed\"");
+  build_rectangle_mesh(mesh, p0, p1, nx, ny, options);
   return mesh;
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<Mesh> MeshFactory::RectangleMesh(MPI_Comm mpi_comm,
                                                  const Point& p0, const Point& p1,
                                                  std::size_t nx, std::size_t ny,
-                                                 std::string diagonal)
+                                                 std::string options)
 {
   std::shared_ptr<Mesh> mesh(new Mesh(mpi_comm));
-  build_rectangle_mesh(mesh, p0, p1, nx, ny, diagonal);
+  build_rectangle_mesh(mesh, p0, p1, nx, ny, options);
   return mesh;
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<Mesh> MeshFactory::IntervalMesh(MPI_Comm mpi_comm,
                                                 std::size_t nx, double a,
-                                                double b, MeshOptions options)
+                                                double b, std::string options)
 {
   std::shared_ptr<Mesh> mesh(new Mesh(mpi_comm));
 
@@ -184,7 +171,7 @@ std::shared_ptr<Mesh> MeshFactory::IntervalMesh(MPI_Comm mpi_comm,
 //-----------------------------------------------------------------------------
 std::shared_ptr<Mesh>
 MeshFactory::UnitQuadMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
-                          MeshOptions options)
+                          std::string options)
 {
   std::shared_ptr<Mesh> mesh(new Mesh(mpi_comm));
 
@@ -248,7 +235,7 @@ MeshFactory::UnitQuadMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<Mesh> MeshFactory::UnitTetrahedronMesh(MPI_Comm mpi_comm,
-                                                       MeshOptions options)
+                                                       std::string options)
 {
   if (MPI::size(mpi_comm) != 1)
     dolfin_error("MeshFactory.cpp",
@@ -289,7 +276,7 @@ std::shared_ptr<Mesh> MeshFactory::UnitTetrahedronMesh(MPI_Comm mpi_comm,
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<Mesh> MeshFactory::UnitTriangleMesh(MPI_Comm mpi_comm,
-                                                    MeshOptions options)
+                                                    std::string options)
 {
   if (MPI::size(mpi_comm) != 1)
     dolfin_error("MeshFactory.cpp",
@@ -327,7 +314,7 @@ std::shared_ptr<Mesh> MeshFactory::UnitTriangleMesh(MPI_Comm mpi_comm,
 std::shared_ptr<Mesh>
 MeshFactory::UnitHexMesh(MPI_Comm mpi_comm,
                          std::size_t nx, std::size_t ny, std::size_t nz,
-                         MeshOptions options)
+                         std::string options)
 {
   std::shared_ptr<Mesh> mesh(new Mesh(mpi_comm));
 
@@ -577,17 +564,11 @@ void MeshFactory::build_rectangle_mesh(std::shared_ptr<Mesh> mesh,
 }
 //-----------------------------------------------------------------------------
 void MeshFactory::build_box_mesh(std::shared_ptr<Mesh> mesh,
-                                       const Point& p0, const Point& p1,
-                                       std::size_t nx, std::size_t ny,
-                                       std::size_t nz,
-                                       MeshOptions options)
+                                 const Point& p0, const Point& p1,
+                                 std::size_t nx, std::size_t ny,
+                                 std::size_t nz,
+                                 std::string options)
 {
-  // Check options
-  if (options != MeshOptions::none)
-    dolfin_error("MeshFactory.cpp",
-                 "determine mesh options",
-                 "Unknown mesh options for BoxMesh");
-
   Timer timer("Build BoxMesh");
 
   // Receive mesh according to parallel policy

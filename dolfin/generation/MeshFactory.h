@@ -25,11 +25,6 @@
 
 namespace dolfin
 {
-  enum class MeshOptions : int { none = 0, left = 1, right = 2, crossed = 3, alternating = 4 };
-  inline MeshOptions operator&(MeshOptions a, MeshOptions b)
-  { return static_cast<MeshOptions>(static_cast<int>(a)&static_cast<int>(b));}
-  inline MeshOptions operator|(MeshOptions a, MeshOptions b)
-  { return static_cast<MeshOptions>(static_cast<int>(a)|static_cast<int>(b));}
 
   class MeshFactory
   {
@@ -47,7 +42,7 @@ namespace dolfin
     ///         Number of cells in :math:`y` direction.
     ///     nz (std::size_t)
     ///         Number of cells in :math:`z` direction.
-    ///     options (MeshOptions)
+    ///     options (std::string)
     ///         Any options for mesh creation
     ///
     /// *Example*
@@ -56,8 +51,8 @@ namespace dolfin
     ///         std::shared_ptr<Mesh> mesh = MeshFactorty::UnitCubeMesh(MPI_COMM_WORLD, 32, 32, 32);
     ///
     static std::shared_ptr<Mesh>
-      UnitCubeMesh(MPI_Comm comm, std::size_t nx, std::size_t ny, std::size_t nz,
-                   MeshOptions options=MeshOptions::none);
+      UnitCubeMesh(MPI_Comm comm, std::size_t nx, std::size_t ny,
+                   std::size_t nz, std::string options="");
 
     /// Create a uniform finite element _Mesh_ over the rectangular
     /// prism spanned by the two _Point_s p0 and p1. The order of the
@@ -77,7 +72,7 @@ namespace dolfin
     ///         Number of cells in :math:`y`-direction.
     ///     nz (double)
     ///         Number of cells in :math:`z`-direction.
-    ///     options (MeshOptions)
+    ///     options (std::string)
     ///         Any options for mesh creation
     ///
     /// *Example*
@@ -93,7 +88,7 @@ namespace dolfin
       BoxMesh(MPI_Comm comm,
               const Point& p0, const Point& p1,
               std::size_t nx, std::size_t ny, std::size_t nz,
-              MeshOptions options=MeshOptions::none);
+              std::string options="");
 
     /// Create a uniform finite element _Mesh_ over the unit square
     /// [0,1] x [0,1].
@@ -113,16 +108,11 @@ namespace dolfin
     ///     .. code-block:: c++
     ///
     ///         std::shared_ptr<Mesh> mesh1 = MeshFactory::UnitSquareMesh(MPI_COMM_WORLD, 32, 32);
-    ///         std::shared_ptr<Mesh> mesh2 = MeshFactory::UnitSquareMesh(MPI_COMM_WORLD, 32, 32, MeshOptions::crossed);
+    ///         std::shared_ptr<Mesh> mesh2 = MeshFactory::UnitSquareMesh(MPI_COMM_WORLD, 32, 32, "crossed");
     ///
     static std::shared_ptr<Mesh>
       UnitSquareMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
-                     MeshOptions options=MeshOptions::right);
-
-    /// Alternative version of UnitSquareMesh with string for options for backward compatibility
-    static std::shared_ptr<Mesh>
-      UnitSquareMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
-                     std::string diagonal);
+                     std::string options="right");
 
     /// *Arguments*
     ///     comm (MPI_Comm)
@@ -151,13 +141,7 @@ namespace dolfin
     static std::shared_ptr<Mesh>
       RectangleMesh(MPI_Comm mpi_comm, const Point& p0, const Point& p1,
                     std::size_t nx, std::size_t ny,
-                    MeshOptions options=MeshOptions::right);
-
-    /// Alternative version of RectangleMesh with string for options for backwards compatibility
-    static std::shared_ptr<Mesh>
-      RectangleMesh(MPI_Comm mpi_comm, const Point& p0, const Point& p1,
-                    std::size_t nx, std::size_t ny,
-                    std::string diagonal);
+                    std::string options="right");
 
     /// Create a uniform finite element _Mesh_ over the unit interval
     /// [0,1].
@@ -177,7 +161,7 @@ namespace dolfin
     ///
     static std::shared_ptr<Mesh>
       UnitIntervalMesh(MPI_Comm mpi_comm, std::size_t nx,
-                       MeshOptions options=MeshOptions::none)
+                       std::string options="")
     {
       return MeshFactory::IntervalMesh(mpi_comm, nx, 0.0, 1.0, options);
     }
@@ -204,7 +188,7 @@ namespace dolfin
     ///
     static std::shared_ptr<Mesh>
       IntervalMesh(MPI_Comm mpi_comm, std::size_t nx, double a, double b,
-                   MeshOptions options=MeshOptions::right);
+                   std::string options="");
 
     /// A mesh consisting of a single tetrahedron with vertices at
     ///
@@ -214,7 +198,7 @@ namespace dolfin
     ///   (0, 0, 1)
     /// Useful for testing
     static std::shared_ptr<Mesh>
-      UnitTetrahedronMesh(MPI_Comm mpi_comm, MeshOptions options=MeshOptions::none);
+      UnitTetrahedronMesh(MPI_Comm mpi_comm, std::string options="");
 
 
     /// A mesh consisting of a single triangle with vertices at
@@ -224,32 +208,32 @@ namespace dolfin
     ///   (0, 1)
     /// Useful for testing
     static std::shared_ptr<Mesh>
-      UnitTriangleMesh(MPI_Comm mpi_comm, MeshOptions options=MeshOptions::none);
+      UnitTriangleMesh(MPI_Comm mpi_comm, std::string options="");
 
     /// NB: this code is experimental, just for testing, and will generally not
     /// work with anything else
     static std::shared_ptr<Mesh>
-      UnitHexMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny, std::size_t nz,
-                  MeshOptions options=MeshOptions::none);
+      UnitHexMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
+                  std::size_t nz, std::string options="");
 
     /// NB: this code is experimental, just for testing, and will generally not
     /// work with anything else
     static std::shared_ptr<Mesh>
       UnitQuadMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
-                   MeshOptions options=MeshOptions::none);
+                   std::string options="");
 
   private:
     // Generate a rectangle mesh of size nx*ny between points p0 and p1
     static void build_rectangle_mesh(std::shared_ptr<Mesh> mesh,
                                      const Point& p0, const Point& p1,
                                      std::size_t nx, std::size_t ny,
-                                     std::string diagonal);
+                                     std::string options);
 
     // Generate a box mesh of size nx*ny*nz between points p0 and p1
     static void build_box_mesh(std::shared_ptr<Mesh> mesh,
                                const Point& p0, const Point& p1,
                                std::size_t nx, std::size_t ny, std::size_t nz,
-                               MeshOptions options);
+                               std::string options);
 
   };
 }
