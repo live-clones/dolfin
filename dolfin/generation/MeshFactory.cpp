@@ -21,8 +21,10 @@
 // Modified by Chris Richardson 2015
 
 #include <dolfin/common/Timer.h>
+#include <dolfin/mesh/Edge.h>
 #include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/MeshPartitioning.h>
+#include <dolfin/mesh/Vertex.h>
 
 #include "MeshFactory.h"
 
@@ -70,8 +72,6 @@ std::shared_ptr<Mesh> MeshFactory::RectangleMesh(MPI_Comm mpi_comm,
                                                  std::string options)
 {
   std::shared_ptr<Mesh> mesh(new Mesh(mpi_comm));
-  // Check options
-  std::string diagonal;
 
   if (options != "left/right" and
       options != "right/left" and
@@ -81,16 +81,6 @@ std::shared_ptr<Mesh> MeshFactory::RectangleMesh(MPI_Comm mpi_comm,
     dolfin_error("MeshFactory.cpp",
                  "determine mesh options",
                  "Unknown mesh diagonal definition: allowed options are \"left\", \"right\", \"left/right\" and \"crossed\"");
-  build_rectangle_mesh(mesh, p0, p1, nx, ny, options);
-  return mesh;
-}
-//-----------------------------------------------------------------------------
-std::shared_ptr<Mesh> MeshFactory::RectangleMesh(MPI_Comm mpi_comm,
-                                                 const Point& p0, const Point& p1,
-                                                 std::size_t nx, std::size_t ny,
-                                                 std::string options)
-{
-  std::shared_ptr<Mesh> mesh(new Mesh(mpi_comm));
   build_rectangle_mesh(mesh, p0, p1, nx, ny, options);
   return mesh;
 }
@@ -679,5 +669,186 @@ void MeshFactory::build_box_mesh(std::shared_ptr<Mesh> mesh,
     MeshPartitioning::build_distributed_mesh(*mesh);
     return;
   }
+}
+//-----------------------------------------------------------------------------
+std::shared_ptr<Mesh>
+MeshFactory::UnitDiscMesh(MPI_Comm comm, std::size_t n,
+                          std::size_t degree, std::size_t gdim,
+                          std::string options)
+{
+  std::shared_ptr<Mesh> mesh(new Mesh(comm));
+
+  if (n == 0)
+    dolfin_error("MeshFactory.cpp",
+                 "create UnitDiscMesh",
+                 "Number of radial divisions must be > 0");
+  if (gdim != 2 and gdim != 3)
+    dolfin_error("MeshFactory.cpp",
+                 "create UnitDiscMesh",
+                 "Geometric dimension must be 2 or 3");
+  if (degree != 1 and degree != 2)
+    dolfin_error("MeshFactory.cpp",
+                 "create UnitDiscMesh",
+                 "Degree must be 1 or 2");
+
+  MeshEditor editor;
+  editor.open(*mesh, 2, gdim, degree);
+  editor.init_vertices_global(1 + 3*n*(n + 1),
+                              1 + 3*n*(n + 1));
+
+  std::size_t c = 0;
+  editor.add_vertex(c, Point(0,0,0));
+  ++c;
+
+  for (std::size_t i = 1; i <= n; ++i)
+    for (std::size_t j = 0; j < 6*i; ++j)
+    {
+      double r = (double)i/(double)n;
+      double th = 2*M_PI*(double)j/(double)(6*i);
+      double x = r*cos(th);
+      double y = r*sin(th);
+      editor.add_vertex(c, Point(x, y, 0));
+      ++c;
+    }
+
+  editor.init_cells(6*n*n);
+
+  c = 0;
+  std::size_t base_i = 0;
+  std::size_t row_i = 1;
+  for (std::size_t i = 1; i <= n; ++i)
+  {
+    std::size_t base_m = base_i;
+    base_i = 1 + 3*i*(i - 1);
+    std::size_t row_m = row_i;
+    row_i = 6*i;
+
+    for (std::size_t k = 0; k != 6; ++k)
+      for (std::size_t j = 0; j < (i*2 - 1); ++j)
+      {
+        std::size_t i0, i1, i2;
+        if (j%2 == 0)
+        {
+          i0 = base_i + (k*i + j/2)%row_i;
+          i1 = base_i + (k*i + j/2 + 1)%row_i;
+          i2 = base_m + (k*(i-1) + j/2)%row_m;
+        }
+        else
+        {
+          i0 = base_m + (k*(i-1) + j/2)%row_m;
+          i1 = base_m + (k*(i-1) + j/2 + 1)%row_m;
+          i2 = base_i + (k*i + j/2 + 1)%row_i;
+        }
+
+        editor.add_cell(c, i0, i1, i2);
+        ++c;
+      }
+  }
+
+  // Initialise entities required for this degree polynomial mesh
+  // and allocate space for the point coordinate data
+
+  if (degree == 2)
+  {
+    editor.init_entities();
+
+    for (EdgeIterator e(*mesh); !e.end(); ++e)
+    {
+      Point v0 = Vertex(*mesh, e->entities(0)[0]).point();
+      Point v1 = Vertex(*mesh, e->entities(0)[1]).point();
+      Point pt = e->midpoint();
+
+      if (std::abs(v0.norm() - 1.0) < 1e-6 and
+          std::abs(v1.norm() - 1.0) < 1e-6)
+        pt *= v0.norm()/pt.norm();
+
+      // Add Edge-based point
+      editor.add_entity_point(1, 0, e->index(), pt);
+    }
+  }
+
+  editor.close();
+  return mesh;
+}
+//-----------------------------------------------------------------------------
+std::shared_ptr<Mesh>
+MeshFactory::SphericalShellMesh(MPI_Comm mpi_comm, std::size_t degree,
+                                std::string options)
+{
+  if (degree != 1 and degree != 2)
+    dolfin_error("MeshFactory.cpp",
+                 "generate SphericalShellMesh",
+                 "Invalid mesh degree");
+
+  std::shared_ptr<Mesh> mesh(new Mesh(mpi_comm));
+  MeshEditor editor;
+  const std::size_t tdim = 2;
+  const std::size_t gdim = 3;
+
+  editor.open(*mesh, tdim, gdim, degree);
+
+  editor.init_vertices_global(12, 12);
+
+  const double l0 = 2.0/(sqrt(10.0 + 2.0*sqrt(5.0)));
+  const double l1 = l0*(1.0 + sqrt(5.0))/2.0;
+
+  // Generate an icosahedron
+
+  editor.add_vertex(0,  Point(  0,  l0, l1));
+  editor.add_vertex(1,  Point(  0,  l0, -l1));
+  editor.add_vertex(2,  Point(  0, -l0, -l1));
+  editor.add_vertex(3,  Point(  0, -l0, l1));
+  editor.add_vertex(4,  Point( l1,   0, l0));
+  editor.add_vertex(5,  Point(-l1,   0, l0));
+  editor.add_vertex(6,  Point(-l1,   0, -l0));
+  editor.add_vertex(7,  Point( l1,   0, -l0));
+  editor.add_vertex(8,  Point( l0,  l1, 0));
+  editor.add_vertex(9,  Point( l0, -l1, 0));
+  editor.add_vertex(10, Point(-l0, -l1, 0));
+  editor.add_vertex(11, Point(-l0,  l1, 0));
+
+  editor.init_cells_global(20, 20);
+
+  editor.add_cell(0, 0, 4, 8);
+  editor.add_cell(1, 0, 5, 11);
+  editor.add_cell(2, 1, 6, 11);
+  editor.add_cell(3, 1, 7, 8);
+  editor.add_cell(4, 2, 6, 10);
+  editor.add_cell(5, 2, 7, 9);
+  editor.add_cell(6, 3, 4, 9);
+  editor.add_cell(7, 3, 5, 10);
+
+  editor.add_cell( 8, 0, 3, 4);
+  editor.add_cell( 9, 0, 3, 5);
+  editor.add_cell(10, 1, 2, 6);
+  editor.add_cell(11, 1, 2, 7);
+  editor.add_cell(12, 4, 7, 8);
+  editor.add_cell(13, 4, 7, 9);
+  editor.add_cell(14, 5, 6, 10);
+  editor.add_cell(15, 5, 6, 11);
+  editor.add_cell(16, 8, 11, 0);
+  editor.add_cell(17, 8, 11, 1);
+  editor.add_cell(18, 9, 10, 2);
+  editor.add_cell(19, 9, 10, 3);
+
+  if (degree == 2)
+  {
+    // Initialise entities required for this degree polynomial mesh
+    // and allocate space for the point coordinate data
+    editor.init_entities();
+
+    for (EdgeIterator e(*mesh); !e.end(); ++e)
+    {
+      Point v0 = Vertex(*mesh, e->entities(0)[0]).point();
+      Point pt = e->midpoint();
+      pt *= v0.norm()/pt.norm();
+
+      // Add Edge-based point
+      editor.add_entity_point(1, 0, e->index(), pt);
+    }
+  }
+
+  editor.close();
+  return mesh;
 }
 //-----------------------------------------------------------------------------

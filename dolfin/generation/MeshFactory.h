@@ -210,17 +210,34 @@ namespace dolfin
     static std::shared_ptr<Mesh>
       UnitTriangleMesh(MPI_Comm mpi_comm, std::string options="");
 
-    /// NB: this code is experimental, just for testing, and will generally not
-    /// work with anything else
+    /// EXPERIMENTAL
+    /// A hexahedral cubic box mesh, for testing purposes, not usable
+    /// with anything else
     static std::shared_ptr<Mesh>
       UnitHexMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
                   std::size_t nz, std::string options="");
 
-    /// NB: this code is experimental, just for testing, and will generally not
-    /// work with anything else
+    /// EXPERIMENTAL
+    /// A quadrilateral square mesh, for testing purposes, not usable
+    /// with anything else
     static std::shared_ptr<Mesh>
       UnitQuadMesh(MPI_Comm mpi_comm, std::size_t nx, std::size_t ny,
                    std::string options="");
+
+    /// EXPERIMENTAL
+    /// A mesh of the Unit Circle of radius 1, centered at (0,0,0)
+    /// either in a 2D or 3D geometry, with a linear or quadratic mesh degree.
+    static std::shared_ptr<Mesh>
+      UnitDiscMesh(MPI_Comm mpi_comm, std::size_t n,
+                   std::size_t degree, std::size_t gdim,
+                   std::string options="");
+
+    /// EXPERIMENTAL
+    /// An icosahedral mesh, approximating a spherical shell, optionally in
+    /// linear or quadratic degree. Can be refined to get a finer mesh.
+    static std::shared_ptr<Mesh>
+      SphericalShellMesh(MPI_Comm mpi_comm, std::size_t degree,
+                         std::string options="");
 
   private:
     // Generate a rectangle mesh of size nx*ny between points p0 and p1
