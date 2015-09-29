@@ -39,7 +39,7 @@ parameters["form_compiler"]["representation"] = "uflacs"
 
 def compute(nsteps, coordinate_degree, element_degree, gdim):
     # Create mesh and define function space
-    mesh = UnitDiscMesh(mpi_comm_world(),
+    mesh = MeshFactory.UnitDiscMesh(mpi_comm_world(),
                         nsteps, coordinate_degree, gdim)
     V = FunctionSpace(mesh, "Lagrange", element_degree)
 
