@@ -23,6 +23,7 @@
 // Last changed: 2013-03-11
 
 #include <fstream>
+#include <complex>
 #include <dolfin/common/MPI.h>
 #include <dolfin/log/log.h>
 #include "GenericFile.h"
@@ -81,6 +82,11 @@ void GenericFile::operator>> (MeshFunction<std::size_t>& mesh_function)
 void GenericFile::operator>> (MeshFunction<double>& mesh_function)
 {
   read_not_impl("MeshFunction<double>");
+}
+//-----------------------------------------------------------------------------
+void GenericFile::operator>> (MeshFunction<std::complex<double>>& mesh_function)
+{
+  read_not_impl("MeshFunction<std::complex<double>>");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::operator>> (MeshFunction<bool>& mesh_function)
@@ -200,6 +206,7 @@ void GenericFile::operator<< (const MeshFunction<int>& mesh_function)
 {
   write_not_impl("MeshFunction<int>");
 }
+//-----------------------------------------------------------------------------
 void GenericFile::operator<< (const MeshFunction<std::size_t>& mesh_function)
 {
   write_not_impl("MeshFunction<std::size_t>");
@@ -208,6 +215,11 @@ void GenericFile::operator<< (const MeshFunction<std::size_t>& mesh_function)
 void GenericFile::operator<< (const MeshFunction<double>& mesh_function)
 {
   write_not_impl("MeshFunction<double>");
+}
+//-----------------------------------------------------------------------------
+void GenericFile::operator<< (const MeshFunction<std::complex<double>>& mesh_function)
+{
+  write_not_impl("MeshFunction<std::complex<double>>");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::operator<< (const MeshFunction<bool>& mesh_function)
@@ -258,6 +270,11 @@ void GenericFile::operator<< (const std::pair<const MeshFunction<std::size_t>*, 
 void GenericFile::operator<< (const std::pair<const MeshFunction<double>*, double> f)
 {
   write_not_impl("std::pair<MeshFunction<double>*, double>");
+}
+//-----------------------------------------------------------------------------
+void GenericFile::operator<< (const std::pair<const MeshFunction<std::complex<double>>*, double> f)
+{
+  write_not_impl("std::pair<MeshFunction<std::complex<double>>*, double>");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::operator<< (const std::pair<const MeshFunction<bool>*, double> f)

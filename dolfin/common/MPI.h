@@ -24,6 +24,7 @@
 #ifndef __MPI_DOLFIN_WRAPPER_H
 #define __MPI_DOLFIN_WRAPPER_H
 
+#include <complex>
 #include <iostream>
 
 #include <numeric>
@@ -246,6 +247,8 @@ namespace dolfin
   // Specialisations for MPI_Datatypes
   template<> inline MPI_Datatype MPI::mpi_type<float>() { return MPI_FLOAT; }
   template<> inline MPI_Datatype MPI::mpi_type<double>() { return MPI_DOUBLE; }
+  template<> inline MPI_Datatype MPI::mpi_type<std::complex<double>>()
+  { return MPI_DOUBLE_COMPLEX; }
   template<> inline MPI_Datatype MPI::mpi_type<short int>()
   { return MPI_SHORT; }
   template<> inline MPI_Datatype MPI::mpi_type<int>() { return MPI_INT; }

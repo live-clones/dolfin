@@ -23,6 +23,7 @@
 //-----------------------------------------------------------------------------
 // Include all global typemap files
 //-----------------------------------------------------------------------------
+%include <std_complex.i>
 %include dolfin/swig/typemaps/primitives.i
 %include dolfin/swig/typemaps/std_pair.i
 %include dolfin/swig/typemaps/std_tuple.i

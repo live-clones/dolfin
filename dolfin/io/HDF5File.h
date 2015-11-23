@@ -22,6 +22,7 @@
 
 #ifdef HAS_HDF5
 
+#include <complex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -118,6 +119,10 @@ namespace dolfin
                const std::string name);
 
     /// Write MeshFunction to file in a format suitable for re-reading
+    void write(const MeshFunction<std::complex<double>>& meshfunction,
+               const std::string name);
+
+    /// Write MeshFunction to file in a format suitable for re-reading
     void write(const MeshFunction<bool>& meshfunction, const std::string name);
 
     /// Read MeshFunction from file
@@ -129,6 +134,10 @@ namespace dolfin
 
     /// Read MeshFunction from file
     void read(MeshFunction<double>& meshfunction,
+              const std::string name) const;
+
+    /// Read MeshFunction from file
+    void read(MeshFunction<std::complex<double>>& meshfunction,
               const std::string name) const;
 
     /// Read MeshFunction from file

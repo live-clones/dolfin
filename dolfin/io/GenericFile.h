@@ -62,6 +62,7 @@ namespace dolfin
     virtual void operator>> (MeshFunction<int>& mesh_function);
     virtual void operator>> (MeshFunction<std::size_t>& mesh_function);
     virtual void operator>> (MeshFunction<double>& mesh_function);
+    virtual void operator>> (MeshFunction<std::complex<double>>& mesh_function);
     virtual void operator>> (MeshFunction<bool>& mesh_function);
     virtual void operator>> (MeshValueCollection<int>& mesh_markers);
     virtual void operator>> (MeshValueCollection<std::size_t>& mesh_markers);
@@ -89,6 +90,7 @@ namespace dolfin
     virtual void operator<< (const MeshFunction<int>& mesh_function);
     virtual void operator<< (const MeshFunction<std::size_t>& mesh_function);
     virtual void operator<< (const MeshFunction<double>& mesh_function);
+    virtual void operator<< (const MeshFunction<std::complex<double>>& mesh_function);
     virtual void operator<< (const MeshFunction<bool>& mesh_function);
     virtual void operator<< (const MeshValueCollection<int>& mesh_markers);
     virtual void operator<< (const MeshValueCollection<std::size_t>& mesh_markers);
@@ -101,6 +103,7 @@ namespace dolfin
     virtual void operator<< (const std::pair<const MeshFunction<int>*, double> f);
     virtual void operator<< (const std::pair<const MeshFunction<std::size_t>*, double> f);
     virtual void operator<< (const std::pair<const MeshFunction<double>*, double> f);
+    virtual void operator<< (const std::pair<const MeshFunction<std::complex<double>>*, double> f);
     virtual void operator<< (const std::pair<const MeshFunction<bool>*, double> f);
     virtual void operator<< (const std::pair<const Function*, double> u);
 

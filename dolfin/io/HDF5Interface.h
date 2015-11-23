@@ -24,6 +24,7 @@
 
 #include <vector>
 #include <string>
+#include <complex>
 
 // Note: dolfin/common/MPI.h is included before hdf5.h to avoid the
 // MPICH_IGNORE_CXX_SEEK issue
@@ -205,6 +206,22 @@ namespace dolfin
   //---------------------------------------------------------------------------
   template <> inline hid_t HDF5Interface::hdf5_type<int64_t>()
   { return H5T_NATIVE_INT64; }
+  //---------------------------------------------------------------------------
+  template <> inline hid_t HDF5Interface::hdf5_type<std::complex<double>>()
+  {
+    // How complex numbers are laid out in memory according to C++11
+    typedef struct {
+      double re;
+      double im;
+    } complex_t;
+
+    hid_t complex_id = H5Tcreate(H5T_COMPOUND, sizeof(std::complex<double>));
+    H5Tinsert(complex_id, "real", HOFFSET(complex_t, re),
+              H5T_NATIVE_DOUBLE);
+    H5Tinsert(complex_id, "imaginary", HOFFSET(complex_t, im),
+              H5T_NATIVE_DOUBLE);
+    return complex_id;
+  }
   //---------------------------------------------------------------------------
   template <typename T>
   inline void

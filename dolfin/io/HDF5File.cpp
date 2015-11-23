@@ -509,7 +509,19 @@ void HDF5File::write(const MeshFunction<double>& meshfunction,
   write_mesh_function(meshfunction, name);
 }
 //-----------------------------------------------------------------------------
+void HDF5File::write(const MeshFunction<std::complex<double>>& meshfunction,
+                     const std::string name)
+{
+  write_mesh_function(meshfunction, name);
+}
+//-----------------------------------------------------------------------------
 void HDF5File::read(MeshFunction<double>& meshfunction,
+                    const std::string name) const
+{
+  read_mesh_function(meshfunction, name);
+}
+//-----------------------------------------------------------------------------
+void HDF5File::read(MeshFunction<std::complex<double>>& meshfunction,
                     const std::string name) const
 {
   read_mesh_function(meshfunction, name);

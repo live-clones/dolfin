@@ -224,6 +224,7 @@ DECLARE_MESHFUNCTION(std::size_t, Sizet)
 DECLARE_MESHFUNCTION(int, Int)
 DECLARE_MESHFUNCTION(double, Double)
 DECLARE_MESHFUNCTION(bool, Bool)
+DECLARE_MESHFUNCTION(std::complex<double>, Complex)
 
 // Create docstrings to the MeshFunctions
 %pythoncode
@@ -233,7 +234,7 @@ _doc_string += """
   *Arguments*
     tp (str)
       String defining the type of the MeshFunction
-      Allowed: 'int', 'size_t', 'double', and 'bool'
+      Allowed: 'int', 'size_t', 'double', 'complex' and 'bool'
     mesh (_Mesh_)
       A DOLFIN mesh.
       Optional.
@@ -261,6 +262,8 @@ class MeshFunction(object):
             return MeshFunctionSizet(*args)
         elif tp == "double":
             return MeshFunctionDouble(*args)
+        elif tp == "complex":
+            return MeshFunctionComplex(*args)
         elif tp == "bool":
             return MeshFunctionBool(*args)
         else:
@@ -281,11 +284,13 @@ def _new_closure(MeshType):
             return eval("%sSizet(mesh, value)"%MeshType)
         elif tp == "double":
             return eval("%sDouble(mesh, float(value))"%MeshType)
+        elif tp == "complex":
+            return eval("%sComplex(mesh, value)"%MeshType)
         elif tp == "bool":
             value = bool(value) if isinstance(value, int) else value
             return eval("%sBool(mesh, value)"%MeshType)
         else:
-            raise RuntimeError("Cannot create a %sFunction of type '%s'." % (MeshType, tp))
+            raise RuntimeError("Cannot create a %s of type '%s'." % (MeshType, tp))
 
     return new
 
