@@ -22,6 +22,7 @@
 
 #ifdef HAS_HDF5
 
+#include <complex>
 #include <memory>
 #include <string>
 #include <utility>
@@ -82,6 +83,7 @@ namespace dolfin
     void operator<< (const MeshFunction<int>& meshfunction);
     void operator<< (const MeshFunction<std::size_t>& meshfunction);
     void operator<< (const MeshFunction<double>& meshfunction);
+    void operator<< (const MeshFunction<std::complex<double>>& meshfunction);
 
     /// Save a cloud of points to file
     void write(const std::vector<Point>& points);

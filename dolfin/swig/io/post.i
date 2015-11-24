@@ -25,6 +25,7 @@
 %template(__lshift__) dolfin::File::operator<< <MeshFunction<int> >;
 %template(__lshift__) dolfin::File::operator<< <MeshFunction<std::size_t> >;
 %template(__lshift__) dolfin::File::operator<< <MeshFunction<double> >;
+%template(__lshift__) dolfin::File::operator<< <MeshFunction<std::complex<double> > >;
 %template(__lshift__) dolfin::File::operator<< <MeshFunction<bool> >;
 %template(__lshift__) dolfin::File::operator<< <MeshValueCollection<int> >;
 %template(__lshift__) dolfin::File::operator<< <MeshValueCollection<std::size_t> >;

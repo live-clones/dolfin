@@ -533,6 +533,12 @@ void XDMFFile::operator<< (const MeshFunction<double>& meshfunction)
 {
   write_mesh_function(meshfunction);
 }
+//-----------------------------------------------------------------------------
+void XDMFFile::operator<< (const MeshFunction<std::complex<double>>&
+                           meshfunction)
+{
+  write_mesh_function(meshfunction);
+}
 //----------------------------------------------------------------------------
 void XDMFFile::write(const std::vector<Point>& points)
 {

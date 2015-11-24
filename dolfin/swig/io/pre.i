@@ -40,4 +40,3 @@
 
 %ignore dolfin::HDF5Attribute::get;
 %ignore dolfin::HDF5Attribute::set;
-
