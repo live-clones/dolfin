@@ -27,6 +27,11 @@
 #include "xmlutils.h"
 #include "XMLMesh.h"
 
+namespace std
+{
+  std::string to_string(std::complex<double> z);
+}
+
 namespace dolfin
 {
 

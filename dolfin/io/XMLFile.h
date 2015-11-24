@@ -23,6 +23,7 @@
 #ifndef __XMLFILE_H
 #define __XMLFILE_H
 
+#include <complex>
 #include <map>
 #include <ostream>
 #include <string>
@@ -101,6 +102,12 @@ namespace dolfin
     { read_mesh_function(input, "double"); }
     void operator<< (const MeshFunction<double>& output)
     { write_mesh_function(output, "double"); }
+
+    // MeshFunction (std::complex<double>)
+    void operator>> (MeshFunction<std::complex<double>>& input)
+    { read_mesh_function(input, "complex"); }
+    void operator<< (const MeshFunction<std::complex<double>>& output)
+    { write_mesh_function(output, "complex"); }
 
     // MeshFunction (bool)
     void operator>> (MeshFunction<bool>& input)

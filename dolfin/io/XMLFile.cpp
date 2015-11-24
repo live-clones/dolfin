@@ -52,6 +52,18 @@
 #include "XMLVector.h"
 #include "XMLFile.h"
 
+//-----------------------------------------------------------------------------
+namespace std
+{
+std::string to_string(std::complex<double> z)
+ {
+   std::string s = "(" + std::to_string(z.real())
+     + ", " + std::to_string(z.imag()) + ")";
+   return s;
+ }
+}
+//-----------------------------------------------------------------------------
+
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
