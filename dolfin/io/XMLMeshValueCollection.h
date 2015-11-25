@@ -144,6 +144,7 @@ namespace dolfin
                    "Unhandled value type \"%s\"", type.c_str());
     }
   }
+  //----------------------------------------------------------------------------
   //---------------------------------------------------------------------------
   template<typename T>
   void XMLMeshValueCollection::write(const MeshValueCollection<T>&

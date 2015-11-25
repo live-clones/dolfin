@@ -67,6 +67,7 @@ namespace dolfin
     virtual void operator>> (MeshValueCollection<int>& mesh_markers);
     virtual void operator>> (MeshValueCollection<std::size_t>& mesh_markers);
     virtual void operator>> (MeshValueCollection<double>& mesh_markers);
+    virtual void operator>> (MeshValueCollection<std::complex<double>>& mesh_markers);
     virtual void operator>> (MeshValueCollection<bool>& mesh_markers);
     virtual void operator>> (Parameters& parameters);
     virtual void operator>> (Table& table);
@@ -95,6 +96,7 @@ namespace dolfin
     virtual void operator<< (const MeshValueCollection<int>& mesh_markers);
     virtual void operator<< (const MeshValueCollection<std::size_t>& mesh_markers);
     virtual void operator<< (const MeshValueCollection<double>& mesh_markers);
+    virtual void operator<< (const MeshValueCollection<std::complex<double>>& mesh_markers);
     virtual void operator<< (const MeshValueCollection<bool>& mesh_markers);
     virtual void operator<< (const Function& u);
 

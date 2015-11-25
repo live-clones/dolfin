@@ -133,6 +133,12 @@ namespace dolfin
     void operator<< (const MeshValueCollection<double>& output)
     { write_mesh_value_collection(output, "double"); }
 
+    // MeshValueCollection (std::complex<double>)
+    void operator>> (MeshValueCollection<std::complex<double>>& input)
+    { read_mesh_value_collection(input, "complex"); }
+    void operator<< (const MeshValueCollection<std::complex<double>>& output)
+    { write_mesh_value_collection(output, "complex"); }
+
     // MeshValueCollection (bool)
     void operator>> (MeshValueCollection<bool>& input)
     { read_mesh_value_collection(input, "bool"); }

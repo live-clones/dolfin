@@ -8,10 +8,12 @@
 %template(__rshift__) dolfin::File::operator>> <MeshFunction<int> >;
 %template(__rshift__) dolfin::File::operator>> <MeshFunction<std::size_t> >;
 %template(__rshift__) dolfin::File::operator>> <MeshFunction<double> >;
+%template(__rshift__) dolfin::File::operator>> <MeshFunction<std::complex<double> > >;
 %template(__rshift__) dolfin::File::operator>> <MeshFunction<bool> >;
 %template(__rshift__) dolfin::File::operator>> <MeshValueCollection<int> >;
 %template(__rshift__) dolfin::File::operator>> <MeshValueCollection<std::size_t> >;
 %template(__rshift__) dolfin::File::operator>> <MeshValueCollection<double> >;
+%template(__rshift__) dolfin::File::operator>> <MeshValueCollection<std::complex<double> > >;
 %template(__rshift__) dolfin::File::operator>> <MeshValueCollection<bool> >;
 %template(__rshift__) dolfin::File::operator>> <Parameters>;
 %template(__rshift__) dolfin::File::operator>> <Table>;
@@ -30,6 +32,7 @@
 %template(__lshift__) dolfin::File::operator<< <MeshValueCollection<int> >;
 %template(__lshift__) dolfin::File::operator<< <MeshValueCollection<std::size_t> >;
 %template(__lshift__) dolfin::File::operator<< <MeshValueCollection<double> >;
+%template(__lshift__) dolfin::File::operator<< <MeshValueCollection<std::complex<double> > >;
 %template(__lshift__) dolfin::File::operator<< <MeshValueCollection<bool> >;
 %template(__lshift__) dolfin::File::operator<< <Parameters>;
 %template(__lshift__) dolfin::File::operator<< <Table>;
