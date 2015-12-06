@@ -53,12 +53,14 @@ namespace dolfin
     }
 
     /// Create vector of size N
+    /*
     Vector(MPI_Comm comm, std::size_t N)
     {
       DefaultFactory factory;
       vector = factory.create_vector();
       vector->init(comm, N);
     }
+    */
 
     /// Copy constructor
     Vector(const Vector& x) : vector(x.vector->copy()) {}
@@ -94,23 +96,29 @@ namespace dolfin
     //--- Implementation of the GenericVector interface ---
 
     /// Initialize vector to size N
+    /*
     virtual void init(MPI_Comm comm, std::size_t N)
     { vector->init(comm, N); }
+    */
 
     /// Initialize vector with given ownership range
+    /*
     virtual void init(MPI_Comm comm, std::pair<std::size_t, std::size_t> range)
     { vector->init(comm, range); }
+    */
 
     /// Initialize vector with given ownership range and with ghost
     /// values
+    /*
     virtual void init(MPI_Comm comm,
                       std::pair<std::size_t, std::size_t> range,
                       const std::vector<std::size_t>& local_to_global_map,
                       const std::vector<la_index>& ghost_indices)
     { vector->init(comm, range, local_to_global_map, ghost_indices); }
+    */
 
     // Bring init function from GenericVector into scope
-    using GenericVector::init;
+    //using GenericVector::init;
 
     /// Return true if vector is empty
     virtual bool empty() const

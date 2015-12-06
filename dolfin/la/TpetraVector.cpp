@@ -578,6 +578,65 @@ GenericLinearAlgebraFactory& TpetraVector::factory() const
   return TpetraFactory::instance();
 }
 //-----------------------------------------------------------------------------
+void TpetraVector::init(const TensorLayout& layout)
+{
+  if (!_x.is_null())
+    dolfin_error("TpetraVector.h",
+                 "initialize vector",
+                 "Vector cannot be initialised more than once");
+  if (layout.rank() != 1 || layout.sparsity_pattern())
+  {
+    dolfin_error("TpetraVector.h",
+                 "calling Tpetra::init(const TensorLayout&)",
+                 "Expected dense, rank 1, layout"
+  }
+
+  // Make a Trilinos version of the MPI Comm
+  Teuchos::RCP<const Teuchos::Comm<int>> _comm(new Teuchos::MpiComm<int>(comm));
+
+  // Mapping across processes
+  const std::size_t n = layout.index_map(0).size(IndexMap::MapSize::OWNED);
+  const std::size_t N = layout.index_map(0).size(IndexMap::MapSize::GLOBAL);
+  const std::size_t u = layout.index_map(0).size(IndexMap::MapSize::UNOWNED);
+  const int bs = layout.index_map(0).block_size();
+  const std::size_t r0 = layout.index_map(0).local_range().first;
+
+  Teuchos::RCP<map_type> _map(new map_type(N, n, 0, _comm));
+  Teuchos::RCP<map_type> _ghost_map;
+
+  // Save a map for the ghosting of values on other processes
+  std::vector<dolfin::la_index> local_to_global_map(n+u);
+  const std::vector<std::size_t>& local_to_global_unowned
+    = layout.local_to_global_unowned();
+  dolfin_assert(bs*local_to_global_unowned.size() == u);
+
+  // FIXME: Is trivial part of local_to_global required by Tpetra?
+  for (std::size_t i = 0; i < n; ++i)
+    local_to_global_map[i] = i + r0;
+  for (std::size_t i = 0; i < local_to_global_unowned.size(); ++i)
+    local_to_global_map[i+n] = bs*local_to_global_unowned[i];
+
+  // FIXME: Is it needed to distinguish GHOSTED and UNGHOSTED in Tpetra?
+  //        Should the following condition read
+  //        if (layout.is_ghosted() == TensorLayout::Ghosts::GHOSTED)
+  if (local_to_global_map.size() != 0)
+  {
+    const Teuchos::ArrayView<const dolfin::la_index>
+      local_indices(local_to_global_map);
+    _ghost_map = Teuchos::rcp(new map_type(N, local_indices, 0, _comm));
+  }
+  else
+    _ghost_map = _map;
+
+  // Vector - create with overlap
+  _x_ghosted = Teuchos::rcp(new vector_type(_ghost_map, 1));
+
+  dolfin_assert(!_x_ghosted.is_null());
+
+  // Get a modifiable view into the ghosted vector
+  _x = _x_ghosted->offsetViewNonConst(_map, 0);
+}
+//-----------------------------------------------------------------------------
 void
 TpetraVector::_init(MPI_Comm comm,
                     std::pair<std::size_t, std::size_t> local_range,

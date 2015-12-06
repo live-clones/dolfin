@@ -137,8 +137,33 @@ namespace dolfin
       resize(size);
     }
 
+    /// Initialize vector using given tensor layout
+    virtual void init(const TensorLayout& layout)
+    {
+      check_mpi_rank(layout.mpi_comm());
+      if (!empty())
+      {
+        dolfin_error("EigenVector.h",
+                     "calling EigenVector::init(...)",
+                     "Cannot call init for a non-empty vector. Use EigenVector::resize instead");
+      }
+
+      if (layout.rank() != 1 ||
+         layout.is_ghosted() != TensorLayout::Ghosts::UNGHOSTED ||
+         layout.sparsity_pattern() ||
+         layout.index_map(0).local_to_global_unowned().size() > 0)
+      {
+        dolfin_error("EigenVector.h",
+                     "calling EigenVector::init(const TensorLayout&)",
+                     "Expected dense, unghosted, rank 1, sequential layout");
+      }
+
+      const std::size_t size = layout.size(0);
+      resize(size);
+    }
+
     // Bring init function from GenericVector into scope
-    using GenericVector::init;
+    //using GenericVector::init;
 
     /// Return true if vector is empty
     virtual bool empty() const;

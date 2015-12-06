@@ -110,7 +110,7 @@ namespace dolfin
                       const std::vector<la_index>& ghost_indices);
 
     // Bring init function from GenericVector into scope
-    using GenericVector::init;
+    //using GenericVector::init;
 
     /// Return true if vector is empty
     virtual bool empty() const;

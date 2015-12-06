@@ -54,6 +54,7 @@ namespace dolfin
 
     /// Initialize zero tensor using sparsity pattern
     /// FIXME: This needs to be implemented on backend side! Remove it!
+    /*
     virtual void init(const TensorLayout& tensor_layout)
     {
       if (!empty())
@@ -83,6 +84,7 @@ namespace dolfin
            local_to_global, ghosts);
       zero();
     }
+    */
 
     /// Return tensor rank (number of dimensions)
     virtual std::size_t rank() const
@@ -156,19 +158,27 @@ namespace dolfin
     virtual std::shared_ptr<GenericVector> copy() const = 0;
 
     /// Initialize vector to global size N
+    /// FIXME: Do we need this function?
+    /*
     virtual void init(MPI_Comm comm, std::size_t N) = 0;
+    */
 
     /// Initialize vector with given local ownership range
+    /// FIXME: Do we need this function?
+    /*
     virtual void init(MPI_Comm comm,
                       std::pair<std::size_t, std::size_t> range) = 0;
+    */
 
     /// Initialise vector with given ownership range and with ghost
     /// values
     /// FIXME: Reimplement using init(const TensorLayout&) and deprecate
+    /*
     virtual void init(MPI_Comm comm,
                       std::pair<std::size_t, std::size_t> range,
                       const std::vector<std::size_t>& local_to_global_map,
                       const std::vector<la_index>& ghost_indices) = 0;
+    */
 
     /// Return global size of vector
     virtual std::size_t size() const = 0;

@@ -52,6 +52,7 @@ namespace dolfin
     //--- Basic GenericTensor interface ---
 
     /// Initialize zero tensor using tensor layout
+    /// FIXME: Zero tensor?
     virtual void init(const TensorLayout& tensor_layout) = 0;
 
     /// Return true if empty

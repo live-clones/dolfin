@@ -110,8 +110,11 @@ namespace dolfin
                       const std::vector<std::size_t>& local_to_global_map,
                       const std::vector<la_index>& ghost_indices);
 
+    /// Initialize vector using tensor layout
+    virtual void init(const TensorLayout& tensor_layout);
+
     // Bring init function from GenericVector into scope
-    using GenericVector::init;
+    //using GenericVector::init;
 
     /// Return true if vector is empty
     virtual bool empty() const;
