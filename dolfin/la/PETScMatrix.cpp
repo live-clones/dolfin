@@ -135,15 +135,23 @@ void PETScMatrix::init(const TensorLayout& tensor_layout)
      if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetBlockSize");
     }
 
-    // FIXME: Change to MatSeqAIJSetPreallicationCSR for improved performance?
-
-    // Allocate space (using data from sparsity pattern)
-
     // Copy number of non-zeros to PetscInt type
     const std::vector<PetscInt> _num_nonzeros(num_nonzeros.begin(),
                                               num_nonzeros.end());
     ierr = MatSeqAIJSetPreallocation(_matA, 0, _num_nonzeros.data());
     if (ierr != 0) petsc_error(ierr, __FILE__, "MatSeqAIJSetPreallocation");
+
+    // Allocate space (using data from sparsity pattern)
+    auto pattern = sparsity_pattern->diagonal_pattern(SparsityPattern::sorted);
+    std::vector<PetscInt> petsc_pattern(sparsity_pattern->num_nonzeros());
+    auto it = petsc_pattern.begin();
+    for (const auto& row : pattern)
+      it = std::copy(row.begin(), row.end(), it);
+    dolfin_assert(it == petsc_pattern.cend());
+    pattern.clear();
+    ierr = MatSeqAIJSetColumnIndices(_matA, petsc_pattern.data());
+    if (ierr != 0) petsc_error(ierr, __FILE__, "MatSeqAIJSetColumnIndices");
+    petsc_pattern.clear();
 
     ISLocalToGlobalMapping petsc_local_to_global0, petsc_local_to_global1;
     dolfin_assert(tensor_layout.rank() == 2);
@@ -225,16 +233,32 @@ void PETScMatrix::init(const TensorLayout& tensor_layout)
     if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetFromOptions");
 
     // Allocate space (using data from sparsity pattern)
-    const std::vector<PetscInt>
-      _num_nonzeros_diagonal(num_nonzeros_diagonal.begin(),
-                             num_nonzeros_diagonal.end());
-    const std::vector<PetscInt>
-      _num_nonzeros_off_diagonal(num_nonzeros_off_diagonal.begin(),
-                                 num_nonzeros_off_diagonal.end());
-    ierr = MatMPIAIJSetPreallocation(_matA, 0, _num_nonzeros_diagonal.data(),
-                                     0, _num_nonzeros_off_diagonal.data());
-    if (ierr != 0) petsc_error(ierr, __FILE__, "MatMPIAIJSetPreallocation");
-
+    std::vector<PetscInt> rows(m+1);
+    std::vector<PetscInt> cols(sparsity_pattern->num_nonzeros());
+    auto diagonal =
+      sparsity_pattern->diagonal_pattern(SparsityPattern::sorted);
+    auto off_diagonal =
+      sparsity_pattern->off_diagonal_pattern(SparsityPattern::sorted);
+    dolfin_assert(diagonal.size() == m);
+    dolfin_assert(off_diagonal.size() == m);
+    auto it = cols.begin();
+    const auto col_range1 = col_range.second;
+    for (std::size_t i = 0; i < m; ++i)
+    {
+      rows[i] = std::distance(cols.begin(), it);
+      auto diag_end = std::find_if(off_diagonal[i].begin(), off_diagonal[i].end(),
+        [col_range1](std::size_t J){return J>=col_range1;});
+      it = std::copy(off_diagonal[i].begin(), diag_end, it);
+      it = std::copy(diagonal[i].begin(), diagonal[i].end(), it);
+      it = std::copy(diag_end, off_diagonal[i].end(), it);
+    }
+    rows[m] = std::distance(cols.begin(), it);
+    dolfin_assert(it == cols.end());
+    diagonal.clear(); off_diagonal.clear();
+    dolfin_assert(rows.size()>0);
+    ierr = MatMPIAIJSetPreallocationCSR(_matA, rows.data(), cols.data(), NULL);
+    if (ierr != 0) petsc_error(ierr, __FILE__, "MatMPIAIJSetPreallocationCSR");
+    rows.clear(); cols.clear();
 
     ISLocalToGlobalMapping petsc_local_to_global0, petsc_local_to_global1;
     dolfin_assert(tensor_layout.rank() == 2);
@@ -260,9 +284,15 @@ void PETScMatrix::init(const TensorLayout& tensor_layout)
 
     // Note: This should be called after having set the l2g map for
     // MATIS (this is a dummy call if _matA is not of type MATIS)
-    ierr = MatISSetPreallocation(_matA, 0, _num_nonzeros_diagonal.data(),
-                                 0, _num_nonzeros_off_diagonal.data());
-    if (ierr != 0) petsc_error(ierr, __FILE__, "MatISSetPreallocation");
+    //const std::vector<PetscInt>
+    //  _num_nonzeros_diagonal(num_nonzeros_diagonal.begin(),
+    //                         num_nonzeros_diagonal.end());
+    //const std::vector<PetscInt>
+    //  _num_nonzeros_off_diagonal(num_nonzeros_off_diagonal.begin(),
+    //                             num_nonzeros_off_diagonal.end());
+    //ierr = MatISSetPreallocation(_matA, 0, _num_nonzeros_diagonal.data(),
+    //                             0, _num_nonzeros_off_diagonal.data());
+    //if (ierr != 0) petsc_error(ierr, __FILE__, "MatISSetPreallocation");
 
     ISLocalToGlobalMappingDestroy(&petsc_local_to_global0);
     ISLocalToGlobalMappingDestroy(&petsc_local_to_global1);
