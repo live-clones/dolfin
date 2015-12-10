@@ -239,18 +239,24 @@ void PETScMatrix::init(const TensorLayout& tensor_layout)
       sparsity_pattern->diagonal_pattern(SparsityPattern::sorted);
     auto off_diagonal =
       sparsity_pattern->off_diagonal_pattern(SparsityPattern::sorted);
+    const bool has_off_diag = off_diagonal.size() > 0;
     dolfin_assert(diagonal.size() == m);
-    dolfin_assert(off_diagonal.size() == m);
+    dolfin_assert(off_diagonal.size() == m || !has_off_diag);
     auto it = cols.begin();
+    decltype (off_diagonal)::value_type::iterator diag_end;
     const auto col_range1 = col_range.second;
     for (std::size_t i = 0; i < m; ++i)
     {
       rows[i] = std::distance(cols.begin(), it);
-      auto diag_end = std::find_if(off_diagonal[i].begin(), off_diagonal[i].end(),
-        [col_range1](std::size_t J){return J>=col_range1;});
-      it = std::copy(off_diagonal[i].begin(), diag_end, it);
+      if (has_off_diag)
+      {
+        diag_end = std::find_if(off_diagonal[i].begin(), off_diagonal[i].end(),
+          [col_range1](std::size_t J){return J>=col_range1;});
+        it = std::copy(off_diagonal[i].begin(), diag_end, it);
+      }
       it = std::copy(diagonal[i].begin(), diagonal[i].end(), it);
-      it = std::copy(diag_end, off_diagonal[i].end(), it);
+      if (has_off_diag)
+        it = std::copy(diag_end, off_diagonal[i].end(), it);
     }
     rows[m] = std::distance(cols.begin(), it);
     dolfin_assert(it == cols.end());
