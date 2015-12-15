@@ -40,17 +40,16 @@ std::pair<bool, Point> Plane::intersection( const Edge& e )
   Point p0 = Vertex(mesh, e.entities(0)[0]).point();
   Point p1 = Vertex(mesh, e.entities(0)[1]).point();
 
-  if ( signbit(p0.dot(unit_normal()) - _d) !=
-       signbit(p1.dot(unit_normal()) - _d) ) {
+  if (std::signbit(p0.dot(unit_normal()) - _d) !=
+      std::signbit(p1.dot(unit_normal()) - _d) )
+  {
     result.first = true;
-
+    // FIXME: what if p0.n == p1.n ?
     double lambda = (_d - p1.dot(_n))/(p0.dot(_n) - p1.dot(_n));
-
     result.second = lambda*p0 + (1-lambda)*p1;
   }
-  else {
+  else
     result.first = false;
-  }
 
   return result;
 }
