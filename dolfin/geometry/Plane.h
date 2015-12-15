@@ -19,10 +19,13 @@
 #define __PLANE_H
 
 #include <cmath>
+#include <iostream>
 #include "Point.h"
 
 namespace dolfin
 {
+  class Edge;
+
   /// A Plane represents a plane in :math:`\mathbb{R}^3` with
   /// normal vector to the plane :math: `n = x, y, z,` and a distance
   /// to the plane :math:`x.n = d`.  It supports inputs of a normal
@@ -45,11 +48,29 @@ namespace dolfin
 
   /// Constructs a plane using three points on the plane.
   Plane(Point a, Point b, Point c)
-  { _n = (b-a).cross(c-a); _d = a.dot(_n); }
+    { _n = (b-a).cross(c-a); _d = a.dot(_n); }
+
+  /// Destructor
+  ~Plane() {}
 
   /// Returns the normal vector to the plane
   Point normal()
-    { return _n; }
+  { return _n; }
+
+  Point d()
+  { return _d; }
+
+  /// Returns unit normal vector to the plane
+  Point unit_normal()
+  { return _n/_n.norm(); }
+
+  /// Returns the distance of a point to the plane
+  Point distance( Point p )
+  { return (_n.dot(p) - _d)/_n.norm(); }
+
+  /// Checks to see if an edge intersects a plane and returns T/F and the
+  /// intersection point.  If no intersection returns (0, 0, 0).
+  std::pair<bool, Point> intersection( const Edge& e );
 
   private:
 
