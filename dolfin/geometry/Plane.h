@@ -59,24 +59,24 @@ namespace dolfin
     }
 
     /// Returns the normal vector to the plane
-    Point normal()
+    Point normal() const
     { return _n; }
 
-    Point d()
+    Point d() const
     { return _d; }
 
     /// Returns unit normal vector to the plane
     /// FIXME: if _n is normalised first, then don't need this
-    Point unit_normal()
+    Point unit_normal() const
     { return _n/_n.norm(); }
 
     /// Returns the distance of a point to the plane
-    Point distance( Point p )
+    Point distance( Point p ) const
     { return (_n.dot(p) - _d)/_n.norm(); }
 
     /// Checks to see if an edge intersects a plane and returns T/F and the
     /// intersection point.  If no intersection returns (0, 0, 0).
-    std::pair<bool, Point> intersection( const Edge& e );
+    std::pair<bool, Point> intersection(const Edge& e) const;
 
   private:
 

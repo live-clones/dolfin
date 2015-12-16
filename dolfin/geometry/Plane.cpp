@@ -32,7 +32,7 @@ using namespace dolfin;
 //-----------------------------------------------------------------------------
 /// Checks to see if an edge intersects a plane and returns T/F and the
 /// intersection point.  If no intersection returns (0, 0, 0).
-std::pair<bool, Point> Plane::intersection( const Edge& e )
+std::pair<bool, Point> Plane::intersection( const Edge& e ) const
 {
   std::pair<bool, Point> result = {false, Point(0.0, 0.0, 0.0)};
 
