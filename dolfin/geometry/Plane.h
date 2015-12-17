@@ -38,13 +38,29 @@ namespace dolfin
 
     /// Constructs a plane using a normal vector n and a distance to
     /// the plane d.
-    Plane(Point n, double d) : _n(n/n.norm()), _d(d)
-    { }
+  Plane(Point n, double d)
+    {
+      _n = n/n.norm();
+      _d = d;
+      if (n.norm() == (0.0))
+      {dolfin_error("Plane.h",
+                 "constructing a plane using a normal vector and a distance",
+                 "invalid normal vector supplied");
+      }
+    }
 
     /// Constructs a plane using a normal vector n and a point on the plane
     /// a.
-    Plane(Point a, Point n) : _n(n/n.norm()), _d(a.dot(n))
-    { }
+    Plane(Point a, Point n)
+    {
+      _n = n/n.norm();
+      _d = a.dot(_n);
+      if (n.norm() == (0.0))
+      {dolfin_error("Plane.h",
+                 "constructing a plane using a normal vector and a distance",
+                 "invalid normal vector supplied");
+      }
+    }
 
     /// Constructs a plane using three points on the plane.
     Plane(Point a, Point b, Point c)
@@ -52,12 +68,17 @@ namespace dolfin
       Point n = (b-a).cross(c-a);
       _n = n/n.norm();
       _d = a.dot(_n);
+
+      if (n.norm() == (0.0))
+      {dolfin_error("Plane.h",
+                 "constructing a plane using a normal vector and a distance",
+                 "invalid normal vector supplied");
+      }
     }
 
     /// Destructor
     ~Plane()
-    {
-    }
+    {}
 
     /// Returns the unit normal vector to the plane
     Point normal() const
