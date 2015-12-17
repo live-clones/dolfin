@@ -30,9 +30,49 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
+/// Constructs a plane using a normal vector n and a distance to
+/// the plane d.
+Plane::Plane(Point n, double d)
+{
+  _n = n/n.norm();
+  _d = d;
+  if (n.norm() == (0.0))
+    {dolfin_error("Plane.cpp",
+                 "constructing a plane using a normal vector and a distance",
+                 "invalid normal vector supplied");
+    }
+}
+//-----------------------------------------------------------------------------
+/// Constructs a plane using a normal vector n and a point on the plane
+    /// a.
+Plane::Plane(Point a, Point n)
+{
+  _n = n/n.norm();
+  _d = a.dot(_n);
+  if (n.norm() == (0.0))
+    {dolfin_error("Plane.cpp",
+                 "constructing a plane using a normal vector and a distance",
+                 "invalid normal vector supplied");
+    }
+}
+//-----------------------------------------------------------------------------
+    /// Constructs a plane using three points on the plane.
+Plane::Plane(Point a, Point b, Point c)
+{
+  Point n = (b-a).cross(c-a);
+  _n = n/n.norm();
+  _d = a.dot(_n);
+
+  if (n.norm() == (0.0))
+    {dolfin_error("Plane.cpp",
+                 "constructing a plane using a normal vector and a distance",
+                 "invalid normal vector supplied");
+    }
+}
+//-----------------------------------------------------------------------------
 /// Checks to see if an edge intersects a plane and returns T/F and the
 /// intersection point.  If no intersection returns (0, 0, 0).
-std::pair<bool, Point> Plane::intersection( const Edge& e )
+std::pair<bool, Point> Plane::intersection( const Edge& e ) const
 {
   std::pair<bool, Point>  result = {false, Point(0.0, 0.0, 0.0)};
 
