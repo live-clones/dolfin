@@ -44,7 +44,12 @@ std::pair<bool, Point> Plane::intersection( const Edge& e )
       std::signbit(p1.dot(normal()) - _d) )
   {
     result.first = true;
-    // FIXME: what if p0.n == p1.n ?
+    Point diff = p0 - p1;
+    if (diff.norm() == (0.0))
+      {dolfin_error("Plane.cpp",
+                 "checking to see if edge and plane intersect",
+                 "two points on edge are the same");
+      }
     double lambda = (_d - p1.dot(_n))/(p0.dot(_n) - p1.dot(_n));
     result.second = lambda*p0 + (1-lambda)*p1;
   }
