@@ -38,18 +38,19 @@ namespace dolfin
 
     /// Constructs a plane using a normal vector n and a distance to
     /// the plane d.
-    Plane(Point n, double d) : _n(n), _d(d)
+    Plane(Point n, double d) : _n(n/n.norm()), _d(d)
     { }
 
     /// Constructs a plane using a normal vector n and a point on the plane
     /// a.
-    Plane(Point a, Point n) : _n(n), _d(a.dot(n))
+    Plane(Point a, Point n) : _n(n/n.norm()), _d(a.dot(n))
     { }
 
     /// Constructs a plane using three points on the plane.
     Plane(Point a, Point b, Point c)
     {
-      _n = (b-a).cross(c-a);
+      Point n = (b-a).cross(c-a);
+      _n = n/n.norm();
       _d = a.dot(_n);
     }
 
@@ -58,30 +59,24 @@ namespace dolfin
     {
     }
 
-    /// Returns the normal vector to the plane
-    Point normal()
+    /// Returns the unit normal vector to the plane
+    Point normal() const
     { return _n; }
 
-    Point d()
+    Point d() const
     { return _d; }
 
-    /// Returns unit normal vector to the plane
-    /// FIXME: if _n is normalised first, then don't need this
-    Point unit_normal()
-    { return _n/_n.norm(); }
-
     /// Returns the distance of a point to the plane
-    Point distance( Point p )
+    double distance( Point p ) const
     { return (_n.dot(p) - _d)/_n.norm(); }
 
     /// Checks to see if an edge intersects a plane and returns T/F and the
     /// intersection point.  If no intersection returns (0, 0, 0).
-    std::pair<bool, Point> intersection( const Edge& e );
+    std::pair<bool, Point> intersection( const Edge& e ) ;
 
   private:
 
-    // Normal to plane
-    // FIXME: should this be normalised first?
+    // Unit normal to plane
     Point _n;
 
     // Distance from origin

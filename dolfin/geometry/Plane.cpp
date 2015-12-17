@@ -34,14 +34,14 @@ using namespace dolfin;
 /// intersection point.  If no intersection returns (0, 0, 0).
 std::pair<bool, Point> Plane::intersection( const Edge& e )
 {
-  std::pair<bool, Point> result = {false, Point(0.0, 0.0, 0.0)};
+  std::pair<bool, Point>  result = {false, Point(0.0, 0.0, 0.0)};
 
   const Mesh& mesh = e.mesh();
   Point p0 = Vertex(mesh, e.entities(0)[0]).point();
   Point p1 = Vertex(mesh, e.entities(0)[1]).point();
 
-  if (std::signbit(p0.dot(unit_normal()) - _d) !=
-      std::signbit(p1.dot(unit_normal()) - _d) )
+  if (std::signbit(p0.dot(normal()) - _d) !=
+      std::signbit(p1.dot(normal()) - _d) )
   {
     result.first = true;
     // FIXME: what if p0.n == p1.n ?
