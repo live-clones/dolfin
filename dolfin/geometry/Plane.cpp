@@ -34,40 +34,39 @@ using namespace dolfin;
 /// the plane d.
 Plane::Plane(Point n, double d)
 {
-  _n = n/n.norm();
-  _d = d;
   if (n.norm() == (0.0))
     {dolfin_error("Plane.cpp",
                  "constructing a plane using a normal vector and a distance",
                  "invalid normal vector supplied");
     }
+  _n = n/n.norm();
+  _d = d;
 }
 //-----------------------------------------------------------------------------
 /// Constructs a plane using a normal vector n and a point on the plane
     /// a.
 Plane::Plane(Point a, Point n)
 {
-  _n = n/n.norm();
-  _d = a.dot(_n);
   if (n.norm() == (0.0))
     {dolfin_error("Plane.cpp",
                  "constructing a plane using a normal vector and a distance",
                  "invalid normal vector supplied");
     }
+  _n = n/n.norm();
+  _d = a.dot(_n);
 }
 //-----------------------------------------------------------------------------
     /// Constructs a plane using three points on the plane.
 Plane::Plane(Point a, Point b, Point c)
 {
   Point n = (b-a).cross(c-a);
-  _n = n/n.norm();
-  _d = a.dot(_n);
-
   if (n.norm() == (0.0))
     {dolfin_error("Plane.cpp",
                  "constructing a plane using a normal vector and a distance",
                  "invalid normal vector supplied");
     }
+  _n = n/n.norm();
+  _d = a.dot(_n);
 }
 //-----------------------------------------------------------------------------
 /// Checks to see if an edge intersects a plane and returns T/F and the
@@ -84,11 +83,11 @@ std::pair<bool, Point> Plane::intersection( const Edge& e ) const
       std::signbit(p1.dot(normal()) - _d) )
   {
     result.first = true;
-    Point diff = p0 - p1;
-    if (diff.norm() == (0.0))
+    double diff = p0.dot(_n) - p1.dot(_n);
+    if (diff == (0.0))
       {dolfin_error("Plane.cpp",
                  "checking to see if edge and plane intersect",
-                 "two points on edge are the same");
+                 "divide by zero error.  p0.n = p1.n");
       }
     double lambda = (_d - p1.dot(_n))/(p0.dot(_n) - p1.dot(_n));
     result.second = lambda*p0 + (1-lambda)*p1;
