@@ -321,10 +321,9 @@ void TpetraMatrix::set_local(const double* block,
   dolfin_assert(!_matA->isFillComplete());
 
   // Map local columns to global
-  std::vector<dolfin::la_index> _global_col_idx;
-  _global_col_idx.reserve(n);
+  std::vector<dolfin::la_index> _global_col_idx(n);
   for (std::size_t i = 0 ; i != n; ++i)
-    _global_col_idx.push_back(index_map[1]->local_to_global(cols[i]));
+    _global_col_idx[i] = index_map[1]->local_to_global(cols[i]);
   Teuchos::ArrayView<const dolfin::la_index> global_col_idx(_global_col_idx);
 
   for (std::size_t i = 0 ; i != m; ++i)
@@ -333,14 +332,10 @@ void TpetraMatrix::set_local(const double* block,
 
     const dolfin::la_index global_row_idx
       = index_map[0]->local_to_global(rows[i]);
-    if (global_row_idx != Teuchos::OrdinalTraits<dolfin::la_index>::invalid())
-    {
-      std::size_t nvalid = _matA->replaceGlobalValues(global_row_idx,
-                                                      global_col_idx, data);
-      dolfin_assert(nvalid == n);
-    }
-    else
-      warning("Could not enter into row:%d", rows[i]);
+
+    std::size_t nvalid = _matA->replaceGlobalValues(global_row_idx,
+                                                    global_col_idx, data);
+    dolfin_assert(nvalid == n);
   }
 }
 //-----------------------------------------------------------------------------
@@ -369,10 +364,9 @@ void TpetraMatrix::add_local(const double* block,
   dolfin_assert(!_matA->isFillComplete());
 
   // Map local columns to global
-  std::vector<dolfin::la_index> _global_col_idx;
-  _global_col_idx.reserve(n);
+  std::vector<dolfin::la_index>  _global_col_idx(n);
   for (std::size_t i = 0 ; i != n; ++i)
-    _global_col_idx.push_back(index_map[1]->local_to_global(cols[i]));
+    _global_col_idx[i] = index_map[1]->local_to_global(cols[i]);
   Teuchos::ArrayView<const dolfin::la_index> global_col_idx(_global_col_idx);
 
   for (std::size_t i = 0 ; i != m; ++i)
@@ -381,15 +375,11 @@ void TpetraMatrix::add_local(const double* block,
 
     const dolfin::la_index global_row_idx
       = index_map[0]->local_to_global(rows[i]);
-    if (global_row_idx != Teuchos::OrdinalTraits<dolfin::la_index>::invalid())
-    {
-      std::size_t nvalid =
-        _matA->sumIntoGlobalValues(global_row_idx,
-                                   global_col_idx, data);
-      dolfin_assert(nvalid == n);
-    }
-    else
-      warning("Could not enter into row:%d", rows[i]);
+
+    std::size_t nvalid =
+      _matA->sumIntoGlobalValues(global_row_idx,
+                                 global_col_idx, data);
+    dolfin_assert(nvalid == n);
   }
 }
 //-----------------------------------------------------------------------------
