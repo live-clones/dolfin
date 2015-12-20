@@ -330,8 +330,7 @@ void BelosKrylovSolver::set_options()
   solverParams->set("Convergence Tolerance", rel_tol);
 
   const bool monitor_convergence = parameters["monitor_convergence"];
-  const bool report = parameters["report"];
-  if (monitor_convergence or report)
+  if (monitor_convergence)
   {
     solverParams->set("Verbosity",
                       Belos::Warnings
@@ -340,9 +339,8 @@ void BelosKrylovSolver::set_options()
                       | Belos::TimingDetails
                       | Belos::FinalSummary);
     solverParams->set("Output Style", (int)Belos::Brief);
-  }
-  if (monitor_convergence)
     solverParams->set("Output Frequency", 1);
+  }
 
   // Copy over any parameters from dolfin parameters in ["belos"]
   const Parameters& params = parameters("belos");

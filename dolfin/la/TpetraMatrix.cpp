@@ -34,11 +34,6 @@
 
 using namespace dolfin;
 
-//const std::map<std::string, NormType> TpetraMatrix::norm_types
-//= { {"l1",        NORM_1},
-//    {"linf",      NORM_INFINITY},
-//    {"frobenius", NORM_FROBENIUS} };
-
 //-----------------------------------------------------------------------------
 TpetraMatrix::TpetraMatrix() : _matA(NULL)
 {
@@ -47,7 +42,7 @@ TpetraMatrix::TpetraMatrix() : _matA(NULL)
 //-----------------------------------------------------------------------------
 TpetraMatrix::TpetraMatrix(Teuchos::RCP<matrix_type> A) : _matA(A)
 {
-  // row_map and col_map are not set, so cannot use add_local() or set_local()
+  // Index maps are not set, so cannot use add_local() or set_local()
 }
 //-----------------------------------------------------------------------------
 TpetraMatrix::TpetraMatrix(const TpetraMatrix& A)
@@ -363,22 +358,64 @@ void TpetraMatrix::add_local(const double* block,
   dolfin_assert(!_matA.is_null());
   dolfin_assert(!_matA->isFillComplete());
 
+  // Tpetra can sum into unowned rows/columns, but only by using global
+  // indices. In the case that the rows and columns are local, use the
+  // cheaper sumIntoLocalValues instead.
+
   // Map local columns to global
-  std::vector<dolfin::la_index>  _global_col_idx(n);
+  std::vector<dolfin::la_index> _global_col_idx(n);
+  bool cols_local = true;
+  dolfin::la_index local_size
+    = index_map[1]->size(IndexMap::MapSize::OWNED);
+  dolfin::la_index global_offset = index_map[1]->local_range().first;
   for (std::size_t i = 0 ; i != n; ++i)
-    _global_col_idx[i] = index_map[1]->local_to_global(cols[i]);
+  {
+    if (cols[i] < local_size)
+      _global_col_idx[i] = global_offset + cols[i];
+    else
+    {
+      cols_local = false;
+      _global_col_idx[i] = index_map[1]->local_to_global(cols[i]);
+    }
+  }
+
   Teuchos::ArrayView<const dolfin::la_index> global_col_idx(_global_col_idx);
+  Teuchos::ArrayView<const dolfin::la_index> local_col_idx(cols, n);
+
+  // Get size and offset for rows now
+  local_size = index_map[1]->size(IndexMap::MapSize::OWNED);
+  global_offset = index_map[0]->local_range().first;
 
   for (std::size_t i = 0 ; i != m; ++i)
   {
     Teuchos::ArrayView<const double> data(block + i*n, n);
+    std::size_t nvalid;
 
-    const dolfin::la_index global_row_idx
-      = index_map[0]->local_to_global(rows[i]);
-
-    std::size_t nvalid =
-      _matA->sumIntoGlobalValues(global_row_idx,
-                                 global_col_idx, data);
+    if (cols_local)
+    {
+      if (rows[i] < local_size)
+      {
+        // Local rows and columns
+        nvalid = _matA->sumIntoLocalValues(rows[i],
+                                           local_col_idx, data);
+      }
+      else
+      {
+        // Local columns but global row
+        const dolfin::la_index global_row_idx
+          = index_map[0]->local_to_global(rows[i]);
+        nvalid = _matA->sumIntoGlobalValues(global_row_idx,
+                                            global_col_idx, data);
+      }
+    }
+    else
+    {
+      // Global columns
+      const dolfin::la_index global_row_idx
+        = index_map[0]->local_to_global(rows[i]);
+      nvalid = _matA->sumIntoGlobalValues(global_row_idx,
+                                          global_col_idx, data);
+    }
     dolfin_assert(nvalid == n);
   }
 }
