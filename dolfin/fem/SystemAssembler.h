@@ -114,7 +114,9 @@ namespace dolfin
     // Assemble system
     void assemble(GenericMatrix* A, GenericVector* b,
                   const GenericVector* x0,
-                  std::shared_ptr<const Form> a);
+                  std::shared_ptr<const Form> a,
+                  std::shared_ptr<const Form> L,
+                  bool integrate_rhs);
 
     // Bilinear and linear forms
     std::vector<std::shared_ptr<const Form>> _a;
@@ -129,7 +131,8 @@ namespace dolfin
       Scratch& data,
       const std::vector<DirichletBC::Map>& boundary_values,
       std::shared_ptr<const MeshFunction<std::size_t>> cell_domains,
-      std::shared_ptr<const MeshFunction<std::size_t>> exterior_facet_domains);
+      std::shared_ptr<const MeshFunction<std::size_t>> exterior_facet_domains,
+      bool integrate_rhs);
 
     static void facet_wise_assembly(
       std::array<GenericTensor*, 2>& tensors,

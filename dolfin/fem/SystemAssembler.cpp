@@ -77,37 +77,43 @@ void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
                  "Incorrect number of matrices for forms");
   }
 
+  // Make sure b does not get reset each time
+  add_values = true;
+
   for (std::size_t i = 0; i != A.size(); ++i)
   {
-    // FIXME: only assemble RHS once, but apply BCs each time
-    assemble(&*A[i], &*b, NULL, _a[i]);
+    // Only assemble RHS once, but apply BCs each time
+    if (i == 0)
+      assemble(&*A[i], &*b, NULL, _a[i], _l, true);
+    else
+      assemble(&*A[i], &*b, NULL, _a[i], _l, false);
   }
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A, GenericVector& b)
 {
-  assemble(&A, &b, NULL, _a[0]);
+  assemble(&A, &b, NULL, _a[0], _l, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A)
 {
-  assemble(&A, NULL, NULL, _a[0]);
+  assemble(&A, NULL, NULL, _a[0], _l, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericVector& b)
 {
-  assemble(NULL, &b, NULL, _a[0]);
+  assemble(NULL, &b, NULL, _a[0], _l, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A, GenericVector& b,
                                const GenericVector& x0)
 {
-  assemble(&A, &b, &x0, _a[0]);
+  assemble(&A, &b, &x0, _a[0], _l, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericVector& b, const GenericVector& x0)
 {
-  assemble(NULL, &b, &x0, _a[0]);
+  assemble(NULL, &b, &x0, _a[0], _l, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
@@ -193,10 +199,12 @@ bool SystemAssembler::check_functionspace_for_bc
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
                                const GenericVector* x0,
-                               std::shared_ptr<const Form> a)
+                               std::shared_ptr<const Form> a,
+                               std::shared_ptr<const Form> L,
+                               bool integrate_rhs)
 {
   dolfin_assert(a);
-  dolfin_assert(_l);
+  dolfin_assert(L);
 
   // Set timer
   Timer timer("Assemble system");
@@ -208,30 +216,30 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   // Get cell domains
   std::shared_ptr<const MeshFunction<std::size_t>> cell_domains
     = _pick_one_meshfunction("cell_domains", a->cell_domains(),
-                             _l->cell_domains());
+                             L->cell_domains());
 
   // Get exterior facet domains
   std::shared_ptr<const MeshFunction<std::size_t>> exterior_facet_domains
     = _pick_one_meshfunction("exterior_facet_domains",
                              a->exterior_facet_domains(),
-                             _l->exterior_facet_domains());
+                             L->exterior_facet_domains());
 
   // Get interior facet domains
   std::shared_ptr<const MeshFunction<std::size_t>> interior_facet_domains
     = _pick_one_meshfunction("interior_facet_domains",
                              a->interior_facet_domains(),
-                             _l->interior_facet_domains());
+                             L->interior_facet_domains());
 
   // Check forms
   AssemblerBase::check(*a);
-  AssemblerBase::check(*_l);
+  AssemblerBase::check(*L);
 
   // Check that we have a bilinear and a linear form
   dolfin_assert(a->rank() == 2);
-  dolfin_assert(_l->rank() == 1);
+  dolfin_assert(L->rank() == 1);
 
   // Check that forms share a function space
-  if (*a->function_space(0) != *_l->function_space(0))
+  if (*a->function_space(0) != *L->function_space(0))
   {
     dolfin_error("SystemAssembler.cpp",
                  "assemble system",
@@ -239,7 +247,7 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   }
 
   // Create data structures for local assembly data
-  UFC A_ufc(*a), b_ufc(*_l);
+  UFC A_ufc(*a), b_ufc(*L);
 
   // Raise error for Point integrals
   if (A_ufc.form.has_vertex_integrals() || b_ufc.form.has_vertex_integrals())
@@ -256,13 +264,13 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   if (A)
     init_global_tensor(*A, *a);
   if (b)
-    init_global_tensor(*b, *_l);
+    init_global_tensor(*b, *L);
 
   // Gather tensors
   std::array<GenericTensor*, 2> tensors = { {A, b} };
 
   // Allocate data
-  Scratch data(*a, *_l);
+  Scratch data(*a, *L);
 
   // Get Dirichlet dofs and values for local mesh
   // Determine whether _a is bilinear in the same form
@@ -326,7 +334,8 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   {
     // Assemble cell-wise (no interior facet integrals)
     cell_wise_assembly(tensors, ufc, data, boundary_values,
-                       cell_domains, exterior_facet_domains);
+                       cell_domains, exterior_facet_domains,
+                       integrate_rhs);
   }
   else
   {
@@ -352,7 +361,8 @@ void SystemAssembler::cell_wise_assembly(
   Scratch& data,
   const std::vector<DirichletBC::Map>& boundary_values,
   std::shared_ptr<const MeshFunction<std::size_t>> cell_domains,
-  std::shared_ptr<const MeshFunction<std::size_t>> exterior_facet_domains)
+  std::shared_ptr<const MeshFunction<std::size_t>> exterior_facet_domains,
+  bool integrate_rhs)
 {
   // Extract mesh
   const Mesh& mesh = ufc[0]->dolfin_form.mesh();
@@ -398,6 +408,8 @@ void SystemAssembler::cell_wise_assembly(
   ufc::cell ufc_cell;
   std::vector<double> coordinate_dofs;
   Progress p("Assembling system (cell-wise)", mesh.num_cells());
+
+  std::size_t nforms = integrate_rhs ? 2 : 1;
   for (CellIterator cell(mesh); !cell.end(); ++cell)
   {
     // Check that cell is not a ghost
@@ -410,7 +422,7 @@ void SystemAssembler::cell_wise_assembly(
     cell->get_cell_data(ufc_cell);
 
     // Loop over lhs and then rhs contributions
-    for (std::size_t form = 0; form < 2; ++form)
+    for (std::size_t form = 0; form < nforms; ++form)
     {
       // Get rank (lhs=2, rhs=1)
       const std::size_t rank = (form == 0) ? 2 : 1;
@@ -513,6 +525,11 @@ void SystemAssembler::cell_wise_assembly(
         }
       }
     }
+
+    // if nforms == 1
+    // RHS has not been integrated, but is here for adding BC terms
+    if (nforms == 1)
+      std::fill(data.Ae[1].begin(), data.Ae[1].end(), 0.0);
 
     // Modify local matrix/element for Dirichlet boundary conditions
     apply_bc(data.Ae[0].data(), data.Ae[1].data(), boundary_values,
