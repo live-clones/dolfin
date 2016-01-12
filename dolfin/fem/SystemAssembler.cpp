@@ -52,14 +52,14 @@ using namespace dolfin;
 //-----------------------------------------------------------------------------
 SystemAssembler::SystemAssembler(std::shared_ptr<const Form> a,
                                  std::shared_ptr<const Form> L,
-                                 std::vector<std::shared_ptr<const DirichletBC>> bcs) : _a({a}), _l({L}), _bcs(bcs)
+                                 std::vector<std::shared_ptr<const DirichletBC>> bcs) : _a({a}), _l(L), _bcs(bcs)
 {
   // Check forms for correct dimensions
   check_forms(_a, _l);
 }
 //-----------------------------------------------------------------------------
 SystemAssembler::SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
-                                 std::vector<std::shared_ptr<const Form>> L,
+                                 std::shared_ptr<const Form> L,
                                  std::vector<std::shared_ptr<const DirichletBC>> bcs)
   : _a(a), _l(L), _bcs(bcs)
 {
@@ -68,52 +68,50 @@ SystemAssembler::SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
-                               std::vector<std::shared_ptr<GenericVector>> b)
+                               std::shared_ptr<GenericVector> b)
 {
-  if (A.size() != _a.size() and b.size() != _l.size())
+  if (A.size() != _a.size())
   {
     dolfin_error("SystemAssembler.cpp",
                  "assemble system",
-                 "Incorrect number of matrices/vectors for forms");
+                 "Incorrect number of matrices for forms");
   }
-  std::size_t ny = b.size();
-  std::size_t nx = A.size()/ny;
+
   for (std::size_t i = 0; i != A.size(); ++i)
   {
-    std::size_t j = i/nx;
     // FIXME: only assemble RHS once, but apply BCs each time
-    assemble(&*A[i], &*b[j], NULL, _a[i], _l[j]);
+    assemble(&*A[i], &*b, NULL, _a[i]);
   }
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A, GenericVector& b)
 {
-  assemble(&A, &b, NULL, _a[0], _l[0]);
+  assemble(&A, &b, NULL, _a[0]);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A)
 {
-  assemble(&A, NULL, NULL, _a[0], _l[0]);
+  assemble(&A, NULL, NULL, _a[0]);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericVector& b)
 {
-  assemble(NULL, &b, NULL, _a[0], _l[0]);
+  assemble(NULL, &b, NULL, _a[0]);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A, GenericVector& b,
                                const GenericVector& x0)
 {
-  assemble(&A, &b, &x0, _a[0], _l[0]);
+  assemble(&A, &b, &x0, _a[0]);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericVector& b, const GenericVector& x0)
 {
-  assemble(NULL, &b, &x0, _a[0], _l[0]);
+  assemble(NULL, &b, &x0, _a[0]);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
-                                  std::vector<std::shared_ptr<const Form>> L)
+                                  std::shared_ptr<const Form> L)
 {
   // Check that a is a bilinear form
   for (auto &form : a)
@@ -130,37 +128,24 @@ void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
   }
 
   // Check that L is a linear form
-  for (auto &form : L)
+  if (L)
   {
-    if (form)
+    if (L->rank() != 1)
     {
-      if (form->rank() != 1)
-      {
-        dolfin_error("SystemAssembler.cpp",
-                     "assemble system",
-                     "expected a linear form for L");
-      }
+      dolfin_error("SystemAssembler.cpp",
+                   "assemble system",
+                   "expected a linear form for L");
     }
   }
 
   // Check size compatibility
   std::size_t na = a.size();
-  std::size_t nL = L.size();
-  if (na%nL != 0)
-  {
-    dolfin_error("SystemAssembler.cpp",
-                 "create SystemAssembler",
-                 "Incorrect number of linear and bilinear forms");
-  }
-  // Number of columns
-  std::size_t nx = na/nL;
 
   // Check each row has the same FunctionSpace as RHS
   for (std::size_t i = 0; i != na; ++i)
   {
-    std::size_t j = i/nx;
     // Check that forms share a function space
-    if (*a[i]->function_space(0) != *L[j]->function_space(0))
+    if (*a[i]->function_space(0) != *L->function_space(0))
     {
       dolfin_error("SystemAssembler.cpp",
                    "create SystemAssembler",
@@ -168,17 +153,6 @@ void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
     }
   }
 
-  // Check all forms in same column have same FunctionSpace
-  for (std::size_t i = 0; i != nx; ++i)
-    for (std::size_t j = 1; j != nL; ++j)
-    {
-      if (*a[i]->function_space(1) != *a[i+j*na]->function_space(1))
-      {
-        dolfin_error("SystemAssembler.cpp",
-                     "create SystemAssembler",
-                     "LHS forms in same column do not share a FunctionSpace");
-      }
-    }
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<const MeshFunction<std::size_t>>
@@ -219,11 +193,10 @@ bool SystemAssembler::check_functionspace_for_bc
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
                                const GenericVector* x0,
-                               std::shared_ptr<const Form> a,
-                               std::shared_ptr<const Form> L)
+                               std::shared_ptr<const Form> a)
 {
   dolfin_assert(a);
-  dolfin_assert(L);
+  dolfin_assert(_l);
 
   // Set timer
   Timer timer("Assemble system");
@@ -235,30 +208,30 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   // Get cell domains
   std::shared_ptr<const MeshFunction<std::size_t>> cell_domains
     = _pick_one_meshfunction("cell_domains", a->cell_domains(),
-                             L->cell_domains());
+                             _l->cell_domains());
 
   // Get exterior facet domains
   std::shared_ptr<const MeshFunction<std::size_t>> exterior_facet_domains
     = _pick_one_meshfunction("exterior_facet_domains",
                              a->exterior_facet_domains(),
-                             L->exterior_facet_domains());
+                             _l->exterior_facet_domains());
 
   // Get interior facet domains
   std::shared_ptr<const MeshFunction<std::size_t>> interior_facet_domains
     = _pick_one_meshfunction("interior_facet_domains",
                              a->interior_facet_domains(),
-                             L->interior_facet_domains());
+                             _l->interior_facet_domains());
 
   // Check forms
   AssemblerBase::check(*a);
-  AssemblerBase::check(*L);
+  AssemblerBase::check(*_l);
 
   // Check that we have a bilinear and a linear form
   dolfin_assert(a->rank() == 2);
-  dolfin_assert(L->rank() == 1);
+  dolfin_assert(_l->rank() == 1);
 
   // Check that forms share a function space
-  if (*a->function_space(0) != *L->function_space(0))
+  if (*a->function_space(0) != *_l->function_space(0))
   {
     dolfin_error("SystemAssembler.cpp",
                  "assemble system",
@@ -266,7 +239,7 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   }
 
   // Create data structures for local assembly data
-  UFC A_ufc(*a), b_ufc(*L);
+  UFC A_ufc(*a), b_ufc(*_l);
 
   // Raise error for Point integrals
   if (A_ufc.form.has_vertex_integrals() || b_ufc.form.has_vertex_integrals())
@@ -283,13 +256,13 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   if (A)
     init_global_tensor(*A, *a);
   if (b)
-    init_global_tensor(*b, *L);
+    init_global_tensor(*b, *_l);
 
   // Gather tensors
   std::array<GenericTensor*, 2> tensors = { {A, b} };
 
   // Allocate data
-  Scratch data(*a, *L);
+  Scratch data(*a, *_l);
 
   // Get Dirichlet dofs and values for local mesh
   // Determine whether _a is bilinear in the same form

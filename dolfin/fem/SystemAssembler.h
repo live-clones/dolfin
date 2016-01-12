@@ -66,7 +66,7 @@ namespace dolfin
 
     /// Constructor
     SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
-                    std::vector<std::shared_ptr<const Form>> L,
+                    std::shared_ptr<const Form> L,
                     std::vector<std::shared_ptr<const DirichletBC>> bcs);
 
     /// Assemble system (A, b)
@@ -90,7 +90,7 @@ namespace dolfin
 
     /// Assemble blocks of matrices and associated vectors.
     void assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
-                  std::vector<std::shared_ptr<GenericVector>> b);
+                  std::shared_ptr<GenericVector> b);
 
   private:
 
@@ -105,7 +105,7 @@ namespace dolfin
 
     // Check form arity etc
     static void check_forms(std::vector<std::shared_ptr<const Form>> a,
-                            std::vector<std::shared_ptr<const Form>> L);
+                            std::shared_ptr<const Form> L);
 
     // Check if _bcs[i] is part of FunctionSpace fs
     bool check_functionspace_for_bc
@@ -114,11 +114,11 @@ namespace dolfin
     // Assemble system
     void assemble(GenericMatrix* A, GenericVector* b,
                   const GenericVector* x0,
-                  std::shared_ptr<const Form> a,
-                  std::shared_ptr<const Form> L);
+                  std::shared_ptr<const Form> a);
 
     // Bilinear and linear forms
-    std::vector<std::shared_ptr<const Form>> _a, _l;
+    std::vector<std::shared_ptr<const Form>> _a;
+    std::shared_ptr<const Form> _l;
 
     // Boundary conditions
     std::vector<std::shared_ptr<const DirichletBC>> _bcs;
