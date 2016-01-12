@@ -147,33 +147,20 @@ NonlinearVariationalSolver::NonlinearDiscreteProblem::~NonlinearDiscreteProblem(
   // Do nothing
 }
 //-----------------------------------------------------------------------------
-void NonlinearVariationalSolver::
-NonlinearDiscreteProblem::F(GenericVector& b, const GenericVector& x)
+void NonlinearVariationalSolver::NonlinearDiscreteProblem::
+  F(GenericVector& b, const GenericVector& x)
 {
-  // Get problem data
-  dolfin_assert(_problem);
-  std::shared_ptr<const Form> F = _problem->residual_form();
-  std::shared_ptr<const Form> J = _problem->jacobian_form();
-  std::vector<std::shared_ptr<const DirichletBC>> bcs(_problem->bcs());
-
-  // Create assembler
-  dolfin_assert(J);
-  dolfin_assert(F);
-  SystemAssembler assembler(J, F, bcs);
-
-  // Assemble right-hand side
-  assembler.assemble(b, x);
-
-  // Print vector
-  dolfin_assert(_solver);
-  const bool print_rhs = _solver->parameters["print_rhs"];
-  if (print_rhs)
-    info(b, true);
+  // Do nothing
 }
 //-----------------------------------------------------------------------------
-void
-NonlinearVariationalSolver::NonlinearDiscreteProblem::J(GenericMatrix& A,
-                                                        const GenericVector& x)
+void NonlinearVariationalSolver::NonlinearDiscreteProblem::
+  J(GenericMatrix& A, const GenericVector& x)
+{
+  // Do nothing
+}
+//-----------------------------------------------------------------------------
+void NonlinearVariationalSolver::NonlinearDiscreteProblem::
+  form(GenericMatrix& A, GenericVector& b, const GenericVector& x)
 {
   // Get problem data
   dolfin_assert(_problem);
@@ -187,12 +174,15 @@ NonlinearVariationalSolver::NonlinearDiscreteProblem::J(GenericMatrix& A,
   SystemAssembler assembler(J, F, bcs);
 
   // Assemble left-hand side
-  assembler.assemble(A);
+  assembler.assemble(A, b, x);
 
-  // Print matrix
+  // Print matrix and rhs
   dolfin_assert(_solver);
   const bool print_matrix = _solver->parameters["print_matrix"];
+  const bool print_rhs = _solver->parameters["print_rhs"];
   if (print_matrix)
     info(A, true);
+  if (print_rhs)
+    info(b, true);
 }
 //-----------------------------------------------------------------------------

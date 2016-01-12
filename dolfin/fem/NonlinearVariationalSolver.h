@@ -89,10 +89,14 @@ namespace dolfin
       // Destructor
       ~NonlinearDiscreteProblem();
 
-      // Compute F at current point x
+      // Assemble A, b together at current point x
+      virtual void form(GenericMatrix& A, GenericVector& b,
+                        const GenericVector& x);
+
+      // Do nothing
       virtual void F(GenericVector& b, const GenericVector& x);
 
-      // Compute J = F' at current point x
+      // Do nothing
       virtual void J(GenericMatrix& A, const GenericVector& x);
 
     private:
