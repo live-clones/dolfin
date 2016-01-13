@@ -7,7 +7,7 @@ Auto adaptive Poisson equation
 ==============================
 
 This demo is implemented in a single Python file,
-:download:`demo_auto-adaptive_poisson.py`, which contains both the
+:download:`demo_auto-adaptive-poisson.py`, which contains both the
 variational forms and the solver.
 
 .. include:: ../common.txt
@@ -16,14 +16,14 @@ Implementation
 --------------
 
 This description goes through the implementation (in
-:download:`demo-auto-adaptive_poisson.py`) of a solver for the above
+:download:`demo_auto-adaptive-poisson.py`) of a solver for the above
 described Poisson equation step-by-step.
 
 First, the dolfin module is imported:
 
 .. code-block:: python
 
-	from dolfin import *
+    from dolfin import *
 
 We begin by defining a mesh of the domain and a finite element
 function space V relative to this mesh. We used the built-in mesh
@@ -135,6 +135,7 @@ tolerance:
     problem = LinearVariationalProblem(a, L, u, bc)
     solver = AdaptiveLinearVariationalSolver(problem, M)
     solver.parameters["error_control"]["dual_variational_solver"]["linear_solver"] = "cg"
+    solver.parameters["error_control"]["dual_variational_solver"]["symmetric"] = True
     solver.solve(tol)
 
     solver.summary()
@@ -147,5 +148,5 @@ tolerance:
 Complete code
 -------------
 
-.. literalinclude:: demo_auto-adaptive_poisson.py
-	:start-after: # Begin demo
+.. literalinclude:: demo_auto-adaptive-poisson.py
+    :start-after: # Begin demo

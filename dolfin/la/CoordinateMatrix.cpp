@@ -18,6 +18,7 @@
 // First added:  2011-10-15
 // Last changed:
 
+#include <cmath>
 #include <vector>
 #include "dolfin/common/MPI.h"
 #include "GenericMatrix.h"
@@ -89,8 +90,10 @@ double CoordinateMatrix::norm(std::string norm_type) const
 {
   if (norm_type != "frobenius")
   {
-    error("Do not know to compute %s norm for CoordinateMatrix",
-          norm_type.c_str());
+    dolfin_error("CoordinateMatrix.cpp",
+                 "compute matrix norm",
+                 "Do not know to compute %s norm for CoordinateMatrix",
+                 norm_type.c_str());
   }
 
   double _norm = 0.0;

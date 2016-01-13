@@ -42,17 +42,21 @@ def build_nullspace(V, x):
     V.sub(2).dofmap().set(nullspace_basis[2], 1.0);
 
     # Build rotational null space basis
-    V.sub(0).dofmap().set_x(nullspace_basis[3], -1.0, 1, V.mesh());
-    V.sub(1).dofmap().set_x(nullspace_basis[3],  1.0, 0, V.mesh());
-    V.sub(0).dofmap().set_x(nullspace_basis[4],  1.0, 2, V.mesh());
-    V.sub(2).dofmap().set_x(nullspace_basis[4], -1.0, 0, V.mesh());
-    V.sub(2).dofmap().set_x(nullspace_basis[5],  1.0, 1, V.mesh());
-    V.sub(1).dofmap().set_x(nullspace_basis[5], -1.0, 2, V.mesh());
+    V.sub(0).set_x(nullspace_basis[3], -1.0, 1);
+    V.sub(1).set_x(nullspace_basis[3],  1.0, 0);
+    V.sub(0).set_x(nullspace_basis[4],  1.0, 2);
+    V.sub(2).set_x(nullspace_basis[4], -1.0, 0);
+    V.sub(2).set_x(nullspace_basis[5],  1.0, 1);
+    V.sub(1).set_x(nullspace_basis[5], -1.0, 2);
 
     for x in nullspace_basis:
         x.apply("insert")
 
-    return VectorSpaceBasis(nullspace_basis)
+    # Create vector space basis and orthogonalize
+    basis = VectorSpaceBasis(nullspace_basis)
+    basis.orthonormalize()
+
+    return basis
 
 
 # Load mesh and define function space
@@ -80,8 +84,7 @@ lmbda = E*nu/((1.0 + nu)*(1.0 - 2.0*nu))
 
 # Stress computation
 def sigma(v):
-    gdim = v.geometric_dimension()
-    return 2.0*mu*sym(grad(v)) + lmbda*tr(sym(grad(v)))*Identity(gdim)
+    return 2.0*mu*sym(grad(v)) + lmbda*tr(sym(grad(v)))*Identity(len(v))
 
 # Create function space
 V = VectorFunctionSpace(mesh, "Lagrange", 1)

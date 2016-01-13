@@ -60,12 +60,13 @@ public:
 
 int main()
 {
-  #ifdef ENABLE_PETSC_TAO
+#ifdef HAS_PETSC
+
   // Read mesh
   Mesh mesh("../circle_yplane.xml.gz");
 
   // Create function space
-  Elasticity::FunctionSpace V(mesh);
+  auto V = std::make_shared<Elasticity::FunctionSpace>(mesh);
 
   // Create right-hand side
   Constant f(0.0, -0.1);
@@ -110,9 +111,9 @@ int main()
   TAOLinearBoundSolver TAOSolver("tron","stcg");
 
   // Set some parameters
-  TAOSolver.parameters["monitor_convergence"]=true;
-  TAOSolver.parameters["report"]=true;
-  TAOSolver.parameters("krylov_solver")["monitor_convergence"]=false;
+  TAOSolver.parameters["monitor_convergence"] = true;
+  TAOSolver.parameters["report"] = true;
+  TAOSolver.parameters("krylov_solver")["monitor_convergence"] = false;
 
   // Solve the problem
   TAOSolver.solve(A, x, b, xl, xu);
@@ -125,7 +126,7 @@ int main()
 
   #else
 
-  cout << "This demo requires DOLFIN to be configured with TAO" << endl;
+  cout << "This demo requires DOLFIN to be configured with PETSc version 3.6 or later" << endl;
 
   #endif
 

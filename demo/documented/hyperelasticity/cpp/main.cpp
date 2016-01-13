@@ -97,21 +97,20 @@ int main()
 {
   // Create mesh and define function space
   UnitCubeMesh mesh (24, 16, 16);
-  HyperElasticity::FunctionSpace V(mesh);
+  auto V = std::make_shared<HyperElasticity::FunctionSpace>(mesh);
 
   // Define Dirichlet boundaries
-  Left left;
-  Right right;
+  auto left = std::make_shared<Left>();
+  auto right = std::make_shared<Right>();
 
   // Define Dirichlet boundary functions
-  Clamp c;
-  Rotation r;
+  auto c = std::make_shared<Clamp>();
+  auto r = std::make_shared<Rotation>();
 
   // Create Dirichlet boundary conditions
   DirichletBC bcl(V, c, left);
   DirichletBC bcr(V, r, right);
-  std::vector<const DirichletBC*> bcs;
-  bcs.push_back(&bcl); bcs.push_back(&bcr);
+  std::vector<const DirichletBC*> bcs = {{&bcl, &bcr}};
 
   // Define source and boundary traction functions
   Constant B(0.0, -0.5, 0.0);

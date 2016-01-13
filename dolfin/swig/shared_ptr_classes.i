@@ -112,7 +112,6 @@
 %shared_ptr(dolfin::Hierarchical<dolfin::Mesh>)
 %shared_ptr(dolfin::BoundaryMesh)
 %shared_ptr(dolfin::Mesh)
-%shared_ptr(dolfin::Restriction)
 %shared_ptr(dolfin::SubMesh)
 %shared_ptr(dolfin::UnitTetrahedronMesh)
 %shared_ptr(dolfin::UnitCubeMesh)
@@ -120,6 +119,10 @@
 %shared_ptr(dolfin::IntervalMesh)
 %shared_ptr(dolfin::UnitTriangleMesh)
 %shared_ptr(dolfin::UnitSquareMesh)
+%shared_ptr(dolfin::UnitQuadMesh)
+%shared_ptr(dolfin::UnitHexMesh)
+%shared_ptr(dolfin::UnitDiscMesh)
+%shared_ptr(dolfin::SphericalShellMesh)
 %shared_ptr(dolfin::BoxMesh)
 %shared_ptr(dolfin::Box)
 %shared_ptr(dolfin::RectangleMesh)
@@ -129,6 +132,7 @@
 %shared_ptr(dolfin::DomainBoundary)
 %shared_ptr(dolfin::LocalMeshData)
 %shared_ptr(dolfin::MeshData)
+%shared_ptr(dolfin::MeshHierarchy)
 
 // NOTE: Most of the MeshFunctions are declared shared pointers in
 // NOTE: mesh/pre.i, mesh/post.i
@@ -157,12 +161,14 @@
 %shared_ptr(dolfin::Matrix)
 %shared_ptr(dolfin::Vector)
 %shared_ptr(dolfin::LinearOperator)
+%shared_ptr(dolfin::IndexMap)
 
 %shared_ptr(dolfin::STLMatrix)
-%shared_ptr(dolfin::uBLASMatrix<boost::numeric::ublas::matrix<double> >)
-%shared_ptr(dolfin::uBLASMatrix<boost::numeric::ublas::compressed_matrix<double,\
-            boost::numeric::ublas::row_major> >)
-%shared_ptr(dolfin::uBLASVector)
+
+%shared_ptr(dolfin::EigenKrylovSolver)
+%shared_ptr(dolfin::EigenLUSolver)
+%shared_ptr(dolfin::EigenMatrix)
+%shared_ptr(dolfin::EigenVector)
 
 #ifdef HAS_PETSC
 %shared_ptr(dolfin::PETScBaseMatrix)
@@ -176,6 +182,15 @@
 %shared_ptr(dolfin::PETScUserPreconditioner)
 #endif
 
+#ifdef HAS_TRILINOS
+%shared_ptr(dolfin::TpetraVector)
+%shared_ptr(dolfin::TpetraMatrix)
+%shared_ptr(dolfin::BelosKrylovSolver)
+%shared_ptr(dolfin::TrilinosPreconditioner)
+%shared_ptr(dolfin::Ifpack2Preconditioner)
+%shared_ptr(dolfin::MueluPreconditioner)
+#endif
+
 #ifdef HAS_SLEPC
 %shared_ptr(dolfin::SLEPcEigenSolver)
 #endif
@@ -187,16 +202,13 @@
 %shared_ptr(dolfin::UmfpackLUSolver)
 %shared_ptr(dolfin::CholmodCholeskySolver)
 
-%shared_ptr(dolfin::uBLASKrylovSolver)
-%shared_ptr(dolfin::uBLASLinearOperator)
-
 %shared_ptr(dolfin::LinearSolver)
 %shared_ptr(dolfin::GenericLinearSolver)
 %shared_ptr(dolfin::GenericLUSolver)
 %shared_ptr(dolfin::KrylovSolver)
 %shared_ptr(dolfin::LUSolver)
 
-%shared_ptr(dolfin::GenericSparsityPattern)
+%shared_ptr(dolfin::TensorLayout)
 %shared_ptr(dolfin::SparsityPattern)
 
 // log
@@ -214,7 +226,7 @@
 // nls
 %shared_ptr(dolfin::NewtonSolver)
 %shared_ptr(dolfin::PETScSNESSolver)
-#ifdef ENABLE_PETSC_TAO
+#ifdef HAS_PETSC
 %shared_ptr(dolfin::TAOLinearBoundSolver)
 %shared_ptr(dolfin::PETScTAOSolver)
 #endif

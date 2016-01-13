@@ -81,11 +81,11 @@ public:
       if (!has_linear_algebra_backend(backends[i]))
 	continue;
 
-      // Skip testing uBLAS in parallel
+      // Skip testing Eigen in parallel
       if (dolfin::MPI::size(MPI_COMM_WORLD) > 1
-          && backends[i] == "uBLAS")
+          && backends[i] == "Eigen")
       {
-	info("Not running uBLAS test in parallel");
+	info("Not running Eigen test in parallel");
 	continue;
       }
 
@@ -94,7 +94,7 @@ public:
 
       // Compute reference value by solving ordinary linear system
       UnitSquareMesh mesh(8, 8);
-      ReactionDiffusion::FunctionSpace V(mesh);
+      auto V = std::make_shared<ReactionDiffusion::FunctionSpace>(mesh);
       ReactionDiffusion::BilinearForm a(V, V);
       ReactionDiffusion::LinearForm L(V);
       Constant f(1.0);
@@ -129,7 +129,7 @@ int main()
 {
   // Add backends supporting the LinearOperator interface
   backends.push_back("PETSc");
-  backends.push_back("uBLAS");
+  backends.push_back("Eigen");
 
   DOLFIN_TEST;
 }

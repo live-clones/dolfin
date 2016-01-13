@@ -20,7 +20,6 @@
 //
 // Demonstrating function evaluation at arbitrary points.
 
-#include <boost/assign/list_of.hpp>
 #include <dolfin.h>
 #include "Projection.h"
 
@@ -49,7 +48,7 @@ int main()
   F f;
 
   // Project to a discrete function
-  Projection::FunctionSpace V(mesh);
+  auto V = std::make_shared<Projection::FunctionSpace>(mesh);
   Projection::BilinearForm a(V, V);
   Projection::LinearForm L(V);
   L.f = f;

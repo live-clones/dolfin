@@ -24,7 +24,7 @@
 
 #include <fstream>
 #include <dolfin/common/MPI.h>
-#include <dolfin/log/dolfin_log.h>
+#include <dolfin/log/log.h>
 #include "GenericFile.h"
 
 using namespace dolfin;
@@ -118,6 +118,11 @@ void GenericFile::operator>> (Parameters& parameters)
   read_not_impl("Parameters");
 }
 //-----------------------------------------------------------------------------
+void GenericFile::operator>> (Table& table)
+{
+  read_not_impl("Table");
+}
+//-----------------------------------------------------------------------------
 void GenericFile::operator>> (std::vector<int>& x)
 {
   read_not_impl("std::vector<int>");
@@ -148,19 +153,22 @@ void GenericFile::operator>> (std::map<std::size_t, double>& map)
   read_not_impl("std::map<std::size_t, double>");
 }
 //-----------------------------------------------------------------------------
-void GenericFile::operator>> (std::map<std::size_t, std::vector<int> >& array_map)
+void GenericFile::operator>> (std::map<std::size_t,
+                              std::vector<int>>& array_map)
 {
-  read_not_impl("std::map<std::size_t, std::vector<int> >");
+  read_not_impl("std::map<std::size_t, std::vector<int>>");
 }
 //-----------------------------------------------------------------------------
-void GenericFile::operator>> (std::map<std::size_t, std::vector<std::size_t> >& array_map)
+void GenericFile::operator>> (std::map<std::size_t,
+                              std::vector<std::size_t>>& array_map)
 {
-  read_not_impl("std::map<std::size_t, std::vector<std::size_t> >");
+  read_not_impl("std::map<std::size_t, std::vector<std::size_t>>");
 }
 //-----------------------------------------------------------------------------
-void GenericFile::operator>> (std::map<std::size_t, std::vector<double> >& array_map)
+void GenericFile::operator>> (std::map<std::size_t,
+                              std::vector<double>>& array_map)
 {
-  read_not_impl("std::map<std::size_t, std::vector<double> >");
+  read_not_impl("std::map<std::size_t, std::vector<double>>");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::operator>> (Function& u)
@@ -287,6 +295,11 @@ void GenericFile::operator<< (const Parameters& parameters)
   write_not_impl("Parameters");
 }
 //-----------------------------------------------------------------------------
+void GenericFile::operator<< (const Table& table)
+{
+  write_not_impl("Table");
+}
+//-----------------------------------------------------------------------------
 void GenericFile::operator<< (const std::vector<int>& x)
 {
   read_not_impl("std::vector<int>");
@@ -318,21 +331,21 @@ void GenericFile::operator<< (const std::map<std::size_t, double>& map)
 }
 //-----------------------------------------------------------------------------
 void GenericFile::operator<< (const std::map<std::size_t,
-                              std::vector<int> >& array_map)
+                              std::vector<int>>& array_map)
 {
-  read_not_impl("std::map<std::size_t, std::vector<int> >");
+  read_not_impl("std::map<std::size_t, std::vector<int>>");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::operator<< (const std::map<std::size_t,
-                              std::vector<std::size_t> >& array_map)
+                              std::vector<std::size_t>>& array_map)
 {
-  read_not_impl("std::map<std::size_t, std::vector<std::size_t> >");
+  read_not_impl("std::map<std::size_t, std::vector<std::size_t>>");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::operator<< (const std::map<std::size_t,
-                              std::vector<double> >& array_map)
+                              std::vector<double>>& array_map)
 {
-  read_not_impl("std::map<std::size_t, std::vector<double> >");
+  read_not_impl("std::map<std::size_t, std::vector<double>>");
 }
 //-----------------------------------------------------------------------------
 void GenericFile::read()

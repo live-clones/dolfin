@@ -25,8 +25,8 @@ Note that the sign for the pressure has been flipped for symmetry."""
 
 from dolfin import *
 
-# Test for PETSc or Epetra
-if not has_linear_algebra_backend("PETSc") and not has_linear_algebra_backend("Epetra"):
+# Test for PETSc or Tpetra
+if not has_linear_algebra_backend("PETSc") and not has_linear_algebra_backend("Tpetra"):
     info("DOLFIN has not been configured with Trilinos or PETSc. Exiting.")
     exit()
 
@@ -47,10 +47,11 @@ else:
 # Load mesh
 mesh = UnitCubeMesh(16, 16, 16)
 
-# Define function spaces
-V = VectorFunctionSpace(mesh, "CG", 2)
-Q = FunctionSpace(mesh, "CG", 1)
-W = V * Q
+# Build function space
+P2 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+P1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+TH = P2 * P1
+W = FunctionSpace(mesh, TH)
 
 # Boundaries
 def right(x, on_boundary): return x[0] > (1.0 - DOLFIN_EPS)
@@ -66,12 +67,8 @@ bc0 = DirichletBC(W.sub(0), noslip, top_bottom)
 inflow = Expression(("-sin(x[1]*pi)", "0.0", "0.0"))
 bc1 = DirichletBC(W.sub(0), inflow, right)
 
-# Boundary condition for pressure at outflow
-zero = Constant(0)
-bc2 = DirichletBC(W.sub(1), zero, left)
-
 # Collect boundary conditions
-bcs = [bc0, bc1, bc2]
+bcs = [bc0, bc1]
 
 # Define variational problem
 (u, p) = TrialFunctions(W)

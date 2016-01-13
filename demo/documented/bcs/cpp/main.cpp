@@ -24,34 +24,33 @@
 
 #include <dolfin.h>
 #include "Poisson.h"
-#include <boost/assign/list_of.hpp>
 
 using namespace dolfin;
 
 int main()
 {
   // Create mesh and finite element
-  Mesh mesh("../aneurysm.xml.gz");
+  auto mesh = std::make_shared<Mesh>("../aneurysm.xml.gz");
 
   // Define variational problem
   Constant f(0.0);
-  Poisson::FunctionSpace V(mesh);
+  auto V = std::make_shared<Poisson::FunctionSpace>(mesh);
   Poisson::BilinearForm a(V, V);
   Poisson::LinearForm L(V);
   L.f = f;
 
   // Define boundary condition values
-  Constant u0(0.0);
-  Constant u1(1.0);
-  Constant u2(2.0);
-  Constant u3(3.0);
+  auto u0 = std::make_shared<Constant>(0.0);
+  auto u1 = std::make_shared<Constant>(1.0);
+  auto u2 = std::make_shared<Constant>(2.0);
+  auto u3 = std::make_shared<Constant>(3.0);
 
   // Define boundary conditions
   DirichletBC bc0(V, u0, 0);
   DirichletBC bc1(V, u1, 1);
   DirichletBC bc2(V, u2, 2);
   DirichletBC bc3(V, u3, 3);
-  std::vector<const DirichletBC*> bcs = boost::assign::list_of(&bc0)(&bc1)(&bc2)(&bc3);
+  std::vector<const DirichletBC*> bcs{{&bc0, &bc1, &bc2, &bc3}};
 
   // Set PETSc MUMPS paramter (this is required to prevent a memory
   // error in some cases when using MUMPS LU solver).

@@ -35,12 +35,10 @@
 #include "TensorLayout.h"
 #include "GenericMatrix.h"
 
-#include <dolfin/log/dolfin_log.h>
-
 namespace dolfin
 {
 
-  class GenericSparsityPattern;
+  class SparsityPattern;
   class GenericVector;
 
   /// Simple STL-based implementation of the GenericMatrix interface.
@@ -182,6 +180,10 @@ namespace dolfin
     virtual void transpmult(const GenericVector& x, GenericVector& y) const
     { dolfin_not_implemented(); }
 
+    /// Get diagonal of a matrix
+    virtual void get_diagonal(GenericVector& x) const
+    { dolfin_not_implemented(); }
+
     /// Set diagonal of a matrix
     virtual void set_diagonal(const GenericVector& x)
     { dolfin_not_implemented(); }
@@ -218,7 +220,7 @@ namespace dolfin
 
     void sort()
     {
-      std::vector<std::vector<std::pair<std::size_t, double> > >::iterator row;
+      std::vector<std::vector<std::pair<std::size_t, double>>>::iterator row;
       for (row = _values.begin(); row < _values.end(); ++row)
         std::sort(row->begin(), row->end());
     }
@@ -263,7 +265,7 @@ namespace dolfin
     const std::size_t _primary_dim;
 
     // Block size, e.g. 3 for 3D elasticity with appropriate dof ordering
-    std::size_t _block_size;
+    int _block_size;
 
     // Local ownership range (row range for row-wise storage, column
     // range for column-wise storage)
@@ -274,7 +276,7 @@ namespace dolfin
     std::size_t num_codim_entities;
 
     // Storage of non-zero matrix values
-    std::vector<std::vector<std::pair<std::size_t, double> > > _values;
+    std::vector<std::vector<std::pair<std::size_t, double>>> _values;
 
     // Off-process data ([i, j], value)
     boost::unordered_map<std::pair<std::size_t, std::size_t>, double>

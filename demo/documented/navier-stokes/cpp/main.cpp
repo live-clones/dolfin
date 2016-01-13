@@ -81,34 +81,31 @@ int main()
   Mesh mesh("../lshape.xml.gz");
 
   // Create function spaces
-  VelocityUpdate::FunctionSpace V(mesh);
-  PressureUpdate::FunctionSpace Q(mesh);
+  auto V = std::make_shared<VelocityUpdate::FunctionSpace>(mesh);
+  auto Q = std::make_shared<PressureUpdate::FunctionSpace>(mesh);
   // and an output functionspace
-  FunctionSpace O = *(*V[0]).collapse();
+  auto O = ((*V)[0])->collapse();
 
   // Set parameter values
   double dt = 0.01;
   double T = 3;
 
   // Define values for boundary conditions
-  InflowPressure p_in;
-  Constant zero(0);
-  Constant zero_vector(0, 0);
+  auto p_in = std::make_shared<InflowPressure>();
+  auto zero = std::make_shared<Constant>(0.0);
+  auto zero_vector = std::make_shared<Constant>(0.0, 0.0);
 
   // Define subdomains for boundary conditions
-  NoslipDomain noslip_domain;
-  InflowDomain inflow_domain;
-  OutflowDomain outflow_domain;
+  auto noslip_domain = std::make_shared<NoslipDomain>();
+  auto inflow_domain = std::make_shared<InflowDomain>();
+  auto outflow_domain = std::make_shared<OutflowDomain>() ;
 
   // Define boundary conditions
   DirichletBC noslip(V, zero_vector, noslip_domain);
   DirichletBC inflow(Q, p_in, inflow_domain);
   DirichletBC outflow(Q, zero, outflow_domain);
-  std::vector<DirichletBC*> bcu;
-  bcu.push_back(&noslip);
-  std::vector<DirichletBC*> bcp;
-  bcp.push_back(&inflow);
-  bcp.push_back(&outflow);
+  std::vector<DirichletBC*> bcu = {&noslip};
+  std::vector<DirichletBC*> bcp = {{&inflow, &outflow}};
 
   // Create functions
   Function u0(V);
@@ -159,7 +156,7 @@ int main()
   while (t < T + DOLFIN_EPS)
   {
     // Update pressure boundary condition
-    p_in.t = t;
+    p_in->t = t;
 
     // Compute tentative velocity step
     begin("Computing tentative velocity");
@@ -173,8 +170,11 @@ int main()
     begin("Computing pressure correction");
     assemble(b2, L2);
     for (std::size_t i = 0; i < bcp.size(); i++)
+    {
       bcp[i]->apply(A2, b2);
-    solve(A2, *p1.vector(), b2, "cg", prec);
+      bcp[i]->apply(*p1.vector());
+    }
+    solve(A2, *p1.vector(), b2, "bicgstab", prec);
     end();
 
     // Velocity correction
@@ -186,7 +186,7 @@ int main()
     end();
 
     // Save to file on a P2 function space
-    file.write(output, O, t);
+    file.write(output, *O, t);
 
     // Move to next time step
     u0 = u1;

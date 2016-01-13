@@ -24,6 +24,11 @@
 
 from dolfin import *
 
+# This demo requires PETSc
+if not has_petsc():
+    print("DOLFIN must be compiled with PETSc to run this demo.")
+    exit(0)
+
 # Create mesh
 mesh = Mesh("../circle_yplane.xml.gz")
 
@@ -36,7 +41,7 @@ u  = Function(V)                 # Displacement from previous iteration
 B  = Constant((0.0, -0.05))      # Body force per unit volume
 
 # Kinematics
-I = Identity(u.geometric_dimension())  # Identity tensor
+I = Identity(len(u))  # Identity tensor
 F = I + grad(u)             # Deformation gradient
 C = F.T*F                   # Right Cauchy-Green tensor
 
@@ -78,14 +83,15 @@ umax = interpolate(constraint_u, V)
 
 # Define the solver parameters
 snes_solver_parameters = {"nonlinear_solver": "snes",
-                          "snes_solver"     : { "linear_solver"   : "lu",
-                                                "maximum_iterations": 20,
-                                                "report": True,
-                                                "error_on_nonconvergence": False,
-                                               }}
+                          "snes_solver": { "linear_solver" : "lu",
+                                           "maximum_iterations": 20,
+                                           "report": True,
+                                           "error_on_nonconvergence": False,
+                          }}
 
 # Set up the non-linear problem
 problem = NonlinearVariationalProblem(F, u, bc, J=J)
+problem.set_bounds(umin, umax)
 
 # Set up the non-linear solver
 solver  = NonlinearVariationalSolver(problem)
@@ -93,7 +99,7 @@ solver.parameters.update(snes_solver_parameters)
 info(solver.parameters, True)
 
 # Solve the problem
-(iter, converged) = solver.solve(umin, umax)
+(iter, converged) = solver.solve()
 
 # Check for convergence
 if not converged:

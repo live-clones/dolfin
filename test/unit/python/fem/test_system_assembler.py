@@ -21,14 +21,11 @@
 #
 # Modified by Marie E. Rognes 2011
 # Modified by Anders Logg 2011
-#
-# First added:  2011-10-04
-# Last changed: 2014-05-28
 
 import pytest
 import numpy
+import os
 from dolfin import *
-
 from dolfin_utils.test import *
 
 
@@ -74,6 +71,7 @@ def test_cell_assembly():
     assembler.assemble(b)
     assert round(b.norm("l2") - b_l2_norm, 10) == 0
 
+
 def test_cell_assembly_bc():
 
     mesh = UnitCubeMesh(4, 4, 4)
@@ -87,7 +85,7 @@ def test_cell_assembly_bc():
     L = inner(f, v)*dx
 
     A_frobenius_norm = 96.847818767384
-    b_l2_norm =  96.564760289080
+    b_l2_norm = 96.564760289080
 
     # Assemble system
     A, b = assemble_system(a, L, bc)
@@ -121,6 +119,7 @@ def test_cell_assembly_bc():
     assembler.assemble(b)
     assert round(b.norm("l2") - b_l2_norm, 10) == 0
 
+
 def test_facet_assembly():
 
     def test(mesh):
@@ -134,7 +133,8 @@ def test_facet_assembly():
         n = FacetNormal(mesh)
         h = CellSize(mesh)
         h_avg = (h('+') + h('-'))/2
-        f = Expression("500.0*exp(-(pow(x[0] - 0.5, 2) + pow(x[1] - 0.5, 2)) / 0.02)", degree=1)
+        f = Expression("500.0*exp(-(pow(x[0] - 0.5, 2) \
++ pow(x[1] - 0.5, 2)) / 0.02)", degree=1)
 
         # Define bilinear form
         a = dot(grad(v), grad(u))*dx \
@@ -183,24 +183,25 @@ def test_facet_assembly():
 
     parameters["ghost_mode"] = "none"
 
+
 def test_vertex_assembly():
-    
+
     # Create mesh and define function space
     mesh = UnitSquareMesh(32, 32)
     V = FunctionSpace(mesh, "Lagrange", 1)
-    
+
     # Define Dirichlet boundary (x = 0 or x = 1)
     def boundary(x):
         return x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS
-    
+
     def center_func(x):
-        return 0.25 <= x[0] and x[0] <= 0.75 and near(x[1], 0.5) 
-    
+        return 0.25 <= x[0] and x[0] <= 0.75 and near(x[1], 0.5)
+
     # Define domain for point integral
     center_domain = VertexFunction("size_t", mesh, 0)
     center = AutoSubDomain(center_func)
     center.mark(center_domain, 1)
-    dPP = dP[center_domain]
+    dPP = dP(subdomain_data=center_domain)
 
     # Define variational problem
     u = TrialFunction(V)
@@ -211,7 +212,8 @@ def test_vertex_assembly():
 
     with pytest.raises(RuntimeError):
         A, b = assemble_system(a, L)
-    
+
+
 def test_incremental_assembly():
 
     for f in [Constant(0.0), Constant(1e4)]:
@@ -249,6 +251,7 @@ def test_incremental_assembly():
         error = norm(u.vector(), 'linf')
         assert round(error - 0.0, 7) == 0
 
+
 @skip_in_parallel
 def test_domains():
 
@@ -271,7 +274,7 @@ def test_domains():
     x = Function(V)
     x.vector()[:] = 30.0
 
-    dx = Measure("dx")[sub_domains]
+    dx = Measure("dx", subdomain_data=sub_domains)
     # the forms
     a = v*u*dx(1) + 2*v*u*dx(2)
     L = v*Constant(1.0)*dx(1) + v*Constant(2.0)*dx(2)
@@ -305,41 +308,130 @@ def test_domains():
     error = norm(x.vector(), 'linf')
     assert round(error - 0.0, 7) == 0
 
+
 @skip_in_parallel
-def test_facet_assembly_cellwise_insertion():
+def test_facet_assembly_cellwise_insertion(filedir):
 
-    mesh = UnitIntervalMesh(10)
+    def run_test(mesh):
+        c_f = FunctionSpace(mesh, "DG", 0)
+        v = Constant((-1.0,))
+        dt = Constant(1.0)
 
-    c_f = FunctionSpace(mesh, "DG", 0)
-    v = Constant((-1.0,))
-    dt = Constant(1.0)
+        c_t = TestFunction(c_f)
+        c_a = TrialFunction(c_f)
 
-    c_t = TestFunction(c_f)
-    c_a = TrialFunction(c_f)
+        n = FacetNormal(mesh)
+        vn = dot(v, n)
+        vout = 0.5*(vn + abs(vn))
 
-    n = FacetNormal(mesh)
-    vn = dot(v, n)
-    vout = 0.5*(vn + abs(vn))
+        # forms:
+        # a has no facet integrals
+        a = c_t*c_a*dx
+        # L has facet integrals so we end up in facet wise assembly
+        L = c_t('+')*vout('+')*dt('+')*dS + c_t('-')*vout('-')*dt('-')*dS  \
+            + c_t*vout*dt*ds
+        # but have to use cell wise insertion because the sparsity
+        # pattern doesn't support the macro element
 
-    # forms:
-    # a has no facet integrals
-    a = c_t*c_a*dx
-    # L has facet integrals so we end up in facet wise assembly
-    L = c_t('+')*vout('+')*dt('+')*dS + c_t('-')*vout('-')*dt('-')*dS  \
-        + c_t*vout*dt*ds
-    # but have to use cell wise insertion because the sparsity
-    # pattern doesn't support the macro element
+        A = Matrix()
+        b = Vector()
 
+        assembler = SystemAssembler(a, L)
+        assembler.assemble(A, b)
+
+        A_frobenius_norm = ((0.1**2)*10)**0.5
+        A_linf_norm = 0.1
+        b_l2_norm = 10.0**0.5
+        b_linf_norm = 1.0
+
+        assert round(A.norm("frobenius") - A_frobenius_norm, 10) == 0
+        assert round(b.norm("l2") - b_l2_norm, 10) == 0
+        assert round(A.norm("linf") - A_linf_norm, 10) == 0
+        assert round(b.norm("linf") - b_linf_norm, 10) == 0
+
+        x = Function(c_f)
+        x.vector()[:] = 30.0
+
+        solver_worked = True
+        try:
+            solve(A, x.vector(), b)
+        except:
+            solver_worked = False
+        assert solver_worked
+
+        x.vector()[:] -= 10.0
+        error = norm(x.vector(), 'linf')
+        assert round(error - 0.0, 7) == 0
+
+    # Run tests
+    run_test(UnitIntervalMesh(10))
+    run_test(Mesh(os.path.join(filedir, "gmsh_unit_interval.xml")))
+
+
+def test_non_square_assembly():
+    mesh = UnitSquareMesh(14, 14)
+
+    def bound(x):
+        return (x[0] == 0)
+
+    # Assemble four blocks in VxV, VxQ, QxV and VxV
+    P2 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    P1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    Q = FunctionSpace(mesh, P1)
+    V = FunctionSpace(mesh, P2)
+    u = TrialFunction(V)
+    v = TestFunction(V)
+    p = TrialFunction(Q)
+    q = TestFunction(Q)
+
+    a00 = inner(grad(u), grad(v))*dx
+    a01 = dot(grad(p), v)*dx
+    a10 = q*div(u)*dx
+    a11 = p*q*dx
+    L0 = dot(Constant((0.0, 0.0)), v)*dx
+    L1 = Constant(0.0)*q*dx
+    bc = DirichletBC(V.sub(0), Constant(1.0), bound)
+
+    assembler = SystemAssembler(a00, L0, bc)
     A = Matrix()
     b = Vector()
+    assembler.assemble(A, b)
+    Anorm1 = A.norm("frobenius")**2
 
-    assembler = SystemAssembler(a, L)
+    assembler = SystemAssembler(a01, L0, bc)
+    A = Matrix()
+    assembler.add_values = True
+    assembler.assemble(A, b)
+    Anorm1 += A.norm("frobenius")**2
+    bnorm1 = b.norm("l2")**2
+
+    assembler = SystemAssembler(a10, L1, bc)
+    A = Matrix()
+    b = Vector()
+    assembler.assemble(A, b)
+    Anorm1 += A.norm("frobenius")**2
+
+    assembler = SystemAssembler(a11, L1, bc)
+    A = Matrix()
+    assembler.add_values = True
+    assembler.assemble(A, b)
+    Anorm1 += A.norm("frobenius")**2
+    bnorm1 += b.norm("l2")**2
+
+    # Same problem as a MixedFunctionSpace
+    W = FunctionSpace(mesh, P2*P1)
+    u, p = TrialFunctions(W)
+    v, q = TestFunctions(W)
+
+    a = inner(grad(u), grad(v))*dx + dot(grad(p), v)*dx + q*div(u)*dx + p*q*dx
+    L = dot(Constant((0.0, 0.0)), v)*dx + Constant(0.0)*q*dx
+    bc = DirichletBC(W.sub(0).sub(0), Constant(1.0), bound)
+    assembler = SystemAssembler(a, L, bc)
+    A = Matrix()
+    b = Vector()
     assembler.assemble(A, b)
 
-    x = Function(c_f)
-    x.vector()[:] = 30.0
-    solve(A, x.vector(), b)
-
-    x.vector()[:] -= 10.0
-    error = norm(x.vector(), 'linf')
-    assert round(error - 0.0, 7) == 0
+    bnorm2 = b.norm("l2")**2
+    Anorm2 = A.norm("frobenius")**2
+    assert round(1.0 - bnorm1/bnorm2, 10) == 0
+    assert round(1.0 - Anorm1/Anorm2, 10) == 0

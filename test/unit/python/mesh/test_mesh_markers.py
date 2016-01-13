@@ -35,15 +35,19 @@ def test_subdomain_marking():
     class F0(SubDomain):
         def inside(self, x, inside):
             return near(x[0], 0.0)
+
     class F1(SubDomain):
         def inside(self, x, inside):
             return near(x[0], 1.0)
+
     class F2(SubDomain):
         def inside(self, x, inside):
             return near(x[1], 0.0)
+
     class F3(SubDomain):
         def inside(self, x, inside):
             return near(x[1], 1.0)
+
     class F4(SubDomain):
         def inside(self, x, inside):
             return near(x[2], 0.0)
@@ -63,3 +67,14 @@ def test_subdomain_marking():
 
     # FIXME: Add test here
     assert 0 == 0
+
+
+def test_domain_markers():
+    mesh = UnitSquareMesh(3, 3)
+    mdoms = mesh.domains()
+    ret = mdoms.set_marker((0, 2), 2)
+    assert ret
+    ret = mdoms.set_marker((0, 3), 2)
+    assert not ret
+
+    assert mdoms.get_marker(0, 2) == 3

@@ -7,14 +7,6 @@
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
-// Instantiate uBLAS template classes
-// ---------------------------------------------------------------------------
-%template(uBLASSparseMatrix) dolfin::uBLASMatrix<boost::numeric::ublas::compressed_matrix<double, boost::numeric::ublas::row_major> >;
-%template(uBLASDenseMatrix) dolfin::uBLASMatrix<boost::numeric::ublas::matrix<double> >;
-%template(uBLASSparseFactory) dolfin::uBLASFactory<boost::numeric::ublas::compressed_matrix<double, boost::numeric::ublas::row_major> >;
-%template(uBLASDenseFactory) dolfin::uBLASFactory<boost::numeric::ublas::matrix<double> >;
-
-// ---------------------------------------------------------------------------
 // SLEPc specific extension code
 // ---------------------------------------------------------------------------
 #ifdef HAS_SLEPC
@@ -229,12 +221,12 @@ def la_index_dtype():
             # No test for equal lengths because this is checked by DOLFIN in _assign
             if isinstance(values, GenericVector) or isscalar(values):
                 self._assign(values)
-                return 
+                return
             elif isinstance(values, ndarray):
                 indices = arange(self.local_size(), dtype=la_index_dtype())
                 self[indices] = values
                 return
-        
+
         raise IndexError("can only set full slices v[:]")
 
     def __getslice__(self, i, j):
@@ -273,7 +265,7 @@ def la_index_dtype():
         if not ((0<=indices).all() and (indices<self.local_size()).all()):
             raise IndexError("expected indices to be in [0..{}]".format(\
                 self.local_size()))
-        
+
         return indices
 
     def __getitem__(self, indices):
@@ -286,17 +278,17 @@ def la_index_dtype():
                     indices.step is None):
                 raise IndexError("can only return full slices v[:]")
             return self.__getslice__(0, len(self))
-                
+
         elif isinstance(indices, (int, integer, long)):
             indices = array([indices], dtype=la_index_dtype())
 
         indices = self._check_indices(indices)
-        
+
         values = zeros(len(indices), dtype=float_)
         if len(values)>0:
             self.get_local(values, indices)
         return values
-        
+
     def __setitem__(self, indices, values):
         """Set values corresponding to the given local indices
 
@@ -313,7 +305,7 @@ def la_index_dtype():
                     raise IndexError("can only set full slices v[:]")
                 self.__setslice__(0, len(self), values)
                 return
-                
+
             # If indices is a single integer
             elif isinstance(indices, (int, integer, long)):
                 if isscalar(values):
@@ -332,21 +324,21 @@ def la_index_dtype():
 
             elif isinstance(values, GenericVector):
                 values = values.get_local()
-                    
+
             elif isinstance(values, ndarray):
                 values = asarray(values, dtype=float_)
-                    
+
             else:
                 raise TypeError("provide a scalar, GenericVector or numpy array of "\
                                 "float to set items in Vector")
-            
+
             if len(values) != len(indices):
                 raise IndexError("expected same size of indices and values")
 
             # If values passed.
             if len(values) > 0:
                 self.set_local(values, indices)
-                
+
         finally:
             # Always call apply insert to avoid MPI dead locks if one or more
             # ranks fails
@@ -492,35 +484,72 @@ def la_index_dtype():
 }
 
 // ---------------------------------------------------------------------------
-// Modify the GenericMatrix interface
+// Modify the EigenMatrix interface
 // ---------------------------------------------------------------------------
-%feature("docstring") dolfin::GenericMatrix::_scale "Missing docstring";
-%feature("docstring") dolfin::GenericMatrix::_data "Missing docstring";
-%extend dolfin::GenericMatrix
+%feature("docstring") dolfin::EigenMatrix::_data "Missing docstring";
+%extend dolfin::EigenMatrix
 {
-  void _scale(double a)
-  {
-    (*self)*=a;
-  }
-
   PyObject* _data()
   {
-    PyObject* rows = %make_numpy_array(1, size_t)(self->size(0)+1,
-                                                 boost::tuples::get<0>(self->data()),
-                                                 false);
-    PyObject* cols = %make_numpy_array(1, size_t)(boost::tuples::get<3>(self->data()),
-                                                 boost::tuples::get<1>(self->data()),
-                                                 false);
-    PyObject* values = %make_numpy_array(1, double)(boost::tuples::get<3>(self->data()),
-                                                   boost::tuples::get<2>(self->data()),
-                                                   false);
+    PyObject* rows = %make_numpy_array(1, int)(self->size(0)+1,
+                                               std::get<0>(self->data()),
+                                               false);
+    PyObject* cols = %make_numpy_array(1, int)(std::get<3>(self->data()),
+                                               std::get<1>(self->data()),
+                                               false);
+    PyObject* values = %make_numpy_array(1, double)(std::get<3>(self->data()),
+                                                    std::get<2>(self->data()),
+                                                    false);
 
     if ( rows == NULL || cols == NULL || values == NULL)
       return NULL;
 
     return Py_BuildValue("NNN", rows, cols, values);
   }
+
+  %pythoncode
+  %{
+    def data(self, deepcopy=True):
+        """
+        Return arrays to underlaying compresssed row/column storage data
+
+        This method is only available for the Eigen linear algebra backend.
+
+        *Arguments*
+            deepcopy
+                Return a copy of the data. If set to False a reference
+                to the Matrix need to be kept, otherwise the data will be
+                destroyed together with the destruction of the Matrix
+        """
+        rows, cols, values = self._data()
+        if deepcopy:
+            rows, cols, values = rows.astype(int), cols.astype(int), values.copy()
+        else:
+            _attach_base_to_numpy_array(rows, self)
+            _attach_base_to_numpy_array(cols, self)
+            _attach_base_to_numpy_array(values, self)
+
+        return rows, cols, values
+
+    def sparray(self):
+        "Return a scipy.sparse representation of Matrix"
+        from scipy.sparse import csr_matrix
+        data = self.data(deepcopy=True)
+        C = csr_matrix((data[2], data[1], data[0]))
+        return C
+  %}
+}
 // ---------------------------------------------------------------------------
+// Modify the GenericMatrix interface
+// ---------------------------------------------------------------------------
+%feature("docstring") dolfin::GenericMatrix::_scale "Missing docstring";
+%extend dolfin::GenericMatrix
+{
+  void _scale(double a)
+  {
+    (*self)*=a;
+  }
+  // -------------------------------------------------------------------------
   %pythoncode
   %{
     def __is_compatible(self,other):
@@ -540,38 +569,9 @@ def la_index_dtype():
             A[i, column] = values
         return A
 
-    def sparray(self):
-        "Return a scipy.sparse representation of Matrix"
-        from scipy.sparse import csr_matrix
-        data = self.data(deepcopy=True)
-        C = csr_matrix((data[2], data[1], data[0]))
-        return C
 
-    def data(self, deepcopy=True):
-        """
-        Return arrays to underlaying compresssed row/column storage data
-
-        This method is only available for the uBLAS linear algebra
-        backend.
-
-        *Arguments*
-            deepcopy
-                Return a copy of the data. If set to False a reference
-                to the Matrix need to be kept, otherwise the data will be
-                destroyed together with the destruction of the Matrix
-        """
-        rows, cols, values = self._data()
-        if deepcopy:
-            rows, cols, values = rows.astype(int), cols.astype(int), values.copy()
-        else:
-            _attach_base_to_numpy_array(rows, self)
-            _attach_base_to_numpy_array(cols, self)
-            _attach_base_to_numpy_array(values, self)
-
-        return rows, cols, values
-
-    # FIXME: Getting matrix entries need to be carefully examined, especially for
-    #        parallel objects.
+    # FIXME: Getting matrix entries need to be carefully examined, especially
+    #          for parallel objects.
     """
     def __getitem__(self,indices):
         from numpy import ndarray
@@ -793,7 +793,7 @@ def la_index_dtype():
 // ---------------------------------------------------------------------------
 // Macro with C++ and Python extension code for GenericVector types in PyDOLFIN
 // that are able to return a pointer to the underlaying contigious data
-// only used for the uBLAS backend
+// only used for the Eigen backend
 // ---------------------------------------------------------------------------
 %define LA_VEC_DATA_ACCESS(VEC_TYPE)
 %feature("docstring") dolfin::VEC_TYPE::_data "Missing docstring";
@@ -810,7 +810,7 @@ def la_index_dtype():
         """
         Return an array to underlaying data
 
-        This method is only available for the uBLAS linear algebra
+        This method is only available for the Eigen linear algebra
         backend.
 
         *Arguments*
@@ -852,8 +852,7 @@ _as_backend_type_map[TENSOR_TYPE] = _as_backend_type_ ## TENSOR_TYPE
 // ---------------------------------------------------------------------------
 // Run the data macro
 // ---------------------------------------------------------------------------
-LA_VEC_DATA_ACCESS(uBLASVector)
-LA_VEC_DATA_ACCESS(Vector)
+LA_VEC_DATA_ACCESS(EigenVector)
 
 // ---------------------------------------------------------------------------
 // Define Python lookup maps for as_backend_typeing
@@ -868,43 +867,25 @@ _matrix_vector_mul_map = {}
 // ---------------------------------------------------------------------------
 // Run the downcast macro
 // ---------------------------------------------------------------------------
-AS_BACKEND_TYPE_MACRO(uBLASVector)
-AS_BACKEND_TYPE_MACRO(uBLASLinearOperator)
-
-// NOTE: Silly SWIG force us to describe the type explicit for uBLASMatrices
-%inline %{
-bool _has_type_uBLASDenseMatrix(const std::shared_ptr<dolfin::LinearAlgebraObject> tensor)
-{ return dolfin::has_type<dolfin::uBLASMatrix<boost::numeric::ublas::matrix<double> > >(*tensor); }
-
-std::shared_ptr<dolfin::uBLASMatrix<boost::numeric::ublas::matrix<double> > > _as_backend_type_uBLASDenseMatrix(const std::shared_ptr<dolfin::LinearAlgebraObject> tensor)
-{ return dolfin::as_type<dolfin::uBLASMatrix<boost::numeric::ublas::matrix<double> > >(tensor); }
-
-bool _has_type_uBLASSparseMatrix(const std::shared_ptr<dolfin::LinearAlgebraObject> tensor)
-{ return dolfin::has_type<dolfin::uBLASMatrix<boost::numeric::ublas::compressed_matrix<double, boost::numeric::ublas::row_major> > >(*tensor); }
-
-const std::shared_ptr<dolfin::uBLASMatrix<boost::numeric::ublas::compressed_matrix<double, boost::numeric::ublas::row_major> > > _as_backend_type_uBLASSparseMatrix(const std::shared_ptr<dolfin::LinearAlgebraObject> tensor)
-{ return dolfin::as_type<dolfin::uBLASMatrix<boost::numeric::ublas::compressed_matrix<double, boost::numeric::ublas::row_major> > >(tensor); }
-%}
-
-%pythoncode %{
-_has_type_map[uBLASDenseMatrix] = _has_type_uBLASDenseMatrix
-_as_backend_type_map[uBLASDenseMatrix] = _as_backend_type_uBLASDenseMatrix
-_has_type_map[uBLASSparseMatrix] = _has_type_uBLASSparseMatrix
-_as_backend_type_map[uBLASSparseMatrix] = _as_backend_type_uBLASSparseMatrix
-%}
-
-// ---------------------------------------------------------------------------
-// Fill lookup map
-// ---------------------------------------------------------------------------
-%pythoncode %{
-_matrix_vector_mul_map[uBLASSparseMatrix] = [uBLASVector]
-_matrix_vector_mul_map[uBLASDenseMatrix] = [uBLASVector]
-_matrix_vector_mul_map[uBLASLinearOperator] = [uBLASVector]
-%}
 
 // ---------------------------------------------------------------------------
 // Run backend specific macros
 // ---------------------------------------------------------------------------
+AS_BACKEND_TYPE_MACRO(EigenVector)
+AS_BACKEND_TYPE_MACRO(EigenMatrix)
+//AS_BACKEND_TYPE_MACRO(EigenLinearOperator)
+%pythoncode %{
+_matrix_vector_mul_map[EigenMatrix] = [EigenVector]
+%}
+
+#ifdef HAS_TRILINOS
+AS_BACKEND_TYPE_MACRO(TpetraVector)
+AS_BACKEND_TYPE_MACRO(TpetraMatrix)
+%pythoncode %{
+_matrix_vector_mul_map[TpetraMatrix] = [TpetraVector]
+%}
+#endif
+
 #ifdef HAS_PETSC
 AS_BACKEND_TYPE_MACRO(PETScVector)
 AS_BACKEND_TYPE_MACRO(PETScMatrix)
@@ -953,6 +934,13 @@ _matrix_vector_mul_map[PETScLinearOperator] = [PETScVector]
 {
   void snes(SNES& snes)
   { snes = self->snes(); }
+}
+
+%feature("docstring") dolfin::PETScTAOSolver::tao "Return petsc4py representation of PETSc TAO solver";
+%extend dolfin::PETScTAOSolver
+{
+  void tao(Tao& tao)
+  { tao = self->tao(); }
 }
 
 #else
@@ -1006,6 +994,16 @@ _matrix_vector_mul_map[PETScLinearOperator] = [PETScVector]
     %}
 }
 
+%extend dolfin::PETScTAOSolver {
+    %pythoncode %{
+        def tao(self):
+            common.dolfin_error("dolfin/swig/la/post.i",
+                                "access PETScTAOSolver objects in python",
+                                "dolfin must be configured with petsc4py enabled")
+            return None
+    %}
+}
+
 #endif  // HAS_PETSC4PY
 #endif  // HAS_PETSC
 
@@ -1034,8 +1032,9 @@ _matrix_vector_mul_map[PETScLinearOperator] = [PETScVector]
 #endif  // HAS_PETSC
 
 // ---------------------------------------------------------------------------
-// Dynamic wrappers for GenericTensor::as_backend_type and GenericTensor::has_type,
-// using dict of tensor types to select from C++ template instantiations
+// Dynamic wrappers for GenericTensor::as_backend_type and
+// GenericTensor::has_type, using dict of tensor types to select from
+// C++ template instantiations
 // ---------------------------------------------------------------------------
 %pythoncode %{
 def get_tensor_type(tensor):
@@ -1045,7 +1044,7 @@ def get_tensor_type(tensor):
             return k
     common.dolfin_error("dolfin/swig/la/post.i",
                         "extract backend type for %s" % type(tensor).__name__,
-                        "This apparently doesn't work for uBLAS..")
+                        "Unable to get tensor type in Python layer")
 
 def has_type(tensor, subclass):
     "Return wether tensor is of the given subclass."

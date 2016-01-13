@@ -69,7 +69,7 @@ Mesh::Mesh(MPI_Comm comm) : Variable("mesh", "DOLFIN mesh"),
 //-----------------------------------------------------------------------------
 Mesh::Mesh(const Mesh& mesh) : Variable("mesh", "DOLFIN mesh"),
                                Hierarchical<Mesh>(*this), _ordered(false),
-                               _mpi_comm(MPI_COMM_WORLD)
+                               _mpi_comm(mesh.mpi_comm())
 {
   *this = mesh;
 }
@@ -273,11 +273,8 @@ bool Mesh::ordered() const
 //-----------------------------------------------------------------------------
 dolfin::Mesh Mesh::renumber_by_color() const
 {
-  std::vector<std::size_t> coloring_type;
   const std::size_t D = topology().dim();
-  coloring_type.push_back(D);
-  coloring_type.push_back(0);
-  coloring_type.push_back(D);
+  const std::vector<std::size_t> coloring_type = {{D, 0, D}};
   return MeshRenumbering::renumber_by_color(*this, coloring_type);
 }
 //-----------------------------------------------------------------------------
@@ -294,21 +291,6 @@ void Mesh::rotate(double angle, std::size_t axis)
 void Mesh::rotate(double angle, std::size_t axis, const Point& point)
 {
   MeshTransformation::rotate(*this, angle, axis, point);
-}
-//-----------------------------------------------------------------------------
-std::shared_ptr<MeshDisplacement> Mesh::move(BoundaryMesh& boundary)
-{
-  return ALE::move(*this, boundary);
-}
-//-----------------------------------------------------------------------------
-std::shared_ptr<MeshDisplacement> Mesh::move(Mesh& mesh)
-{
-  return ALE::move(*this, mesh);
-}
-//-----------------------------------------------------------------------------
-void Mesh::move(const GenericFunction& displacement)
-{
-  ALE::move(*this, displacement);
 }
 //-----------------------------------------------------------------------------
 void Mesh::smooth(std::size_t num_iterations)
@@ -330,10 +312,8 @@ const std::vector<std::size_t>& Mesh::color(std::string coloring_type) const
 {
   // Define graph type
   const std::size_t dim = MeshColoring::type_to_dim(coloring_type, *this);
-  std::vector<std::size_t> _coloring_type;
-  _coloring_type.push_back(topology().dim());
-  _coloring_type.push_back(dim);
-  _coloring_type.push_back(topology().dim());
+  const std::vector<std::size_t> _coloring_type
+    = {{topology().dim(), dim, topology().dim()}};
 
   return color(_coloring_type);
 }
@@ -343,7 +323,7 @@ Mesh::color(std::vector<std::size_t> coloring_type) const
 {
   // Find color data
   std::map<std::vector<std::size_t>, std::pair<std::vector<std::size_t>,
-           std::vector<std::vector<std::size_t> > > >::const_iterator
+           std::vector<std::vector<std::size_t>>>>::const_iterator
     coloring_data = this->topology().coloring.find(coloring_type);
 
   if (coloring_data != this->topology().coloring.end())
@@ -460,20 +440,24 @@ const std::vector<int>& Mesh::cell_orientations() const
 //-----------------------------------------------------------------------------
 void Mesh::init_cell_orientations(const Expression& global_normal)
 {
-  // Check that global_normal has the right size
-  if (global_normal.value_size() != 3)
+  std::size_t gdim = geometry().dim();
+  std::size_t ndim = global_normal.value_size();
+
+  // Check that global_normal has the "right" size
+  // Allowing 3 if gdim < 3 to avoid breaking legacy code.
+  if (ndim < gdim && ndim <= 3)
   {
      dolfin_error("Mesh.cpp",
                   "initialize cell orientations",
-                  "Global normal value size is assumed to be 3 (not %d)",
-                  global_normal.value_size());
+                  "Global normal value size is %d, smaller than gdim (%d)",
+                  ndim, gdim);
   }
 
   // Resize storage
   _cell_orientations.resize(num_cells());
 
   // Set orientation
-  Array<double> values(3);
+  Array<double> values(ndim);
   Point up;
   for (CellIterator cell(*this); !cell.end(); ++cell)
   {
@@ -484,8 +468,10 @@ void Mesh::init_cell_orientations(const Expression& global_normal)
     global_normal.eval(values, x);
 
     // Extract values as Point
-    for (unsigned int i = 0; i < 3; i++)
+    for (unsigned int i = 0; i < ndim; i++)
       up[i] = values[i];
+    for (unsigned int i = ndim; i < gdim; i++)
+      up[i] = 0.0;
 
     // Set orientation as orientation relative to up direction.
     dolfin_assert(cell->index() < _cell_orientations.size());

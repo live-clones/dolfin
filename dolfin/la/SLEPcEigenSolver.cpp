@@ -23,7 +23,7 @@
 #ifdef HAS_SLEPC
 
 #include <slepcversion.h>
-#include <dolfin/log/dolfin_log.h>
+#include <dolfin/log/log.h>
 #include <dolfin/common/MPI.h>
 #include <dolfin/common/NoDeleter.h>
 #include "PETScMatrix.h"
@@ -32,32 +32,6 @@
 
 using namespace dolfin;
 
-//-----------------------------------------------------------------------------
-SLEPcEigenSolver::SLEPcEigenSolver(const PETScMatrix& A)
-  : _matA(reference_to_no_delete_pointer(const_cast<PETScMatrix&>(A)))
-{
-  dolfin_assert(A.size(0) == A.size(1));
-
-  // Set default parameter values
-  parameters = default_parameters();
-
-  // Set up solver environment
-  EPSCreate(PETSC_COMM_WORLD, &_eps);
-}
-//-----------------------------------------------------------------------------
-SLEPcEigenSolver::SLEPcEigenSolver(const PETScMatrix& A, const PETScMatrix& B)
-  : _matA(reference_to_no_delete_pointer(A)), _matB(reference_to_no_delete_pointer(B))
-{
-  dolfin_assert(A.size(0) == A.size(1));
-  dolfin_assert(B.size(0) == A.size(0));
-  dolfin_assert(B.size(1) == A.size(1));
-
-  // Set default parameter values
-  parameters = default_parameters();
-
-  // Set up solver environment
-  EPSCreate(PETSC_COMM_WORLD, &_eps);
-}
 //-----------------------------------------------------------------------------
 SLEPcEigenSolver::SLEPcEigenSolver(std::shared_ptr<const PETScMatrix> A)
   : _matA(A)
@@ -139,10 +113,14 @@ void SLEPcEigenSolver::solve(std::size_t n)
   {
     KSP ksp;
     ST st;
-    EPSMonitorSet(_eps, EPSMonitorAll, NULL, NULL);
+    EPSMonitorSet(_eps, EPSMonitorAll,
+                  PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)_eps)),
+                  NULL);
     EPSGetST(_eps, &st);
     STGetKSP(st, &ksp);
-    KSPMonitorSet(ksp, KSPMonitorDefault, NULL, NULL);
+    KSPMonitorSet(ksp, KSPMonitorDefault,
+                  PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)),
+                  NULL);
     EPSView(_eps, PETSC_VIEWER_STDOUT_SELF);
   }
 
@@ -159,11 +137,7 @@ void SLEPcEigenSolver::solve(std::size_t n)
   dolfin::la_index num_iterations = 0;
   EPSGetIterationNumber(_eps, &num_iterations);
 
-  #if SLEPC_VERSION_MAJOR == 3 && SLEPC_VERSION_MINOR < 4
-  const EPSType eps_type = NULL;
-  #else
   EPSType eps_type = NULL;
-  #endif
   EPSGetType(_eps, &eps_type);
   log(PROGRESS, "Eigenvalue solver (%s) converged in %d iterations.",
       eps_type, num_iterations);

@@ -43,6 +43,7 @@ namespace dolfin
   template <typename T> class MeshFunction;
   template <typename T> class MeshValueCollection;
   class Parameters;
+  class Table;
 
   class GenericFile
   {
@@ -71,6 +72,7 @@ namespace dolfin
     virtual void operator>> (MeshValueCollection<double>& mesh_markers);
     virtual void operator>> (MeshValueCollection<bool>& mesh_markers);
     virtual void operator>> (Parameters& parameters);
+    virtual void operator>> (Table& table);
     virtual void operator>> (std::vector<int>& x);
     virtual void operator>> (std::vector<std::size_t>& x);
     virtual void operator>> (std::vector<double>& x);
@@ -110,6 +112,7 @@ namespace dolfin
     //virtual void operator<< (const std::pair<const std::vector<const Function*>, double> us);
 
     virtual void operator<< (const Parameters& parameters);
+    virtual void operator<< (const Table& table);
     virtual void operator<< (const std::vector<int>& x);
     virtual void operator<< (const std::vector<std::size_t>& x);
     virtual void operator<< (const std::vector<double>& x);

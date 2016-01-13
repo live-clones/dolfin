@@ -38,14 +38,6 @@ using namespace dolfin;
 
 //-----------------------------------------------------------------------------
 LinearVariationalSolver::
-LinearVariationalSolver(LinearVariationalProblem& problem)
-  : _problem(reference_to_no_delete_pointer(problem))
-{
-  // Set parameters
-  parameters = default_parameters();
-}
-//-----------------------------------------------------------------------------
-LinearVariationalSolver::
 LinearVariationalSolver(std::shared_ptr<LinearVariationalProblem> problem)
   : _problem(problem)
 {
@@ -66,10 +58,10 @@ void LinearVariationalSolver::solve()
 
   // Get problem data
   dolfin_assert(_problem);
-  std::shared_ptr<const Form> a(_problem->bilinear_form());
-  std::shared_ptr<const Form> L(_problem->linear_form());
-  std::shared_ptr<Function> u(_problem->solution());
-  std::vector<std::shared_ptr<const DirichletBC>> bcs(_problem->bcs());
+  const auto a = _problem->bilinear_form();
+  const auto L = _problem->linear_form();
+  auto u = _problem->solution();
+  auto bcs = _problem->bcs();
 
   dolfin_assert(a);
   dolfin_assert(L);
@@ -91,23 +83,8 @@ void LinearVariationalSolver::solve()
                    "Empty linear forms cannot be used with symmetric assembly");
     }
 
-    // Need to cast to DirichletBC to use assemble_system
-    std::vector<const DirichletBC*> _bcs;
-    for (std::size_t i = 0; i < bcs.size(); i++)
-    {
-      dolfin_assert(bcs[i]);
-      const DirichletBC* _bc = dynamic_cast<const DirichletBC*>(bcs[i].get());
-      if (!_bc)
-      {
-        dolfin_error("LinearVariationalSolver.cpp",
-                     "apply boundary condition in linear variational solver",
-                     "Only Dirichlet boundary conditions may be used for symmetric systems");
-      }
-      _bcs.push_back(_bc);
-    }
-
     // Assemble linear system and apply boundary conditions
-    SystemAssembler assembler(a, L, _bcs);
+    SystemAssembler assembler(a, L, bcs);
     assembler.assemble(*A, *b);
   }
   else
@@ -142,11 +119,11 @@ void LinearVariationalSolver::solve()
     info(*A, true);
 
   // Get list of available methods
-  std::vector<std::pair<std::string, std::string>>
+  std::map<std::string, std::string>
     lu_methods = u->vector()->factory().lu_solver_methods();
-  std::vector<std::pair<std::string, std::string>>
+  std::map<std::string, std::string>
     krylov_methods = u->vector()->factory().krylov_solver_methods();
-  std::vector<std::pair<std::string, std::string>>
+  std::map<std::string, std::string>
     preconditioners = u->vector()->factory().krylov_solver_preconditioners();
 
   // Choose linear solver
@@ -154,15 +131,10 @@ void LinearVariationalSolver::solve()
       || LinearSolver::in_list(solver_type, lu_methods))
   {
     std::string lu_method;
-
     if (solver_type == "direct" || solver_type == "lu")
-    {
       lu_method = "default";
-    }
     else
-    {
       lu_method = solver_type;
-    }
 
     // Solve linear system
     LUSolver solver(lu_method);

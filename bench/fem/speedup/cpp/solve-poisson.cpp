@@ -32,7 +32,6 @@ int main(int argc, char* argv[])
   #ifdef HAS_PETSC
 
   //parameters["mesh_partitioner"] = "SCOTCH";
-  //parameters["linear_algebra_backend"] = "Epetra";
   parameters["linear_algebra_backend"] = "PETSc";
 
   // Parse command-line arguments
@@ -45,14 +44,14 @@ int main(int argc, char* argv[])
 
   // Create mesh and function space
   UnitCubeMesh mesh(n, n, n);
-  Poisson::FunctionSpace V(mesh);
+  auto V = std::make_shared<const Poisson::FunctionSpace>(mesh);
 
   // MPI communicator
   const MPI_Comm comm = mesh.mpi_comm();
 
   // Define boundary condition
-  Constant u0(0.0);
-  DomainBoundary boundary;
+  auto u0 = std::make_shared<const Constant>(0.0);
+  auto boundary = std::make_shared<const DomainBoundary>();
   DirichletBC bc(V, u0, boundary);
 
   // Define variational problem
@@ -64,12 +63,17 @@ int main(int argc, char* argv[])
 
   // Create preconditioner and linear solver
   //TrilinosPreconditioner pc("amg_ml");
-  //EpetraKrylovSolver solver("gmres", pc);
   //PETScPreconditioner pc("amg_hypre");
   //PETScPreconditioner pc("amg_ml");
   //PETScKrylovSolver solver("gmres", pc);
 
-  PETScLUSolver solver;
+  // Pick solver; UMFPACK runs out of memory even on 24GB RAM machine
+  std::string method = "lu";
+  if (has_lu_solver_method("mumps"))
+    method = "mumps";
+  else if (has_lu_solver_method("superlu_dist"))
+    method = "superlu_dist";
+  PETScLUSolver solver(method);
 
   // Assemble matrix and vector, and apply Dirichlet boundary conditions
   Matrix A;

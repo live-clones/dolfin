@@ -71,7 +71,8 @@ void VTKWriter::write_cell_data(const Function& u, pugi::xml_document& xml_doc,
   dolfin_assert(u.function_space()->dofmap());
   const Mesh& mesh = *u.function_space()->mesh();
   const GenericDofMap& dofmap = *u.function_space()->dofmap();
-  const std::size_t num_cells = mesh.num_cells();
+  const std::size_t tdim = mesh.topology().dim();
+  const std::size_t num_cells = mesh.topology().ghost_offset(tdim);
 
   std::string encode_string;
   if (!binary)
@@ -165,12 +166,14 @@ void VTKWriter::write_cell_data(const Function& u, pugi::xml_document& xml_doc,
   for (CellIterator cell(mesh); !cell.end(); ++cell)
   {
     // Tabulate dofs
-    const std::vector<dolfin::la_index>& dofs = dofmap.cell_dofs(cell->index());
-    for(std::size_t i = 0; i < dofmap.cell_dimension(cell->index()); ++i)
+    const ArrayView<const dolfin::la_index>
+      dofs = dofmap.cell_dofs(cell->index());
+    for(std::size_t i = 0; i < dofmap.num_element_dofs(cell->index()); ++i)
       dof_set.push_back(dofs[i]);
 
     // Add local dimension to cell offset and increment
-    *(cell_offset + 1) = *(cell_offset) + dofmap.cell_dimension(cell->index());
+    *(cell_offset + 1)
+      = *(cell_offset) + dofmap.num_element_dofs(cell->index());
     ++cell_offset;
   }
 
@@ -271,7 +274,7 @@ std::string VTKWriter::base64_cell_data(const Mesh& mesh,
 void VTKWriter::write_ascii_mesh(const Mesh& mesh, std::size_t cell_dim,
                                  pugi::xml_document& xml_doc)
 {
-  const std::size_t num_cells = mesh.topology().size(cell_dim);
+  const std::size_t num_cells = mesh.topology().ghost_offset(cell_dim);
   const std::size_t num_cell_vertices = mesh.type().num_vertices(cell_dim);
 
   // Get VTK cell type
@@ -308,10 +311,13 @@ void VTKWriter::write_ascii_mesh(const Mesh& mesh, std::size_t cell_dim,
   data_node.append_attribute("format") = "ascii";
 
   value.str("");
+  std::unique_ptr<CellType>
+    celltype(CellType::create(mesh.type().entity_type(cell_dim)));
+  const std::vector<unsigned int> perm = celltype->vtk_mapping();
   for (MeshEntityIterator c(mesh, cell_dim); !c.end(); ++c)
   {
-    for (VertexIterator v(*c); !v.end(); ++v)
-      value << v->index() << " ";
+    for (unsigned int i = 0; i != c->num_entities(0); ++i)
+      value << c->entities(0)[perm[i]] << " ";
     value << " ";
   }
   value_node = data_node.append_child(pugi::node_pcdata);
@@ -353,10 +359,12 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
   const Mesh& mesh = *functionspace.mesh();
   dolfin_assert(functionspace.dofmap());
   const GenericDofMap& dofmap = *functionspace.dofmap();
+  dolfin_assert(functionspace.element());
+  std::shared_ptr<const dolfin::FiniteElement> element = functionspace.element();
 
   const std::size_t num_cells = mesh.topology().size(cell_dim);
   const std::size_t gdim = mesh.geometry().dim();
-  const std::size_t cdim = dofmap.max_cell_dimension();
+  const std::size_t cdim = dofmap.max_element_dofs();
 
   // Get VTK cell type
   const std::size_t _vtk_cell_type = vtk_cell_type(functionspace, cell_dim);
@@ -370,11 +378,11 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
   std::unordered_map<dolfin::la_index, std::vector<double> > coordinatemap;
   for (CellIterator c(mesh); !c.end(); ++c)
   {
-    c->get_vertex_coordinates(vertexcoords);
-    dofmap.tabulate_coordinates(cellcoords, vertexcoords, *c);
-    const std::vector<dolfin::la_index>& dofs = dofmap.cell_dofs(c->index());
+    c->get_coordinate_dofs(vertexcoords);
+    element->tabulate_dof_coordinates(cellcoords, vertexcoords, *c);
+    const ArrayView<const dolfin::la_index> dofs = dofmap.cell_dofs(c->index());
     // Loop over all dofs on cell
-    for (std::size_t i = 0; i < dofmap.cell_dimension(c->index()); ++i)
+    for (std::size_t i = 0; i < dofmap.num_element_dofs(c->index()); ++i)
     {
       for (std::size_t j = 0; j < gdim; ++j)
         dofcoords[j] = cellcoords[i][j];
@@ -426,8 +434,8 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
   value.str("");
   for (CellIterator c(mesh); !c.end(); ++c)
   {
-    const std::vector<dolfin::la_index>& dofs = dofmap.cell_dofs(c->index());
-    for (std::size_t i = 0; i < dofmap.cell_dimension(c->index()); ++i)
+    const ArrayView<const dolfin::la_index> dofs = dofmap.cell_dofs(c->index());
+    for (std::size_t i = 0; i < dofmap.num_element_dofs(c->index()); ++i)
       value << local_dofmap[dofs[_vtk_cell_order[i]]] << " ";
     value << " ";
   }
@@ -442,7 +450,7 @@ void VTKWriter::write_ascii_mesh(const FunctionSpace& functionspace, std::size_t
 
   value.str("");
   for (std::size_t offsets = 1; offsets <= num_cells; offsets++)
-    value << offsets*(dofmap.cell_dimension(offsets-1)) << " ";
+    value << offsets*(dofmap.num_element_dofs(offsets-1)) << " ";
   value_node = data_node.append_child(pugi::node_pcdata);
   value_node.set_value(value.str().c_str());
 
@@ -508,10 +516,14 @@ void VTKWriter::write_base64_mesh(const Mesh& mesh, std::size_t cell_dim,
   const int size = num_cells*num_cell_vertices;
   std::vector<boost::uint32_t> cell_data(size);
   std::vector<boost::uint32_t>::iterator cell_entry = cell_data.begin();
+
+  std::unique_ptr<CellType>
+    celltype(CellType::create(mesh.type().entity_type(cell_dim)));
+  const std::vector<unsigned int> perm = celltype->vtk_mapping();
   for (MeshEntityIterator c(mesh, cell_dim); !c.end(); ++c)
   {
-    for (VertexIterator v(*c); !v.end(); ++v)
-      *cell_entry++ = v->index();
+    for (unsigned int i = 0; i != c->num_entities(0); ++i)
+      *cell_entry++ = c->entities(0)[perm[i]];
   }
 
   // Create encoded stream
@@ -566,10 +578,12 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   const Mesh& mesh = *functionspace.mesh();
   dolfin_assert(functionspace.dofmap());
   const GenericDofMap& dofmap = *functionspace.dofmap();
+  dolfin_assert(functionspace.element());
+  std::shared_ptr<const dolfin::FiniteElement> element = functionspace.element();
 
   const std::size_t num_cells = mesh.topology().size(cell_dim);
   const std::size_t gdim = mesh.geometry().dim();
-  const std::size_t cdim = dofmap.max_cell_dimension();
+  const std::size_t cdim = dofmap.max_element_dofs();
 
   // Get VTK cell type
   const boost::uint8_t _vtk_cell_type = vtk_cell_type(functionspace, cell_dim);
@@ -583,11 +597,11 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   std::unordered_map<dolfin::la_index, std::vector<double> > coordinatemap;
   for (CellIterator c(mesh); !c.end(); ++c)
   {
-    c->get_vertex_coordinates(vertexcoords);
-    dofmap.tabulate_coordinates(cellcoords, vertexcoords, *c);
-    const std::vector<dolfin::la_index>& dofs = dofmap.cell_dofs(c->index());
+    c->get_coordinate_dofs(vertexcoords);
+    element->tabulate_dof_coordinates(cellcoords, vertexcoords, *c);
+    const ArrayView<const dolfin::la_index> dofs = dofmap.cell_dofs(c->index());
     // Loop over all dofs on cell
-    for (std::size_t i = 0; i < dofmap.cell_dimension(c->index()); ++i)
+    for (std::size_t i = 0; i < dofmap.num_element_dofs(c->index()); ++i)
     {
       for (std::size_t j = 0; j < gdim; ++j)
         dofcoords[j] = cellcoords[i][j];
@@ -646,8 +660,8 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   std::vector<boost::uint32_t>::iterator cell_entry = cell_data.begin();
   for (CellIterator c(mesh); !c.end(); ++c)
   {
-    const std::vector<dolfin::la_index>& dofs = dofmap.cell_dofs(c->index());
-    for (std::size_t i = 0; i < dofmap.cell_dimension(c->index()); ++i)
+    const ArrayView<const dolfin::la_index> dofs = dofmap.cell_dofs(c->index());
+    for (std::size_t i = 0; i < dofmap.num_element_dofs(c->index()); ++i)
       *cell_entry++ = local_dofmap[dofs[_vtk_cell_order[i]]];
   }
 
@@ -666,7 +680,7 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   std::vector<boost::uint32_t> offset_data(num_cells);
   std::vector<boost::uint32_t>::iterator offset_entry = offset_data.begin();
   for (std::size_t offsets = 1; offsets <= num_cells; offsets++)
-    *offset_entry++ = offsets*(dofmap.cell_dimension(offsets-1));
+    *offset_entry++ = offsets*(dofmap.num_element_dofs(offsets-1));
 
   // Create encoded stream
   value.str("");
@@ -697,26 +711,16 @@ boost::uint8_t VTKWriter::vtk_cell_type(const Mesh& mesh,
                                         std::size_t cell_dim)
 {
   // Get cell type
-  CellType::Type cell_type = mesh.type().cell_type();
-  if (mesh.topology().dim() == cell_dim)
-    cell_type = mesh.type().cell_type();
-  else if (mesh.topology().dim() - 1 == cell_dim)
-    cell_type = mesh.type().facet_type();
-  else if (cell_dim == 1)
-    cell_type = CellType::interval;
-  else if (cell_dim == 0)
-    cell_type = CellType::point;
-  else
-  {
-    dolfin_error("VTKWriter.cpp",
-                 "write data to VTK file",
-                 "Can only handle cells, cell facets or points with VTK output for now");
-  }
+  CellType::Type cell_type = mesh.type().entity_type(cell_dim);
 
   // Determine VTK cell type
   boost::uint8_t vtk_cell_type = 0;
   if (cell_type == CellType::tetrahedron)
     vtk_cell_type = 10;
+  else if (cell_type == CellType::hexahedron)
+    vtk_cell_type = 12;
+  else if (cell_type == CellType::quadrilateral)
+    vtk_cell_type = 9;
   else if (cell_type == CellType::triangle)
     vtk_cell_type = 5;
   else if (cell_type == CellType::interval)

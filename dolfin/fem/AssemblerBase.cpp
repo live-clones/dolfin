@@ -31,7 +31,7 @@
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/la/GenericLinearAlgebraFactory.h>
 #include <dolfin/la/TensorLayout.h>
-#include <dolfin/log/dolfin_log.h>
+#include <dolfin/log/log.h>
 #include <dolfin/common/MPI.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/Cell.h>
@@ -63,61 +63,33 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
     tensor_layout = A.factory().create_layout(a.rank());
     dolfin_assert(tensor_layout);
 
-    // Get dimensions
-    std::vector<std::size_t> global_dimensions;
-    std::vector<std::pair<std::size_t, std::size_t>> local_range;
-    std::vector<std::size_t> block_sizes;
+    // Get dimensions and mapping across processes for each dimension
+    std::vector<std::shared_ptr<const IndexMap>> index_maps;
     for (std::size_t i = 0; i < a.rank(); i++)
     {
       dolfin_assert(dofmaps[i]);
-      global_dimensions.push_back(dofmaps[i]->global_dimension());
-      local_range.push_back(dofmaps[i]->ownership_range());
-      block_sizes.push_back(dofmaps[i]->block_size);
-    }
-
-    // Set block size for sparsity graphs
-    std::size_t block_size = 1;
-    if (a.rank() == 2)
-    {
-      const std::vector<std::size_t> _bs(a.rank(), dofmaps[0]->block_size);
-      block_size = (block_sizes == _bs) ? dofmaps[0]->block_size : 1;
+      index_maps.push_back(dofmaps[i]->index_map());
     }
 
     // Initialise tensor layout
-    tensor_layout->init(a.mesh().mpi_comm(), global_dimensions, block_size,
-                        local_range);
-
-    if (a.rank() > 0)
-    {
-      tensor_layout->local_to_global_map.resize(a.rank());
-      for (std::size_t i = 0; i < a.rank(); ++i)
-      {
-        const std::size_t bs = dofmaps[i]->block_size;
-        const std::size_t local_size
-          = local_range[i].second - local_range[i].first;
-        const std::vector<std::size_t>& local_to_global_unowned
-          = dofmaps[i]->local_to_global_unowned();
-        tensor_layout->local_to_global_map[i].resize(local_size
-                                                  + bs*local_to_global_unowned.size());
-        for (std::size_t j = 0;
-             j < tensor_layout->local_to_global_map[i].size(); ++j)
-        {
-          tensor_layout->local_to_global_map[i][j]
-            = dofmaps[i]->local_to_global_index(j);
-        }
-      }
-    }
+    // FIXME: somewhere need to check block sizes are same on both axes
+    // NOTE: Jan: that will be done on the backend side; IndexMap will
+    //            provide tabulate functions with arbitrary block size;
+    //            moreover the functions will tabulate directly using a
+    //            correct int type
+    tensor_layout->init(a.mesh().mpi_comm(), index_maps,
+                        TensorLayout::Ghosts::UNGHOSTED);
 
     // Build sparsity pattern if required
     if (tensor_layout->sparsity_pattern())
     {
-      GenericSparsityPattern& pattern = *tensor_layout->sparsity_pattern();
+      SparsityPattern& pattern = *tensor_layout->sparsity_pattern();
       SparsityPatternBuilder::build(pattern,
                                 a.mesh(), dofmaps,
                                 a.ufc_form()->has_cell_integrals(),
                                 a.ufc_form()->has_interior_facet_integrals(),
                                 a.ufc_form()->has_exterior_facet_integrals(),
-                                a.ufc_form()->has_point_integrals(),
+                                a.ufc_form()->has_vertex_integrals(),
                                 keep_diagonal);
     }
     t0.stop();
@@ -127,10 +99,10 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
     A.init(*tensor_layout);
     t1.stop();
 
-    // Insert zeros on the diagonal as diagonal entries may be prematurely
-    // optimised away by the linear algebra backend when calling
-    // GenericMatrix::apply, e.g. PETSc does this then errors when matrices
-    // have no diagonal entry inserted.
+    // Insert zeros on the diagonal as diagonal entries may be
+    // prematurely optimised away by the linear algebra backend when
+    // calling GenericMatrix::apply, e.g. PETSc does this then errors
+    // when matrices have no diagonal entry inserted.
     if (A.rank() == 2 && keep_diagonal)
     {
       // Down cast to GenericMatrix
@@ -232,33 +204,71 @@ You might have forgotten to specify the value dimension correctly in an Expressi
     }
   }
 
-  // Check that the cell dimension matches the mesh dimension
-  if (a.rank() + a.ufc_form()->num_coefficients() > 0)
+  // Check that the coordinate cell matches the mesh
+  std::unique_ptr<ufc::finite_element>
+    coordinate_element(a.ufc_form()->create_coordinate_finite_element());
+  dolfin_assert(coordinate_element);
+  dolfin_assert(coordinate_element->value_rank() == 1);
+  if (coordinate_element->value_dimension(0) != mesh.geometry().dim())
   {
-    std::unique_ptr<ufc::finite_element>
-      element(a.ufc_form()->create_finite_element(0));
-    dolfin_assert(element);
-    if (mesh.type().cell_type() == CellType::interval && element->cell_shape()
-        != ufc::interval)
+    dolfin_error("AssemblerBase.cpp",
+                 "assemble form",
+                 "Geometric dimension of Mesh does not match value shape of coordinate element in form");
+  }
+  /* TODO: Wanted to check this but we don't have degree() available in ufc::finite_element.
+  if (coordinate_element->degree() != mesh.geometry().degree())
+  {
+    dolfin_error("AssemblerBase.cpp",
+                 "assemble form",
+                 "Mesh geometry degree does not match degree of coordinate element in form");
+  }
+  */
+  switch (mesh.type().cell_type())
+  {
+  case CellType::interval:
+    if (coordinate_element->cell_shape() != ufc::interval)
     {
       dolfin_error("AssemblerBase.cpp",
                    "assemble form",
                    "Mesh cell type (intervals) does not match cell type of form");
     }
-    if (mesh.type().cell_type() == CellType::triangle && element->cell_shape()
-        != ufc::triangle)
+    break;
+  case CellType::triangle:
+    if (coordinate_element->cell_shape() != ufc::triangle)
     {
       dolfin_error("AssemblerBase.cpp",
                    "assemble form",
                    "Mesh cell type (triangles) does not match cell type of form");
     }
-    if (mesh.type().cell_type() == CellType::tetrahedron
-        && element->cell_shape() != ufc::tetrahedron)
+    break;
+  case CellType::tetrahedron:
+    if (coordinate_element->cell_shape() != ufc::tetrahedron)
     {
       dolfin_error("AssemblerBase.cpp",
                    "assemble form",
                    "Mesh cell type (tetrahedra) does not match cell type of form");
     }
+    break;
+  case CellType::quadrilateral:
+    if (coordinate_element->cell_shape() != ufc::quadrilateral)
+    {
+      dolfin_error("AssemblerBase.cpp",
+                   "assemble form",
+                   "Mesh cell type (quadrilateral) does not match cell type of form");
+    }
+    break;
+  case CellType::hexahedron:
+    if (coordinate_element->cell_shape() != ufc::hexahedron)
+    {
+      dolfin_error("AssemblerBase.cpp",
+                   "assemble form",
+                   "Mesh cell type (hexahedron) does not match cell type of form");
+    }
+    break;
+  default:
+    dolfin_error("AssemblerBase.cpp",
+                 "assemble form",
+                 "Mesh cell type is unknown!");
   }
 
   // Check that the mesh is ordered

@@ -11,6 +11,7 @@ Authors/contributors in alphabetical order:
   Niklas Ericsson       <nen@math.chalmers.se>              (-)
   Patrick Farrell       <patrick.farrell06@imperial.ac.uk>  (C)
   Georgios Foufas       <foufas@math.chalmers.se>           (C)
+  Tom Gustafsson        <tom.gustafsson@aalto.fi>           (C)
   Joachim B Haga        <jobh@broadpark.no>                 (C)
   Johan Hake            <hake@simula.no>                    (C)
   Jack S. Hale          <j.hale09@imperial.ac.uk>           (C)
@@ -28,7 +29,8 @@ Authors/contributors in alphabetical order:
   Karin Kraft           <kakr@math.chalmers.se>             (-)
   Aleksandra Krusper    <PDE project course 2001/2002>      (-)
   Evan Lezar            <mail@evanlezar.com>                (C)
-  Tianyi Li             <<tianyi.li@polytechnique.edu>>     (C)
+  Tianyi Li             <tianyi.li@polytechnique.edu>       (C)
+  Matthias Liertzer     <matthias.liertzer@tuwien.ac.at>    (C)
   Dag Lindbo            <dag@csc.kth.se>                    (C)
   Glenn Terje Lines     <glennli@simula.no>                 (C)
   Anders Logg           <logg@simula.no>                    (C)
@@ -65,6 +67,7 @@ Authors/contributors in alphabetical order:
   Garth N. Wells        <gnw20@cam.ac.uk>                   (C)
   Ilmar Wilbers         <ilmarw@simula.dot.no>              (C)
   Cian Wilson           <cwilson@ldeo.columbia.edu>         (C)
+  Michele Zaffalon      <michele.zaffalon@gmail.com>        (C)
   Åsmund Ødegård        <aasmund@simula.no>                 (C)
   Kristian Ølgaard      <kbo@civil.aau.dk>                  (C)
 
@@ -73,4 +76,4 @@ Authors/contributors in alphabetical order:
 (-) = minor change, copyright form not signed
 
 Missing credits? Tell us and we will fix it.
-Send an email to fenics@fenicsproject.org
+Send an email to fenics-dev@googlegroups.com

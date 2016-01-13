@@ -332,7 +332,7 @@ CollisionDetection::collides_tetrahedron_tetrahedron
   if (n.dot(e_v1[2]) > 0)
     n *= -1;
   std::vector<int> masks(4);
-  std::vector<std::vector<double> > Coord_1(4, std::vector<double>(4));
+  std::vector<std::vector<double>> Coord_1(4, std::vector<double>(4));
   if (separating_plane_face_A_1(P_V1, n, Coord_1[0], masks[0]))
     return false;
   n = e_v1[0].cross(e_v1[2]);
@@ -483,14 +483,9 @@ bool CollisionDetection::collides_interval_point(const Point& p0,
   v /= vnorm;
   const double a = v.dot(w) / wnorm;
 
-  // Cosine should be 1
-  if (std::abs(1-a) < DOLFIN_EPS_LARGE)
-  {
-    // Check if projected point is between p0 and p1
-    const double t = v.dot(w);
-    if (t >= 0 and t <= 1)
-      return true;
-  }
+  // Cosine should be 1, and point should lie between p0 and p1
+  if (std::abs(1-a) < DOLFIN_EPS_LARGE and wnorm <= vnorm)
+    return true;
 
   return false;
 }
@@ -555,7 +550,7 @@ bool CollisionDetection::collides_triangle_point(const Point& p0,
   Point r = point - p0;
   // Check point is in plane of triangle (for manifold)
   double volume = r.dot(normal);
-  if (volume > DOLFIN_EPS)
+  if (std::abs(volume) > DOLFIN_EPS)
     return false;
 
   // Compute normal to triangle based on point and first edge
@@ -1070,12 +1065,9 @@ CollisionDetection::separating_plane_face_A_2(const std::vector<Point>& V1,
   return (mask_edges == 15);
 }
 //-----------------------------------------------------------------------------
-bool
-CollisionDetection::separating_plane_edge_A
-(const std::vector<std::vector<double> >& coord_1,
- const std::vector<int>& masks,
- int f0,
- int f1)
+bool CollisionDetection::separating_plane_edge_A(
+  const std::vector<std::vector<double>>& coord_1,
+  const std::vector<int>& masks, int f0, int f1)
 {
   // Helper function for tetrahedron-tetrahedron collision: checks if
   // edge is in the plane separating faces f0 and f1.

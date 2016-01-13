@@ -32,18 +32,19 @@ from dolfin_utils.test import *
 
 # Lists of backends supporting or not supporting data access
 data_backends = []
-no_data_backends = [("PETSc", "")]
+no_data_backends = [("PETSc", ""), ("Tpetra", "")]
 
 # Add serial only backends
 if MPI.size(mpi_comm_world()) == 1:
-    # TODO: What about "Dense" and "Sparse"? The sub_backend wasn't used in the old test.
-    data_backends += [("uBLAS", "Dense"), ("uBLAS", "Sparse")]
+    # TODO: What about "Dense" and "Sparse"? The sub_backend wasn't
+    # used in the old test.
+    data_backends += [("Eigen", "")]
     no_data_backends += [("PETScCusp", "")]
 
 # TODO: STL tests were disabled in old test framework, and do not work now:
 # If we have PETSc, STL Vector gets typedefed to one of these and data
 # test will not work. If none of these backends are available
-# STLVector defaults to uBLASVEctor, which data will work
+# STLVector defaults to EigenVEctor, which data will work
 #if has_linear_algebra_backend("PETSc"):
 #    no_data_backends += [("STL", "")]
 #else:
@@ -54,8 +55,9 @@ data_backends = [b for b in data_backends if has_linear_algebra_backend(b[0])]
 no_data_backends = [b for b in no_data_backends if has_linear_algebra_backend(b[0])]
 any_backends = data_backends + no_data_backends
 
-# Fixtures setting up and resetting the global linear algebra backend for a list of backends
-any_backend     = set_parameters_fixture("linear_algebra_backend", 
+# Fixtures setting up and resetting the global linear algebra backend
+# for a list of backends
+any_backend     = set_parameters_fixture("linear_algebra_backend",
                                          any_backends, lambda x: x[0])
 data_backend    = set_parameters_fixture("linear_algebra_backend",
                                          data_backends, lambda x: x[0])
@@ -78,11 +80,10 @@ def xtest_deterministic_partition():
 def assemble_vectors(mesh):
     V = FunctionSpace(mesh, "Lagrange", 2)
     W = FunctionSpace(mesh, "Lagrange", 1)
-
     v = TestFunction(V)
     t = TestFunction(W)
-
     return assemble(v*dx), assemble(t*dx)
+
 
 def get_forms(mesh):
     V = FunctionSpace(mesh, "Lagrange", 2)
@@ -96,6 +97,7 @@ def get_forms(mesh):
     a = dot(grad(u),grad(v))*dx
     b = v*s*dx
     return a, b
+
 
 class TestBasicLaOperations:
     def test_vector(self, any_backend):
@@ -123,7 +125,7 @@ class TestBasicLaOperations:
         B = as_backend_type(v.copy())
         gind = 5
         lind = gind-n0
-        
+
         # Test global index access
         if A.owns_index(gind):
             assert round(sum(A[lind] - B[lind]), 7) == 0
@@ -251,11 +253,6 @@ class TestBasicLaOperations:
         with pytest.raises(IndexError):
             wrong_dim([0,2], slice(0,4,1))
 
-        # Tests bailout for these choices
-        if self.backend == "uBLAS" and sys.version_info[0]==2 and \
-               sys.version_info[1]==6:
-            return
-
         A2 = A.array()
         A *= B
         A2 *= B2
@@ -270,6 +267,7 @@ class TestBasicLaOperations:
 
         with pytest.raises(TypeError):
             wrong_assign(A, linds2)
+
 
     def test_matrix_vector(self, any_backend, use_backend):
         self.backend, self.sub_backend = any_backend
@@ -323,12 +321,8 @@ class TestBasicLaOperations:
 
         # Test transpose multiply (rectangular)
         x = Vector()
-        if self.backend == 'uBLAS':
-            with pytest.raises(RuntimeError):
-                B.transpmult(v, x)
-        else:
-            B.transpmult(v, x)
-            assert round(x.norm('l2') - Cv_norm, 7) == 0
+        B.transpmult(v, x)
+        assert round(x.norm('l2') - Cv_norm, 7) == 0
 
         # Miscellaneous tests
         u2 = 2*u - A*v
@@ -350,27 +344,10 @@ class TestBasicLaOperations:
         assert absolute(u.array() - u_numpy).sum() < DOLFIN_EPS*len(v)
         assert absolute(u_numpy2 - u_numpy).sum() < DOLFIN_EPS*len(v)
 
-    def test_matrix_data(self, no_data_backend):
-        #self.backend, self.sub_backend = no_data_backend
-
-        mesh = UnitSquareMesh(3, 3)
-        a, b = get_forms(mesh)
-        A = assemble(a)
-        B = assemble(b)
-
-        with pytest.raises(RuntimeError):
-            A.data()
-
-        A = as_backend_type(A)
-        with pytest.raises(RuntimeError):
-            A.data()
 
     def test_vector_data(self, no_data_backend):
         mesh = UnitSquareMesh(3, 3)
         v, w = assemble_vectors(mesh)
-        with pytest.raises(RuntimeError):
-            v.data()
-
         v = as_backend_type(v)
         def no_attribute():
             v.data()

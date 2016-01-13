@@ -118,14 +118,14 @@ int main(int argc, char* argv[])
   Mesh mesh("../dolfin_fine.xml.gz");
 
   // Create function space
-  ElastoDynamics::FunctionSpace V(mesh);
+  auto V = std::make_shared<ElastoDynamics::FunctionSpace>(mesh);
 
   // Material parameters
   Constant rho(1.0);                           // mass density
   Constant eta(0.25);                          // damping coefficient
   double E  = 1.0;                             // Youngs modulus
   double nu = 0.0;                             // Poisson ratio
-  Constant lambda((nu*E)/((1.0 + nu)*(1.0 - nu))); // Lame coefficient
+  Constant lambda((nu*E)/((1.0 + nu)*(1.0 - 2.0 * nu))); // Lame coefficient
   Constant mu(E/(2.0*(1.0 + nu)));               // Lame coefficient
 
   // Time stepping parameters
@@ -147,11 +147,9 @@ int main(int argc, char* argv[])
   Pressure p(t, dt, false), p0(t, dt, true);
 
   // Dirichlet boundary conditions
-  LeftBoundary left_boundary;
-  Constant zero(0.0, 0.0);
-  DirichletBC bc0(V, zero, left_boundary);
-  std::vector<const DirichletBC*> bc;
-  bc.push_back(&bc0);
+  auto left_boundary = std::make_shared<LeftBoundary>();
+  auto zero = std::make_shared<Constant>(0.0, 0.0);
+  DirichletBC bc(V, zero, left_boundary);
 
   // Define solution vectors
   Function u(V), u0(V);  // displacement
@@ -193,7 +191,7 @@ int main(int argc, char* argv[])
   L.ds = right_boundary_function;
 
   // Create projection to compute the normal strain eps_xx
-  DG0_eps_xx::FunctionSpace Vdg(mesh);
+  auto Vdg = std::make_shared<DG0_eps_xx::FunctionSpace>(mesh);
   DG0_eps_xx::BilinearForm a_eps(Vdg, Vdg);
   DG0_eps_xx::LinearForm L_eps(Vdg);
   L_eps.u = u;
@@ -212,7 +210,7 @@ int main(int argc, char* argv[])
     cout << "Time: " << t << endl;
 
     // Solve
-    solve(a_form == L, u, bc);
+    solve(a_form == L, u, {&bc});
     solve(a_eps == L_eps, eps_xx);
 
     // Update velocity and acceleration

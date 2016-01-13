@@ -18,16 +18,15 @@
 // First added:  2013-09-20
 // Last changed: 2014-02-28
 
-#include <utility>
-
 #include <map>
+#include <utility>
 #include <dolfin/common/types.h>
-#include <dolfin/log/log.h>
-#include <dolfin/mesh/Mesh.h>
-#include <dolfin/mesh/Cell.h>
 #include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/la/GenericVector.h>
+#include <dolfin/log/log.h>
+#include <dolfin/mesh/Cell.h>
+#include <dolfin/mesh/Mesh.h>
 #include "FunctionAssigner.h"
 
 using namespace dolfin;
@@ -45,8 +44,9 @@ FunctionAssigner::FunctionAssigner(std::shared_ptr<const FunctionSpace> receivin
   _check_and_build_indices(mesh, _receiving_spaces, _assigning_spaces);
 }
 //-----------------------------------------------------------------------------
-FunctionAssigner::FunctionAssigner(std::vector<std::shared_ptr<const FunctionSpace> > receiving_spaces,
-	           std::shared_ptr<const FunctionSpace> assigning_space)
+FunctionAssigner::FunctionAssigner(
+  std::vector<std::shared_ptr<const FunctionSpace>> receiving_spaces,
+  std::shared_ptr<const FunctionSpace> assigning_space)
   : _receiving_spaces(receiving_spaces), _assigning_spaces(1, assigning_space),
     _receiving_indices(receiving_spaces.size()),
     _assigning_indices(receiving_spaces.size()),
@@ -68,7 +68,7 @@ FunctionAssigner::FunctionAssigner(std::vector<std::shared_ptr<const FunctionSpa
   }
 
   // Collect assigning sub spaces
-  std::vector<std::shared_ptr<const FunctionSpace> > assigning_sub_spaces;
+  std::vector<std::shared_ptr<const FunctionSpace>> assigning_sub_spaces;
   for (std::size_t sub_space_ind = 0; sub_space_ind < N; sub_space_ind++)
     assigning_sub_spaces.push_back((*_assigning_spaces[0])[sub_space_ind]);
 
@@ -76,8 +76,9 @@ FunctionAssigner::FunctionAssigner(std::vector<std::shared_ptr<const FunctionSpa
   _check_and_build_indices(mesh, _receiving_spaces, assigning_sub_spaces);
 }
 //-----------------------------------------------------------------------------
-FunctionAssigner::FunctionAssigner(std::shared_ptr<const FunctionSpace> receiving_space,
-				   std::vector<std::shared_ptr<const FunctionSpace> > assigning_spaces)
+FunctionAssigner::FunctionAssigner(
+  std::shared_ptr<const FunctionSpace> receiving_space,
+  std::vector<std::shared_ptr<const FunctionSpace>> assigning_spaces)
   :_receiving_spaces(1, receiving_space), _assigning_spaces(assigning_spaces),
    _receiving_indices(assigning_spaces.size()),
    _assigning_indices(assigning_spaces.size()),
@@ -99,7 +100,7 @@ FunctionAssigner::FunctionAssigner(std::shared_ptr<const FunctionSpace> receivin
   }
 
   // Collect receiving sub spaces
-  std::vector<std::shared_ptr<const FunctionSpace> > receiving_sub_spaces;
+  std::vector<std::shared_ptr<const FunctionSpace>> receiving_sub_spaces;
   for (std::size_t sub_space_ind = 0; sub_space_ind < N; sub_space_ind++)
     receiving_sub_spaces.push_back((*_receiving_spaces[0])[sub_space_ind]);
 
@@ -117,16 +118,17 @@ FunctionAssigner::assign(std::shared_ptr<Function> receiving_func,
                          std::shared_ptr<const Function> assigning_func) const
 {
   // Wrap functions
-  std::vector<std::shared_ptr<Function> > receiving_funcs(1, receiving_func);
-  std::vector<std::shared_ptr<const Function> >
+  std::vector<std::shared_ptr<Function>> receiving_funcs(1, receiving_func);
+  std::vector<std::shared_ptr<const Function>>
     assigning_funcs(1, assigning_func);
 
   // Do the assignment
   _assign(receiving_funcs, assigning_funcs);
 }
 //-----------------------------------------------------------------------------
-void FunctionAssigner::assign(std::shared_ptr<Function> receiving_func,
-      std::vector<std::shared_ptr<const Function> > assigning_funcs) const
+void FunctionAssigner::assign(
+  std::shared_ptr<Function> receiving_func,
+  std::vector<std::shared_ptr<const Function>> assigning_funcs) const
 {
   // Num assigning functions
   const std::size_t N = assigning_funcs.size();
@@ -139,7 +141,7 @@ void FunctionAssigner::assign(std::shared_ptr<Function> receiving_func,
   }
 
   // Collect receiving sub functions
-  std::vector<std::shared_ptr<Function> > receiving_funcs(0);
+  std::vector<std::shared_ptr<Function>> receiving_funcs(0);
   for (std::size_t i = 0; i < N; i++)
   {
     std::shared_ptr<Function>
@@ -151,8 +153,9 @@ void FunctionAssigner::assign(std::shared_ptr<Function> receiving_func,
   _assign(receiving_funcs, assigning_funcs);
 }
 //-----------------------------------------------------------------------------
-void FunctionAssigner::assign(std::vector<std::shared_ptr<Function> > receiving_funcs,
-			      std::shared_ptr<const Function> assigning_func) const
+void
+FunctionAssigner::assign(std::vector<std::shared_ptr<Function>> receiving_funcs,
+                         std::shared_ptr<const Function> assigning_func) const
 {
   // Num receiving functions
   const std::size_t N = receiving_funcs.size();
@@ -165,7 +168,7 @@ void FunctionAssigner::assign(std::vector<std::shared_ptr<Function> > receiving_
   }
 
   // Collect receiving sub functions
-  std::vector<std::shared_ptr<const Function> > assigning_funcs(0);
+  std::vector<std::shared_ptr<const Function>> assigning_funcs(0);
   for (std::size_t i = 0; i < N; i++)
   {
     std::shared_ptr<const Function>
@@ -177,8 +180,9 @@ void FunctionAssigner::assign(std::vector<std::shared_ptr<Function> > receiving_
   _assign(receiving_funcs, assigning_funcs);
 }
 //-----------------------------------------------------------------------------
-void FunctionAssigner::_assign(std::vector<std::shared_ptr<Function> > receiving_funcs,
-			       std::vector<std::shared_ptr<const Function> > assigning_funcs) const
+void FunctionAssigner::_assign(
+  std::vector<std::shared_ptr<Function>> receiving_funcs,
+  std::vector<std::shared_ptr<const Function>> assigning_funcs) const
 {
   // Num spaces
   const std::size_t N = std::max(_assigning_spaces.size(),
@@ -373,9 +377,10 @@ const Mesh& FunctionAssigner::_get_mesh() const
   return mesh;
 }
 //-----------------------------------------------------------------------------
-void FunctionAssigner::_check_and_build_indices(const Mesh& mesh,
-	  const std::vector<std::shared_ptr<const FunctionSpace> >& receiving_spaces,
-	  const std::vector<std::shared_ptr<const FunctionSpace> >& assigning_spaces)
+void FunctionAssigner::_check_and_build_indices(
+  const Mesh& mesh,
+  const std::vector<std::shared_ptr<const FunctionSpace>>& receiving_spaces,
+  const std::vector<std::shared_ptr<const FunctionSpace>>& assigning_spaces)
 {
 
   // Num spaces
@@ -418,17 +423,17 @@ void FunctionAssigner::_check_and_build_indices(const Mesh& mesh,
     const GenericDofMap& receiving_dofmap = *receiving_spaces[i]->dofmap();
 
     // Get on-process dof ranges
-    const std::size_t bs_assigning = assigning_dofmap.block_size;
+    const std::size_t bs_assigning = assigning_dofmap.block_size();
     const std::size_t assigning_range
       = assigning_dofmap.ownership_range().second
       - assigning_dofmap.ownership_range().first
-      + bs_assigning*assigning_dofmap.local_to_global_unowned().size();
+      + bs_assigning*assigning_dofmap.index_map()->local_to_global_unowned().size();
 
-    const std::size_t bs_receiving = receiving_dofmap.block_size;
+    const std::size_t bs_receiving = receiving_dofmap.block_size();
     const std::size_t receiving_range
       = (receiving_dofmap.ownership_range().second
          - receiving_dofmap.ownership_range().first)
-      + bs_receiving*receiving_dofmap.local_to_global_unowned().size();
+      + bs_receiving*receiving_dofmap.index_map()->local_to_global_unowned().size();
 
     // Create a map between receiving and assigning dofs
     std::map<std::size_t, std::size_t> receiving_assigning_map;
@@ -437,9 +442,9 @@ void FunctionAssigner::_check_and_build_indices(const Mesh& mesh,
     for (CellIterator cell(mesh); !cell.end(); ++cell)
     {
       // Get local cell dofs
-      const std::vector<dolfin::la_index>& assigning_cell_dofs
+      const ArrayView<const dolfin::la_index> assigning_cell_dofs
         = assigning_dofmap.cell_dofs(cell->index());
-      const std::vector<dolfin::la_index>& receiving_cell_dofs
+      const ArrayView<const dolfin::la_index> receiving_cell_dofs
         = receiving_dofmap.cell_dofs(cell->index());
 
       // Check that both spaces have the same number of dofs

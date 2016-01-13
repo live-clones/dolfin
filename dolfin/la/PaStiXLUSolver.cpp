@@ -29,7 +29,7 @@
 #include "dolfin/common/MPI.h"
 #include "dolfin/common/NoDeleter.h"
 #include "dolfin/common/types.h"
-#include "dolfin/log/dolfin_log.h"
+#include "dolfin/log/log.h"
 #include "dolfin/parameter/GlobalParameters.h"
 #include "GenericVector.h"
 #include "SparsityPattern.h"
@@ -73,13 +73,6 @@ Parameters PaStiXLUSolver::default_parameters()
   p.add("renumber", true);
 
   return p;
-}
-//-----------------------------------------------------------------------------
-PaStiXLUSolver::PaStiXLUSolver(const STLMatrix& A)
-  : A(reference_to_no_delete_pointer(A))
-{
-  // Set parameter values
-  parameters = default_parameters();
 }
 //-----------------------------------------------------------------------------
 PaStiXLUSolver::PaStiXLUSolver(std::shared_ptr<const STLMatrix> A) : A(A)

@@ -38,7 +38,7 @@
 // and object itself we only care about the former.
 %define %petsc4py_objreft(Type)
 %typemap(check,noblock=1) Type *OUTPUT {
-  if ($1 == PETSC_NULL)
+  if ($1 == NULL)
     %argument_nullref("$type", $symname, $argnum);
  }
 %apply Type *OUTPUT { Type & }
@@ -50,6 +50,7 @@
 %petsc4py_objreft(Vec)
 %petsc4py_objreft(KSP)
 %petsc4py_objreft(SNES)
+%petsc4py_objreft(Tao)
 #endif
 
 #ifdef HAS_SLEPC4PY
@@ -62,6 +63,12 @@
 //-----------------------------------------------------------------------------
 %ignore dolfin::Array::operator=;
 %ignore dolfin::Array::operator[];
+
+//-----------------------------------------------------------------------------
+// Global modifications to the ArrayView interface
+//-----------------------------------------------------------------------------
+%ignore dolfin::ArrayView::operator=;
+%ignore dolfin::ArrayView::operator[];
 
 //-----------------------------------------------------------------------------
 // Global modifications to the IndexSet interface
@@ -80,6 +87,10 @@
 %typemap(in) (std::size_t N, const int* x) = (std::size_t _array_dim, int* _array);
 %typemap(in) (std::size_t N, const double* x) = (std::size_t _array_dim, double* _array);
 
+//%typemap(in) (std::size_t N, const std::size_t* x) = (std::size_t _arrayview_dim, std::size_t* _arrayview);
+//%typemap(in) (std::size_t N, const int* x) = (std::size_t _arrayview_dim, int* _arrayview);
+//%typemap(in) (std::size_t N, const double* x) = (std::size_t _arrayview_dim, double* _arrayview);
+
 //-----------------------------------------------------------------------------
 // Ignores for Hierarchical
 //-----------------------------------------------------------------------------
@@ -97,3 +108,8 @@
 %rename(_root_node) dolfin::Hierarchical::root_node_shared_ptr;
 %ignore dolfin::Hierarchical::leaf_node;
 %rename(_leaf_node) dolfin::Hierarchical::leaf_node_shared_ptr;
+
+//-----------------------------------------------------------------------------
+// Ignores for Variable
+//-----------------------------------------------------------------------------
+%ignore dolfin::Variable::operator=;

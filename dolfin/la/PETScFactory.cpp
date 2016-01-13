@@ -50,9 +50,9 @@ std::shared_ptr<GenericVector> PETScFactory:: create_vector() const
 std::shared_ptr<TensorLayout>
 PETScFactory::create_layout(std::size_t rank) const
 {
-  bool sparsity = false;
+  TensorLayout::Sparsity sparsity = TensorLayout::Sparsity::DENSE;
   if (rank > 1)
-    sparsity = true;
+    sparsity = TensorLayout::Sparsity::SPARSE;
   std::shared_ptr<TensorLayout> pattern(new TensorLayout(0, sparsity));
   return pattern;
 }
@@ -80,20 +80,18 @@ PETScFactory::create_krylov_solver(std::string method,
   return solver;
 }
 //-----------------------------------------------------------------------------
-std::vector<std::pair<std::string, std::string> >
-  PETScFactory::lu_solver_methods() const
+std::map<std::string, std::string> PETScFactory::lu_solver_methods() const
 {
   return PETScLUSolver::methods();
 }
 //-----------------------------------------------------------------------------
-std::vector<std::pair<std::string, std::string> >
-  PETScFactory::krylov_solver_methods() const
+std::map<std::string, std::string> PETScFactory::krylov_solver_methods() const
 {
   return PETScKrylovSolver::methods();
 }
 //-----------------------------------------------------------------------------
-std::vector<std::pair<std::string, std::string> >
-  PETScFactory::krylov_solver_preconditioners() const
+std::map<std::string, std::string>
+PETScFactory::krylov_solver_preconditioners() const
 {
   return PETScKrylovSolver::preconditioners();
 }

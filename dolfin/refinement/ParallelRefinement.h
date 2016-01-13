@@ -38,7 +38,7 @@ namespace dolfin
 
     /// ParallelRefinement encapsulates two main features:
     /// a distributed EdgeFunction, which can be updated
-    /// across processes, and storage for local mesh data, 
+    /// across processes, and storage for local mesh data,
     /// which can be used to construct the new Mesh
     ParallelRefinement(const Mesh& mesh);
 
@@ -79,14 +79,14 @@ namespace dolfin
 
     /// Mapping of old edge (to be removed) to new global vertex
     /// number. Useful for forming new topology
-    const std::map<std::size_t, std::size_t>& edge_to_new_vertex() const;
+    std::shared_ptr<const std::map<std::size_t, std::size_t> > edge_to_new_vertex() const;
 
     /// Add a new cell to the list in 3D or 2D
     void new_cell(const Cell& cell);
     void new_cell(std::size_t i0, std::size_t i1, std::size_t i2,
                   std::size_t i3);
     void new_cell(std::size_t i0, std::size_t i1, std::size_t i2);
-    void new_cell(const std::vector<std::size_t>& idx);
+    void new_cells(const std::vector<std::size_t>& idx);
 
     /// Use vertex and topology data to partition new mesh across processes
     void partition(Mesh& new_mesh, bool redistribute) const;
@@ -105,7 +105,7 @@ namespace dolfin
 
     // Mapping from old local edge index to new global vertex, needed
     // to create new topology
-    std::map<std::size_t, std::size_t> local_edge_to_new_vertex;
+    std::shared_ptr<std::map<std::size_t, std::size_t> > local_edge_to_new_vertex;
 
     // New storage for all coordinates when creating new vertices
     std::vector<double> new_vertex_coordinates;
@@ -118,11 +118,6 @@ namespace dolfin
 
     // Temporary storage for edges that have been recently marked
     std::vector<std::vector<std::size_t> > marked_for_update;
-
-    // Reorder vertices into global order for partitioning
-    void reorder_vertices_by_global_indices(std::vector<double>& vertex_coords,
-                           const std::size_t gdim,
-                           const std::vector<std::size_t>& global_indices);
   };
 
 }

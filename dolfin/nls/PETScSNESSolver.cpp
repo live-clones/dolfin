@@ -21,7 +21,7 @@
 // First added:  2012-10-13
 // Last changed: 2013-11-21
 
-#ifdef ENABLE_PETSC_SNES
+#ifdef HAS_PETSC
 
 #include <map>
 #include <string>
@@ -31,7 +31,6 @@
 
 #include <dolfin/common/MPI.h>
 #include <dolfin/common/NoDeleter.h>
-#include <dolfin/common/timing.h>
 #include <dolfin/common/Timer.h>
 #include <dolfin/la/PETScKrylovSolver.h>
 #include <dolfin/la/PETScMatrix.h>
@@ -43,30 +42,8 @@
 
 using namespace dolfin;
 
-#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 3
 // Mapping from method string to PETSc
-const std::map<std::string, std::pair<std::string, const SNESType> >
-PETScSNESSolver::_methods
-= { {"default",     {"default SNES method", ""}},
-    {"ls",          {"Line search method", SNESLS}},
-    ("tr",          {"Trust region method",  SNESTR}},
-    {"test",        {"Tool to verify Jacobian approximation", SNESTEST}},
-    {"ngmres",      {"Nonlinear generalised minimum residual method",
-                     SNESNGMRES}},
-    {"nrichardson", {"Richardson nonlinear method (Picard iteration)",
-                     SNESNRICHARDSON}},
-    {"virs",        {"Reduced space active set solver method (for bounds)",
-                     SNESVIRS}},
-    {"viss",        {"Reduced space active set solver method (for bounds)",
-                     SNESVISS}},
-    {"qn",          {"Limited memory quasi-Newton", SNESQN}},
-    {"ncg",         {"Nonlinear conjugate gradient method", SNESNCG}},
-    {"fas",         {"Full Approximation Scheme nonlinear multigrid method",
-                     SNESFAS}},
-    {"ms",          {"Multistage smoothers", SNESMS}} };
-#elif PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR >= 4
-// Mapping from method string to PETSc
-const std::map<std::string, std::pair<std::string, const SNESType> >
+const std::map<std::string, std::pair<std::string, const SNESType>>
 PETScSNESSolver::_methods
 = { {"default",      {"default SNES method", ""}},
     {"newtonls",     {"Line search method", SNESNEWTONLS}},
@@ -89,12 +66,11 @@ PETScSNESSolver::_methods
     {"aspin",        {"Additive-Schwarz Preconditioned Inexact Newton",
                       SNESASPIN}},
     {"ms",           {"Multistage smoothers", SNESMS}} };
-#endif
 
 //-----------------------------------------------------------------------------
-std::vector<std::pair<std::string, std::string> > PETScSNESSolver::methods()
+std::vector<std::pair<std::string, std::string>> PETScSNESSolver::methods()
 {
-  std::vector<std::pair<std::string, std::string> > available_methods;
+  std::vector<std::pair<std::string, std::string>> available_methods;
   for (auto it = _methods.begin(); it != _methods.end(); ++it)
     available_methods.push_back(std::make_pair(it->first, it->second.first));
   return available_methods;
@@ -111,7 +87,7 @@ Parameters PETScSNESSolver::default_parameters()
   p.remove("relaxation_parameter");
   p.remove("method");
   p.add("method", "default");
-  p.add("line_search", "basic",  {"basic", "bt", "l2", "cp" });
+  p.add("line_search", "basic",  {"basic", "bt", "l2", "cp", "nleqerr"});
   p.add("sign", "default", {"default", "nonnegative", "nonpositive"});
 
   return p;
@@ -239,44 +215,56 @@ PETScSNESSolver::init(NonlinearProblem& nonlinear_problem,
 
   // Set some options from the parameters
   if (report)
-    SNESMonitorSet(_snes, SNESMonitorDefault, PETSC_NULL, PETSC_NULL);
+  {
+    SNESMonitorSet(_snes, SNESMonitorDefault,
+                   PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)_snes)),
+                   NULL);
+  }
 
   // Set the bounds, if any
   set_bounds(x);
 
   // Set the method
-  if (std::string(parameters["method"]) != "default")
+  const std::string method = parameters["method"];
+  if (method != "default")
   {
-    auto it = _methods.find(std::string(parameters["method"]));
+    auto it = _methods.find(method);
     dolfin_assert(it != _methods.end());
     SNESSetType(_snes, it->second.second);
-  // If
-  //      a) the user has set bounds (is_vi())
-  // AND  b) the user has not set a solver (method == default)
-  // THEN set a good method that supports bounds
-  // (most methods do not support bounds)
+
+    // Check if bounds/sign are set when VI method requested
+    if ((method == "vinewtonrsls" || method == "vinewtonssls") && !is_vi())
+    {
+      dolfin_error("PETScSNESSolver.cpp",
+                   "set up SNES VI solver",
+                   "Need to set bounds or sign for vinewtonrsls or vinewtonssls"
+                   " methods");
+    }
   }
-  else if (std::string(parameters["method"]) == "default" && is_vi())
+  else if (method == "default" && is_vi())
   {
-    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 3 && PETSC_VERSION_RELEASE
-    auto it = _methods.find("viss");
-    #else
+    // If
+    //      a) the user has set bounds (is_vi())
+    // AND  b) the user has not set a solver (method == default)
+    // THEN set a good method that supports bounds
+    // (most methods do not support bounds)
     auto it = _methods.find("vinewtonssls");
-    #endif
     dolfin_assert(it != _methods.end());
     SNESSetType(_snes, it->second.second);
   }
 
   SNESLineSearch linesearch;
-
-  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 4
-  SNESGetSNESLineSearch(_snes, &linesearch);
-  #else
   SNESGetLineSearch(_snes, &linesearch);
-  #endif
 
   if (report)
+  {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 6 && PETSC_VERSION_RELEASE == 1
     SNESLineSearchSetMonitor(linesearch, PETSC_TRUE);
+    #else
+    SNESLineSearchMonitor(linesearch);
+    #endif
+  }
+
   const std::string line_search_type = std::string(parameters["line_search"]);
   SNESLineSearchSetType(linesearch, line_search_type.c_str());
 
@@ -308,7 +296,7 @@ PETScSNESSolver::solve(NonlinearProblem& nonlinear_problem,
   // same as the vector that holds the current solution
   // guess in the dolfin form.
   PETScVector x_copy(x.down_cast<PETScVector>());
-  SNESSolve(_snes, PETSC_NULL, x_copy.vec());
+  SNESSolve(_snes, NULL, x_copy.vec());
   x.zero();
   x.axpy(1.0, x_copy);
 
@@ -388,37 +376,6 @@ PetscErrorCode PETScSNESSolver::FormObjective(SNES snes, Vec x,
   return 0;
 }
 //-----------------------------------------------------------------------------
-#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 4
-PetscErrorCode PETScSNESSolver::FormJacobian(SNES snes, Vec x, Mat* A, Mat* P,
-                                             MatStructure* flag, void* ctx)
-{
-  // Interface does not presently support a preconditioner that
-  // differs from operator A
-  if (*A != *P)
-  {
-    dolfin_error("PETScSNESSolver.cpp",
-                 "for Jacobian",
-                 "Matrix object incompatibility. The Jacobian matrix must not be reset when using PETSc SNES.");
-  }
-
-  // Get nonlinear problem object
-  auto snes_ctx = static_cast<struct snes_ctx_t*>(ctx);
-  NonlinearProblem* nonlinear_problem = snes_ctx->nonlinear_problem;
-
-  // Wrap the PETSc objects
-  PETScMatrix A_wrap(*P);
-  PETScVector x_wrap(x);
-
-  // Form Jacobian
-  PETScVector f;
-  nonlinear_problem->form(A_wrap, f, x_wrap);
-  nonlinear_problem->J(A_wrap, x_wrap);
-
-  *flag = SAME_NONZERO_PATTERN;
-
-  return 0;
-}
-#else
 PetscErrorCode PETScSNESSolver::FormJacobian(SNES snes, Vec x, Mat A, Mat P,
                                              void* ctx)
 {
@@ -446,7 +403,6 @@ PetscErrorCode PETScSNESSolver::FormJacobian(SNES snes, Vec x, Mat A, Mat P,
 
   return 0;
 }
-#endif
 //-----------------------------------------------------------------------------
 void PETScSNESSolver::set_linear_solver_parameters()
 {
@@ -464,8 +420,11 @@ void PETScSNESSolver::set_linear_solver_parameters()
   PetscObjectGetComm((PetscObject)_snes, &comm);
 
   if (parameters["report"])
-    KSPMonitorSet(ksp, KSPMonitorDefault, PETSC_NULL, PETSC_NULL);
-
+  {
+    KSPMonitorSet(ksp, KSPMonitorDefault,
+                   PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)),
+                   NULL);
+  }
   const std::string linear_solver  = parameters["linear_solver"];
   const std::string preconditioner = parameters["preconditioner"];
 
@@ -500,7 +459,11 @@ void PETScSNESSolver::set_linear_solver_parameters()
       KSPSetInitialGuessNonzero(ksp, PETSC_FALSE);
 
     if (krylov_parameters["monitor_convergence"])
-      KSPMonitorSet(ksp, KSPMonitorTrueResidualNorm, 0, 0);
+    {
+      KSPMonitorSet(ksp, KSPMonitorTrueResidualNorm,
+                       PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)),
+                       NULL);
+    }
 
     // Set tolerances
     const int max_iters = krylov_parameters["maximum_iterations"];
@@ -573,21 +536,12 @@ void PETScSNESSolver::set_bounds(GenericVector& x)
     dolfin_assert(_snes);
     const std::string sign   = parameters["sign"];
     const std::string method = parameters["method"];
-    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 3
-    if (method != "virs" && method != "viss" && method != "default")
-    {
-      dolfin_error("PETScSNESSolver.cpp",
-                   "set variational inequality bounds",
-                   "Need to use virs or viss methods if bounds are set");
-    }
-    #else
     if (method != "vinewtonrsls" && method != "vinewtonssls" && method != "default")
     {
       dolfin_error("PETScSNESSolver.cpp",
                    "set variational inequality bounds",
                    "Need to use vinewtonrsls or vinewtonssls methods if bounds are set");
     }
-    #endif
 
     if (sign != "default")
     {
@@ -600,24 +554,13 @@ void PETScSNESSolver::set_bounds(GenericVector& x)
       VecDuplicate(_x.vec(), &lb);
       if (sign == "nonnegative")
       {
-        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 4
-        VecSet(ub, SNES_VI_INF);
-        #else
         VecSet(ub, PETSC_INFINITY);
-        #endif
-
         VecSet(lb, 0.0);
       }
       else if (sign == "nonpositive")
       {
         VecSet(ub, 0.0);
-
-        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 4
-        VecSet(lb, SNES_VI_INF);
-        #else
         VecSet(lb, PETSC_INFINITY);
-        #endif
-
       }
       else
       {

@@ -389,14 +389,16 @@ def test_generic_function_attributes(mesh, V):
     assert round(assemble(inner(e2,e2)*dx(mesh)) - \
                  assemble(inner(e3,e3)*dx(mesh)), 7) == 0
 
+    W = FunctionSpace(mesh, V.ufl_element()*V.ufl_element())
+
     # Test wrong kwargs
     with pytest.raises(TypeError):
         Expression("t", t=Constant((1,0)))
     with pytest.raises(TypeError):
-        Expression("t", t=Function(V*V))
+        Expression("t", t=Function(W))
 
     # Test non-scalar GenericFunction
-    f2 = Function(V*V)
+    f2 = Function(W)
     e2.t = f2
 
     with pytest.raises(RuntimeError):
@@ -578,7 +580,7 @@ def test_doc_string_compiled_expression_with_system_headers():
           if (ncells > 0)
           {
             CellIterator cell(*mesh);
-            ndofs_per_cell = dofmap->cell_dimension(cell->index());
+            ndofs_per_cell = dofmap->num_element_dofs(cell->index());
           }
           else
           {
@@ -616,7 +618,7 @@ def test_doc_string_compiled_expression_with_system_headers():
           if (ncells > 0)
           {
             CellIterator cell(*mesh);
-            ndofs_per_cell = dofmap->cell_dimension(cell->index());
+            ndofs_per_cell = dofmap->num_element_dofs(cell->index());
           }
           else
           {

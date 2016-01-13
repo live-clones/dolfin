@@ -21,7 +21,6 @@
 # Last changed: 2011-10-04
 
 from dolfin import *
-import time
 
 class Noslip(SubDomain):
     def inside(self, x, on_boundary):
@@ -47,9 +46,9 @@ nu = Constant(0.02)
 mesh = Mesh("../channel_with_flap.xml.gz")
 
 # Define function spaces (Taylor-Hood)
-V = VectorFunctionSpace(mesh, "CG", 2)
-Q = FunctionSpace(mesh, "CG", 1)
-W = V * Q
+V = VectorElement("CG", mesh.ufl_cell(), 2)
+Q = FiniteElement("CG", mesh.ufl_cell(), 1)
+W = FunctionSpace(mesh, V * Q)
 
 # Define unknown and test function(s)
 (v, q) = TestFunctions(W)
@@ -76,7 +75,7 @@ outflow_markers.set_all(1)
 outflow.mark(outflow_markers, 0)
 
 # Define new measure with associated subdomains
-ds = Measure("ds")[outflow_markers]
+ds = Measure('ds', domain=mesh, subdomain_data=outflow_markers)
 
 # Define goal
 M = u[0]*ds(0)
@@ -106,7 +105,7 @@ solver.solve(tol)
 solver.summary();
 
 # Show all timings
-list_timings()
+list_timings(TimingClear_clear, [TimingType_wall])
 
 # Extract solutions on coarsest and finest mesh:
 (u0, p0) = w.root_node().split()

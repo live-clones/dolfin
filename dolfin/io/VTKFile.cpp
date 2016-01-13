@@ -383,11 +383,12 @@ std::string VTKFile::init(pugi::xml_document& xml_doc, const Mesh& mesh, std::si
                                       MPI::size(mpi_comm),
                                       counter, ".vtu");
 
-  // Number of cells
-  const std::size_t num_cells = mesh.topology().size(cell_dim);
+  // Number of cells and vertices
+  const std::size_t num_cells = mesh.topology().ghost_offset(cell_dim);
+  const std::size_t num_vertices = mesh.topology().ghost_offset(0);
 
   // Write headers
-  vtk_header_open(mesh.num_vertices(), num_cells, xml_doc);
+  vtk_header_open(num_vertices, num_cells, xml_doc);
 
   return vtu_filename;
 }
@@ -410,16 +411,19 @@ std::string VTKFile::init(pugi::xml_document& xml_doc, const FunctionSpace& func
                                       MPI::size(mpi_comm),
                                       counter, ".vtu");
 
-  // Number of cells
-  const std::size_t num_cells = mesh.topology().size(cell_dim);
+  // Number of cells and vertices
+  const std::size_t num_cells = mesh.topology().ghost_offset(cell_dim);
 
   // Create vector to hold dofs
   std::vector<la_index> dofs;
-  dofs.reserve(num_cells*dofmap->max_cell_dimension());
+  dofs.reserve(num_cells*dofmap->max_element_dofs());
 
-  std::vector<dolfin::la_index> cell_dofs;
+  ArrayView<const dolfin::la_index> cell_dofs;
   for (dolfin::CellIterator cell(mesh); !cell.end(); ++cell)       // loop over the cells in the mesh
   {
+    // Check that cell is not a ghost
+    dolfin_assert(!cell->is_ghost());
+
     cell_dofs = dofmap->cell_dofs((*cell).index());
 
     dofs.insert(dofs.end(), cell_dofs.begin(), cell_dofs.end());
@@ -496,7 +500,7 @@ void VTKFile::results_write(const std::vector<const GenericFunction*>& us, const
       dolfin_assert(uf->function_space()->dofmap());
       for (std::size_t i = 0; i < rank; i++)
         cell_based_dim *= uf->function_space()->mesh()->topology().dim();
-      if ((uf->function_space()->dofmap()->max_cell_dimension() == cell_based_dim) &&  // check if data is cell based
+      if ((uf->function_space()->dofmap()->max_element_dofs() == cell_based_dim) &&  // check if data is cell based
           (uf->function_space()->mesh()->num_cells()==mesh.num_cells()) && // also check it has the right number of cells
           (uf->function_space()->mesh()->topology().dim()==mesh.topology().dim())) // and the topo dim is the same
         VTKWriter::write_cell_data(*uf, xml_doc, binary, compress, cell_counter);
@@ -560,7 +564,7 @@ void VTKFile::results_write(const std::vector<const GenericFunction*>& us, const
       dolfin_assert(uf->function_space()->dofmap());
       for (std::size_t i = 0; i < rank; i++)
         cell_based_dim *= uf->function_space()->mesh()->topology().dim();
-      if ((uf->function_space()->dofmap()->max_cell_dimension() == cell_based_dim) &&  // check if data is cell based
+      if ((uf->function_space()->dofmap()->max_element_dofs() == cell_based_dim) &&  // check if data is cell based
           (uf->function_space()->mesh()->num_cells()==functionspace.mesh()->num_cells()) && // also check it has the right number of cells
           (uf->function_space()->mesh()->topology().dim()==functionspace.mesh()->topology().dim())) // and the topo dim is the same
         VTKWriter::write_cell_data(*uf, xml_doc, binary, compress, cell_counter);
@@ -595,15 +599,9 @@ void VTKFile::write_point_data(const GenericFunction& u, const Mesh& mesh,
   const std::size_t size = num_vertices*dim;
   std::vector<double> values(size);
 
-  // Get function values at vertices and zero any small values
+  // Get function values at vertices
   u.compute_vertex_values(values, mesh);
   dolfin_assert(values.size() == size);
-  std::vector<double>::iterator it;
-  for (it = values.begin(); it != values.end(); ++it)
-  {
-    if (std::abs(*it) < DOLFIN_EPS)
-      *it = 0.0;
-  }
 
   if (rank == 0)
   {
@@ -745,9 +743,9 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
 
   // Create vector to hold dofs
   std::vector<la_index> dofs;
-  dofs.reserve(mesh.num_cells()*dofmap->max_cell_dimension());
+  dofs.reserve(mesh.num_cells()*dofmap->max_element_dofs());
 
-  std::vector<dolfin::la_index> cell_dofs;
+  ArrayView<const dolfin::la_index> cell_dofs;
   for (dolfin::CellIterator cell(mesh); !cell.end(); ++cell)       // loop over the cells in the mesh
   {
     cell_dofs = dofmap->cell_dofs((*cell).index());
@@ -762,7 +760,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
   dofs.erase(std::unique(dofs.begin(), dofs.end()), dofs.end());
   
   // Allocate memory for function values at functionspace dofs
-  Function uf(functionspace);
+  Function uf(std::make_shared<FunctionSpace>(functionspace));
   std::vector< std::vector<double> > values(dim);
   for (std::vector< std::vector<double> >::iterator v = values.begin();
                                                     v != values.end();
@@ -1244,7 +1242,7 @@ void VTKFile::pvtu_write(const std::vector<const GenericFunction*>& us, const Me
       dolfin_assert(uf->function_space()->dofmap());
       for (std::size_t i = 0; i < rank; i++)
         cell_based_dim *= uf->function_space()->mesh()->topology().dim();
-      if ((uf->function_space()->dofmap()->max_cell_dimension() == cell_based_dim) &&  // check if data is cell based
+      if ((uf->function_space()->dofmap()->max_element_dofs() == cell_based_dim) &&  // check if data is cell based
           (uf->function_space()->mesh()->num_cells()==mesh.num_cells()) && // also check it has the right number of cells
           (uf->function_space()->mesh()->topology().dim()==mesh.topology().dim())) // and the topo dim is the same
         data_type = "cell";
