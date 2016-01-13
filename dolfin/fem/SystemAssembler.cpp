@@ -121,11 +121,11 @@ void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
                                   std::shared_ptr<const Form> L)
 {
   // Check that a is a bilinear form
-  for (auto &form : a)
+  for (const auto &form_a : a)
   {
-    if (form)
+    if (form_a)
     {
-      if (form->rank() != 2)
+      if (form_a->rank() != 2)
       {
         dolfin_error("SystemAssembler.cpp",
                      "assemble system",
@@ -145,14 +145,11 @@ void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
     }
   }
 
-  // Check size compatibility
-  std::size_t na = a.size();
-
-  // Check each row has the same FunctionSpace as RHS
-  for (std::size_t i = 0; i != na; ++i)
+  // Check each LHS form has the same FunctionSpace as RHS
+  for (const auto &form_a : a)
   {
     // Check that forms share a function space
-    if (*a[i]->function_space(0) != *L->function_space(0))
+    if (*form_a->function_space(0) != *L->function_space(0))
     {
       dolfin_error("SystemAssembler.cpp",
                    "create SystemAssembler",
@@ -269,8 +266,6 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
 
   // Gather tensors
   std::array<GenericTensor*, 2> tensors = { {A, b} };
-
-  std::cout << "b = " << (std::size_t)b << "\n";
 
   // Allocate data
   Scratch data(*a, *L);
@@ -529,10 +524,12 @@ void SystemAssembler::cell_wise_assembly(
       }
     }
 
-    // if nforms == 1
-    // RHS has not been integrated, but is here for adding BC terms
-    if (nforms == 1)
+    // If RHS has not been integrated, still want to add BC terms
+    if (!integrate_rhs)
+    {
+      cell_dofs[1][0] = dofmaps[1][0]->cell_dofs(cell->index());
       std::fill(data.Ae[1].begin(), data.Ae[1].end(), 0.0);
+    }
 
     // Modify local matrix/element for Dirichlet boundary conditions
     apply_bc(data.Ae[0].data(), data.Ae[1].data(), boundary_values,
@@ -542,16 +539,7 @@ void SystemAssembler::cell_wise_assembly(
     for (std::size_t form = 0; form < 2; ++form)
     {
       if (tensors[form])
-      {
-        if (form == 1)
-        {
-          std::cout << "Add LOCALL\n";
-          for (auto &p : data.Ae[form])
-            std::cout << p << " ";
-          std::cout << "\n";
           tensors[form]->add_local(data.Ae[form].data(), cell_dofs[form]);
-        }
-      }
     }
 
     p++;

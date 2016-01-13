@@ -64,7 +64,7 @@ namespace dolfin
                     std::shared_ptr<const Form> L,
                     std::vector<std::shared_ptr<const DirichletBC>> bcs);
 
-    /// Constructor
+    /// Constructor with multiple LHS forms, matching a common RHS form
     SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
                     std::shared_ptr<const Form> L,
                     std::vector<std::shared_ptr<const DirichletBC>> bcs);
@@ -88,7 +88,7 @@ namespace dolfin
     /// Suitable for use inside a (quasi-)Newton solver.
     void assemble(GenericVector& b, const GenericVector& x0);
 
-    /// Assemble blocks of matrices and associated vectors.
+    /// Assemble row of matrices and associated RHS vector.
     void assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
                   std::shared_ptr<GenericVector> b);
 
