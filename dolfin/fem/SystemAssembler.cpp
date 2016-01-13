@@ -87,6 +87,7 @@ void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
       assemble(&*A[i], &*b, NULL, _a[i], _l, true);
     else
       assemble(&*A[i], &*b, NULL, _a[i], _l, false);
+    std::cout << "b.norm = " << b->norm("l2") <<"\n";
   }
 }
 //-----------------------------------------------------------------------------
@@ -187,9 +188,9 @@ bool SystemAssembler::check_functionspace_for_bc
   {
     // Recursively check sub-spaces
     std::size_t num_sub_elements = fs->element()->num_sub_elements();
-    for (std::size_t i = 0; i != num_sub_elements; ++i)
+    for (std::size_t j = 0; j != num_sub_elements; ++j)
       {
-        std::shared_ptr<const FunctionSpace> subspace = (*fs)[i];
+        std::shared_ptr<const FunctionSpace> subspace = (*fs)[j];
         if (check_functionspace_for_bc(subspace, i))
           return true;
       }
@@ -540,10 +541,12 @@ void SystemAssembler::cell_wise_assembly(
     {
       if (tensors[form])
         tensors[form]->add_local(data.Ae[form].data(), cell_dofs[form]);
+
     }
 
     p++;
   }
+
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::facet_wise_assembly(
