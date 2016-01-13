@@ -18,6 +18,9 @@
 
 #ifdef HAS_PETSC
 
+#include <dolfin/function/FunctionSpace.h>
+#include <dolfin/fem/GenericDofMap.h>
+
 #include "GenericMatrix.h"
 #include "GenericVector.h"
 #include "PETScMatrix.h"
@@ -33,7 +36,8 @@ PETScNestMatrix::PETScNestMatrix()
 }
 //-----------------------------------------------------------------------------
 PETScNestMatrix::PETScNestMatrix
-(std::vector<std::shared_ptr<const GenericMatrix>> mats)
+(std::vector<std::shared_ptr<const GenericMatrix>> mats,
+ std::shared_ptr<const FunctionSpace> W)
 {
   if (mats.size() != 4)
   {
@@ -77,7 +81,26 @@ PETScNestMatrix::PETScNestMatrix
                  "All matrices appear to be NULL");
   }
 
-  MatCreateNest(mpi_comm, 2, NULL, 2, NULL, petsc_mats.data(), &_matA);
+  if (W)
+  {
+    const std::size_t num_sub_elements = W->element()->num_sub_elements();
+    if (num_sub_elements != 2)
+      dolfin_error("PETScNestMatrix", "set index sets on mixed space",
+                   "Space should have 2 sub-spaces");
+
+    IS is[2];
+    const std::vector<dolfin::la_index> dofs0 = W->sub(0)->dofmap()->dofs();
+    const std::vector<dolfin::la_index> dofs1 = W->sub(1)->dofmap()->dofs();
+
+    ISCreateGeneral(PETSC_COMM_WORLD, dofs0.size(), dofs0.data(),
+                    PETSC_COPY_VALUES, &is[0]);
+    ISCreateGeneral(PETSC_COMM_WORLD, dofs1.size(), dofs1.data(),
+                    PETSC_COPY_VALUES, &is[1]);
+
+    MatCreateNest(mpi_comm, 2, is, 2, is, petsc_mats.data(), &_matA);
+  }
+  else
+    MatCreateNest(mpi_comm, 2, NULL, 2, NULL, petsc_mats.data(), &_matA);
 }
 //-----------------------------------------------------------------------------
 PETScNestMatrix::~PETScNestMatrix()

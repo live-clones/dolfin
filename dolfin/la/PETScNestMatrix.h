@@ -30,6 +30,7 @@ namespace dolfin
 {
   class GenericMatrix;
   class GenericVector;
+  class FunctionSpace;
 
   class PETScNestMatrix : public PETScMatrix
   {
@@ -40,7 +41,8 @@ namespace dolfin
 
     /// Create from a list of matrices
     explicit PETScNestMatrix
-      (std::vector<std::shared_ptr<const GenericMatrix>> mats);
+      (std::vector<std::shared_ptr<const GenericMatrix>> mats,
+       std::shared_ptr<const FunctionSpace> W);
 
     /// Destructor
     virtual ~PETScNestMatrix();

@@ -126,6 +126,7 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
   }
   else
   {
+    std::cout << "Keep same tensor\n";
     // If tensor is not reset, check that dimensions are correct
     for (std::size_t i = 0; i < a.rank(); ++i)
     {
@@ -139,7 +140,11 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
   }
 
   if (!add_values)
+  {
+    std::cout << "Zero tensor\n";
     A.zero();
+  }
+
 }
 //-----------------------------------------------------------------------------
 void AssemblerBase::check(const Form& a)

@@ -270,6 +270,8 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   // Gather tensors
   std::array<GenericTensor*, 2> tensors = { {A, b} };
 
+  std::cout << "b = " << (std::size_t)b << "\n";
+
   // Allocate data
   Scratch data(*a, *L);
 
@@ -540,8 +542,16 @@ void SystemAssembler::cell_wise_assembly(
     for (std::size_t form = 0; form < 2; ++form)
     {
       if (tensors[form])
-        tensors[form]->add_local(data.Ae[form].data(), cell_dofs[form]);
-
+      {
+        if (form == 1)
+        {
+          std::cout << "Add LOCALL\n";
+          for (auto &p : data.Ae[form])
+            std::cout << p << " ";
+          std::cout << "\n";
+          tensors[form]->add_local(data.Ae[form].data(), cell_dofs[form]);
+        }
+      }
     }
 
     p++;
