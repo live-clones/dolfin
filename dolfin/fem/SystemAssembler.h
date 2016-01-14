@@ -65,9 +65,10 @@ namespace dolfin
                     std::vector<std::shared_ptr<const DirichletBC>> bcs);
 
     /// Constructor with multiple LHS forms, matching a common RHS form
+    /// with BCs defined for the column space of each LHS form
     SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
-                    std::shared_ptr<const Form> L,
-                    std::vector<std::shared_ptr<const DirichletBC>> bcs);
+                    std::vector<std::shared_ptr<const Form>> L,
+        std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs);
 
     /// Assemble system (A, b)
     void assemble(GenericMatrix& A, GenericVector& b);
@@ -105,25 +106,26 @@ namespace dolfin
 
     // Check form arity etc
     static void check_forms(std::vector<std::shared_ptr<const Form>> a,
-                            std::shared_ptr<const Form> L);
+                            std::vector<std::shared_ptr<const Form>> L);
 
     // Check if _bcs[bc_index] is part of FunctionSpace fs
-    bool check_functionspace_for_bc
-      (std::shared_ptr<const FunctionSpace> fs, std::size_t bc_index);
+    //    bool check_functionspace_for_bc
+    //      (std::shared_ptr<const FunctionSpace> fs, std::size_t bc_index);
 
     // Assemble system
     void assemble(GenericMatrix* A, GenericVector* b,
                   const GenericVector* x0,
                   std::shared_ptr<const Form> a,
                   std::shared_ptr<const Form> L,
+                  std::array<std::vector<std::shared_ptr<const DirichletBC>>, 2> bcs,
                   bool integrate_rhs);
 
     // Bilinear and linear forms
     std::vector<std::shared_ptr<const Form>> _a;
     std::shared_ptr<const Form> _l;
 
-    // Boundary conditions
-    std::vector<std::shared_ptr<const DirichletBC>> _bcs;
+    // Boundary conditions for each space in the forms
+    std::vector<std::vector<std::shared_ptr<const DirichletBC>>> _bcs;
 
     static void cell_wise_assembly(
       std::array<GenericTensor*, 2>& tensors,

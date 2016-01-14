@@ -52,15 +52,16 @@ using namespace dolfin;
 //-----------------------------------------------------------------------------
 SystemAssembler::SystemAssembler(std::shared_ptr<const Form> a,
                                  std::shared_ptr<const Form> L,
-                                 std::vector<std::shared_ptr<const DirichletBC>> bcs) : _a({a}), _l(L), _bcs(bcs)
+                                 std::vector<std::shared_ptr<const DirichletBC>> bcs)
+  : _a({a}), _l({L}), _bcs({bcs})
 {
   // Check forms for correct dimensions
   check_forms(_a, _l);
 }
 //-----------------------------------------------------------------------------
 SystemAssembler::SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
-                                 std::shared_ptr<const Form> L,
-                                 std::vector<std::shared_ptr<const DirichletBC>> bcs)
+                                 std::vector<std::shared_ptr<const Form>> L,
+             std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs)
   : _a(a), _l(L), _bcs(bcs)
 {
   // Check forms for correct dimensions
@@ -77,55 +78,93 @@ void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
                  "Incorrect number of matrices for forms");
   }
 
+  if (_bcs.size() != A.size())
+  {
+    dolfin_error("SystemAssembler.cpp",
+                 "assemble system",
+                 "Incorrect number of BCs for forms");
+  }
+
   // Make sure b does not get reset each time
   add_values = true;
 
   for (std::size_t i = 0; i != A.size(); ++i)
   {
     // Only assemble RHS once, but apply BCs each time
-    if (i == 0)
-      assemble(&*A[i], &*b, NULL, _a[i], _l, true);
-    else
-      assemble(&*A[i], &*b, NULL, _a[i], _l, false);
+    bool assemble_rhs = (i == 0);
+    std::array<std::vector<std::shared_ptr<const DirichletBC>>, 2> bcs
+      = {_bcs[0], _bcs[i]};
+    assemble(&*A[i], &*b, NULL, _a[i], _l[j], bcs, assemble_rhs);
+
     std::cout << "b.norm = " << b->norm("l2") <<"\n";
   }
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A, GenericVector& b)
 {
-  assemble(&A, &b, NULL, _a[0], _l, true);
+  dolfin_assert(_bcs.size() == 1);
+  dolfin_assert(_l.size() == 1);
+  dolfin_assert(_a.size() == 1);
+  std::array<std::vector<std::shared_ptr<const DirichletBC>>, 2> bcs
+    = {_bcs[0], _bcs[0]};
+
+  assemble(&A, &b, NULL, _a[0], _l[0], bcs, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A)
 {
-  assemble(&A, NULL, NULL, _a[0], _l, true);
+  dolfin_assert(_bcs.size() == 1);
+  dolfin_assert(_l.size() == 1);
+  dolfin_assert(_a.size() == 1);
+  std::array<std::vector<std::shared_ptr<const DirichletBC>>, 2> bcs
+    = {_bcs[0], _bcs[0]};
+
+  assemble(&A, NULL, NULL, _a[0], _l[0], bcs, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericVector& b)
 {
-  assemble(NULL, &b, NULL, _a[0], _l, true);
+  dolfin_assert(_bcs.size() == 1);
+  dolfin_assert(_l.size() == 1);
+  dolfin_assert(_a.size() == 1);
+  std::array<std::vector<std::shared_ptr<const DirichletBC>>, 2> bcs
+    = {_bcs[0], _bcs[0]};
+
+  assemble(NULL, &b, NULL, _a[0], _l[0], bcs, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A, GenericVector& b,
                                const GenericVector& x0)
 {
-  assemble(&A, &b, &x0, _a[0], _l, true);
+  dolfin_assert(_bcs.size() == 1);
+  dolfin_assert(_l.size() == 1);
+  dolfin_assert(_a.size() == 1);
+  std::array<std::vector<std::shared_ptr<const DirichletBC>>, 2> bcs
+    = {_bcs[0], _bcs[0]};
+
+  assemble(&A, &b, &x0, _a[0], _l[0], bcs, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericVector& b, const GenericVector& x0)
 {
-  assemble(NULL, &b, &x0, _a[0], _l, true);
+  dolfin_assert(_bcs.size() == 1);
+  dolfin_assert(_l.size() == 1);
+  dolfin_assert(_a.size() == 1);
+  std::array<std::vector<std::shared_ptr<const DirichletBC>>, 2> bcs
+    = {_bcs[0], _bcs[0]};
+
+  assemble(NULL, &b, &x0, _a[0], _l[0], bcs, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
-                                  std::shared_ptr<const Form> L)
+                                  std::vector<std::shared_ptr<const Form>> L)
 {
   // Check that a is a bilinear form
-  for (const auto &form_a : a)
+  for (const auto &form : a)
   {
-    if (form_a)
+    if (form)
     {
-      if (form_a->rank() != 2)
+      if (form->rank() != 2)
       {
         dolfin_error("SystemAssembler.cpp",
                      "assemble system",
@@ -135,9 +174,9 @@ void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
   }
 
   // Check that L is a linear form
-  if (L)
+  if (const auto &form : L)
   {
-    if (L->rank() != 1)
+    if (form->rank() != 1)
     {
       dolfin_error("SystemAssembler.cpp",
                    "assemble system",
@@ -145,18 +184,26 @@ void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
     }
   }
 
-  // Check each LHS form has the same FunctionSpace as RHS
-  for (const auto &form_a : a)
-  {
-    // Check that forms share a function space
-    if (*form_a->function_space(0) != *L->function_space(0))
-    {
-      dolfin_error("SystemAssembler.cpp",
-                   "create SystemAssembler",
-                   "expected forms (a, L) to share a FunctionSpace");
-    }
-  }
+  std::size_t ny = L.size();
+  dolfin_assert(a.size()%ny == 0);
+  std::size_t nx = a.size()/ny;
 
+  // Check each LHS form has the same FunctionSpace as RHS in row
+  std::size_t k = 0;
+  for (std::size_t j = 0; j != ny; ++j)
+    for (std::size_t i = 0; i != nx; ++i)
+    {
+      auto fs_a = a[k]->function_space(0);
+      ++k;
+
+      auto fs_L = L[j]->function_space(0);
+      if (fs_a != fs_L)
+      {
+        dolfin_error("SystemAssembler.cpp",
+                     "create SystemAssembler",
+                     "expected forms (a, L) to share a FunctionSpace");
+      }
+    }
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<const MeshFunction<std::size_t>>
@@ -173,32 +220,33 @@ in SystemAssembler. Taking %s subdomains from bilinear form",
   return a ? a: b;
 }
 //-----------------------------------------------------------------------------
-bool SystemAssembler::check_functionspace_for_bc
-    (std::shared_ptr<const FunctionSpace> fs, std::size_t bc_index)
-{
-  std::shared_ptr<const FunctionSpace> bc_function_space
-    = _bcs[bc_index]->function_space();
+// bool SystemAssembler::check_functionspace_for_bc
+//     (std::shared_ptr<const FunctionSpace> fs, std::size_t bc_index)
+// {
+//   std::shared_ptr<const FunctionSpace> bc_function_space
+//     = _bcs[bc_index]->function_space();
 
-  if (*bc_function_space == *fs)
-    return true;
-  else
-  {
-    // Recursively check sub-spaces
-    std::size_t num_sub_elements = fs->element()->num_sub_elements();
-    for (std::size_t i = 0; i != num_sub_elements; ++i)
-      {
-        std::shared_ptr<const FunctionSpace> subspace = (*fs)[i];
-        if (check_functionspace_for_bc(subspace, bc_index))
-          return true;
-      }
-  }
-  return false;
-}
+//   if (*bc_function_space == *fs)
+//     return true;
+//   else
+//   {
+//     // Recursively check sub-spaces
+//     std::size_t num_sub_elements = fs->element()->num_sub_elements();
+//     for (std::size_t i = 0; i != num_sub_elements; ++i)
+//       {
+//         std::shared_ptr<const FunctionSpace> subspace = (*fs)[i];
+//         if (check_functionspace_for_bc(subspace, bc_index))
+//           return true;
+//       }
+//   }
+//   return false;
+// }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
                                const GenericVector* x0,
                                std::shared_ptr<const Form> a,
                                std::shared_ptr<const Form> L,
+                               std::array<std::vector<std::shared_ptr<const DirichletBC>>, 2> bcs,
                                bool integrate_rhs)
 {
   dolfin_assert(a);
@@ -277,26 +325,38 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
 
   // Bin boundary conditions according to which form they apply to (if any)
   std::vector<DirichletBC::Map> boundary_values(num_fs);
-  for (std::size_t i = 0; i < _bcs.size(); ++i)
+
+  for (unsigned int axis = 0; axis != 2; ++axis)
   {
-    // Match the FunctionSpace of the BC
-    // with the (possible sub-)FunctionSpace on each axis of a.
-    int axis = -1;
-
-    if (check_functionspace_for_bc(a->function_space(0), i))
-      axis = 0;
-    else if (check_functionspace_for_bc(a->function_space(1), i))
-      axis = 1;
-
-    // Found!
-    if (axis != -1)
+    for (auto &bc : bcs[axis])
     {
-      _bcs[i]->get_boundary_values(boundary_values[axis]);
-      if (MPI::size(mesh.mpi_comm()) > 1 && _bcs[i]->method() != "pointwise")
-        _bcs[i]->gather(boundary_values[axis]);
+      dolfin_assert(a->function_space(axis) == bc->function_space());
+      bc->get_boundary_values(boundary_values[axis]);
+      if (MPI::size(mesh.mpi_comm()) > 1 && bc->method() != "pointwise")
+        bc->gather(boundary_values[axis]);
     }
-
   }
+
+  // for (std::size_t i = 0; i < bcs.size(); ++i)
+  // {
+  //   // Match the FunctionSpace of the BC
+  //   // with the (possible sub-)FunctionSpace on each axis of a.
+  //   int axis = -1;
+
+  //   if (check_functionspace_for_bc(a->function_space(0), i))
+  //     axis = 0;
+  //   else if (check_functionspace_for_bc(a->function_space(1), i))
+  //     axis = 1;
+
+  //   // Found!
+  //   if (axis != -1)
+  //   {
+  //     _bcs[i]->get_boundary_values(boundary_values[axis]);
+  //     if (MPI::size(mesh.mpi_comm()) > 1 && _bcs[i]->method() != "pointwise")
+  //       _bcs[i]->gather(boundary_values[axis]);
+  //   }
+  // }
+
 
   // Modify boundary values for incremental (typically nonlinear)
   // problems
