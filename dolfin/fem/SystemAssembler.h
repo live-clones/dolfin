@@ -187,6 +187,9 @@ namespace dolfin
                          const ArrayView<const dolfin::la_index>& global_dofs0,
                          const ArrayView<const dolfin::la_index>& global_dofs1);
 
+    bool check_functionspace_for_bc
+      (std::shared_ptr<const FunctionSpace> fs, std::shared_ptr<const DirichletBC> bc) const;
+
     // Return true if cell has an Dirichlet/essential boundary
     // condition applied
     static bool has_bc(const DirichletBC::Map& boundary_values,

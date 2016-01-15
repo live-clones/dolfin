@@ -244,27 +244,28 @@ in SystemAssembler. Taking %s subdomains from bilinear form",
   return a ? a: b;
 }
 //-----------------------------------------------------------------------------
-// bool SystemAssembler::check_functionspace_for_bc
-//     (std::shared_ptr<const FunctionSpace> fs, std::size_t bc_index)
-// {
-//   std::shared_ptr<const FunctionSpace> bc_function_space
-//     = _bcs[bc_index]->function_space();
+bool SystemAssembler::check_functionspace_for_bc
+  (std::shared_ptr<const FunctionSpace> fs,
+   std::shared_ptr<const DirichletBC> bc) const
+{
+  std::shared_ptr<const FunctionSpace> bc_function_space
+    = bc->function_space();
 
-//   if (*bc_function_space == *fs)
-//     return true;
-//   else
-//   {
-//     // Recursively check sub-spaces
-//     std::size_t num_sub_elements = fs->element()->num_sub_elements();
-//     for (std::size_t i = 0; i != num_sub_elements; ++i)
-//       {
-//         std::shared_ptr<const FunctionSpace> subspace = (*fs)[i];
-//         if (check_functionspace_for_bc(subspace, bc_index))
-//           return true;
-//       }
-//   }
-//   return false;
-// }
+  if (*bc_function_space == *fs)
+    return true;
+  else
+  {
+    // Recursively check sub-spaces
+    std::size_t num_sub_elements = fs->element()->num_sub_elements();
+    for (std::size_t i = 0; i != num_sub_elements; ++i)
+      {
+        std::shared_ptr<const FunctionSpace> subspace = (*fs)[i];
+        if (check_functionspace_for_bc(subspace, bc))
+          return true;
+      }
+  }
+  return false;
+}
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
           const GenericVector* x0,
@@ -351,10 +352,12 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
 
     for (auto &bc : bcs[axis])
     {
-      std::cout << a->function_space(axis)->dofmap()->local_dimension("all")
-                << " -> " << bc->function_space()->dofmap()->local_dimension("all") <<  "\n";
-
-      dolfin_assert(a->function_space(axis) == bc->function_space());
+      if (!check_functionspace_for_bc(a->function_space(axis), bc))
+      {
+        dolfin_error("SystemAssembler.cpp",
+                     "match boundary condition to function space",
+                     "Function space on axis %d does not contain BC space", axis);
+      }
       bc->get_boundary_values(boundary_values[axis]);
       if (MPI::size(mesh.mpi_comm()) > 1 && bc->method() != "pointwise")
         bc->gather(boundary_values[axis]);
