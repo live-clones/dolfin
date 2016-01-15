@@ -91,7 +91,7 @@ namespace dolfin
 
     /// Assemble row of matrices and associated RHS vector.
     void assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
-                  std::shared_ptr<GenericVector> b);
+                  std::vector<std::shared_ptr<GenericVector>> b);
 
   private:
 
@@ -108,21 +108,17 @@ namespace dolfin
     static void check_forms(std::vector<std::shared_ptr<const Form>> a,
                             std::vector<std::shared_ptr<const Form>> L);
 
-    // Check if _bcs[bc_index] is part of FunctionSpace fs
-    //    bool check_functionspace_for_bc
-    //      (std::shared_ptr<const FunctionSpace> fs, std::size_t bc_index);
-
     // Assemble system
     void assemble(GenericMatrix* A, GenericVector* b,
                   const GenericVector* x0,
                   std::shared_ptr<const Form> a,
                   std::shared_ptr<const Form> L,
-                  std::array<std::vector<std::shared_ptr<const DirichletBC>>, 2> bcs,
+                  std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs,
                   bool integrate_rhs);
 
     // Bilinear and linear forms
     std::vector<std::shared_ptr<const Form>> _a;
-    std::shared_ptr<const Form> _l;
+    std::vector<std::shared_ptr<const Form>> _l;
 
     // Boundary conditions for each space in the forms
     std::vector<std::vector<std::shared_ptr<const DirichletBC>>> _bcs;
