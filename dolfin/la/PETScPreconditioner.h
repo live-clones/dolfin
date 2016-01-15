@@ -79,7 +79,9 @@ namespace dolfin
     void set_coordinates(const std::vector<double>& x, std::size_t dim);
 
     // FIXME: Document
-    void
+    // FIXME: Use shared pointers for the fields, so we can use
+    // PETSC_USE_POINTER instead of PETSC_COPY_VALUES
+    static void
       set_fieldsplit(PETScKrylovSolver& solver,
                      const std::vector<std::vector<dolfin::la_index>>& fields,
                      const std::vector<std::string>& split_names);

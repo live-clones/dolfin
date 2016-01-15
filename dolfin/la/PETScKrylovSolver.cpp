@@ -436,34 +436,6 @@ PETScKrylovSolver::_set_operators(std::shared_ptr<const PETScBaseMatrix> A,
 
   PetscErrorCode ierr;
 
-  // Set IS on preconditioner if MatType is MATNEST
-  MatType mat_type;
-  ierr = MatGetType(_matA->mat(), &mat_type);
-  if (ierr != 0) petsc_error(ierr, __FILE__, "MatGetType");
-
-  if (mat_type == std::string(MATNEST))
-  {
-    // Get PETSc preconditioner
-    PC pc;
-    ierr = KSPGetPC(_ksp, &pc);
-    if (ierr != 0) petsc_error(ierr, __FILE__, "KSPGetPC");
-    ierr = PCSetType(pc, PCFIELDSPLIT);
-    if (ierr != 0) petsc_error(ierr, __FILE__, "PCSetType");
-
-    IS is[2];
-    ierr = MatNestGetISs(_matA->mat(), is, NULL);
-    if (ierr != 0) petsc_error(ierr, __FILE__, "MatNestGetISs");
-    // Set FieldSplit
-    for (std::size_t i = 0; i != 2; ++i)
-    {
-      std::stringstream s;
-      s << i;
-      ierr = PCFieldSplitSetIS(pc, s.str().c_str(), is[i]);
-      if (ierr != 0) petsc_error(ierr, __FILE__, "PCFieldSplitSetIS");
-    }
-
-  }
-
   ierr = KSPSetOperators(_ksp, _matA->mat(), _matP->mat());
   if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetOperators");
 }

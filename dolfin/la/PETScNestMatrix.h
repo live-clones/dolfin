@@ -39,10 +39,10 @@ namespace dolfin
     /// Create empty matrix
     PETScNestMatrix();
 
-    /// Create from a list of matrices
+    /// Create from a list of matrices and FunctionSpaces
     explicit PETScNestMatrix
       (std::vector<std::shared_ptr<const GenericMatrix>> mats,
-       std::shared_ptr<const FunctionSpace> W);
+       std::vector<std::shared_ptr<const FunctionSpace>> W);
 
     /// Destructor
     virtual ~PETScNestMatrix();

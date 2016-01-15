@@ -23,6 +23,7 @@
 
 #include "GenericMatrix.h"
 #include "GenericVector.h"
+#include "IndexMap.h"
 #include "PETScMatrix.h"
 #include "PETScVector.h"
 #include "PETScNestMatrix.h"
@@ -37,7 +38,7 @@ PETScNestMatrix::PETScNestMatrix()
 //-----------------------------------------------------------------------------
 PETScNestMatrix::PETScNestMatrix
 (std::vector<std::shared_ptr<const GenericMatrix>> mats,
- std::shared_ptr<const FunctionSpace> W)
+ std::vector<std::shared_ptr<const FunctionSpace>> W)
 {
   if (mats.size() != 4)
   {
@@ -81,23 +82,26 @@ PETScNestMatrix::PETScNestMatrix
                  "All matrices appear to be NULL");
   }
 
-  if (W)
+  if (W.size() > 0)
   {
-    const std::size_t num_sub_elements = W->element()->num_sub_elements();
-    if (num_sub_elements != 2)
-      dolfin_error("PETScNestMatrix", "set index sets on mixed space",
-                   "Space should have 2 sub-spaces");
+    // FIXME: not working
 
-    IS is[2];
-    const std::vector<dolfin::la_index> dofs0 = W->sub(0)->dofmap()->dofs();
-    const std::vector<dolfin::la_index> dofs1 = W->sub(1)->dofmap()->dofs();
+    std::size_t nw = W.size();
 
-    ISCreateGeneral(PETSC_COMM_WORLD, dofs0.size(), dofs0.data(),
-                    PETSC_COPY_VALUES, &is[0]);
-    ISCreateGeneral(PETSC_COMM_WORLD, dofs1.size(), dofs1.data(),
-                    PETSC_COPY_VALUES, &is[1]);
+    std::vector<IS> is(nw);
 
-    MatCreateNest(mpi_comm, 2, is, 2, is, petsc_mats.data(), &_matA);
+    // Get global offset for this process
+    dolfin::la_index offset = 0;
+    for (std::size_t i = 0; i != nw; ++i)
+    {
+      std::vector<dolfin::la_index> dofs = W[i]->dofmap()->dofs();
+      for (auto &dof : dofs)
+        dof += offset;
+      ISCreateGeneral(PETSC_COMM_WORLD, dofs.size(), dofs.data(),
+                      PETSC_COPY_VALUES, &is[i]);
+    }
+
+    MatCreateNest(mpi_comm, nw, is.data(), nw, is.data(), petsc_mats.data(), &_matA);
   }
   else
     MatCreateNest(mpi_comm, 2, NULL, 2, NULL, petsc_mats.data(), &_matA);
