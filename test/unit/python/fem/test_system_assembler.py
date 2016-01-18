@@ -405,13 +405,13 @@ def test_non_square_assembly():
     Anorm1 += A.norm("frobenius")**2
     bnorm1 = b.norm("l2")**2
 
-    assembler = SystemAssembler(a10, L1, bc)
+    assembler = SystemAssembler(a10, L1, [], bc)
     A = Matrix()
     b = Vector()
     assembler.assemble(A, b)
     Anorm1 += A.norm("frobenius")**2
 
-    assembler = SystemAssembler(a11, L1, bc)
+    assembler = SystemAssembler(a11, L1)
     A = Matrix()
     assembler.add_values = True
     assembler.assemble(A, b)

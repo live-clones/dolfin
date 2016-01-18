@@ -37,8 +37,7 @@ PETScNestMatrix::PETScNestMatrix()
 }
 //-----------------------------------------------------------------------------
 PETScNestMatrix::PETScNestMatrix
-(std::vector<std::shared_ptr<const GenericMatrix>> mats,
- std::vector<std::shared_ptr<const FunctionSpace>> W)
+(std::vector<std::shared_ptr<const GenericMatrix>> mats)
 {
   if (mats.size() != 4)
   {
@@ -82,29 +81,7 @@ PETScNestMatrix::PETScNestMatrix
                  "All matrices appear to be NULL");
   }
 
-  if (W.size() > 0)
-  {
-    // FIXME: not working
-
-    std::size_t nw = W.size();
-
-    std::vector<IS> is(nw);
-
-    // Get global offset for this process
-    dolfin::la_index offset = 0;
-    for (std::size_t i = 0; i != nw; ++i)
-    {
-      std::vector<dolfin::la_index> dofs = W[i]->dofmap()->dofs();
-      for (auto &dof : dofs)
-        dof += offset;
-      ISCreateGeneral(PETSC_COMM_WORLD, dofs.size(), dofs.data(),
-                      PETSC_COPY_VALUES, &is[i]);
-    }
-
-    MatCreateNest(mpi_comm, nw, is.data(), nw, is.data(), petsc_mats.data(), &_matA);
-  }
-  else
-    MatCreateNest(mpi_comm, 2, NULL, 2, NULL, petsc_mats.data(), &_matA);
+  MatCreateNest(mpi_comm, 2, NULL, 2, NULL, petsc_mats.data(), &_matA);
 }
 //-----------------------------------------------------------------------------
 PETScNestMatrix::~PETScNestMatrix()
@@ -149,6 +126,57 @@ void PETScNestMatrix::mult(const GenericVector& x, GenericVector& y) const
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatMult");
 }
 //-----------------------------------------------------------------------------
+void PETScNestMatrix::init_vectors
+(GenericVector& z_out,
+ std::vector<std::shared_ptr<const GenericVector>> z_in) const
+{
+  const std::size_t nz = z_in.size();
+  std::vector<IS> is(nz);
+  PetscErrorCode ierr = MatNestGetISs(_matA, is.data(), NULL);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatGetISs");
+  std::vector<Vec> nest_in;
+  for (auto &p: z_in)
+    nest_in.push_back(as_type<const PETScVector>(p)->vec());
+  Vec nest_out;
+  ierr = VecCreateNest(mpi_comm(), nz, is.data(), nest_in.data(), &nest_out);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "VecCreateNest");
 
+  // Downcast vector and assign
+  PETScVector& _z = as_type<PETScVector>(z_out);
+  _z._x = nest_out;
+}
+//-----------------------------------------------------------------------------
+void PETScNestMatrix::get_block_dofs
+(std::vector<dolfin::la_index>& dofs, std::size_t idx) const
+{
+  dolfin::la_index m, n;
+  PetscErrorCode ierr = MatNestGetSize(_matA, &m, &n);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatNestGetSize");
 
+  dolfin_assert(m==n);
+
+  if ((int)idx >= m)
+  {
+    dolfin_error("PETScNestMatrix.cpp",
+                 "get dofs for block",
+                 "Index %d out of range [0:%d)", idx, m);
+  }
+
+  std::vector<IS> is(m);
+  ierr = MatNestGetISs(_matA, is.data(), NULL);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatNestGetISs");
+
+  dolfin::la_index ndofs;
+  ierr = ISGetLocalSize(is[idx], &ndofs);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "ISGetLocalSize");
+  dofs.resize(ndofs);
+
+  const dolfin::la_index* ptr;
+  ierr = ISGetIndices(is[idx], &ptr);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "ISGetIndices");
+  std::copy(ptr, ptr + ndofs, dofs.begin());
+
+  ierr = ISRestoreIndices(is[idx], &ptr);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "ISRestoreIndices");
+}
 #endif

@@ -41,14 +41,20 @@ namespace dolfin
 
     /// Create from a list of matrices and FunctionSpaces
     explicit PETScNestMatrix
-      (std::vector<std::shared_ptr<const GenericMatrix>> mats,
-       std::vector<std::shared_ptr<const FunctionSpace>> W);
+      (std::vector<std::shared_ptr<const GenericMatrix>> mats);
 
     /// Destructor
     virtual ~PETScNestMatrix();
 
     /// Multiply
     virtual void mult(const GenericVector& x, GenericVector& y) const;
+
+    /// Initialise a nest vector for use with matrix
+    void init_vectors(GenericVector& z_out,
+                      std::vector<std::shared_ptr<const GenericVector>> z_in) const;
+
+    /// Get dofs for each block
+    void get_block_dofs(std::vector<dolfin::la_index>& dofs, std::size_t idx) const;
 
     /// Return size of given dimension
     std::size_t size(std::size_t dim) const

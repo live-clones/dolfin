@@ -247,6 +247,7 @@ namespace dolfin
     const PETScVector& operator= (const PETScVector& x);
 
     friend class PETScBaseMatrix;
+    friend class PETScNestMatrix;
     friend class PETScMatrix;
 
   private:
