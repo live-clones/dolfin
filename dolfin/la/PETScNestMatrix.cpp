@@ -50,12 +50,10 @@ PETScNestMatrix::PETScNestMatrix
   MPI_Comm mpi_comm = MPI_COMM_NULL;
   for (std::size_t i = 0; i != mats.size(); ++i)
   {
-    std::cout << i << ":";
-
     if (mats[i])
     {
       petsc_mats[i] = as_type<const PETScMatrix>(mats[i])->mat();
-      std::cout << mats[i]->size(0)<< " " << mats[i]->size(1) <<" ";
+
       // If Mat has been initialised, get mpi_comm
       if (petsc_mats[i])
       {
@@ -71,7 +69,6 @@ PETScNestMatrix::PETScNestMatrix
     }
     else
       petsc_mats[i] = NULL;
-    std::cout << "\n";
   }
 
   if (mpi_comm == MPI_COMM_NULL)
