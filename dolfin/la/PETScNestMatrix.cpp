@@ -127,9 +127,24 @@ void PETScNestMatrix::init_vectors
 (GenericVector& z_out,
  std::vector<std::shared_ptr<const GenericVector>> z_in) const
 {
+  dolfin_assert(_matA);
+
+  dolfin::la_index m, n;
+  PetscErrorCode ierr = MatNestGetSize(_matA, &m, &n);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatNestGetSize");
+  dolfin_assert(m==n);
+
   const std::size_t nz = z_in.size();
+  if ((int)nz != m)
+  {
+    dolfin_error("PETScNestMatrix.cpp",
+                 "initialise vectors",
+                 "Incorrect number of vectors (%d) for block size (%d)",
+                 nz, m);
+  }
+
   std::vector<IS> is(nz);
-  PetscErrorCode ierr = MatNestGetISs(_matA, is.data(), NULL);
+  ierr = MatNestGetISs(_matA, is.data(), NULL);
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatGetISs");
   std::vector<Vec> nest_in;
   for (auto &p: z_in)
@@ -146,6 +161,8 @@ void PETScNestMatrix::init_vectors
 void PETScNestMatrix::get_block_dofs
 (std::vector<dolfin::la_index>& dofs, std::size_t idx) const
 {
+  dolfin_assert(_matA);
+
   dolfin::la_index m, n;
   PetscErrorCode ierr = MatNestGetSize(_matA, &m, &n);
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatNestGetSize");
