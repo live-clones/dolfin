@@ -288,9 +288,7 @@ std::size_t PETScKrylovSolver::solve(PETScVector& x, const PETScVector& b)
         _matA->size(0), _matA->size(1));
   }
 
-  KSPView(_ksp, (PetscViewer)PETSC_VIEWER_DEFAULT);
-
-  ierr = KSPSolve(_ksp, b.vec(), x.vec());
+  ierr =  KSPSolve(_ksp, b.vec(), x.vec());
   if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSolve");
 
   // Update ghost values
@@ -435,7 +433,6 @@ PETScKrylovSolver::_set_operators(std::shared_ptr<const PETScBaseMatrix> A,
   dolfin_assert(_ksp);
 
   PetscErrorCode ierr;
-
   ierr = KSPSetOperators(_ksp, _matA->mat(), _matP->mat());
   if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetOperators");
 }

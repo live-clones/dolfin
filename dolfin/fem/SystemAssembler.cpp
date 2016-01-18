@@ -68,6 +68,16 @@ SystemAssembler::SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
   check_forms(_a, _l);
 }
 //-----------------------------------------------------------------------------
+SystemAssembler::SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
+                       std::vector<std::shared_ptr<const Form>> L,
+                       std::vector<std::shared_ptr<const DirichletBC>> bcs0,
+                       std::vector<std::shared_ptr<const DirichletBC>> bcs1)
+  : _a(a), _l(L), _bcs({bcs0, bcs1})
+{
+  // Check forms for correct dimensions
+  check_forms(_a, _l);
+}
+//-----------------------------------------------------------------------------
 void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
                                std::vector<std::shared_ptr<GenericVector>> b)
 {
@@ -105,7 +115,6 @@ void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
     for (std::size_t j = 0; j != ncols; ++j)
     {
       std::size_t k = j + i*ncols;
-      std::cout << "i = " << i << ", j = " << j << "\n";
       // Only assemble RHS once, but apply BCs each time
       bool assemble_rhs = (j == 0);
       if (i == j)
@@ -113,66 +122,49 @@ void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
       else
         bcs = {_bcs[i], _bcs[j]};
       assemble(&*A[k], &*b[i], NULL, _a[k], _l[i], bcs, assemble_rhs);
-
-      std::cout << "b[i].norm = " << b[i]->norm("l2") <<"\n";
     }
   }
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A, GenericVector& b)
 {
-  dolfin_assert(_bcs.size() == 1);
   dolfin_assert(_l.size() == 1);
   dolfin_assert(_a.size() == 1);
-  std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs
-    = {_bcs[0]};
 
-  assemble(&A, &b, NULL, _a[0], _l[0], bcs, true);
+  assemble(&A, &b, NULL, _a[0], _l[0], _bcs, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A)
 {
-  dolfin_assert(_bcs.size() == 1);
   dolfin_assert(_l.size() == 1);
   dolfin_assert(_a.size() == 1);
-  std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs
-    = {_bcs[0]};
 
-  assemble(&A, NULL, NULL, _a[0], _l[0], bcs, true);
+  assemble(&A, NULL, NULL, _a[0], _l[0], _bcs, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericVector& b)
 {
-  dolfin_assert(_bcs.size() == 1);
   dolfin_assert(_l.size() == 1);
   dolfin_assert(_a.size() == 1);
-  std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs
-    = {_bcs[0]};
 
-  assemble(NULL, &b, NULL, _a[0], _l[0], bcs, true);
+  assemble(NULL, &b, NULL, _a[0], _l[0], _bcs, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix& A, GenericVector& b,
                                const GenericVector& x0)
 {
-  dolfin_assert(_bcs.size() == 1);
   dolfin_assert(_l.size() == 1);
   dolfin_assert(_a.size() == 1);
-  std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs
-    = {_bcs[0]};
 
-  assemble(&A, &b, &x0, _a[0], _l[0], bcs, true);
+  assemble(&A, &b, &x0, _a[0], _l[0], _bcs, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericVector& b, const GenericVector& x0)
 {
-  dolfin_assert(_bcs.size() == 1);
   dolfin_assert(_l.size() == 1);
   dolfin_assert(_a.size() == 1);
-  std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs
-    = {_bcs[0]};
 
-  assemble(NULL, &b, &x0, _a[0], _l[0], bcs, true);
+  assemble(NULL, &b, &x0, _a[0], _l[0], _bcs, true);
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
@@ -348,8 +340,6 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
 
   for (unsigned int axis = 0; axis != bcs.size(); ++axis)
   {
-    std::cout << bcs[axis].size() << " BCs on axis " << axis << "\n";
-
     for (auto &bc : bcs[axis])
     {
       if (!check_functionspace_for_bc(a->function_space(axis), bc))

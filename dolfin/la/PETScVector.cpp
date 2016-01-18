@@ -305,7 +305,6 @@ void PETScVector::add_local(const double* block, std::size_t m,
   dolfin_assert(_x);
   if (m == 0)
     return;
-
   PetscErrorCode ierr = VecSetValuesLocal(_x, m, rows, block, ADD_VALUES);
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecSetValuesLocal");
 }

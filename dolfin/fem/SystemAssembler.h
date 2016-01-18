@@ -70,6 +70,13 @@ namespace dolfin
                     std::vector<std::shared_ptr<const Form>> L,
         std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs);
 
+    /// FIXME: Constructor with two sets of BCs (for 2x2 system)
+    /// Need to figure out how to wrap vector<vector<shared_ptr<TYPE>>> in SWIG
+    SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
+                    std::vector<std::shared_ptr<const Form>> L,
+                    std::vector<std::shared_ptr<const DirichletBC>> bcs0,
+                    std::vector<std::shared_ptr<const DirichletBC>> bcs1);
+
     /// Assemble system (A, b)
     void assemble(GenericMatrix& A, GenericVector& b);
 
