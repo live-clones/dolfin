@@ -50,14 +50,6 @@ using namespace dolfin;
 
 //-----------------------------------------------------------------------------
 SystemAssembler::SystemAssembler(std::shared_ptr<const Form> a,
-                                 std::shared_ptr<const Form> L)
-  : _a(a), _l(L)
-{
-  // Check arity of forms
-  check_arity(_a, _l);
-}
-//-----------------------------------------------------------------------------
-SystemAssembler::SystemAssembler(std::shared_ptr<const Form> a,
                                  std::shared_ptr<const Form> L,
                                  std::vector<std::shared_ptr<const DirichletBC>> bcs)
   : _a(a), _l(L), _bcs(bcs)
@@ -164,7 +156,8 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   Timer timer("Assemble system");
 
   // Get mesh
-  const Mesh& mesh = _a->mesh();
+  dolfin_assert(_a->mesh());
+  const Mesh& mesh = *(_a->mesh());
   dolfin_assert(mesh.ordered());
 
   // Get cell domains
@@ -317,7 +310,8 @@ void SystemAssembler::cell_wise_assembly(
   std::shared_ptr<const MeshFunction<std::size_t>> exterior_facet_domains)
 {
   // Extract mesh
-  const Mesh& mesh = ufc[0]->dolfin_form.mesh();
+  dolfin_assert(ufc[0]->dolfin_form.mesh());
+  const Mesh& mesh = *(ufc[0]->dolfin_form.mesh());
 
   // Initialize entities if using external facet integrals
   dolfin_assert(mesh.ordered());
@@ -501,7 +495,8 @@ void SystemAssembler::facet_wise_assembly(
   std::shared_ptr<const MeshFunction<std::size_t>> interior_facet_domains)
 {
   // Extract mesh
-  const Mesh& mesh = ufc[0]->dolfin_form.mesh();
+  dolfin_assert(ufc[0]->dolfin_form.mesh());
+  const Mesh& mesh = *(ufc[0]->dolfin_form.mesh());
 
   // Compute facets and facet - cell connectivity if not already
   // computed
