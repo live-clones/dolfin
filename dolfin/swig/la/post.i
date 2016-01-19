@@ -1007,6 +1007,28 @@ _matrix_vector_mul_map[PETScLinearOperator] = [PETScVector]
 #endif  // HAS_PETSC4PY
 #endif  // HAS_PETSC
 
+#ifdef HAS_PETSC
+%extend dolfin::PETScPreconditioner
+{
+  static void set_fieldsplit(dolfin::PETScKrylovSolver& solver,
+                             std::shared_ptr<const dolfin::PETScNestMatrix> Anest,
+                             std::size_t n)
+  {
+    // FIXME: Need to sort out proper SWIG typemaps to pass in strings etc.
+    std::vector<std::vector<dolfin::la_index>> dofs(n);
+    std::vector<std::string> split_names(n);
+
+    for (std::size_t i = 0; i != n; ++i)
+    {
+      Anest->get_block_dofs(dofs[i], i);
+      split_names[i] = std::to_string(i);
+    }
+
+    dolfin::PETScPreconditioner::set_fieldsplit(solver, dofs, split_names);
+  }
+}
+#endif
+
 #ifdef HAS_SLEPC
 #ifdef HAS_SLEPC4PY
 // Override default SLEPcEigenSolver.eps() call.
