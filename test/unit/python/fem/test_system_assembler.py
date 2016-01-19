@@ -392,31 +392,19 @@ def test_non_square_assembly():
     L1 = Constant(0.0)*q*dx
     bc = DirichletBC(V.sub(0), Constant(1.0), bound)
 
-    assembler = SystemAssembler(a00, L0, bc)
-    A = Matrix()
-    b = Vector()
-    assembler.assemble(A, b)
-    Anorm1 = A.norm("frobenius")**2
-
-    assembler = SystemAssembler(a01, L0, bc)
-    A = Matrix()
-    assembler.add_values = True
-    assembler.assemble(A, b)
-    Anorm1 += A.norm("frobenius")**2
-    bnorm1 = b.norm("l2")**2
-
-    assembler = SystemAssembler(a10, L1, [], bc)
-    A = Matrix()
-    b = Vector()
-    assembler.assemble(A, b)
-    Anorm1 += A.norm("frobenius")**2
-
-    assembler = SystemAssembler(a11, L1)
-    A = Matrix()
-    assembler.add_values = True
-    assembler.assemble(A, b)
-    Anorm1 += A.norm("frobenius")**2
-    bnorm1 += b.norm("l2")**2
+    assembler = SystemAssembler([a00, a01, a10, a11], [L0, L1], [[bc], []])
+    A00 = Matrix()
+    A01 = Matrix()
+    A10 = Matrix()
+    A11 = Matrix()
+    b0 = Vector()
+    b1 = Vector()
+    assembler.assemble([A00, A01, A10, A11], [b0, b1])
+    Anorm1 = A00.norm("frobenius")**2
+    Anorm1 += A01.norm("frobenius")**2
+    Anorm1 += A10.norm("frobenius")**2
+    Anorm1 += A11.norm("frobenius")**2
+    bnorm1 = b0.norm("l2")**2 + b1.norm("l2")**2
 
     # Same problem as a MixedFunctionSpace
     W = FunctionSpace(mesh, P2*P1)
