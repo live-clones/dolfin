@@ -393,6 +393,13 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   }
   else
   {
+    if (!integrate_rhs)
+    {
+      dolfin_error("SystemAssembler.cpp",
+                   "assemble block system",
+                   "Facet-wise assembly of blocked matrices not yet supported");
+    }
+
     // Assemble facet-wise (including cell assembly)
     facet_wise_assembly(tensors, ufc, data, boundary_values,
                         cell_domains, exterior_facet_domains,
