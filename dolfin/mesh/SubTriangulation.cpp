@@ -146,7 +146,7 @@ void SubTriangulation::build(const Plane& surface)
 
     // Add to topology, mapping to the new local indexing
     for (auto p : tetrahedra)
-        topology.push_back(local_map[p]);
+      topology.push_back(local_map[p]);
 
   }
 

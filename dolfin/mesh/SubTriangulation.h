@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with Narwal. If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __NARWAL_SUBTRIANGULATION_H
-#define __NARWAL_SUBTRIANGULATION_H
+#ifndef __DOLFIN_SUBTRIANGULATION_H
+#define __DOLFIN_SUBTRIANGULATION_H
 
 #include <boost/multi_array.hpp>
 

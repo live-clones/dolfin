@@ -53,7 +53,7 @@ endif()
 # Set CMake options, see `cmake --help-policy CMP000x`
 if (COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
-  cmake_policy(SET CMP0004 OLD)
+  cmake_policy(SET CMP0004 NEW)
   if(POLICY CMP0042)
     cmake_policy(SET CMP0042 NEW)
   endif()
@@ -507,9 +507,9 @@ if (DOLFIN_ENABLE_TRILINOS)
     $ENV{TRILINOS_DIR} QUIET)
   set(DOLFIN_TRILINOS_PACKAGES "Tpetra;Zoltan;MueLu;Amesos2;Ifpack2;Belos")
 
-  if ("${Trilinos_VERSION}" VERSION_LESS "11.0.0")
+  if ("${Trilinos_VERSION}" VERSION_LESS "12.4.0")
     set(Trilinos_FOUND FALSE)
-    message(STATUS "Unable to find Trilinos (>= 11.0.0)")
+    message(STATUS "Unable to find Trilinos (>= 12.4.0)")
   endif()
 
   # Check for required packages
