@@ -32,7 +32,7 @@ SubTriangulation::SubTriangulation(const Mesh& mesh,
                                    const Plane& surface)
   : _mesh(mesh)
 {
-  dolfin_assert(mesh.cell_type() == CellType::tetrahedron);
+  dolfin_assert(mesh.type().cell_type() == CellType::tetrahedron);
   build(surface);
 }
 //-----------------------------------------------------------------------------
@@ -140,13 +140,12 @@ void SubTriangulation::build(const Plane& surface)
       facet_key_edge.push_back(max_idx);
     }
 
-    std::vector<std::vector<std::size_t> > tetrahedra;
+    std::vector<std::size_t> tetrahedra;
     PlazaRefinementND::get_simplices(tetrahedra, marked_edges,
-                                     facet_key_edge, 3);
+                                     facet_key_edge, 3, false);
 
     // Add to topology, mapping to the new local indexing
-    for (auto tet : tetrahedra)
-      for (auto p : tet)
+    for (auto p : tetrahedra)
         topology.push_back(local_map[p]);
 
   }
