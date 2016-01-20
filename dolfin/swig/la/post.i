@@ -1012,17 +1012,13 @@ _matrix_vector_mul_map[PETScLinearOperator] = [PETScVector]
 {
   static void set_fieldsplit(dolfin::PETScKrylovSolver& solver,
                              std::shared_ptr<const dolfin::PETScNestMatrix> Anest,
-                             std::size_t n)
+                             std::vector<std::string> split_names)
   {
-    // FIXME: Need to sort out proper SWIG typemaps to pass in strings etc.
+    std::size_t n = split_names.size();
     std::vector<std::vector<dolfin::la_index>> dofs(n);
-    std::vector<std::string> split_names(n);
 
     for (std::size_t i = 0; i != n; ++i)
-    {
       Anest->get_block_dofs(dofs[i], i);
-      split_names[i] = std::to_string(i);
-    }
 
     dolfin::PETScPreconditioner::set_fieldsplit(solver, dofs, split_names);
   }

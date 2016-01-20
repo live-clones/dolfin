@@ -227,6 +227,7 @@ const ufc::cell& (void *argp, bool dolfin_cell, int res)
 // Instantiate typemap
 //-----------------------------------------------------------------------------
 IN_TYPEMAP_STD_VECTOR_OF_STD_VECTOR_OF_SHARED_POINTERS(Form)
+IN_TYPEMAP_STD_VECTOR_OF_STD_VECTOR_OF_SHARED_POINTERS(DirichletBC)
 
 #ifdef FEMMODULE // Conditional code for FEM module
 

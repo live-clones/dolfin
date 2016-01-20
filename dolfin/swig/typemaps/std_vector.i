@@ -605,6 +605,42 @@ const std::vector<TYPE>&  ARG_NAME
 }
 %enddef
 
+// ---------------------------------------------------------------------------
+// Typemaps (in) for std::vector<std::string>
+// ---------------------------------------------------------------------------
+%typecheck(SWIG_TYPECHECK_STRING_ARRAY) std::vector<std::string> {
+    $1 = PySequence_Check($input) ? 1 : 0;
+}
+
+%typemap(in) std::vector<std::string> (std::vector<std::string> tmp) {
+  int i;
+  if (!PyList_Check($input)) {
+    PyErr_SetString(PyExc_ValueError,"expected a list of 'str'");
+    return NULL;
+  }
+  int list_length = PyList_Size($input);
+  for (i = 0; i < list_length; i++)
+  {
+    PyObject *o = PyList_GetItem($input,i);
+%#if PY_VERSION_HEX>=0x03000000
+    if (PyUnicode_Check(o))
+%#else
+    if (PyString_Check(o))
+%#endif
+    {
+      char* str_o = SWIG_Python_str_AsChar(o);
+      tmp.push_back(std::string(str_o));
+      SWIG_Python_str_DelForPy3(str_o);
+    }
+    else
+    {
+      PyErr_SetString(PyExc_TypeError,"provide a list of strings");
+      return NULL;
+    }
+  }
+  $1 = tmp;
+}
+
 //-----------------------------------------------------------------------------
 // Out typemap for std::vector<std::pair<std:string, std:string>
 //-----------------------------------------------------------------------------
