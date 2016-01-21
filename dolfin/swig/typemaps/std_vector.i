@@ -168,6 +168,9 @@ std::shared_ptr<dolfin::TYPE> tempshared)
       tempshared = *(reinterpret_cast<std::shared_ptr< dolfin::TYPE> *>(itemp));
       tmp_vec.push_back(tempshared);
     }
+    else
+      tmp_vec.push_back(NULL);
+
     if (newmem & SWIG_CAST_NEW_MEMORY)
     {
       delete reinterpret_cast<std::shared_ptr< dolfin::TYPE> *>(itemp);

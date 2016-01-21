@@ -121,7 +121,15 @@ void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
         bcs = {_bcs[i]};
       else
         bcs = {_bcs[i], _bcs[j]};
-      assemble(&*A[k], &*b[i], NULL, _a[k], _l[i], bcs, assemble_rhs);
+      // Some matrices and/or forms may be NULL
+      if (_a[k] and A[k])
+        assemble(&*A[k], &*b[i], NULL, _a[k], _l[i], bcs, assemble_rhs);
+      else if (i == j and bcs[0].size() > 0)
+      {
+        dolfin_error("SystemAssembler.cpp",
+                     "assemble block system",
+                     "Boundary conditions cannot be specified on NULL block");
+      }
     }
   }
 }
@@ -198,7 +206,6 @@ void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
     }
   }
 
-
   std::size_t nrows = L.size();
   dolfin_assert(a.size()%nrows == 0);
   std::size_t ncols = a.size()/nrows;
@@ -208,15 +215,17 @@ void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
     for (std::size_t j = 0; j != ncols; ++j)
     {
       const std::size_t k = j + i*ncols;
-      auto fs_a = a[k]->function_space(0);
-      auto fs_L = L[i]->function_space(0);
-      if (fs_a != fs_L)
+      if (a[k])
       {
-        dolfin_error("SystemAssembler.cpp",
-                     "create SystemAssembler",
-                     "expected forms (a, L) to share a FunctionSpace");
+        auto fs_a = a[k]->function_space(0);
+        auto fs_L = L[i]->function_space(0);
+        if (fs_a != fs_L)
+        {
+          dolfin_error("SystemAssembler.cpp",
+                       "create SystemAssembler",
+                       "expected forms (a, L) to share a FunctionSpace");
+        }
       }
-
     }
   }
 
