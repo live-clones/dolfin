@@ -216,7 +216,7 @@ spaces:
     auto V = std::make_shared<VelocityUpdate::FunctionSpace>(mesh);
     auto Q = std::make_shared<PressureUpdate::FunctionSpace>(mesh);
     // and an output functionspace
-    auto O = V[0]->collapse();
+    auto O = ((*V)[0])->collapse();
 
 The time step and the length of the interval are defined by:
 
