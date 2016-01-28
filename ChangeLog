@@ -1,4 +1,5 @@
-- Fix bug when reading domain data from mesh file for a ghosted mesh.
+- Switch to Google Test framwork for C++ unit tests
+- Fix bug when reading domain data from mesh file for a ghosted mesh
 - Remove reference versions of constructors for many classes that
 	store a pointer/reference to the object passed to the
 	constructor. This is an intrusive interface change for C++ users,
@@ -25,6 +26,7 @@
 - Clean-up in PyDOLFIN function space design, issue #576
 - Deprecate MixedFunctionSpace and EnrichedFunctionSpace in favour of
 	initialization by suitable UFL element
+- Add experimental matplotlib-based plotting backend, see mplot demo
 1.6.0 [2015-07-28]
 - Remove redundant pressure boundary condition in Stokes demos
 - Require Point in RectangleMesh and BoxMesh constructors
