@@ -72,7 +72,7 @@ namespace dolfin
     ///     bool
     ///         The return value is true iff the object has a parent.
     bool has_parent() const
-    { return _parent ? true : false; }
+    { return !_parent.expired() ? true : false; }
 
     /// Check if the object has a child.
     ///
@@ -90,21 +90,25 @@ namespace dolfin
     ///         The parent object.
     T& parent()
     {
-      if (!_parent)
+      auto shared = _parent.lock();
+      if (!shared)
         dolfin_error("Hierarchical.h",
                      "extract parent of hierarchical object",
-                     "Object has no parent in hierarchy");
-      return *_parent;
+                     "Object has no parent in hierarchy "
+                     "or it has already been deleted");
+      return *shared;
     }
 
     /// Return parent in hierarchy (const version).
     const T& parent() const
     {
-      if (!_parent)
+      auto shared = _parent.lock();
+      if (!shared)
         dolfin_error("Hierarchical.h",
                      "extract parent of hierarchical object",
-                     "Object has no parent in hierarchy");
-      return *_parent;
+                     "Object has no parent in hierarchy "
+                     "or it has already been deleted");
+      return *shared;
     }
 
     /// Return shared pointer to parent. A zero pointer is returned if
@@ -114,11 +118,11 @@ namespace dolfin
     ///     shared_ptr<T>
     ///         The parent object.
     std::shared_ptr<T> parent_shared_ptr()
-    { return _parent; }
+    { return _parent.lock(); }
 
     /// Return shared pointer to parent (const version).
     std::shared_ptr<const T> parent_shared_ptr() const
-    { return _parent; }
+    { return _parent.lock(); }
 
     /// Return child in hierarchy. An error is thrown if the object
     /// has no child.
@@ -182,7 +186,7 @@ namespace dolfin
     std::shared_ptr<T> root_node_shared_ptr()
     {
       std::shared_ptr<T> it = _self;
-      for (; it->_parent; it = it->_parent);
+      for (auto par = it; par; it = par, par = it->_parent.lock());
       return it;
     }
 
@@ -190,7 +194,7 @@ namespace dolfin
     std::shared_ptr<const T> root_node_shared_ptr() const
     {
       std::shared_ptr<const T> it = _self;
-      for (; it->_parent; it = it->_parent);
+      for (auto par = it; par; it = par, par = it->_parent.lock());
       return it;
     }
 
@@ -260,11 +264,11 @@ namespace dolfin
       info("Debugging hierarchical object:");
       cout << "  depth           = " << depth() << endl;
       cout << "  has_parent()    = " << has_parent() << endl;
-      info("  _parent.get()   = %x", _parent.get());
+      info("  _parent.get()   = %x", _parent.lock().get());
       info("  _parent.count() = %d", _parent.use_count());
-      cout << "  has_child()     = " << has_parent() << endl;
-      info("  _child.get()    = %x", _parent.get());
-      info("  _child.count()  = %d", _parent.use_count());
+      cout << "  has_child()     = " << has_child() << endl;
+      info("  _child.get()    = %x", _child.get());
+      info("  _child.count()  = %d", _child.use_count());
     }
 
   private:
@@ -273,7 +277,7 @@ namespace dolfin
     std::shared_ptr<T> _self;
 
     // Parent and child in hierarchy
-    std::shared_ptr<T> _parent;
+    std::weak_ptr<T> _parent;
     std::shared_ptr<T> _child;
 
   };
