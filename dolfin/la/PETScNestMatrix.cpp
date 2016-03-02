@@ -88,13 +88,6 @@ PETScNestMatrix::~PETScNestMatrix()
 //-----------------------------------------------------------------------------
 std::string PETScNestMatrix::str(bool verbose) const
 {
-  if (verbose)
-  {
-    PetscViewerSetFormat((PetscViewer)PETSC_VIEWER_DEFAULT,
-                         (PetscViewerFormat)PETSC_VIEWER_ASCII_INFO);
-
-    MatView(_matA, (PetscViewer)PETSC_VIEWER_DEFAULT);
-  }
   return std::string("PETScNestMatrix");
 }
 //-----------------------------------------------------------------------------
