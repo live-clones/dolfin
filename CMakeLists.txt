@@ -586,8 +586,24 @@ endif()
 # Check for VTK
 if (DOLFIN_ENABLE_VTK)
   find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} COMPONENTS vtkViewsCore
-    vtkRenderingCore vtkRenderingLabel vtkFiltersTexture vtkRenderingOpenGL
-    NO_MODULE)
+    vtkRenderingCore vtkRenderingLabel vtkFiltersTexture NO_MODULE)
+
+  # For VTK < 7.0
+  if(TARGET vtkRenderingOpenGL)
+    find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} COMPONENTS vtkViewsCore
+      vtkRenderingCore vtkRenderingLabel vtkFiltersTexture vtkRenderingOpenGL
+      NO_MODULE)
+  endif()
+
+  # For VTK < 6.3, vtkRenderingFreeTypeOpenGL module is required, so
+  # add if available (vtkRenderingFreeTypeOpenGL was removed from VTK
+  # 6.3)
+  if(TARGET vtkRenderingFreeTypeOpenGL)
+    find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} COMPONENTS vtkViewsCore
+      vtkRenderingCore vtkRenderingLabel vtkFiltersTexture vtkRenderingOpenGL
+      vtkRenderingFreeTypeOpenGL NO_MODULE)
+  endif()
+
   set(VTK_VERSION "${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
   if (VTK_FOUND)
     if ("${VTK_VERSION}" VERSION_LESS "5.2")
