@@ -78,7 +78,8 @@ PETScNestMatrix::PETScNestMatrix
                  "All matrices appear to be NULL");
   }
 
-  MatCreateNest(mpi_comm, 2, NULL, 2, NULL, petsc_mats.data(), &_matA);
+  PetscErrorCode ierr = MatCreateNest(mpi_comm, 2, NULL, 2, NULL, petsc_mats.data(), &_matA);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatCreateNest");
 }
 //-----------------------------------------------------------------------------
 PETScNestMatrix::~PETScNestMatrix()
