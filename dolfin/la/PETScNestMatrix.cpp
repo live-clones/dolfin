@@ -18,6 +18,8 @@
 
 #ifdef HAS_PETSC
 
+#include <cmath>
+
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/fem/GenericDofMap.h>
 
@@ -39,11 +41,13 @@ PETScNestMatrix::PETScNestMatrix()
 PETScNestMatrix::PETScNestMatrix
 (std::vector<std::shared_ptr<const GenericMatrix>> mats)
 {
-  if (mats.size() != 4)
+  const unsigned int n = std::sqrt(mats.size());
+
+  if (mats.size() != n*n)
   {
     dolfin_error("PETScNestMatrix.cpp",
                  "create PETScNestmatrix",
-                 "Only support 2x2 so far");
+                 "Only support square blocks (2x2) (3x3) etc");
   }
 
   std::vector<Mat> petsc_mats(mats.size());
@@ -78,7 +82,7 @@ PETScNestMatrix::PETScNestMatrix
                  "All matrices appear to be NULL");
   }
 
-  PetscErrorCode ierr = MatCreateNest(mpi_comm, 2, NULL, 2, NULL, petsc_mats.data(), &_matA);
+  PetscErrorCode ierr = MatCreateNest(mpi_comm, n, NULL, n, NULL, petsc_mats.data(), &_matA);
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatCreateNest");
 }
 //-----------------------------------------------------------------------------
@@ -89,7 +93,24 @@ PETScNestMatrix::~PETScNestMatrix()
 //-----------------------------------------------------------------------------
 std::string PETScNestMatrix::str(bool verbose) const
 {
-  return std::string("PETScNestMatrix");
+  if (verbose)
+  {
+    //    PetscViewerSetFormat((PetscViewer)PETSC_VIEWER_DEFAULT,
+    //                         (PetscViewerFormat)PETSC_VIEWER_ASCII_INFO);
+    PetscErrorCode ierr;
+    if (MPI::size(MPI_COMM_WORLD) > 1)
+    {
+      ierr = MatView(_matA, PETSC_VIEWER_STDOUT_WORLD);
+      if (ierr != 0) petsc_error(ierr, __FILE__, "MatView");
+    }
+    else
+    {
+      ierr = MatView(_matA, PETSC_VIEWER_STDOUT_SELF);
+      if (ierr != 0) petsc_error(ierr, __FILE__, "MatView");
+    }
+  }
+
+  return std::string("<PETScNestMatrix>");
 }
 //-----------------------------------------------------------------------------
 void PETScNestMatrix::mult(const GenericVector& x, GenericVector& y) const
