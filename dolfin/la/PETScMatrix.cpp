@@ -361,7 +361,7 @@ void PETScMatrix::add_local(const double* block,
   PetscErrorCode ierr = MatSetValuesLocal(_matA, m, rows, n, cols,
                                           values.data(), ADD_VALUES);
 #else
-  PetscErrorCode ierr = MatSetValuesLocal(_matA, m, rows, n, cols, block
+  PetscErrorCode ierr = MatSetValuesLocal(_matA, m, rows, n, cols, block,
                                           ADD_VALUES);
 #endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetValuesLocal");
