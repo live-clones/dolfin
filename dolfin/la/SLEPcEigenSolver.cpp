@@ -172,13 +172,20 @@ void SLEPcEigenSolver::get_eigenvalue(double& lr, double& lc,
   EPSGetConverged(_eps, &num_computed_eigenvalues);
 
   if (ii < num_computed_eigenvalues)
+#ifdef PETSC_USE_COMPLEX
+    dolfin_error("SLEPcEigenSolver.cpp",
+                 "calculate complex eigenvalues",
+                 "Not yet supported");
+#else
     EPSGetEigenvalue(_eps, ii, &lr, &lc);
+#endif
   else
   {
     dolfin_error("SLEPcEigenSolver.cpp",
                  "extract eigenvalue from SLEPc eigenvalue solver",
                  "Requested eigenvalue (%d) has not been computed", i);
   }
+
 }
 //-----------------------------------------------------------------------------
 void SLEPcEigenSolver::get_eigenpair(double& lr, double& lc,
@@ -208,7 +215,13 @@ void SLEPcEigenSolver::get_eigenpair(double& lr, double& lc,
 
     dolfin_assert(r.vec());
     dolfin_assert(c.vec());
+#ifdef PETSC_USE_COMPLEX
+    dolfin_error("SLEPcEigenSolver.cpp",
+                 "calculate complex eigenvalues",
+                 "Not yet supported");
+#else
     EPSGetEigenpair(_eps, ii, &lr, &lc, r.vec(), c.vec());
+#endif
   }
   else
   {
@@ -309,17 +322,35 @@ void SLEPcEigenSolver::set_spectrum(std::string spectrum)
   else if (spectrum == "target magnitude")
   {
     EPSSetWhichEigenpairs(_eps, EPS_TARGET_MAGNITUDE);
+#ifdef PETSC_USE_COMPLEX
+    dolfin_error("SLEPcEigenSolver.cpp",
+                 "calculate complex eigenvalues",
+                 "Not yet supported");
+#else
     EPSSetTarget(_eps, parameters["spectral_shift"]);
+#endif
   }
   else if (spectrum == "target real")
   {
+#ifdef PETSC_USE_COMPLEX
+    dolfin_error("SLEPcEigenSolver.cpp",
+                 "calculate complex eigenvalues",
+                 "Not yet supported");
+#else
     EPSSetWhichEigenpairs(_eps, EPS_TARGET_REAL);
     EPSSetTarget(_eps, parameters["spectral_shift"]);
+#endif
   }
   else if (spectrum == "target imaginary")
   {
+#ifdef PETSC_USE_COMPLEX
+    dolfin_error("SLEPcEigenSolver.cpp",
+                 "calculate complex eigenvalues",
+                 "Not yet supported");
+#else
     EPSSetWhichEigenpairs(_eps, EPS_TARGET_IMAGINARY);
     EPSSetTarget(_eps, parameters["spectral_shift"]);
+#endif
   }
   else
   {

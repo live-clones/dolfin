@@ -292,7 +292,14 @@ void PETScMatrix::get(double* block,
 {
   // Get matrix entries (must be on this process)
   dolfin_assert(_matA);
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>> values(m*n);
+  PetscErrorCode ierr = MatGetValues(_matA, m, rows, n, cols, values.data());
+  for (unsigned int i = 0; i != m*n; ++i)
+    block[i] = values[i].real();
+#else
   PetscErrorCode ierr = MatGetValues(_matA, m, rows, n, cols, block);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatGetValues");
 }
 //-----------------------------------------------------------------------------
@@ -301,8 +308,14 @@ void PETScMatrix::set(const double* block,
                       std::size_t n, const dolfin::la_index* cols)
 {
   dolfin_assert(_matA);
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>> values(block, block + m*n);
+  PetscErrorCode ierr = MatSetValues(_matA, m, rows, n, cols, values.data(),
+                                     INSERT_VALUES);
+#else
   PetscErrorCode ierr = MatSetValues(_matA, m, rows, n, cols, block,
-                                    INSERT_VALUES);
+                                     INSERT_VALUES);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetValues");
 }
 //-----------------------------------------------------------------------------
@@ -311,8 +324,14 @@ void PETScMatrix::set_local(const double* block,
                             std::size_t n, const dolfin::la_index* cols)
 {
   dolfin_assert(_matA);
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>> values(block, block + m*n);
+  PetscErrorCode ierr = MatSetValuesLocal(_matA, m, rows, n, cols,
+                                          values.data(), INSERT_VALUES);
+#else
   PetscErrorCode ierr = MatSetValuesLocal(_matA, m, rows, n, cols, block,
                                           INSERT_VALUES);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetValuesLocal");
 }
 //-----------------------------------------------------------------------------
@@ -321,8 +340,14 @@ void PETScMatrix::add(const double* block,
                       std::size_t n, const dolfin::la_index* cols)
 {
   dolfin_assert(_matA);
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>> values(block, block + m*n);
+  PetscErrorCode ierr = MatSetValues(_matA, m, rows, n, cols, values.data(),
+                                     ADD_VALUES);
+#else
   PetscErrorCode ierr = MatSetValues(_matA, m, rows, n, cols, block,
                                      ADD_VALUES);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetValues");
 }
 //-----------------------------------------------------------------------------
@@ -331,8 +356,14 @@ void PETScMatrix::add_local(const double* block,
                             std::size_t n, const dolfin::la_index* cols)
 {
   dolfin_assert(_matA);
-  PetscErrorCode ierr = MatSetValuesLocal(_matA, m, rows, n, cols, block,
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>> values(block, block + m*n);
+  PetscErrorCode ierr = MatSetValuesLocal(_matA, m, rows, n, cols,
+                                          values.data(), ADD_VALUES);
+#else
+  PetscErrorCode ierr = MatSetValuesLocal(_matA, m, rows, n, cols, block
                                           ADD_VALUES);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetValuesLocal");
 }
 //-----------------------------------------------------------------------------
@@ -383,14 +414,20 @@ void PETScMatrix::getrow(std::size_t row, std::vector<std::size_t>& columns,
 
   PetscErrorCode ierr;
   const PetscInt *cols = 0;
-  const double *vals = 0;
+  const PetscScalar *vals = 0;
   PetscInt ncols = 0;
   ierr = MatGetRow(_matA, row, &ncols, &cols, &vals);
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatGetRow");
 
   // Assign values to std::vectors
   columns.assign(cols, cols + ncols);
+#ifdef PETSC_USE_COMPLEX
+  values.resize(ncols);
+  for (unsigned int i = 0; i != ncols; ++i)
+    values[i] = vals[i].real();
+#else
   values.assign(vals, vals + ncols);
+#endif
 
   ierr = MatRestoreRow(_matA, row, &ncols, &cols, &vals);
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatRestorRow");

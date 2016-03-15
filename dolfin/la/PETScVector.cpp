@@ -163,7 +163,13 @@ void PETScVector::get_local(std::vector<double>& values) const
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecGetArrayRead");
 
   // Copy data into vector
+#ifdef PETSC_USE_COMPLEX
+  // Just get the real part
+  for (unsigned int i = 0; i != local_size; ++i)
+    values[i] = data[i].real();
+#else
   std::copy(data, data + local_size, values.begin());
+#endif
 
   // Restore array
   ierr = VecRestoreArrayRead(_x, &data);
@@ -188,8 +194,17 @@ void PETScVector::set_local(const std::vector<double>& values)
   std::vector<PetscInt> rows(local_size, 0);
   std::iota(rows.begin(), rows.end(), 0);
 
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>>
+    complex_values(values.begin(), values.end());
+  PetscErrorCode ierr = VecSetValuesLocal(_x, local_size, rows.data(),
+                                          complex_values.data(),
+                                          INSERT_VALUES);
+#else
   PetscErrorCode ierr = VecSetValuesLocal(_x, local_size, rows.data(),
                                           values.data(), INSERT_VALUES);
+#endif
+
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecSetValues");
 }
 //-----------------------------------------------------------------------------
@@ -211,8 +226,15 @@ void PETScVector::add_local(const Array<double>& values)
   std::vector<PetscInt> rows(local_size);
   std::iota(rows.begin(), rows.end(), 0);
 
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>>
+    complex_values(values.data(), values.data() + local_size);
+  PetscErrorCode ierr = VecSetValuesLocal(_x, local_size, rows.data(),
+                                          complex_values.data(), ADD_VALUES);
+#else
   PetscErrorCode ierr = VecSetValuesLocal(_x, local_size, rows.data(),
                                           values.data(), ADD_VALUES);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecSetValuesLocal");
 }
 //-----------------------------------------------------------------------------
@@ -238,8 +260,13 @@ void PETScVector::get_local(double* block, std::size_t m,
     PetscErrorCode ierr = VecGetArrayRead(_x, &data);
     if (ierr != 0) petsc_error(ierr, __FILE__, "VecGetArrayRead");
 
+#ifdef PETSC_USE_COMPLEX
+    for (std::size_t i = 0; i < m; ++i)
+      block[i] = data[rows[i]].real();
+#else
     for (std::size_t i = 0; i < m; ++i)
       block[i] = data[rows[i]];
+#endif
 
     // Restore array
     ierr = VecRestoreArrayRead(_x, &data);
@@ -248,7 +275,14 @@ void PETScVector::get_local(double* block, std::size_t m,
   else
   {
     dolfin_assert(xg);
+#ifdef PETSC_USE_COMPLEX
+    std::vector<std::complex<double>> values(m);
+    ierr = VecGetValues(xg, m, rows, values.data());
+    for (unsigned int i = 0; i != m; ++i)
+      block[i] = values[i].real();
+#else
     ierr = VecGetValues(xg, m, rows, block);
+#endif
     if (ierr != 0) petsc_error(ierr, __FILE__, "VecGetValues");
     ierr = VecGhostRestoreLocalForm(_x, &xg);
     if (ierr != 0) petsc_error(ierr, __FILE__, "VecGhostRestoreLocalForm");
@@ -263,7 +297,14 @@ void PETScVector::get(double* block, std::size_t m,
 
   dolfin_assert(_x);
   PetscErrorCode ierr;
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>> values(m);
+  ierr = VecGetValues(_x, m, rows, values.data());
+  for (unsigned i = 0; i != m; ++i)
+    block[i] = values[i].real();
+#else
   ierr = VecGetValues(_x, m, rows, block);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecGetValues");
 }
 //-----------------------------------------------------------------------------
@@ -273,7 +314,13 @@ void PETScVector::set(const double* block, std::size_t m,
   dolfin_assert(_x);
   if (m == 0)
     return;
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>> complex_block(block, block + m);
+  PetscErrorCode ierr = VecSetValues(_x, m, rows,
+                                     complex_block.data(), INSERT_VALUES);
+#else
   PetscErrorCode ierr = VecSetValues(_x, m, rows, block, INSERT_VALUES);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecSetValues");
 }
 //-----------------------------------------------------------------------------
@@ -283,7 +330,13 @@ void PETScVector::set_local(const double* block, std::size_t m,
   dolfin_assert(_x);
   if (m == 0)
     return;
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>> complex_block(block, block + m);
+  PetscErrorCode ierr = VecSetValuesLocal(_x, m, rows, complex_block.data(),
+                                          INSERT_VALUES);
+#else
   PetscErrorCode ierr = VecSetValuesLocal(_x, m, rows, block, INSERT_VALUES);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecSetValuesLocal");
 }
 //-----------------------------------------------------------------------------
@@ -293,7 +346,13 @@ void PETScVector::add(const double* block, std::size_t m,
   dolfin_assert(_x);
   if (m == 0)
     return;
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>> complex_block(block, block + m);
+  PetscErrorCode ierr = VecSetValues(_x, m, rows, complex_block.data(),
+                                          ADD_VALUES);
+#else
   PetscErrorCode ierr = VecSetValues(_x, m, rows, block, ADD_VALUES);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecSetValues");
 }
 //-----------------------------------------------------------------------------
@@ -303,7 +362,13 @@ void PETScVector::add_local(const double* block, std::size_t m,
   dolfin_assert(_x);
   if (m == 0)
     return;
+#ifdef PETSC_USE_COMPLEX
+  std::vector<std::complex<double>> complex_block(block, block + m);
+  PetscErrorCode ierr = VecSetValuesLocal(_x, m, rows, complex_block.data(),
+                                          ADD_VALUES);
+#else
   PetscErrorCode ierr = VecSetValuesLocal(_x, m, rows, block, ADD_VALUES);
+#endif
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecSetValuesLocal");
 }
 //-----------------------------------------------------------------------------
@@ -533,10 +598,14 @@ double PETScVector::inner(const GenericVector& y) const
   dolfin_assert(_x);
   const PETScVector& _y = as_type<const PETScVector>(y);
   dolfin_assert(_y._x);
-  double a;
+  PetscScalar a;
   PetscErrorCode ierr = VecDot(_y._x, _x, &a);
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecDot");
+#ifdef PETSC_USE_COMPLEX
+  return a.real();
+#else
   return a;
+#endif
 }
 //-----------------------------------------------------------------------------
 void PETScVector::axpy(double a, const GenericVector& y)
@@ -608,10 +677,14 @@ double PETScVector::max() const
 double PETScVector::sum() const
 {
   dolfin_assert(_x);
-  double value = 0.0;
+  PetscScalar value = 0.0;
   PetscErrorCode ierr = VecSum(_x, &value);
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecSum");
+#ifdef PETSC_USE_COMPLEX
+  return value.real();
+#else
   return value;
+#endif
 }
 //-----------------------------------------------------------------------------
 double PETScVector::sum(const Array<std::size_t>& rows) const

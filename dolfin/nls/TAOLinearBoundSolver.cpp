@@ -443,7 +443,7 @@ TAOLinearBoundSolver::__TAOFormFunctionGradientQuadraticProblem(Tao tao,
                                                                 void *ptr)
 {
   PetscErrorCode ierr;
-  PetscReal AXX, bX;
+  PetscScalar AXX, bX;
 
   dolfin_assert(ptr);
   const TAOLinearBoundSolver* solver = static_cast<TAOLinearBoundSolver*>(ptr);
@@ -466,7 +466,12 @@ TAOLinearBoundSolver::__TAOFormFunctionGradientQuadraticProblem(Tao tao,
 
   // Calculate the functional value ener=1/2*A*X*X-b*X
   dolfin_assert(ener);
+
+#ifdef PETSC_USE_COMPLEX
+  *ener = (0.5*AXX-bX).real();
+#else
   *ener = 0.5*AXX-bX;
+#endif
 
   // Calculate the gradient vector G=A*X-b
   ierr = VecAXPBY(G, -1.0, 1.0, b->vec());
