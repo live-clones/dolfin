@@ -30,6 +30,8 @@ using namespace dolfin;
 //-----------------------------------------------------------------------------
 Mesh MeshSlicer::add(const Mesh& mesh, const Plane& surface)
 {
+  not_working_in_parallel("MeshSlicer::add");
+
   if (mesh.geometry().degree() != 1)
   {
     dolfin_error("MeshSlicer.cpp",
@@ -144,6 +146,7 @@ Mesh MeshSlicer::add(const Mesh& mesh, const Plane& surface)
 //-----------------------------------------------------------------------------
 Mesh MeshSlicer::cut(const Mesh& mesh, const Plane& surface)
 {
+  not_working_in_parallel("MeshSlicer::cut");
 
   if (mesh.geometry().degree() != 1)
   {
@@ -225,6 +228,13 @@ void MeshSlicer::create_mesh(Mesh& mesh,
                              const std::vector<std::size_t>& topology,
                              std::size_t tdim)
 {
+  // If topology is empty, return
+  if (topology.size() == 0)
+  {
+    warning("MeshSlicer has produced an empty Mesh");
+    return;
+  }
+
   MeshEditor ed;
 
   // Create a mesh of triangles or tetrahedra in 3D
