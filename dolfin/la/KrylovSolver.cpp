@@ -39,47 +39,14 @@ Parameters KrylovSolver::default_parameters()
 {
   Parameters p("krylov_solver");
 
-  p.add("relative_tolerance",      1.0e-6);
-  p.add("absolute_tolerance",      1.0e-15);
-  p.add("divergence_limit",        1.0e4);
-  p.add("maximum_iterations",      10000);
-  p.add("report",                  true);
-  p.add("monitor_convergence",     false);
-  p.add("error_on_nonconvergence", true);
-  p.add("nonzero_initial_guess",   false);
-
-  // GMRES options
-  Parameters p_gmres("gmres");
-  p_gmres.add("restart", 30);
-  p.add(p_gmres);
-
-  // General preconditioner options
-  Parameters p_pc("preconditioner");
-  p_pc.add("shift_nonzero", 0.0);
-
-  // Re-use options
-  std::set<std::string> structure_options;
-  structure_options.insert("same");
-  structure_options.insert("same_nonzero_pattern");
-  structure_options.insert("different_nonzero_pattern");
-  p_pc.add("structure", "different_nonzero_pattern", structure_options);
-
-  p_pc.add("report", false);
-
-  // ILU preconditioner options
-  Parameters p_pc_ilu("ilu");
-  p_pc_ilu.add("fill_level", 0);
-
-  // Schwartz preconditioner options
-  Parameters p_pc_schwarz("schwarz");
-  p_pc_schwarz.add("overlap", 1);
-
-  // Add sub-preconditioner options
-  p_pc.add(p_pc_ilu);
-  p_pc.add(p_pc_schwarz);
-
-  // Add preconditioner options
-  p.add(p_pc);
+  p.add<double>("relative_tolerance");
+  p.add<double>("absolute_tolerance");
+  p.add<double>("divergence_limit");
+  p.add<int>("maximum_iterations");
+  p.add<bool>("report");
+  p.add<bool>("monitor_convergence");
+  p.add<bool>("error_on_nonconvergence");
+  p.add<bool>("nonzero_initial_guess");
 
   return p;
 }
@@ -120,11 +87,6 @@ KrylovSolver::set_operators(std::shared_ptr<const GenericLinearOperator> A,
   dolfin_assert(solver);
   solver->parameters.update(parameters);
   solver->set_operators(A, P);
-}
-//-----------------------------------------------------------------------------
-void KrylovSolver::set_nullspace(const VectorSpaceBasis& nullspace)
-{
-  solver->set_nullspace(nullspace);
 }
 //-----------------------------------------------------------------------------
 std::size_t KrylovSolver::solve(GenericVector& x, const GenericVector& b)

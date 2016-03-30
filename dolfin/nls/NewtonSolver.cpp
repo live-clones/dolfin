@@ -22,7 +22,9 @@
 // First added:  2005-10-23
 // Last changed: 2014-05-27
 
-#include <iostream>
+#include <cmath>
+#include <string>
+
 #include <dolfin/common/constants.h>
 #include <dolfin/common/NoDeleter.h>
 #include <dolfin/la/GenericLinearSolver.h>
@@ -75,7 +77,8 @@ NewtonSolver::NewtonSolver(std::shared_ptr<GenericLinearSolver> solver,
                            GenericLinearAlgebraFactory& factory)
   : Variable("Newton solver", "unamed"), _newton_iteration(0), _residual(0.0),
     _residual0(0.0), _solver(solver), _matA(factory.create_matrix()),
-    _dx(factory.create_vector()), _b(factory.create_vector()),
+    _dx(factory.create_vector(MPI_COMM_WORLD)),
+    _b(factory.create_vector(MPI_COMM_WORLD)),
     _mpi_comm(MPI_COMM_WORLD)
 {
   // Set default parameters
@@ -208,11 +211,11 @@ NewtonSolver::solve(NonlinearProblem& nonlinear_problem,
     const bool error_on_nonconvergence = parameters["error_on_nonconvergence"];
     if (error_on_nonconvergence)
     {
-      if (_newton_iteration == maxiter) 
+      if (_newton_iteration == maxiter)
       {
         dolfin_error("NewtonSolver.cpp",
                      "solve nonlinear system with NewtonSolver",
-                     "Newton solver did not converge because maximum number of iterations reached"); 
+                     "Newton solver did not converge because maximum number of iterations reached");
       }
       else
       {

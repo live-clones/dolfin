@@ -219,22 +219,22 @@ Function& Function::operator[] (std::size_t i) const
 //-----------------------------------------------------------------------------
 FunctionAXPY Function::operator+(const Function& other) const
 {
-  return FunctionAXPY(*this, other, FunctionAXPY::ADD_ADD);
+  return FunctionAXPY(*this, other, FunctionAXPY::Direction::ADD_ADD);
 }
 //-----------------------------------------------------------------------------
 FunctionAXPY Function::operator+(const FunctionAXPY& axpy) const
 {
-  return FunctionAXPY(axpy, *this, FunctionAXPY::ADD_ADD);
+  return FunctionAXPY(axpy, *this, FunctionAXPY::Direction::ADD_ADD);
 }
 //-----------------------------------------------------------------------------
 FunctionAXPY Function::operator-(const Function& other) const
 {
-  return FunctionAXPY(*this, other, FunctionAXPY::ADD_SUB);
+  return FunctionAXPY(*this, other, FunctionAXPY::Direction::ADD_SUB);
 }
 //-----------------------------------------------------------------------------
 FunctionAXPY Function::operator-(const FunctionAXPY& axpy) const
 {
-  return FunctionAXPY(axpy, *this, FunctionAXPY::SUB_ADD);
+  return FunctionAXPY(axpy, *this, FunctionAXPY::Direction::SUB_ADD);
 }
 //-----------------------------------------------------------------------------
 FunctionAXPY Function::operator*(double scalar) const
@@ -571,7 +571,7 @@ void Function::init_vector()
 
   // Create vector of dofs
   if (!_vector)
-    _vector = factory.create_vector();
+    _vector = factory.create_vector(_function_space->mesh()->mpi_comm());
   dolfin_assert(_vector);
   if (!_vector->empty())
   {
