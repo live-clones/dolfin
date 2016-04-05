@@ -1,4 +1,4 @@
-// Copyright (C) 2003-2012 Anders Logg
+// Copyright (C) 2003-2016 Anders Logg
 //
 // This file is part of DOLFIN.
 //
@@ -15,10 +15,10 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
-// Modified by Garth N. Wells, 2005-2010.
-// Modified by Kristian B. Oelgaard, 2007.
-// Modified by Martin Sandve Alnes, 2008-2014.
-// Modified by Andre Massing, 2009.
+// Modified by Garth N. Wells 2005-2010
+// Modified by Kristian B. Oelgaard 2007
+// Modified by Martin Sandve Alnes 2008-2014
+// Modified by Andre Massing 2009
 
 #ifndef __FUNCTION_H
 #define __FUNCTION_H
@@ -349,6 +349,14 @@ namespace dolfin
     ///         True if extrapolation is permitted, otherwise false
     bool get_allow_extrapolation() const
     { return _allow_extrapolation; }
+
+    /// Compute and return value of infinity norm (maximum absolute value).
+    /// The norm is approximated by evaluation at all vertices.
+    ///
+    /// *Returns*
+    ///     double
+    ///         The infinity norm of the function (approximation).
+    double infinity_norm() const;
 
   private:
 

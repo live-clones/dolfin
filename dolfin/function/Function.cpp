@@ -536,6 +536,28 @@ void Function::compute_vertex_values(std::vector<double>& vertex_values)
   compute_vertex_values(vertex_values, *_function_space->mesh());
 }
 //-----------------------------------------------------------------------------
+double Function::infinity_norm() const
+{
+  // Get mesh
+  dolfin_assert(_function_space);
+  dolfin_assert(_function_space->mesh());
+  const Mesh& mesh = *_function_space->mesh();
+
+  // Compute vertex values
+  std::vector<double> vertex_values;
+  compute_vertex_values(vertex_values, mesh);
+
+  // Compute local maximum
+  double maximum = 0.0;
+  for (std::size_t i = 0; i < vertex_values.size(); i++)
+    maximum = std::max(maximum, std::abs(vertex_values[i]));
+
+  // Compute global maximum
+  MPI::max(mesh.mpi_comm(), maximum);
+
+  return maximum;
+}
+//-----------------------------------------------------------------------------
 void Function::init_vector()
 {
   Timer timer("Init dof vector");
