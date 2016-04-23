@@ -120,7 +120,6 @@ list(APPEND OPTIONAL_PACKAGES "SLEPc4py")
 list(APPEND OPTIONAL_PACKAGES "Trilinos")
 list(APPEND OPTIONAL_PACKAGES "UMFPACK")
 list(APPEND OPTIONAL_PACKAGES "CHOLMOD")
-list(APPEND OPTIONAL_PACKAGES "PaStiX")
 list(APPEND OPTIONAL_PACKAGES "SCOTCH")
 list(APPEND OPTIONAL_PACKAGES "ParMETIS")
 list(APPEND OPTIONAL_PACKAGES "zlib")
@@ -488,11 +487,6 @@ if (DOLFIN_ENABLE_HDF5)
   endif()
 endif()
 
-# Check for PaStiX
-if (DOLFIN_ENABLE_PASTIX)
-  find_package(PaStiX 5.2.1)
-endif()
-
 # Check for Trilinos and the requires Trilinos packages
 if (DOLFIN_ENABLE_TRILINOS)
   message(STATUS "Checking for Trilinos")
@@ -815,7 +809,7 @@ install(FILES ${DOLFIN_UTILITIES}
 #------------------------------------------------------------------------------
 # Installation of DOLFIN manual pages
 
-install(DIRECTORY ${DOLFIN_SOURCE_DIR}/doc/man/
+install(DIRECTORY ${DOLFIN_SOURCE_DIR}/doc-old/man/
   DESTINATION ${DOLFIN_MAN_DIR}
   USE_SOURCE_PERMISSIONS
   COMPONENT RuntimeExecutables)
@@ -1005,7 +999,7 @@ if (DOLFIN_ENABLE_DOCS)
   if (NOT SPHINX_FOUND)
     message(STATUS "Disabling generation of documentation because Sphinx is missing.")
   else()
-    add_subdirectory(doc)
+    add_subdirectory(doc-old)
   endif()
 endif()
 
