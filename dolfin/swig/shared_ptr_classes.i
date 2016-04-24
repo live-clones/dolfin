@@ -40,13 +40,12 @@
 %include <std_shared_ptr.i>
 
 //-----------------------------------------------------------------------------
-// Make DOLFIN aware of the types defined in UFC
+// Declare shared_ptr stored types in UFC
 //-----------------------------------------------------------------------------
-%{
-#include <ufc.h>
-%}
-%include <swig/ufc_shared_ptr_classes.i>
-%import(module="ufc") "ufc.h"
+%shared_ptr(ufc::function)
+%shared_ptr(ufc::dofmap)
+%shared_ptr(ufc::finite_element)
+%shared_ptr(ufc::form)
 
 //-----------------------------------------------------------------------------
 // Declare shared_ptr stored types in PyDOLFIN
@@ -219,6 +218,7 @@
 %shared_ptr(dolfin::File)
 %shared_ptr(dolfin::XDMFFile)
 %shared_ptr(dolfin::HDF5File)
+%shared_ptr(dolfin::X3DOM)
 
 // math
 %shared_ptr(dolfin::Lagrange)

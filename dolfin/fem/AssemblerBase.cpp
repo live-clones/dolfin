@@ -71,13 +71,18 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
       index_maps.push_back(dofmaps[i]->index_map());
     }
 
+    // Get mesh
+    dolfin_assert(a.mesh());
+    const Mesh& mesh = *(a.mesh());
+
     // Initialise tensor layout
     // FIXME: somewhere need to check block sizes are same on both axes
     // NOTE: Jan: that will be done on the backend side; IndexMap will
     //            provide tabulate functions with arbitrary block size;
     //            moreover the functions will tabulate directly using a
     //            correct int type
-    tensor_layout->init(a.mesh().mpi_comm(), index_maps,
+
+    tensor_layout->init(mesh.mpi_comm(), index_maps,
                         TensorLayout::Ghosts::UNGHOSTED);
 
     // Build sparsity pattern if required
@@ -85,7 +90,7 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
     {
       SparsityPattern& pattern = *tensor_layout->sparsity_pattern();
       SparsityPatternBuilder::build(pattern,
-                                a.mesh(), dofmaps,
+                                mesh, dofmaps,
                                 a.ufc_form()->has_cell_integrals(),
                                 a.ufc_form()->has_interior_facet_integrals(),
                                 a.ufc_form()->has_exterior_facet_integrals(),
@@ -150,7 +155,8 @@ void AssemblerBase::check(const Form& a)
   a.check();
 
   // Extract mesh and coefficients
-  const Mesh& mesh = a.mesh();
+  dolfin_assert(a.mesh());
+  const Mesh& mesh = *(a.mesh());
   const std::vector<std::shared_ptr<const GenericFunction>>
     coefficients = a.coefficients();
 
@@ -226,7 +232,7 @@ You might have forgotten to specify the value dimension correctly in an Expressi
   switch (mesh.type().cell_type())
   {
   case CellType::interval:
-    if (coordinate_element->cell_shape() != ufc::interval)
+    if (coordinate_element->cell_shape() != ufc::shape::interval)
     {
       dolfin_error("AssemblerBase.cpp",
                    "assemble form",
@@ -234,7 +240,7 @@ You might have forgotten to specify the value dimension correctly in an Expressi
     }
     break;
   case CellType::triangle:
-    if (coordinate_element->cell_shape() != ufc::triangle)
+    if (coordinate_element->cell_shape() != ufc::shape::triangle)
     {
       dolfin_error("AssemblerBase.cpp",
                    "assemble form",
@@ -242,7 +248,7 @@ You might have forgotten to specify the value dimension correctly in an Expressi
     }
     break;
   case CellType::tetrahedron:
-    if (coordinate_element->cell_shape() != ufc::tetrahedron)
+    if (coordinate_element->cell_shape() != ufc::shape::tetrahedron)
     {
       dolfin_error("AssemblerBase.cpp",
                    "assemble form",
@@ -250,7 +256,7 @@ You might have forgotten to specify the value dimension correctly in an Expressi
     }
     break;
   case CellType::quadrilateral:
-    if (coordinate_element->cell_shape() != ufc::quadrilateral)
+    if (coordinate_element->cell_shape() != ufc::shape::quadrilateral)
     {
       dolfin_error("AssemblerBase.cpp",
                    "assemble form",
@@ -258,7 +264,7 @@ You might have forgotten to specify the value dimension correctly in an Expressi
     }
     break;
   case CellType::hexahedron:
-    if (coordinate_element->cell_shape() != ufc::hexahedron)
+    if (coordinate_element->cell_shape() != ufc::shape::hexahedron)
     {
       dolfin_error("AssemblerBase.cpp",
                    "assemble form",

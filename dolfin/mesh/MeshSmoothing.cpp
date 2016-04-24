@@ -20,6 +20,8 @@
 // First added:  2008-07-16
 // Last changed: 2011-03-17
 
+#include <cmath>
+
 #include <dolfin/ale/ALE.h>
 #include <dolfin/common/Array.h>
 #include <dolfin/common/constants.h>
@@ -52,7 +54,7 @@ void MeshSmoothing::smooth(Mesh& mesh, std::size_t num_iterations)
   // Mark vertices on the boundary so we may skip them
   BoundaryMesh boundary(mesh, "exterior");
   const MeshFunction<std::size_t> vertex_map = boundary.entity_map(0);
-  MeshFunction<bool> on_boundary(mesh, 0);
+  MeshFunction<bool> on_boundary(reference_to_no_delete_pointer(mesh), 0);
   on_boundary = false;
   if (boundary.num_vertices() > 0)
   {

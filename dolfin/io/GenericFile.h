@@ -16,9 +16,6 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // Modified by Ola Skavhaug 2009.
-//
-// First added:  2003-07-15
-// Last changed: 2013-03-11
 
 #ifndef __GENERIC_FILE_H
 #define __GENERIC_FILE_H
@@ -79,9 +76,9 @@ namespace dolfin
     virtual void operator>> (std::map<std::size_t, int>& map);
     virtual void operator>> (std::map<std::size_t, std::size_t>& map);
     virtual void operator>> (std::map<std::size_t, double>& map);
-    virtual void operator>> (std::map<std::size_t, std::vector<int> >& array_map);
-    virtual void operator>> (std::map<std::size_t, std::vector<std::size_t> >& array_map);
-    virtual void operator>> (std::map<std::size_t, std::vector<double> >& array_map);
+    virtual void operator>> (std::map<std::size_t, std::vector<int>>& array_map);
+    virtual void operator>> (std::map<std::size_t, std::vector<std::size_t>>& array_map);
+    virtual void operator>> (std::map<std::size_t, std::vector<double>>& array_map);
     virtual void operator>> (Function& u);
 
     // Output
@@ -119,12 +116,15 @@ namespace dolfin
     virtual void operator<< (const std::map<std::size_t, int>& map);
     virtual void operator<< (const std::map<std::size_t, std::size_t>& map);
     virtual void operator<< (const std::map<std::size_t, double>& map);
-    virtual void operator<< (const std::map<std::size_t, std::vector<int> >& array_map);
-    virtual void operator<< (const std::map<std::size_t, std::vector<std::size_t> >& array_map);
-    virtual void operator<< (const std::map<std::size_t, std::vector<double> >& array_map);
+    virtual void operator<< (const std::map<std::size_t, std::vector<int>>& array_map);
+    virtual void operator<< (const std::map<std::size_t,
+                             std::vector<std::size_t> >& array_map);
+    virtual void operator<< (const std::map<std::size_t,
+                             std::vector<double> >& array_map);
 
-    void read();
-    virtual void write(std::size_t process_number);
+    void _read();
+    void _write(std::size_t process_number);
+
     virtual void write(const std::vector<const GenericFunction*>& us, const Mesh& mesh, double time);
     virtual void write(const std::vector<std::shared_ptr<GenericFunction> >& us, const Mesh& mesh, double time);
     virtual void write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, double time);

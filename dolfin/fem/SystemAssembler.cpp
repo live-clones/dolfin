@@ -125,10 +125,10 @@ in SystemAssembler. Taking %s subdomains from bilinear form",
 }
 //-----------------------------------------------------------------------------
 bool SystemAssembler::check_functionspace_for_bc
-    (std::shared_ptr<const FunctionSpace> fs, std::size_t i)
+    (std::shared_ptr<const FunctionSpace> fs, std::size_t bc_index)
 {
   std::shared_ptr<const FunctionSpace> bc_function_space
-    = _bcs[i]->function_space();
+    = _bcs[bc_index]->function_space();
 
   if (*bc_function_space == *fs)
     return true;
@@ -139,7 +139,7 @@ bool SystemAssembler::check_functionspace_for_bc
     for (std::size_t i = 0; i != num_sub_elements; ++i)
       {
         std::shared_ptr<const FunctionSpace> subspace = (*fs)[i];
-        if (check_functionspace_for_bc(subspace, i))
+        if (check_functionspace_for_bc(subspace, bc_index))
           return true;
       }
   }
@@ -156,7 +156,8 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
   Timer timer("Assemble system");
 
   // Get mesh
-  const Mesh& mesh = _a->mesh();
+  dolfin_assert(_a->mesh());
+  const Mesh& mesh = *(_a->mesh());
   dolfin_assert(mesh.ordered());
 
   // Get cell domains
@@ -309,7 +310,8 @@ void SystemAssembler::cell_wise_assembly(
   std::shared_ptr<const MeshFunction<std::size_t>> exterior_facet_domains)
 {
   // Extract mesh
-  const Mesh& mesh = ufc[0]->dolfin_form.mesh();
+  dolfin_assert(ufc[0]->dolfin_form.mesh());
+  const Mesh& mesh = *(ufc[0]->dolfin_form.mesh());
 
   // Initialize entities if using external facet integrals
   dolfin_assert(mesh.ordered());
@@ -493,7 +495,8 @@ void SystemAssembler::facet_wise_assembly(
   std::shared_ptr<const MeshFunction<std::size_t>> interior_facet_domains)
 {
   // Extract mesh
-  const Mesh& mesh = ufc[0]->dolfin_form.mesh();
+  dolfin_assert(ufc[0]->dolfin_form.mesh());
+  const Mesh& mesh = *(ufc[0]->dolfin_form.mesh());
 
   // Compute facets and facet - cell connectivity if not already
   // computed

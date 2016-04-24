@@ -25,6 +25,7 @@
 // Last changed: 2014-02-13
 
 #include <algorithm>
+#include <cmath>
 #include <boost/multi_array.hpp>
 
 #include <dolfin/log/log.h>
@@ -179,7 +180,7 @@ double TetrahedronCell::volume(const MeshEntity& tetrahedron) const
   return std::abs(v)/6.0;
 }
 //-----------------------------------------------------------------------------
-double TetrahedronCell::diameter(const MeshEntity& tetrahedron) const
+double TetrahedronCell::circumradius(const MeshEntity& tetrahedron) const
 {
   // Check that we get a tetrahedron
   if (tetrahedron.dim() != 3)
@@ -222,9 +223,9 @@ double TetrahedronCell::diameter(const MeshEntity& tetrahedron) const
   const double s    = 0.5*(la+lb+lc);
   const double area = sqrt(s*(s-la)*(s-lb)*(s-lc));
 
-  // Formula for diameter (2*circumradius) from
-  // http://mathworld.wolfram.com
-  return area/(3.0*volume(tetrahedron));
+  // Formula for circumradius from
+  // http://mathworld.wolfram.com/Tetrahedron.html
+  return area/(6.0*volume(tetrahedron));
 }
 //-----------------------------------------------------------------------------
 double TetrahedronCell::squared_distance(const Cell& cell,

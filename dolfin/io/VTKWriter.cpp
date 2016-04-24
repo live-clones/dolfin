@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Garth N. Wells
+// Copyright (C) 2010-2016 Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -17,10 +17,8 @@
 //
 // Modified by Anders Logg 2011
 // Modified by Johannes Ring 2012
-//
-// First added:  2010-07-19
-// Last changed: 2012-09-14
 
+#include <cstdint>
 #include <fstream>
 #include <ostream>
 #include <sstream>
@@ -475,7 +473,7 @@ void VTKWriter::write_base64_mesh(const Mesh& mesh, std::size_t cell_dim,
   const std::size_t num_cell_vertices = mesh.type().num_vertices(cell_dim);
 
   // Get VTK cell type
-  const boost::uint8_t _vtk_cell_type = vtk_cell_type(mesh, cell_dim);
+  const std::uint8_t _vtk_cell_type = vtk_cell_type(mesh, cell_dim);
 
   pugi::xml_node piece_node = xml_doc.child("VTKFile").child("UnstructuredGrid").child("Piece");
 
@@ -514,8 +512,8 @@ void VTKWriter::write_base64_mesh(const Mesh& mesh, std::size_t cell_dim,
   data_node.append_attribute("format") = "binary";
 
   const int size = num_cells*num_cell_vertices;
-  std::vector<boost::uint32_t> cell_data(size);
-  std::vector<boost::uint32_t>::iterator cell_entry = cell_data.begin();
+  std::vector<std::uint32_t> cell_data(size);
+  std::vector<std::uint32_t>::iterator cell_entry = cell_data.begin();
 
   std::unique_ptr<CellType>
     celltype(CellType::create(mesh.type().entity_type(cell_dim)));
@@ -538,8 +536,8 @@ void VTKWriter::write_base64_mesh(const Mesh& mesh, std::size_t cell_dim,
   data_node.append_attribute("Name") = "offsets";
   data_node.append_attribute("format") = "binary";
 
-  std::vector<boost::uint32_t> offset_data(num_cells);
-  std::vector<boost::uint32_t>::iterator offset_entry = offset_data.begin();
+  std::vector<std::uint32_t> offset_data(num_cells);
+  std::vector<std::uint32_t>::iterator offset_entry = offset_data.begin();
   for (std::size_t offsets = 1; offsets <= num_cells; offsets++)
     *offset_entry++ = offsets*num_cell_vertices;
 
@@ -555,8 +553,8 @@ void VTKWriter::write_base64_mesh(const Mesh& mesh, std::size_t cell_dim,
   data_node.append_attribute("Name") = "types";
   data_node.append_attribute("format") = "binary";
 
-  std::vector<boost::uint8_t> type_data(num_cells);
-  std::vector<boost::uint8_t>::iterator type_entry = type_data.begin();
+  std::vector<std::uint8_t> type_data(num_cells);
+  std::vector<std::uint8_t>::iterator type_entry = type_data.begin();
   for (std::size_t types = 0; types < num_cells; types++)
     *type_entry++ = _vtk_cell_type;
 
@@ -586,7 +584,7 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   const std::size_t cdim = dofmap.max_element_dofs();
 
   // Get VTK cell type
-  const boost::uint8_t _vtk_cell_type = vtk_cell_type(functionspace, cell_dim);
+  const std::uint8_t _vtk_cell_type = vtk_cell_type(functionspace, cell_dim);
 
   pugi::xml_node piece_node = xml_doc.child("VTKFile").child("UnstructuredGrid").child("Piece");
 
@@ -656,8 +654,8 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   data_node.append_attribute("Name") = "connectivity";
   data_node.append_attribute("format") = "binary";
 
-  std::vector<boost::uint32_t> cell_data(cdim*num_cells);
-  std::vector<boost::uint32_t>::iterator cell_entry = cell_data.begin();
+  std::vector<std::uint32_t> cell_data(cdim*num_cells);
+  std::vector<std::uint32_t>::iterator cell_entry = cell_data.begin();
   for (CellIterator c(mesh); !c.end(); ++c)
   {
     const ArrayView<const dolfin::la_index> dofs = dofmap.cell_dofs(c->index());
@@ -677,8 +675,8 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   data_node.append_attribute("Name") = "offsets";
   data_node.append_attribute("format") = "binary";
 
-  std::vector<boost::uint32_t> offset_data(num_cells);
-  std::vector<boost::uint32_t>::iterator offset_entry = offset_data.begin();
+  std::vector<std::uint32_t> offset_data(num_cells);
+  std::vector<std::uint32_t>::iterator offset_entry = offset_data.begin();
   for (std::size_t offsets = 1; offsets <= num_cells; offsets++)
     *offset_entry++ = offsets*(dofmap.num_element_dofs(offsets-1));
 
@@ -694,8 +692,8 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
   data_node.append_attribute("Name") = "types";
   data_node.append_attribute("format") = "binary";
 
-  std::vector<boost::uint8_t> type_data(num_cells);
-  std::vector<boost::uint8_t>::iterator type_entry = type_data.begin();
+  std::vector<std::uint8_t> type_data(num_cells);
+  std::vector<std::uint8_t>::iterator type_entry = type_data.begin();
   for (std::size_t types = 0; types < num_cells; types++)
     *type_entry++ = _vtk_cell_type;
 
@@ -707,14 +705,14 @@ void VTKWriter::write_base64_mesh(const FunctionSpace& functionspace, std::size_
 
 }
 //----------------------------------------------------------------------------
-boost::uint8_t VTKWriter::vtk_cell_type(const Mesh& mesh,
-                                        std::size_t cell_dim)
+std::uint8_t VTKWriter::vtk_cell_type(const Mesh& mesh,
+                                      std::size_t cell_dim)
 {
   // Get cell type
   CellType::Type cell_type = mesh.type().entity_type(cell_dim);
 
   // Determine VTK cell type
-  boost::uint8_t vtk_cell_type = 0;
+  std::uint8_t vtk_cell_type = 0;
   if (cell_type == CellType::tetrahedron)
     vtk_cell_type = 10;
   else if (cell_type == CellType::hexahedron)
@@ -737,7 +735,7 @@ boost::uint8_t VTKWriter::vtk_cell_type(const Mesh& mesh,
   return vtk_cell_type;
 }
 //----------------------------------------------------------------------------
-boost::uint8_t VTKWriter::vtk_cell_type(const FunctionSpace& functionspace, std::size_t cell_dim)
+std::uint8_t VTKWriter::vtk_cell_type(const FunctionSpace& functionspace, std::size_t cell_dim)
 {
   // Make sure this function space is based on a Lagrange element
   // FIXME: better way of checking this?
@@ -763,7 +761,7 @@ boost::uint8_t VTKWriter::vtk_cell_type(const FunctionSpace& functionspace, std:
 
   const std::size_t sdim = functionspace.element()->space_dimension();
   // Determine VTK cell type
-  boost::uint8_t vtk_cell_type = 0;
+  std::uint8_t vtk_cell_type = 0;
   if (cell_type == CellType::tetrahedron)
   {
     if (sdim==10)

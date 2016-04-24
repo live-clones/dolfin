@@ -78,7 +78,7 @@ int main()
   parameters["std_out_all_processes"] = false;
 
   // Load mesh from file
-  Mesh mesh("../lshape.xml.gz");
+  auto mesh = std::make_shared<Mesh>("../lshape.xml.gz");
 
   // Create function spaces
   auto V = std::make_shared<VelocityUpdate::FunctionSpace>(mesh);
@@ -108,20 +108,20 @@ int main()
   std::vector<DirichletBC*> bcp = {{&inflow, &outflow}};
 
   // Create functions
-  Function u0(V);
-  Function u1(V);
-  Function p1(Q);
+  auto u0 = std::make_shared<Function>(V);
+  auto u1 = std::make_shared<Function>(V);
+  auto p1 = std::make_shared<Function>(Q);
 
   // Rename output
-  u1.rename("Velocity", "u");
-  p1.rename("Pressure", "p");
-  std::vector<const GenericFunction*> output;
-  output.push_back(&u1);
-  output.push_back(&p1);
+  u1->rename("Velocity", "u");
+  p1->rename("Pressure", "p");
+  std::vector<std::shared_ptr<GenericFunction> > output;
+  output.push_back(u1);
+  output.push_back(p1);
 
   // Create coefficients
-  Constant k(dt);
-  Constant f(0, 0);
+  auto k = std::make_shared<Constant>(dt);
+  auto f = std::make_shared<Constant>(0, 0);
 
   // Create forms
   TentativeVelocity::BilinearForm a1(V, V);
@@ -163,7 +163,7 @@ int main()
     assemble(b1, L1);
     for (std::size_t i = 0; i < bcu.size(); i++)
       bcu[i]->apply(A1, b1);
-    solve(A1, *u1.vector(), b1, "gmres", "default");
+    solve(A1, *u1->vector(), b1, "gmres", "default");
     end();
 
     // Pressure correction
@@ -172,9 +172,9 @@ int main()
     for (std::size_t i = 0; i < bcp.size(); i++)
     {
       bcp[i]->apply(A2, b2);
-      bcp[i]->apply(*p1.vector());
+      bcp[i]->apply(*p1->vector());
     }
-    solve(A2, *p1.vector(), b2, "bicgstab", prec);
+    solve(A2, *p1->vector(), b2, "bicgstab", prec);
     end();
 
     // Velocity correction
@@ -182,14 +182,14 @@ int main()
     assemble(b3, L3);
     for (std::size_t i = 0; i < bcu.size(); i++)
       bcu[i]->apply(A3, b3);
-    solve(A3, *u1.vector(), b3, "gmres", "default");
+    solve(A3, *u1->vector(), b3, "gmres", "default");
     end();
 
     // Save to file on a P2 function space
     file.write(output, *O, t);
 
     // Move to next time step
-    u0 = u1;
+    *u0 = *u1;
     t += dt;
     cout << "t = " << t << endl;
   }

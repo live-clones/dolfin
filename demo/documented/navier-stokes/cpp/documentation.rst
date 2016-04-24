@@ -204,7 +204,7 @@ We then load the mesh for the L-shaped domain from file:
 .. code-block:: c++
 
     // Load mesh from file
-    Mesh mesh("../lshape.xml.gz");
+    auto mesh = std::make_shared<Mesh>("../lshape.xml.gz");
 
 We next define a pair of function spaces :math:`V` and :math:`Q` for
 the velocity and pressure, and test and trial functions on these
@@ -273,20 +273,20 @@ below:
 .. code-block:: c++
 
     // Create functions
-    Function u0(V);
-    Function u1(V);
-    Function p1(Q);
+    auto u0 = std::make_shared<Function>(V);
+    auto u1 = std::make_shared<Function>(V);
+    auto p1 = std::make_shared<Function>(Q);
 
     // Rename output
     u1.rename("Velocity", "u");
     p1.rename("Pressure", "p");
-    std::vector<const GenericFunction*> output;
-    output.push_back(&u1);
-    output.push_back(&p1);
+    std::vector<std::shared_ptr<GenericFunction> > output;
+    output.push_back(u1);
+    output.push_back(p1);
 
     // Create coefficients
-    Constant k(dt);
-    Constant f(0, 0);
+    auto k = std::make_shared<Constant>(dt);
+    auto f = std::make_shared<Constant>(0, 0);
 
 The next step is now to define the variational problems for the three
 steps of Chorin's method. We do this by instantiating the classes
@@ -371,7 +371,7 @@ pressure equation if available:
     assemble(b1, L1);
     for (std::size_t i = 0; i < bcu.size(); i++)
       bcu[i]->apply(A1, b1);
-    solve(A1, *u1.vector(), b1, "gmres", "default");
+    solve(A1, *u1->vector(), b1, "gmres", "default");
     end();
 
     // Pressure correction
@@ -380,9 +380,9 @@ pressure equation if available:
     for (std::size_t i = 0; i < bcp.size(); i++)
     {
       bcp[i]->apply(A2, b2);
-      bcp[i]->apply(*p1.vector());
+      bcp[i]->apply(*p1->vector());
     }
-    solve(A2, *p1.vector(), b2, "bicgstab", prec);
+    solve(A2, *p1->vector(), b2, "bicgstab", prec);
     end();
 
     // Velocity correction
@@ -390,7 +390,7 @@ pressure equation if available:
     assemble(b3, L3);
     for (std::size_t i = 0; i < bcu.size(); i++)
       bcu[i]->apply(A3, b3);
-    solve(A3, *u1.vector(), b3, "gmres", "default");
+    solve(A3, *u1->vector(), b3, "gmres", "default");
     end();
 
 Note the use of ``begin`` and ``end``; these improve the readability
@@ -406,7 +406,7 @@ and update values for the next time step:
     file.write(output, *O, t);
 
     // Move to next time step
-    u0 = u1;
+    *u0 = *u1;
     t += dt;
 
 Finally, we plot the solution and the program is finished:
