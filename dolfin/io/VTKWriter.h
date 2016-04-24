@@ -92,7 +92,7 @@ namespace dolfin
     static std::uint8_t vtk_cell_type(const Mesh& mesh, std::size_t cell_dim);
 
     // Get VTK cell type - based on functionspace
-    static boost::uint8_t vtk_cell_type(const FunctionSpace& functionspace, std::size_t cell_dim);
+    static std::uint8_t vtk_cell_type(const FunctionSpace& functionspace, std::size_t cell_dim);
 
     // Get VTK cell node order - based on functionspace
     static std::vector<std::size_t> vtk_cell_order(const FunctionSpace& functionspace, std::size_t cell_dim);
