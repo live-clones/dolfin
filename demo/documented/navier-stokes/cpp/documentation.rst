@@ -278,11 +278,9 @@ below:
     auto p1 = std::make_shared<Function>(Q);
 
     // Rename output
-    u1.rename("Velocity", "u");
-    p1.rename("Pressure", "p");
-    std::vector<std::shared_ptr<GenericFunction> > output;
-    output.push_back(u1);
-    output.push_back(p1);
+    u1->rename("Velocity", "u");
+    p1->rename("Pressure", "p");
+    std::vector<std::shared_ptr<GenericFunction> > output = {u1, p1};
 
     // Create coefficients
     auto k = std::make_shared<Constant>(dt);

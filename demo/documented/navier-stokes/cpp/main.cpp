@@ -115,9 +115,7 @@ int main()
   // Rename output
   u1->rename("Velocity", "u");
   p1->rename("Pressure", "p");
-  std::vector<std::shared_ptr<GenericFunction> > output;
-  output.push_back(u1);
-  output.push_back(p1);
+  std::vector<std::shared_ptr<GenericFunction> > output = {u1, p1};
 
   // Create coefficients
   auto k = std::make_shared<Constant>(dt);
