@@ -91,6 +91,15 @@ void dolfin::MPI::barrier(const MPI_Comm comm)
 #endif
 }
 //-----------------------------------------------------------------------------
+MPI_Comm dolfin::MPI::split(const MPI_Comm comm, int color)
+{
+MPI_Comm new_comm = MPI_COMM_WORLD;
+#ifdef HAS_MPI
+  MPI_Comm_split(comm, color, 0, &new_comm);
+#endif
+return new_comm;
+}
+//-----------------------------------------------------------------------------
 std::size_t dolfin::MPI::global_offset(const MPI_Comm comm,
                                        std::size_t range, bool exclusive)
 {
