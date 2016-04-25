@@ -515,9 +515,6 @@ void VTKFile::results_write(const std::vector<const GenericFunction*>& us, const
 void VTKFile::results_write(const std::vector<const GenericFunction*>& us, const FunctionSpace& functionspace, pugi::xml_document& xml_doc) const
 {
 
-  dolfin_assert(functionspace.mesh());
-  const Mesh& mesh = *functionspace.mesh();
-
   std::vector<std::size_t> cell_counter(3,0);
   std::vector<std::size_t> point_counter(3,0);
 
@@ -858,10 +855,12 @@ void VTKFile::write_point_data(const GenericFunction& u, const FunctionSpace& fu
           std::size_t k = i*dim1 + j;
           std::size_t kf = k;
           if (symmetric)
+          {
             if (j >= i)
               kf = i*dim1 + j - (i*(i+1))/2;
             else
               kf = j*dim1 + i - (j*(j+1))/2;
+          }
           uf.interpolate((*ul)[kf]);
           uf.vector()->get_local(values[k].data(), dofs.size(), dofs.data());
           std::vector<double>::iterator it;

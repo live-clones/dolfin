@@ -159,9 +159,9 @@ namespace dolfin
 
   private:
 
-    const GenericFunction* _u;
-
     const std::size_t _dim;
+
+    const GenericFunction* _u;
 
   };
 
