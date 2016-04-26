@@ -202,6 +202,15 @@ namespace dolfin
     static unsigned int index_owner(MPI_Comm comm,
                                     std::size_t index, std::size_t N);
 
+    /// Split a communicator to a smaller number of processes M
+    /// with the remainder not participating (MPI_COMM_NULL)
+    static MPI_Comm split(MPI_Comm comm, unsigned int M);
+
+    /// Move a distributed vector between two comms of different
+    /// size
+    static void move_to_fewer(MPI_Comm comm_src, MPI_Comm comm_dest,
+                              std::vector<std::size_t>& data);
+
     #ifdef HAS_MPI
     /// Return average reduction operation; recognized by
     /// all_reduce(MPI_Comm, Table&, MPI_Op)
