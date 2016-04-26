@@ -208,8 +208,9 @@ namespace dolfin
 
     /// Move a distributed vector between two comms of different
     /// size
+    template<typename T>
     static void move_to_fewer(MPI_Comm comm_src, MPI_Comm comm_dest,
-                              std::vector<std::size_t>& data);
+                              std::vector<T>& data);
 
     #ifdef HAS_MPI
     /// Return average reduction operation; recognized by
@@ -260,6 +261,70 @@ namespace dolfin
   template<> inline MPI_Datatype MPI::mpi_type<unsigned long int>() { return MPI_UNSIGNED_LONG; }
   template<> inline MPI_Datatype MPI::mpi_type<long long>() { return MPI_LONG_LONG; }
   #endif
+  //---------------------------------------------------------------------------
+
+template<typename T>
+void dolfin::MPI::move_to_fewer(MPI_Comm comm_src, MPI_Comm comm_dest,
+    std::vector<T>& data)
+{
+#ifdef HAS_MPI
+  // All processes should participate in comm_src
+  // which must be a superset of comm_dest
+  dolfin_assert(comm_src != MPI_COMM_NULL);
+  int M = MPI::size(comm_src);
+
+  // Compute range of source data
+  std::pair<std::int64_t, std::int64_t> src_range;
+  src_range.first = global_offset(comm_src, data.size(), true);
+  src_range.second = src_range.first + data.size();
+
+  // Compute total size of data
+  std::size_t data_size = sum(comm_src, data.size());
+
+  // Need to get size of comm_dest on all processes
+  // (even on processes not in that comm)
+  int N = -1;
+  if (comm_dest != MPI_COMM_NULL)
+    N = size(comm_dest);
+  N = dolfin::MPI::max(comm_src, N);
+  dolfin_assert(N != -1);
+
+  // Do the reduction on "comm_src" to processes in "comm_dest"
+  std::vector<std::vector<T>> send_data(M);
+  std::vector<std::vector<T>> recv_data(M);
+
+  for (int p = 0; p != N; ++p)
+  {
+    auto dest_range = compute_local_range(p, data_size, N);
+    int x0 = std::max(dest_range.first, src_range.first);
+    int x1 = std::min(dest_range.second, src_range.second);
+    // Check if ranges overlap
+    if (x0 <= x1)
+    {
+      // Remove global offset
+      x0 -= src_range.first;
+      x1 -= src_range.first;
+
+      dolfin_assert(x0 >= 0);
+      dolfin_assert(x1 >= 0);
+      dolfin_assert(x0 <= (int)data.size());
+      dolfin_assert(x1 <= (int)data.size());
+
+      send_data[p].insert(send_data[p].end(), data.begin() + x0,
+                          data.begin() + x1);
+    }
+  }
+
+  // Send data to receiving processes and concatenate
+  data.clear();
+  all_to_all(comm_src, send_data, recv_data);
+  for (auto v : recv_data)
+    data.insert(data.end(), v.begin(), v.end());
+
+  // Processes which are in src_comm but not in dest_comm
+  // should have empty data now.
+#endif
+}
   //---------------------------------------------------------------------------
   template<typename T>
     void dolfin::MPI::broadcast(MPI_Comm comm, std::vector<T>& value,
