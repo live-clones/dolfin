@@ -167,6 +167,153 @@ MPI_Comm dolfin::MPI::split(MPI_Comm comm, unsigned int M)
   return new_comm;
 }
 //-----------------------------------------------------------------------------
+void dolfin::MPI::move_to_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
+                                 boost::multi_array<std::int64_t, 2>& data)
+{
+#ifdef HAS_MPI
+  // All processes should participate in comm_src
+  // which must be a superset of comm_dest
+  dolfin_assert(comm_src != MPI_COMM_NULL);
+  int M = MPI::size(comm_src);
+
+  // Compute range of source data
+  std::pair<std::int64_t, std::int64_t> src_range;
+  src_range.first = global_offset(comm_src, data.size(), true);
+  src_range.second = src_range.first + data.size();
+
+  // Compute total size of data
+  std::size_t data_size = sum(comm_src, data.shape()[0]);
+  std::size_t data_width = data.shape()[1];
+
+  // Need to get size of comm_dest on all processes
+  // (even on processes not in that comm)
+  int N = -1;
+  if (comm_dest != MPI_COMM_NULL)
+    N = size(comm_dest);
+  N = dolfin::MPI::max(comm_src, N);
+  dolfin_assert(N != -1);
+
+  // Do the reduction on "comm_src" to processes in "comm_dest"
+  std::vector<std::vector<std::int64_t>> send_data(M);
+  std::vector<std::vector<std::int64_t>> recv_data(M);
+
+  for (int p = 0; p != N; ++p)
+  {
+    auto dest_range = compute_local_range(p, data_size, N);
+    int x0 = std::max(dest_range.first, src_range.first);
+    int x1 = std::min(dest_range.second, src_range.second);
+    // Check if ranges overlap
+    if (x0 <= x1)
+    {
+      // Remove global offset
+      x0 -= src_range.first;
+      x1 -= src_range.first;
+
+      dolfin_assert(x0 >= 0);
+      dolfin_assert(x1 >= 0);
+      dolfin_assert(x0 <= (int)data.size());
+      dolfin_assert(x1 <= (int)data.size());
+
+      send_data[p].insert(send_data[p].end(),
+                          data.data() + x0*data_width,
+                          data.data() + x1*data_width);
+    }
+  }
+
+  // Send data to receiving processes and concatenate
+  all_to_all(comm_src, send_data, recv_data);
+
+  // Resize boost::multi_array to accept data
+  int total_size = 0;
+  for (auto v : recv_data)
+    total_size += v.size();
+  dolfin_assert(total_size%data_width == 0);
+  data.resize(boost::extents[total_size/data_width][data_width]);
+
+  auto ptr = data.data();
+  for (auto v : recv_data)
+  {
+    std::copy(v.begin(), v.end(), ptr);
+    ptr += v.size();
+  }
+
+#endif
+}
+//-----------------------------------------------------------------------------
+void dolfin::MPI::move_from_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
+                                   boost::multi_array<std::int64_t, 2>& data)
+{
+#ifdef HAS_MPI
+  // All processes should participate in comm_dest
+  // which must be a superset of comm_src
+  dolfin_assert(comm_dest != MPI_COMM_NULL);
+  int N = MPI::size(comm_dest);
+
+  // Make sure there is no data on processes which cannot send
+  if (comm_src == MPI_COMM_NULL)
+    dolfin_assert(data.size() == 0);
+
+  // Scatter on comm_dest to N processes
+  std::vector<std::vector<std::int64_t>> send_data(N);
+  std::vector<std::vector<std::int64_t>> recv_data(N);
+
+  // FIXME: assumes data_width is known on all processes
+  std::size_t data_width = data.shape()[1];
+
+  if (comm_src != MPI_COMM_NULL)
+  {
+    // Get total data size on src processes
+    std::size_t data_size = sum(comm_src, data.shape()[0]);
+
+    // Compute range of source data
+    std::pair<std::int64_t, std::int64_t> src_range;
+    src_range.first = global_offset(comm_src, data.size(), true);
+    src_range.second = src_range.first + data.size();
+
+    for (int p = 0; p != N; ++p)
+    {
+      auto dest_range = compute_local_range(p, data_size, N);
+      int x0 = std::max(dest_range.first, src_range.first);
+      int x1 = std::min(dest_range.second, src_range.second);
+      // Check if ranges overlap
+      if (x0 <= x1)
+      {
+        // Remove global offset
+        x0 -= src_range.first;
+        x1 -= src_range.first;
+
+        dolfin_assert(x0 >= 0);
+        dolfin_assert(x1 >= 0);
+        dolfin_assert(x0 <= (int)data.size());
+        dolfin_assert(x1 <= (int)data.size());
+
+        send_data[p].insert(send_data[p].end(),
+                            data.data() + x0*data_width,
+                            data.data() + x1*data_width);
+      }
+    }
+  }
+
+  // Send data to receiving processes and concatenate
+  all_to_all(comm_dest, send_data, recv_data);
+
+  // Resize boost::multi_array to accept data
+  int total_size = 0;
+  for (auto v : recv_data)
+    total_size += v.size();
+  dolfin_assert(total_size%data_width == 0);
+  data.resize(boost::extents[total_size/data_width][data_width]);
+
+  auto ptr = data.data();
+  for (auto v : recv_data)
+  {
+    std::copy(v.begin(), v.end(), ptr);
+    ptr += v.size();
+  }
+
+#endif
+}
+//-----------------------------------------------------------------------------
 void dolfin::MPI::move_from_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
                                    std::vector<std::size_t>& data)
 {

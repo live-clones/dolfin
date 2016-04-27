@@ -31,6 +31,8 @@
 #include <utility>
 #include <vector>
 
+#include <boost/multi_array.hpp>
+
 #ifdef HAS_MPI
 #define MPICH_IGNORE_CXX_SEEK 1
 #include <mpi.h>
@@ -212,8 +214,14 @@ namespace dolfin
     static void move_to_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
                                std::vector<T>& data);
 
+    static void move_to_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
+                               boost::multi_array<std::int64_t, 2>& data);
+
     static void move_from_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
                                  std::vector<std::size_t>& data);
+
+    static void move_from_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
+                                 boost::multi_array<std::int64_t, 2>& data);
 
     #ifdef HAS_MPI
     /// Return average reduction operation; recognized by
