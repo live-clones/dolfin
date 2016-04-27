@@ -209,8 +209,11 @@ namespace dolfin
     /// Move a distributed vector between two comms of different
     /// size
     template<typename T>
-    static void move_to_fewer(MPI_Comm comm_src, MPI_Comm comm_dest,
-                              std::vector<T>& data);
+    static void move_to_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
+                               std::vector<T>& data);
+
+    static void move_from_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
+                                 std::vector<std::size_t>& data);
 
     #ifdef HAS_MPI
     /// Return average reduction operation; recognized by
@@ -262,9 +265,8 @@ namespace dolfin
   template<> inline MPI_Datatype MPI::mpi_type<long long>() { return MPI_LONG_LONG; }
   #endif
   //---------------------------------------------------------------------------
-
 template<typename T>
-void dolfin::MPI::move_to_fewer(MPI_Comm comm_src, MPI_Comm comm_dest,
+void dolfin::MPI::move_to_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
     std::vector<T>& data)
 {
 #ifdef HAS_MPI

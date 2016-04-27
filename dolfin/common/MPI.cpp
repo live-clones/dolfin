@@ -167,6 +167,64 @@ MPI_Comm dolfin::MPI::split(MPI_Comm comm, unsigned int M)
   return new_comm;
 }
 //-----------------------------------------------------------------------------
+void dolfin::MPI::move_from_subset(MPI_Comm comm_src, MPI_Comm comm_dest,
+                                   std::vector<std::size_t>& data)
+{
+#ifdef HAS_MPI
+  // All processes should participate in comm_dest
+  // which must be a superset of comm_src
+  dolfin_assert(comm_dest != MPI_COMM_NULL);
+  int N = MPI::size(comm_dest);
+
+  // Make sure there is no data on processes which cannot send
+  if (comm_src == MPI_COMM_NULL)
+    dolfin_assert(data.size() == 0);
+
+  // Scatter on comm_dest to N processes
+  std::vector<std::vector<std::size_t>> send_data(N);
+  std::vector<std::vector<std::size_t>> recv_data(N);
+
+  if (comm_src != MPI_COMM_NULL)
+  {
+    // Get total data size on src processes
+    std::size_t data_size = sum(comm_src, data.size());
+
+    // Compute range of source data
+    std::pair<std::int64_t, std::int64_t> src_range;
+    src_range.first = global_offset(comm_src, data.size(), true);
+    src_range.second = src_range.first + data.size();
+
+    for (int p = 0; p != N; ++p)
+    {
+      auto dest_range = compute_local_range(p, data_size, N);
+      int x0 = std::max(dest_range.first, src_range.first);
+      int x1 = std::min(dest_range.second, src_range.second);
+      // Check if ranges overlap
+      if (x0 <= x1)
+      {
+        // Remove global offset
+        x0 -= src_range.first;
+        x1 -= src_range.first;
+
+        dolfin_assert(x0 >= 0);
+        dolfin_assert(x1 >= 0);
+        dolfin_assert(x0 <= (int)data.size());
+        dolfin_assert(x1 <= (int)data.size());
+
+        send_data[p].insert(send_data[p].end(), data.begin() + x0,
+                            data.begin() + x1);
+      }
+    }
+  }
+
+  // Send data to receiving processes and concatenate
+  data.clear();
+  all_to_all(comm_dest, send_data, recv_data);
+  for (auto v : recv_data)
+    data.insert(data.end(), v.begin(), v.end());
+#endif
+}
+//-----------------------------------------------------------------------------
 #ifdef HAS_MPI
 template<>
   dolfin::Table dolfin::MPI::all_reduce(const MPI_Comm comm,
