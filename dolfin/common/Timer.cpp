@@ -20,6 +20,8 @@
 
 #include <dolfin/parameter/GlobalParameters.h>
 #include <dolfin/log/LogManager.h>
+#include "MPI.h"
+#include "SubSystemsManager.h"
 #include "Timer.h"
 
 using namespace dolfin;
@@ -34,6 +36,13 @@ Timer::Timer(std::string task) : _task("")
 {
   const std::string prefix = parameters["timer_prefix"];
   _task = prefix + task;
+
+  // Output Timer "ticks" on stdout
+  if (prefix == "TICKS:"
+      and SubSystemsManager::mpi_initialized()
+      and MPI::rank(MPI_COMM_WORLD) == 0)
+    std::cout << dolfin::time() << ":" << _task << "\n";
+
 }
 //-----------------------------------------------------------------------------
 Timer::~Timer()

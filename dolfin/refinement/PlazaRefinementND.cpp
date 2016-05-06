@@ -64,8 +64,6 @@ void PlazaRefinementND::get_triangles
  const std::size_t longest_edge,
  bool uniform)
 {
-  Timer t0("PLAZA: Get triangles");
-
   // Longest edge must be marked
   dolfin_assert(marked_edges[longest_edge]);
 
@@ -113,8 +111,6 @@ void PlazaRefinementND::get_tetrahedra(
   const std::vector<bool>& marked_edges,
   const std::vector<std::size_t>& longest_edge)
 {
-  Timer t0("PLAZA: Get tetrahedra");
-
   tet_set.clear();
 
   // Connectivity matrix
