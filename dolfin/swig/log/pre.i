@@ -55,3 +55,48 @@
 %ignore dolfin::LogStream;
 %ignore dolfin::cout;
 %ignore dolfin::endl;
+
+//-----------------------------------------------------------------------------
+// Typemap for passing Python file as output stream
+//-----------------------------------------------------------------------------
+%{
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#include <unistd.h>
+#include <stdio.h>
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <dolfin/log/LogManager.h>
+#endif
+%}
+
+%typemap(in) std::ostream& {
+%#if _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE
+
+  // Get FILE
+  FILE* f = PyFile_AsFile($input);
+  if (!f)
+    SWIG_exception(SWIG_TypeError, "File object expected.");
+
+  // Check the file is writable
+  PyObject* mode = PyObject_GetAttrString($input, (char*)"mode");
+#if PY_MAJOR_VERSION >= 3
+  if(!mode || !PyUnicode_Check(mode) || !PyUnicode_CompareWithASCIIString(mode, "r"))
+#else
+  if(!mode || !PyString_Check(mode) || !strcmp(PyString_AsString(mode), "r"))
+#endif
+  {
+    Py_XDECREF(mode);
+    SWIG_exception(SWIG_TypeError, "File does not seem to be writable. Mode not set or 'r'.");
+  }
+  Py_DECREF(mode);
+
+  // Flush (possibly buffered) file and build ostream from fd
+  PyObject_CallMethod($input, (char*)"flush", NULL);
+  auto stream = new boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_sink>
+    (fileno(f), boost::iostreams::never_close_handle);
+  $1 = new std::ostream(stream);
+
+%#else
+  SWIG_exception(SWIG_RuntimeError, "Not on non-POSIX, sorry...");
+%#endif
+}
