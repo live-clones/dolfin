@@ -31,6 +31,9 @@
 // modules has been loaded.
 //=============================================================================
 
+%ignore dolfin::LocalMeshData::Geometry;
+%ignore dolfin::LocalMeshData::Topology;
+
 //-----------------------------------------------------------------------------
 // Return NumPy arrays for Mesh::cells() and Mesh::coordinates()
 //-----------------------------------------------------------------------------
