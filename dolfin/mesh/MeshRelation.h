@@ -51,6 +51,10 @@ namespace dolfin
     // as calculated during ParallelRefinement process
     std::shared_ptr<const std::map<std::size_t, std::size_t> > edge_to_global_vertex;
 
+    // Shared pointers to source and destination meshes
+    std::shared_ptr<const Mesh> src_mesh;
+    std::shared_ptr<const Mesh> dest_mesh;
+
   };
 }
 
