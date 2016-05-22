@@ -38,9 +38,20 @@ namespace dolfin
     MeshRelation()
     {}
 
+    MeshRelation(std::shared_ptr<const Mesh> m1,
+                 std::shared_ptr<const Mesh> m2)
+      : src_mesh(m1), dest_mesh(m2)
+    {}
+
     /// Destructor
     ~MeshRelation()
     {}
+
+    std::shared_ptr<const Mesh> source_mesh() const
+    { return src_mesh; }
+
+    std::shared_ptr<const Mesh> destination_mesh() const
+    { return dest_mesh; }
 
   private:
 
@@ -54,6 +65,13 @@ namespace dolfin
     // Shared pointers to source and destination meshes
     std::shared_ptr<const Mesh> src_mesh;
     std::shared_ptr<const Mesh> dest_mesh;
+
+    // Mapping of entities of each dimension from the
+    // source to destination mesh. In the case of
+    // a coarse->fine mesh relationship, each coarse
+    // cell may map to multiple fine cells.
+    // Mappings of all entity dims may not be computed.
+    std::vector<MeshConnectivity> src_to_dest;
 
   };
 }
