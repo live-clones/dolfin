@@ -183,9 +183,9 @@ NewBoundaryMesh::create(std::shared_ptr<const Mesh> mesh,
   // All shared vertices are now numbered
 
   // Add geometry and close "boundary" mesh
-  editor.init_vertices_global(local_count,
+  editor.init_vertices_global(vertex_fwd_map.size(),
                               MPI::sum(mesh->mpi_comm(), local_count));
-  for (unsigned int i = 0; i != local_count; ++i)
+  for (unsigned int i = 0; i != vertex_fwd_map.size(); ++i)
     editor.add_vertex(i, mesh->geometry().point(vertex_fwd_map[i]));
   editor.close();
 
