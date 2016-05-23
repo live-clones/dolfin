@@ -38,5 +38,7 @@
 #include <dolfin/mesh/MultiMesh.h>
 #include <dolfin/mesh/MeshHierarchy.h>
 #include <dolfin/mesh/MeshPartitioning.h>
+#include <dolfin/mesh/NewBoundaryMesh.h>
+#include <dolfin/mesh/MeshRelation.h>
 
 #endif
