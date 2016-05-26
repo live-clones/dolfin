@@ -74,6 +74,16 @@ namespace dolfin
     /// source mesh.
     unsigned int* entities(unsigned int dim, unsigned int index);
 
+    // Get mapping to single entity on source mesh from destination mesh
+    unsigned int entity(unsigned int dim, unsigned int index)
+    {
+      dolfin_assert(dest_to_src.size() > dim);
+      dolfin_assert(dest_to_src_offset[dim].empty());
+      auto& entity_indices = dest_to_src[dim];
+      dolfin_assert(index < entity_indices.size());
+      return entity_indices[index];
+    }
+
     /// Get size of relationship map back to source mesh. Should be same size as number of entities of
     /// dimension dim in destination mesh, if calculated.
     unsigned int size(unsigned int dim)

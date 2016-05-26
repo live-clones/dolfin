@@ -101,7 +101,7 @@ unsigned int* MeshRelation::entities(unsigned int dim, unsigned int index)
 
   if (offset.empty())
   {
-    dolfin_assert(index < dest_to_src.size());
+    dolfin_assert(index < entity_indices.size());
     return &entity_indices[index];
   }
 
