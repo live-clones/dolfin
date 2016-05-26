@@ -63,6 +63,25 @@ namespace dolfin
     /// when there are multiple mappings (e.g. parent -> child cells)
     void init(unsigned int dim, std::vector<std::vector<std::size_t>> map_back_to_src);
 
+    /// Get the number of entities of dimension dim, pointed to by entity index in destination mesh
+    /// e.g. if destination mesh is a coarse mesh, and source mesh is fine, each coarse cell
+    /// could point to multiple fine cells.
+    unsigned int num_entities(unsigned int dim, unsigned int index);
+
+    /// Pointer to the indices on the source mesh, for index in the destination mesh.
+    /// In many cases, there will just be one index. For example, vertices are always mapped one-to-one, so this
+    /// will just be a map back from the index in the destination mesh to the index of the same vertex in the
+    /// source mesh.
+    unsigned int* entities(unsigned int dim, unsigned int index);
+
+    /// Get size of relationship map back to source mesh. Should be same size as number of entities of
+    /// dimension dim in destination mesh, if calculated.
+    unsigned int size(unsigned int dim)
+    {
+      dolfin_assert(dim < dest_to_src.size());
+      return dest_to_src[dim].size();
+    }
+
   private:
 
     // FIXME: remove all this stuff about edge_to_global_vertex from here
@@ -81,11 +100,11 @@ namespace dolfin
     // a coarse->fine mesh relationship, each coarse
     // cell may map to multiple fine cells.
     // Mappings of all entity dims may not be computed.
-    std::vector<std::vector<std::size_t>> dest_to_src;
+    std::vector<std::vector<unsigned int>> dest_to_src;
 
     // Offset vectors, only used when mapping to multiple entities
     // on the destination mesh, e.g. parent->children
-    std::vector<std::vector<std::size_t>> dest_to_src_offset;
+    std::vector<std::vector<unsigned int>> dest_to_src_offset;
 
   };
 }

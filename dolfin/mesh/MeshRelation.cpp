@@ -81,3 +81,32 @@ void MeshRelation::init(unsigned int dim, std::vector<std::vector<std::size_t>> 
   }
 }
 //-----------------------------------------------------------------------------
+unsigned int MeshRelation::num_entities(unsigned int dim, unsigned int index)
+{
+  dolfin_assert(dest_to_src_offset.size() > dim);
+  auto& offset = dest_to_src_offset[dim];
+
+  if (offset.empty())
+    return 1;
+
+  dolfin_assert(index < offset.size());
+  return (offset[index + 1] - offset[index]);
+}
+//-----------------------------------------------------------------------------
+unsigned int* MeshRelation::entities(unsigned int dim, unsigned int index)
+{
+  dolfin_assert(dest_to_src_offset.size() > dim);
+  auto& offset = dest_to_src_offset[dim];
+  auto& entity_indices = dest_to_src[dim];
+
+  if (offset.empty())
+  {
+    dolfin_assert(index < dest_to_src.size());
+    return &entity_indices[index];
+  }
+
+  dolfin_assert(index < offset.size());
+  return &entity_indices[offset[index]];
+}
+
+
