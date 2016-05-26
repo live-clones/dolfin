@@ -24,15 +24,18 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-void MeshRelation::init(unsigned int dim, std::vector<std::size_t> map)
+void MeshRelation::init(unsigned int dim, std::vector<std::size_t> map_back_to_src)
 {
   dolfin_assert(src_mesh);
   dolfin_assert(dest_mesh);
   dolfin_assert(dim <= src_mesh->topology().dim());
-  if (src_to_dest.size() < dim + 1)
-    src_to_dest.resize(dim + 1);
+  if (dest_to_src.size() < dim + 1)
+  {
+    dest_to_src.resize(dim + 1);
+    dest_to_src_offset.resize(dim + 1);
+  }
 
-  auto& conn = src_to_dest[dim];
+  auto& conn = dest_to_src[dim];
 
   if (!conn.empty())
   {
@@ -41,19 +44,23 @@ void MeshRelation::init(unsigned int dim, std::vector<std::size_t> map)
 		 "Already initialised");
   }
 
-  dolfin_assert(map.size() == src_mesh->size(dim));
-  conn.assign(map.begin(), map.end());
+  dolfin_assert(map_back_to_src.size() == dest_mesh->size(dim));
+  conn.assign(map_back_to_src.begin(), map_back_to_src.end());
 }
 //-----------------------------------------------------------------------------
-void MeshRelation::init(unsigned int dim, std::vector<std::vector<std::size_t>> map)
+void MeshRelation::init(unsigned int dim, std::vector<std::vector<std::size_t>> map_back_to_src)
 {
   dolfin_assert(src_mesh);
   dolfin_assert(dest_mesh);
   dolfin_assert(dim <= src_mesh->topology().dim());
-  if (src_to_dest.size() < dim + 1)
-    src_to_dest.resize(dim + 1);
+  if (dest_to_src.size() < dim + 1)
+  {
+    dest_to_src.resize(dim + 1);
+    dest_to_src_offset.resize(dim + 1);
+  }
 
-  auto& conn = src_to_dest[dim];
+  auto& conn = dest_to_src[dim];
+  auto& offset = dest_to_src_offset[dim];
 
   if (!conn.empty())
   {
@@ -62,9 +69,15 @@ void MeshRelation::init(unsigned int dim, std::vector<std::vector<std::size_t>> 
 		 "Already initialised");
   }
 
-  dolfin_assert(map.size() == src_mesh->size(dim));
+  dolfin_assert(map_back_to_src.size() == dest_mesh->size(dim));
 
-  for (unsigned int i = 0; i != map.size(); ++i)
-    conn.insert(conn.end(), map[i].begin(), map[i].end());
+  offset.push_back(0);
+  for (unsigned int i = 0; i != map_back_to_src.size(); ++i)
+  {
+    conn.insert(conn.end(),
+		map_back_to_src[i].begin(),
+		map_back_to_src[i].end());
+    offset.push_back(conn.size());
+  }
 }
 //-----------------------------------------------------------------------------

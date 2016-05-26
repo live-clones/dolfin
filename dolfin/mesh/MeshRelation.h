@@ -55,19 +55,19 @@ namespace dolfin
     /// Get the destination mesh
     std::shared_ptr<const Mesh> destination_mesh() const
     { return dest_mesh; }
-    
+
     /// Initialise the mapping of entities of dim from the source to destination mesh
-    void init(unsigned int dim, std::vector<std::size_t> map_src_to_dest);
+    void init(unsigned int dim, std::vector<std::size_t> map_back_to_src);
 
     /// Initialise the mapping of entities of dim from the source to destination mesh
     /// when there are multiple mappings (e.g. parent -> child cells)
-    void init(unsigned int dim, std::vector<std::vector<std::size_t>> map_src_to_dest);
+    void init(unsigned int dim, std::vector<std::vector<std::size_t>> map_back_to_src);
 
   private:
 
+    // FIXME: remove all this stuff about edge_to_global_vertex from here
     friend class MeshHierarchy;
     friend class PlazaRefinementND;
-
     // Map from edge of parent Mesh to new vertex in child Mesh
     // as calculated during ParallelRefinement process
     std::shared_ptr<const std::map<std::size_t, std::size_t> > edge_to_global_vertex;
@@ -81,7 +81,11 @@ namespace dolfin
     // a coarse->fine mesh relationship, each coarse
     // cell may map to multiple fine cells.
     // Mappings of all entity dims may not be computed.
-    std::vector<std::vector<std::size_t>> src_to_dest;  
+    std::vector<std::vector<std::size_t>> dest_to_src;
+
+    // Offset vectors, only used when mapping to multiple entities
+    // on the destination mesh, e.g. parent->children
+    std::vector<std::vector<std::size_t>> dest_to_src_offset;
 
   };
 }

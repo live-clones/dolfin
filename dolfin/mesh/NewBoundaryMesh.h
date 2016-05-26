@@ -20,20 +20,27 @@
 #define __NEW_BOUNDARY_MESH_H
 
 #include "Mesh.h"
+#include "MeshRelation.h"
 
 namespace dolfin
 {
-  class MeshRelation;
-
   class NewBoundaryMesh
   {
   public:
 
-    static std::shared_ptr<const MeshRelation> create_boundary(std::shared_ptr<const Mesh> mesh);
+    /// Return a Mesh of the external boundary
+    static std::shared_ptr<const Mesh> create_boundary_mesh(std::shared_ptr<const Mesh> mesh)
+    { return create_boundary_relation(mesh)->destination_mesh(); }
 
-    static std::shared_ptr<const MeshRelation> create(std::shared_ptr<const Mesh> mesh,
-                                                      std::vector<std::size_t> markers,
-                                                      std::size_t tdim);
+    /// Return a MeshRelation of the Mesh with its external boundary (the boundary mesh is available as
+    /// MeshRelation.destination_mesh()).
+    static std::shared_ptr<const MeshRelation> create_boundary_relation(std::shared_ptr<const Mesh> mesh);
+
+    /// Return a MeshRelation of the Mesh with a new Mesh described by the entity markers on dimension tdim.
+    /// The new mesh will be available as MeshRelation.destination_mesh().
+    static std::shared_ptr<const MeshRelation> create_relation(std::shared_ptr<const Mesh> mesh,
+							       std::vector<std::size_t> markers,
+							       std::size_t tdim);
 
   };
 

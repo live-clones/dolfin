@@ -27,7 +27,7 @@ using namespace dolfin;
 
 //-----------------------------------------------------------------------------
 std::shared_ptr<const MeshRelation>
-NewBoundaryMesh::create_boundary(std::shared_ptr<const Mesh> mesh)
+NewBoundaryMesh::create_boundary_relation(std::shared_ptr<const Mesh> mesh)
 {
   const unsigned int tdim = mesh->topology().dim();
 
@@ -42,17 +42,14 @@ NewBoundaryMesh::create_boundary(std::shared_ptr<const Mesh> mesh)
       indices.push_back(f->index());
   }
 
-  return create(mesh, indices, tdim - 1);
+  return create_relation(mesh, indices, tdim - 1);
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<const MeshRelation>
-NewBoundaryMesh::create(std::shared_ptr<const Mesh> mesh,
+NewBoundaryMesh::create_relation(std::shared_ptr<const Mesh> mesh,
                         std::vector<std::size_t> indices,
                         std::size_t tdim)
 {
-  std::cout << "tdim = " << tdim << "\n";
-  std::cout << "num indices = " << indices.size() << "\n";
-
   auto boundary = std::make_shared<Mesh>();
 
   MeshEditor editor;
@@ -92,11 +89,6 @@ NewBoundaryMesh::create(std::shared_ptr<const Mesh> mesh,
       }
       new_cell.push_back(mapit.first->second);
     }
-    std::cout << "j = " << j << " ";
-    for (auto q : new_cell)
-      std::cout << q <<" ";
-    std::cout <<" \n";
-
     editor.add_cell(j, new_cell);
   }
 
@@ -241,8 +233,8 @@ NewBoundaryMesh::create(std::shared_ptr<const Mesh> mesh,
 
   // Record relation between meshes
   auto relation = std::make_shared<MeshRelation>(mesh, boundary);
-  //  relation->init(0, vertex_fwd_map);
-  //  relation->init(tdim, indices);
+  relation->init(0, vertex_fwd_map);
+  relation->init(tdim, indices);
 
   return relation;
 }
