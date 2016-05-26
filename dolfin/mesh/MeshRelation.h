@@ -38,6 +38,7 @@ namespace dolfin
     MeshRelation()
     {}
 
+    /// Constructor with source and destination meshes
     MeshRelation(std::shared_ptr<const Mesh> m1,
                  std::shared_ptr<const Mesh> m2)
       : src_mesh(m1), dest_mesh(m2)
@@ -47,11 +48,20 @@ namespace dolfin
     ~MeshRelation()
     {}
 
+    /// Get the source mesh
     std::shared_ptr<const Mesh> source_mesh() const
     { return src_mesh; }
 
+    /// Get the destination mesh
     std::shared_ptr<const Mesh> destination_mesh() const
     { return dest_mesh; }
+    
+    /// Initialise the mapping of entities of dim from the source to destination mesh
+    void init(unsigned int dim, std::vector<std::size_t> map_src_to_dest);
+
+    /// Initialise the mapping of entities of dim from the source to destination mesh
+    /// when there are multiple mappings (e.g. parent -> child cells)
+    void init(unsigned int dim, std::vector<std::vector<std::size_t>> map_src_to_dest);
 
   private:
 
@@ -71,7 +81,7 @@ namespace dolfin
     // a coarse->fine mesh relationship, each coarse
     // cell may map to multiple fine cells.
     // Mappings of all entity dims may not be computed.
-    std::vector<MeshConnectivity> src_to_dest;
+    std::vector<std::vector<std::size_t>> src_to_dest;  
 
   };
 }
