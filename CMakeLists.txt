@@ -120,7 +120,6 @@ list(APPEND OPTIONAL_PACKAGES "SLEPc4py")
 list(APPEND OPTIONAL_PACKAGES "Trilinos")
 list(APPEND OPTIONAL_PACKAGES "UMFPACK")
 list(APPEND OPTIONAL_PACKAGES "CHOLMOD")
-list(APPEND OPTIONAL_PACKAGES "PaStiX")
 list(APPEND OPTIONAL_PACKAGES "SCOTCH")
 list(APPEND OPTIONAL_PACKAGES "ParMETIS")
 list(APPEND OPTIONAL_PACKAGES "zlib")
@@ -334,19 +333,8 @@ set(Boost_ADDITIONAL_VERSIONS 1.48 1.48.0 1.49 1.49.0 1.50 1.50.0)
 
 find_package(Boost 1.48 QUIET REQUIRED)
 
-set(DOLFIN_BOOST_COMPONENTS filesystem program_options system thread iostreams
-    timer)
+set(DOLFIN_BOOST_COMPONENTS filesystem program_options system iostreams timer)
 find_package(Boost COMPONENTS ${DOLFIN_BOOST_COMPONENTS} REQUIRED)
-
-# Check for required package UFC
-find_package(UFC 1.7.0 QUIET HINTS ${UFC_DIR})
-if (NOT UFC_FOUND)
-  message(FATAL_ERROR "Could not find a configuration file for package UFC that is "
-    "compatible with requested version 1.7.0.\n"
-    "Set UFC_DIR to the directory containing a CMake configuration file for UFC.")
-else()
-  message(STATUS "UFC version: ${UFC_VERSION_STRING}")
-endif()
 
 # Check for required package Eigen3
 find_package(Eigen3 3.2.0 REQUIRED)
@@ -411,7 +399,7 @@ if (DOLFIN_ENABLE_PYTHON)
       set(SWIG_EXECUTABLE ${UFC_SWIG_EXECUTABLE})
     endif()
     find_package(SWIG REQUIRED)
-    set(REQUIRED_SWIG_VERSION "3.0.3")
+    set(REQUIRED_SWIG_VERSION "3.0.5")
     if ("${SWIG_VERSION}" VERSION_LESS "${REQUIRED_SWIG_VERSION}")
       message(FATAL_ERROR " DOLFIN requires SWIG version ${REQUIRED_SWIG_VERSION} or greater. You have version ${SWIG_VERSION}. Set DOLFIN_ENABLE_PYTHON to false or install correct SWIG version.")
     endif()
@@ -420,6 +408,9 @@ if (DOLFIN_ENABLE_PYTHON)
   endif()
 
 endif()
+
+# Check for required package UFC
+find_package(UFC MODULE 1.7.0)
 
 # Check for PETSc, SLEPc and petsc4py, slepc4py
 if (DOLFIN_ENABLE_PETSC)
@@ -494,11 +485,6 @@ if (DOLFIN_ENABLE_HDF5)
       set(HDF5_FOUND false)
     endif()
   endif()
-endif()
-
-# Check for PaStiX
-if (DOLFIN_ENABLE_PASTIX)
-  find_package(PaStiX 5.2.1)
 endif()
 
 # Check for Trilinos and the requires Trilinos packages
@@ -823,7 +809,7 @@ install(FILES ${DOLFIN_UTILITIES}
 #------------------------------------------------------------------------------
 # Installation of DOLFIN manual pages
 
-install(DIRECTORY ${DOLFIN_SOURCE_DIR}/doc/man/
+install(DIRECTORY ${DOLFIN_SOURCE_DIR}/doc-old/man/
   DESTINATION ${DOLFIN_MAN_DIR}
   USE_SOURCE_PERMISSIONS
   COMPONENT RuntimeExecutables)
@@ -1013,7 +999,7 @@ if (DOLFIN_ENABLE_DOCS)
   if (NOT SPHINX_FOUND)
     message(STATUS "Disabling generation of documentation because Sphinx is missing.")
   else()
-    add_subdirectory(doc)
+    add_subdirectory(doc-old)
   endif()
 endif()
 
