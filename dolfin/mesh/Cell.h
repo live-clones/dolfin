@@ -363,10 +363,11 @@ namespace dolfin
     void get_coordinate_dofs(std::vector<double>& coordinates) const
     {
       const MeshGeometry& geom = _mesh->geometry();
+      const CoordinateDofMap& xdofmap = _mesh->xdofmap();
       const std::size_t gdim = geom.dim();
       const std::size_t geom_degree = geom.degree();
       const std::size_t num_vertices = this->num_vertices();
-      const unsigned int* vertices = this->entities(0);
+      const unsigned int* vertices = xdofmap.empty() ? this->entities(0) : xdofmap(this->index());
 
       if (geom_degree == 1)
       {

@@ -69,6 +69,7 @@ int main()
 {
   // Create mesh and function space
   auto mesh = std::make_shared<UnitSquareMesh>(32, 32);
+  //mesh->init_coord_dofmap();
   auto V = std::make_shared<Poisson::FunctionSpace>(mesh);
 
   // Define boundary condition
