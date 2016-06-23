@@ -19,6 +19,7 @@
 
 #include "CoordinateDofMap.h"
 #include "Mesh.h"
+#include "CellType.h"
 
 using namespace dolfin;
 
