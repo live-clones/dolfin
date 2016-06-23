@@ -49,13 +49,20 @@ namespace dolfin
     /// Return array of connections for given cell
     const unsigned int* operator() (std::size_t cell) const
     {
-      return &_dofmap[cell];
+      return &_dofmap[cell*_dofs_per_cell];
     }
+
+    /// Return the number of dofs reuiqred for cell
+    std::size_t num_cell_dofs() const
+    { return _dofs_per_cell; }
 
   private:
 
     // Cell-local-to-dof map (dofs for cell dofmap[i])
     std::vector<unsigned int> _dofmap;
+
+    // Number of dofs specified per cell (fixed for now)
+    std::size_t _dofs_per_cell;
 
   };
 }

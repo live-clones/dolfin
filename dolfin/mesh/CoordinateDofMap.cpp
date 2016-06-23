@@ -36,8 +36,11 @@ CoordinateDofMap::~CoordinateDofMap()
 void CoordinateDofMap::init(const Mesh& mesh)
 {
   std::size_t tdim = mesh.topology().dim();
+
+  // Initialise with vertices only (for now)
+  _dofs_per_cell = mesh.type().num_vertices();
+
   const MeshConnectivity& connectivity = mesh.topology()(tdim, 0);
   _dofmap = connectivity();
 }
 //-----------------------------------------------------------------------------
-
