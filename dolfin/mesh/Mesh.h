@@ -41,6 +41,7 @@
 #include "MeshGeometry.h"
 #include "MeshConnectivity.h"
 #include "MeshTopology.h"
+#include "CoordinateDofMap.h"
 
 namespace dolfin
 {
@@ -309,6 +310,18 @@ namespace dolfin
     /// Get mesh geometry (const version).
     const MeshGeometry& geometry() const
     { return _geometry; }
+
+    /// Get coordinate dofmap.
+    ///
+    /// *Returns*
+    ///     _CoordinateDofMap
+    ///         The coordinate dofmap object associated with the mesh.
+    CoordinateDofMap& xdofmap()
+    { return _xdofmap; }
+
+    /// Get mesh coordinate dofmap (const version).
+    const CoordinateDofMap& xdofmap() const
+    { return _xdofmap; }
 
     /// Get mesh (sub)domains.
     ///
@@ -592,6 +605,9 @@ namespace dolfin
     ///         A global normal direction to the mesh
     void init_cell_orientations(const Expression& global_normal);
 
+    /// Initialize the coordinate dofmap.
+    void init_coord_dofmap();
+
     /// Mesh MPI communicator
     MPI_Comm mpi_comm() const
     { return _mpi_comm; }
@@ -616,6 +632,9 @@ namespace dolfin
 
     // Auxiliary mesh data
     MeshData _data;
+
+    // Coordinate DOF map
+    CoordinateDofMap _xdofmap;
 
     // Bounding box tree used to compute collisions between the mesh
     // and other objects. The tree is initialized to a zero pointer

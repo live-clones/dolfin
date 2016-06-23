@@ -461,3 +461,8 @@ void Mesh::init_cell_orientations(const Expression& global_normal)
   }
 }
 //-----------------------------------------------------------------------------
+void Mesh::init_coord_dofmap()
+{
+  _xdofmap.init(*this);
+}
+//-----------------------------------------------------------------------------
