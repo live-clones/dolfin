@@ -19,6 +19,7 @@
 
 #include "CoordinateDofMap.h"
 #include "Mesh.h"
+#include "CellType.h"
 
 using namespace dolfin;
 
@@ -41,6 +42,7 @@ void CoordinateDofMap::init(const Mesh& mesh)
   _dofs_per_cell = mesh.type().num_vertices();
 
   const MeshConnectivity& connectivity = mesh.topology()(tdim, 0);
+  dolfin_assert(connectivity.size() == mesh.topology().size(tdim)*_dofs_per_cell);
   _dofmap = connectivity();
 }
 //-----------------------------------------------------------------------------

@@ -39,6 +39,7 @@ namespace dolfin
   template<typename T> class Hierarchical;
 
   // mesh
+  class CoordinateDofMap;
   class IntersectionOperator;
   class Vertex;
   class Mesh;
