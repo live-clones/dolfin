@@ -91,7 +91,9 @@ AA.init_vectors(x, [u.vector(), p.vector()])
 AA.init_vectors(b, [b0, b1])
 
 solver = PETScKrylovSolver("minres")
+solver.set_from_options()
 solver.set_operators(AA, PP)
+
 
 PETScPreconditioner.set_fieldsplit(solver, AA, ["0", "1"]);
 
