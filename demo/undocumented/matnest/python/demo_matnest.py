@@ -16,10 +16,7 @@ PETScOptions.set("fieldsplit_1_pc_type", "lu");
 def TopBottom(x, on_boundary):
     return abs(1.0 - x[1]) < DOLFIN_EPS or abs(x[1]) < DOLFIN_EPS
 
-def LeftEdge(x, on_boundary):
-    return x[0] < DOLFIN_EPS
-
-mesh = UnitSquareMesh(50, 50);
+mesh = UnitCubeMesh(12, 12, 12);
 
 # Create function spaces
 P2 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
@@ -40,18 +37,14 @@ a10 = - div(u)*q*dx
 a11 = Constant(0.0)*p*q*dx
 p11 = p*q*dx
 
-f = Constant((0.0, 1.0))
+f = Constant((0.0, 1.0, 0.0))
 g = Constant(0.0)
 L0 = dot(f, v)*dx
 L1 = dot(g, q)*dx
 
 # Velocity BC
-flow_velocity = Constant((0.0, 0.0));
+flow_velocity = Constant((0.0, 0.0, 0.0));
 bc0 = DirichletBC(V, flow_velocity, TopBottom)
-
-# Pressure BC
-zero = Constant(12.0)
-bc1 = DirichletBC(Q, zero, LeftEdge)
 
 # Assemble all blocks with BCs
 bcsV = [bc0]
@@ -93,7 +86,6 @@ AA.init_vectors(b, [b0, b1])
 solver = PETScKrylovSolver("minres")
 solver.set_from_options()
 solver.set_operators(AA, PP)
-
 
 PETScPreconditioner.set_fieldsplit(solver, AA, ["0", "1"]);
 
