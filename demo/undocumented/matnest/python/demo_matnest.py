@@ -1,5 +1,25 @@
-#!/usr/bin/python
+# Copyright (C) 2016 Garth N. Wells and Chris N. Richardson
+#
+# This file is part of DOLFIN.
+#
+# DOLFIN is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# DOLFIN is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
+
 from dolfin import *
+
+if not has_linear_algebra_backend("PETSc"):
+    print("DOLFIN has not been configured with PETSc. Exiting.")
+    exit()
 
 PETScOptions.set("ksp_view");
 PETScOptions.set("ksp_monitor_true_residual");
@@ -16,7 +36,7 @@ PETScOptions.set("fieldsplit_1_pc_type", "lu");
 def TopBottom(x, on_boundary):
     return abs(1.0 - x[1]) < DOLFIN_EPS or abs(x[1]) < DOLFIN_EPS
 
-mesh = UnitCubeMesh(12, 12, 12);
+mesh = UnitCubeMesh(5, 5, 5);
 
 # Create function spaces
 P2 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
@@ -31,10 +51,9 @@ q = TestFunction(Q)
 
 # Define forms for each block
 a00 = inner(grad(u), grad(v))*dx
-a01 = - div(v)*p*dx
-a10 = - div(u)*q*dx
-# Only need a11 if we have BCs in Q space
-a11 = Constant(0.0)*p*q*dx
+a01 = -div(v)*p*dx
+a10 = -div(u)*q*dx
+# Preconditiner uses pressure mass matrix
 p11 = p*q*dx
 
 f = Constant((0.0, 1.0, 0.0))
@@ -76,7 +95,9 @@ PP = PETScNestMatrix([A00, None, None, P11])
 
 # Create solution vectors
 u = Function(V)
+u.rename('u','velocity')
 p = Function(Q)
+p.rename('p','pressure')
 # Map RHS and solution into block space vectors
 x = Vector()
 b = Vector()
@@ -92,3 +113,8 @@ PETScPreconditioner.set_fieldsplit(solver, AA, ["0", "1"]);
 solver.solve(x, b)
 
 print "u.norm = ", u.vector().norm("l2")
+
+xdmf = XDMFFile("solution.xdmf")
+xdmf.parameters['time_series']=False
+xdmf.write(u)
+xdmf.write(p)

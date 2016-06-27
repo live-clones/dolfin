@@ -391,7 +391,11 @@ void XDMFFile::write(const Function& u, double time_step, Encoding encoding)
   if (MPI::rank(mesh.mpi_comm()) == 0)
   {
     dolfin_assert(_xml);
-    _xml->init_timeseries(u.name(), time_step, _counter);
+
+    if (time_series)
+      _xml->init_timeseries(u.name(), time_step, _counter);
+    else
+      _xml->init_mesh("mesh");
 
     if (encoding == Encoding::HDF5)
     {
