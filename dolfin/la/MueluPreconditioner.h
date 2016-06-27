@@ -51,6 +51,11 @@ namespace dolfin
     /// Set the preconditioner on a solver
     virtual void set(BelosKrylovSolver& solver);
 
+    /// Set the (near) null space of the preconditioner operator
+    /// (matrix). This is required for certain preconditioner types,
+    /// e.g. smoothed aggregation multigrid
+    void set_nullspace(const VectorSpaceBasis& near_nullspace);
+
     /// Return informal string representation (pretty-print)
     std::string str(bool verbose) const;
 

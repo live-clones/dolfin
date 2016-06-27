@@ -23,6 +23,7 @@
 #include "KrylovSolver.h"
 #include "MueluPreconditioner.h"
 #include "TrilinosParameters.h"
+#include "VectorSpaceBasis.h"
 
 using namespace dolfin;
 
@@ -56,6 +57,34 @@ void MueluPreconditioner::init(std::shared_ptr<const TpetraMatrix> P)
 void MueluPreconditioner::set(BelosKrylovSolver& solver)
 {
   solver._problem->setLeftPrec(_prec);
+}
+//-----------------------------------------------------------------------------
+void MueluPreconditioner::set_nullspace(const VectorSpaceBasis& near_nullspace)
+{
+  if(_prec.is_null())
+  {
+    dolfin_error("MueluPreconditioner.cpp",
+                 "set near null space",
+                 "Preconditioner not initialised");
+  }
+
+  auto map_0 = as_type<const TpetraVector>(*near_nullspace[0])
+                                                   .vec()->getMap();
+
+  Teuchos::RCP<TpetraVector::vector_type> null_space
+    (new TpetraVector::vector_type(map_0, near_nullspace.dim()));
+
+  std::size_t i;
+  Teuchos::ArrayView<std::size_t> col(&i, 1);
+  for (i = 0; i != near_nullspace.dim(); ++i)
+  {
+    // Copy to MultiVector
+    auto null_vec_i
+      = as_type<const TpetraVector>(*near_nullspace[i]).vec();
+    null_space->subViewNonConst(col)->assign(*null_vec_i);
+  }
+
+  _prec->GetHierarchy()->GetLevel(0)->Set("Nullspace", null_space);
 }
 //-----------------------------------------------------------------------------
 std::string MueluPreconditioner::str(bool verbose) const
