@@ -33,16 +33,13 @@
 
 #include <dolfin.h>
 
-#include<petscsys.h>
-#include<petscksp.h>
-
 #include "Stokes.h"
 
 using namespace dolfin;
 
 // Function to compute the near nullspace A00 operator
 VectorSpaceBasis build_nullspace_nested(const FunctionSpace& V,
-                                                const GenericVector& x)
+                                        const GenericVector& x)
 {
   // Get subspaces
   auto V0 = V.sub(0);
@@ -80,20 +77,6 @@ VectorSpaceBasis build_nullspace_nested(const FunctionSpace& V,
   vector_space.orthonormalize();
   return vector_space;
 }
-
-
-std::array<std::shared_ptr<Function>, 2>
-  solve_nested(std::shared_ptr<Mesh> mesh,
-               std::shared_ptr<SubDomain> top_bottom,
-               std::shared_ptr<SubDomain> left_edge,
-               std::shared_ptr<GenericFunction> flow_velocity,
-               std::shared_ptr<GenericFunction> pleft,
-               std::shared_ptr<GenericFunction> f,
-               std::shared_ptr<GenericFunction> zero,
-               bool pc_operator)
-{
-}
-
 
 // Function for no-slip boundary condition for velocity
 class Source : public Expression
@@ -148,7 +131,7 @@ int main(int argc, char *argv[])
 
   // Velocity BC
   auto top_bottom = std::make_shared<TopBottom>();
-  auto flow_velocity = std::make_shared<Constant>(0.0, 0.0, 0.0) ;
+  auto zero_vec = std::make_shared<Constant>(0.0, 0.0, 0.0);
 
   auto f = std::make_shared<Source>();
   auto zero = std::make_shared<Constant>(0.0);
@@ -164,7 +147,7 @@ int main(int argc, char *argv[])
   PETScOptions::set("fieldsplit_0_ksp_type", "preonly");
 
   // "gamg" or "hypre"
-  std::string mg = "hypre";
+  std::string mg = "gamg";
 
   if (mg == "gamg")
   {
@@ -217,8 +200,8 @@ int main(int argc, char *argv[])
   L1->g = zero;
 
   // Velocity BC
-  auto bcV = std::make_shared<DirichletBC>(V, flow_velocity,
-                                                   top_bottom);
+  auto bcV = std::make_shared<DirichletBC>(V, zero_vec,
+                                           top_bottom);
 
   // Assemble all blocks with BCs
   SystemAssembler assemblerA0({a00, a01, a10, a11}, {L0, L1},
@@ -280,71 +263,26 @@ int main(int argc, char *argv[])
   Anest->init_vectors(xvec, {u0->vector(), p0->vector()});
   Anest->init_vectors(bvec, {b0, b1});
 
-  // ---------
-  // Create pressure nullspace vector
+  // Create nullspace vector for p
   auto u0tmp = std::make_shared<Function>(V);
   auto p0tmp = std::make_shared<Function>(Q);
   p0tmp->interpolate(*one);
+  u0tmp->interpolate(*zero_vec);
 
-  Constant one_vec(0.0, 0.0, 0.0);
-  u0tmp->interpolate(one_vec);
+  auto xvec_nullspace = std::make_shared<PETScVector>();
+  Anest->init_vectors(*xvec_nullspace, {u0tmp->vector(), p0tmp->vector()});
+  *xvec_nullspace /= xvec_nullspace->norm("l2");
 
-  PETScVector xvec_nullspace;
-  Anest->init_vectors(xvec_nullspace, {u0tmp->vector(), p0tmp->vector()});
-  xvec_nullspace /= xvec_nullspace.norm("l2");
+  VectorSpaceBasis basis({xvec_nullspace});
+  Anest->set_nullspace(basis);
 
-  MatNullSpace petsc_nullspace;
-  Vec nvec[1];
-  nvec[0] = xvec_nullspace.vec();
-  MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_FALSE, 1, nvec, &petsc_nullspace);
-  MatSetNullSpace(Anest->mat(), petsc_nullspace);
-
-  PETScVector y;
-  auto u0tmp1 = std::make_shared<Function>(V);
-  auto p0tmp1 = std::make_shared<Function>(Q);
-  Anest->init_vectors(y, {u0tmp1->vector(), p0tmp1->vector()});
-
-  PetscBool test_ns = PETSC_TRUE;
-  MatNullSpaceTest(petsc_nullspace, Anest->mat(), &test_ns);
-  if (test_ns == PETSC_TRUE)
-    std::cout << "******* is nullspace: " << test_ns << std::endl;
-  else
-    std::cout << "******* is NOT nullspace: " << test_ns << std::endl;
-
-  MatSetNullSpace(Anest->mat(), petsc_nullspace);
-  // --------------
-
-  // Create near null space basis ---
+  // Create near null space basis for u
   VectorSpaceBasis null_space
     = build_nullspace_nested(*V, *u0->vector());
-
-  // Copy vectors
-  std::vector<PETScVector> near_nullspace;
-  for (std::size_t i = 0; i < null_space.dim(); ++i)
-  {
-    dolfin_assert(null_space[i]);
-    const PETScVector& x
-      = null_space[i]->down_cast<PETScVector>();
-    near_nullspace.push_back(x);
-  }
-
-  // Get pointers to underlying PETSc objects
-  std::vector<Vec> petsc_vec(near_nullspace.size());
-  for (std::size_t i = 0; i < near_nullspace.size(); ++i)
-    petsc_vec[i] = near_nullspace[i].vec();
-
-  MatNullSpace petsc_near_nullspace;
-  MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_FALSE, near_nullspace.size(),
-                     petsc_vec.data(), &petsc_near_nullspace);
-  MatSetNearNullSpace(A00->mat(), petsc_near_nullspace);
-
-// ---
+  A00->set_near_nullspace(null_space);
 
   // Solve
   PETScKrylovSolver solver;
-
-  // FIXME: Should this be moved into the PETScKrylovSolver  constructor?
-  //  KSPSetFromOptions(solver.ksp());
   solver.set_from_options();
   solver.set_operators(Anest, Pnest);
 
@@ -355,11 +293,6 @@ int main(int argc, char *argv[])
   PETScPreconditioner::set_fieldsplit(solver, {u_dofs, p_dofs},
                                               {"0", "1"});
   solver.solve(xvec, bvec);
-
-  // Clean up nullspace
-  MatNullSpaceDestroy(&petsc_near_nullspace);
-  MatNullSpaceDestroy(&petsc_nullspace);
-
 
   XDMFFile xdmf_u(mesh->mpi_comm(), "u0.xdmf");
   xdmf_u.write(*u0);
