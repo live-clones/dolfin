@@ -69,16 +69,51 @@ int main()
   };
 
   // Create mesh
-  auto mesh = std::make_shared<UnitSquareMesh>(32, 32);
+  auto mesh = std::make_shared<Mesh>();
 
-  // Create periodic boundary condition
-  auto periodic_boundary = std::make_shared<PeriodicBoundary>();
+  MeshEditor ed;
+  ed.open(*mesh, 2, 2);
+  const unsigned int nx = 33, ny = 33;
+  ed.init_vertices(nx*ny);
+  unsigned int c = 0;
+  for (unsigned int i = 0; i != nx; ++i)
+    for (unsigned int j = 0; j != ny; ++j)
+    {
+      double x = (double)i/(double)(nx - 1);
+      double y = (double)j/(double)(ny - 1);
+      ed.add_vertex(c, x, y);
+      ++c;
+    }
+
+  ed.init_cells((nx - 1)*(ny - 1)*2);
+  c = 0;
+  for (unsigned int j = 0; j != ny - 2; ++j)
+    for (unsigned int i = 0; i != nx - 1; ++i)
+    {
+      unsigned int ix = i + nx*j;
+      ed.add_cell(c, ix, ix + 1,  ix + nx);
+      ++c;
+      ed.add_cell(c, ix + 1, ix + nx, ix + 1 + nx);
+      ++c;
+    }
+  for (unsigned int i = 0; i != nx - 1; ++i)
+  {
+    unsigned int ix = i + nx*(ny - 2);
+    ed.add_cell(c, ix, ix + 1, i);
+    ++c;
+    ed.add_cell(c, ix + 1, i, i + 1);
+    ++c;
+  }
+  ed.close();
+
+  File file_mesh("mesh.pvd");
+  file_mesh << *mesh;
 
   // Create functions
   auto f = std::make_shared<Source>();
 
   // Define PDE
-  auto V = std::make_shared<Poisson::FunctionSpace>(mesh, periodic_boundary);
+  auto V = std::make_shared<Poisson::FunctionSpace>(mesh);
   Poisson::BilinearForm a(V, V);
   Poisson::LinearForm L(V);
   L.f = f;
@@ -93,6 +128,8 @@ int main()
 
   // Compute solution
   Function u(V);
+
+
   solve(a == L, u, bcs);
 
   // Save solution in VTK format
@@ -100,8 +137,8 @@ int main()
   file_u << u;
 
   // Plot solution
-  plot(u);
-  interactive();
+  //  plot(u);
+  //  interactive();
 
   return 0;
 }
