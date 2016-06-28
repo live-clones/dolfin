@@ -39,7 +39,7 @@ int main()
 
     void eval(Array<double>& values, const Array<double>& x) const
     {
-      const double dx = x[0] - 0.5;
+      const double dx = x[0] - 0.85;
       const double dy = x[1] - 0.5;
       values[0] = x[0]*sin(5.0*DOLFIN_PI*x[1]) + 1.0*exp(-(dx*dx + dy*dy)/0.02);
     }
@@ -69,42 +69,35 @@ int main()
   };
 
   // Create mesh
-  auto mesh = std::make_shared<Mesh>();
-
-  MeshEditor ed;
-  ed.open(*mesh, 2, 2);
   const unsigned int nx = 33, ny = 33;
-  ed.init_vertices(nx*ny);
-  unsigned int c = 0;
-  for (unsigned int i = 0; i != nx; ++i)
-    for (unsigned int j = 0; j != ny; ++j)
-    {
-      double x = (double)i/(double)(nx - 1);
-      double y = (double)j/(double)(ny - 1);
-      ed.add_vertex(c, x, y);
-      ++c;
-    }
+  auto mesh = std::make_shared<UnitSquareMesh>(nx - 1, ny - 1);
 
-  ed.init_cells((nx - 1)*(ny - 1)*2);
-  c = 0;
-  for (unsigned int j = 0; j != ny - 2; ++j)
-    for (unsigned int i = 0; i != nx - 1; ++i)
-    {
-      unsigned int ix = i + nx*j;
-      ed.add_cell(c, ix, ix + 1,  ix + nx);
-      ++c;
-      ed.add_cell(c, ix + 1, ix + nx, ix + 1 + nx);
-      ++c;
-    }
-  for (unsigned int i = 0; i != nx - 1; ++i)
+  // Initialise "CoordinateDofMap"
+  mesh->init_coord_dofmap();
+
+  // Rotate 90 degrees
+  mesh->rotate(90);
+
+  std::size_t tdim = mesh->topology().dim();
+  auto& conn = mesh->topology()(tdim, 0);
+  unsigned int nv = mesh->type().num_vertices(tdim);
+
+  // Change connectivity of cells on edge
+  for (CellIterator c(*mesh); !c.end(); ++c)
   {
-    unsigned int ix = i + nx*(ny - 2);
-    ed.add_cell(c, ix, ix + 1, i);
-    ++c;
-    ed.add_cell(c, ix + 1, i, i + 1);
-    ++c;
+    unsigned int idx = c->index();
+    std::vector<unsigned int> p(conn(idx), conn(idx) + nv);
+    for (auto &q : p)
+      if (q >= nx*(ny - 1))
+        q -= nx*(ny - 1);
+    conn.set(idx, p);
+    for (VertexIterator v(*c); !v.end(); ++v)
+      std::cout << v->index() <<  " ";
+    std::cout << "\n";
   }
-  ed.close();
+
+  // Redefine number of vertices in mesh
+  mesh->topology().init(0, (nx - 1)*ny, (nx - 1)*ny);
 
   File file_mesh("mesh.pvd");
   file_mesh << *mesh;
@@ -114,6 +107,7 @@ int main()
 
   // Define PDE
   auto V = std::make_shared<Poisson::FunctionSpace>(mesh);
+
   Poisson::BilinearForm a(V, V);
   Poisson::LinearForm L(V);
   L.f = f;
@@ -137,7 +131,7 @@ int main()
   bc0.apply(A);
 
 
-  //  solve(a == L, u, bcs);
+  solve(a == L, u, bcs);
 
   // Save solution in VTK format
   File file_u("periodic.pvd");
