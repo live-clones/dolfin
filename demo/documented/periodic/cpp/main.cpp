@@ -118,6 +118,8 @@ int main()
   Poisson::LinearForm L(V);
   L.f = f;
 
+  std::cout << V->dofmap()->local_dimension("all") << "\n";
+
   // Create Dirichlet boundary condition
   auto u0 = std::make_shared<Constant>(0.0);
   auto dirichlet_boundary = std::make_shared<DirichletBoundary>();
@@ -129,8 +131,13 @@ int main()
   // Compute solution
   Function u(V);
 
+  PETScMatrix A;
+  assemble(A, a);
 
-  solve(a == L, u, bcs);
+  bc0.apply(A);
+
+
+  //  solve(a == L, u, bcs);
 
   // Save solution in VTK format
   File file_u("periodic.pvd");
