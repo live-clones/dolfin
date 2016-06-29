@@ -267,12 +267,26 @@ void VTKWriter::write_ascii_mesh(const Mesh& mesh, std::size_t cell_dim,
   std::unique_ptr<CellType>
     celltype(CellType::create(mesh.type().entity_type(cell_dim)));
   const std::vector<std::int8_t> perm = celltype->vtk_mapping();
-  for (MeshEntityIterator c(mesh, cell_dim); !c.end(); ++c)
+
+  if (cell_dim == mesh.topology().dim() and !mesh.xdofmap().empty())
   {
-    for (unsigned int i = 0; i != c->num_entities(0); ++i)
-      file << c->entities(0)[perm[i]] << " ";
-    file << " ";
+    for (MeshEntityIterator c(mesh, cell_dim); !c.end(); ++c)
+    {
+      for (unsigned int i = 0; i != c->num_entities(0); ++i)
+        file << mesh.xdofmap()(c->index())[perm[i]] << " ";
+      file << " ";
+    }
   }
+  else
+  {
+    for (MeshEntityIterator c(mesh, cell_dim); !c.end(); ++c)
+    {
+      for (unsigned int i = 0; i != c->num_entities(0); ++i)
+        file << c->entities(0)[perm[i]] << " ";
+      file << " ";
+    }
+  }
+
   file << "</DataArray>" << std::endl;
 
   // Write offset into connectivity array for the end of each cell
