@@ -636,8 +636,8 @@ namespace dolfin
     dolfin_assert(mesh->size(dim) == size);
 
     // Initialize data
-    if (_size != size)
-      _values.reset(new T[size]);
+
+    _values.reset(new T[size]);
     _mesh = mesh;
     _dim = dim;
     _size = size;
