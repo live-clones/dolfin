@@ -109,22 +109,24 @@ void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
   dolfin_assert(A.size()%nrows == 0);
   std::size_t ncols = A.size()/nrows;
 
-  // FIXME: if A10 is empty, the rhs is never assembled
   std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs;
   for (std::size_t i = 0; i != nrows; ++i)
   {
+    bool assemble_rhs = true;
     for (std::size_t j = 0; j != ncols; ++j)
     {
       std::size_t k = j + i*ncols;
       // Only assemble RHS once, but apply BCs each time
-      bool assemble_rhs = (j == 0);
       if (i == j)
         bcs = {_bcs[i]};
       else
         bcs = {_bcs[i], _bcs[j]};
       // Some matrices and/or forms may be NULL
       if (_a[k] and A[k])
+      {
         assemble(&*A[k], &*b[i], NULL, _a[k], _l[i], bcs, assemble_rhs);
+        assemble_rhs = false;
+      }
       else if (i == j and bcs[0].size() > 0)
       {
         dolfin_error("SystemAssembler.cpp",
