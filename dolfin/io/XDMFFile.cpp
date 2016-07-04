@@ -387,6 +387,7 @@ void XDMFFile::write(const Function& u, double time_step, Encoding encoding)
 
   // Write the XML meta description (see http://www.xdmf.org) on
   // process zero
+  bool time_series = parameters["time_series"];
 
   if (MPI::rank(mesh.mpi_comm()) == 0)
   {
