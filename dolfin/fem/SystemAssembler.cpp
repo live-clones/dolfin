@@ -109,6 +109,7 @@ void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
   dolfin_assert(A.size()%nrows == 0);
   std::size_t ncols = A.size()/nrows;
 
+  // FIXME: if A10 is empty, the rhs is never assembled
   std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs;
   for (std::size_t i = 0; i != nrows; ++i)
   {
