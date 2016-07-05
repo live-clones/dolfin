@@ -25,18 +25,30 @@ PETScOptions.set("ksp_view");
 PETScOptions.set("ksp_monitor_true_residual");
 PETScOptions.set("pc_type", "fieldsplit");
 PETScOptions.set("pc_fieldsplit_type", "additive");
-PETScOptions.set("fieldsplit_0_pc_factor_mat_solver_package", "superlu_dist");
+
 PETScOptions.set("fieldsplit_0_ksp_type", "preonly");
+PETScOptions.set("fieldsplit_0_pc_type", "gamg");
+PETScOptions.set("fieldsplit_0_pc_gamg_coarse_eq_limit", 10000);
+PETScOptions.set("fieldsplit_0_pc_gamg_threshold", 0.05);
+PETScOptions.set("fieldsplit_0_mg_levels_ksp_type", "chebyshev");
+PETScOptions.set("fieldsplit_0_mg_levels_pc_type", "sor");
+PETScOptions.set("fieldsplit_0_mg_levels_ksp_max_it", 3);
+PETScOptions.set("fieldsplit_0_mg_levels_esteig_ksp_type", "cg");
+PETScOptions.set("fieldsplit_0_mg_levels_ksp_chebyshev_esteig_steps", 20);
+PETScOptions.set("fieldsplit_0_mg_levels_ksp_chebyshev_esteig_random");
+PETScOptions.set("fieldsplit_0_mg_coarse_ksp_type", "preonly");
+PETScOptions.set("fieldsplit_0_mg_coarse_pc_type", "lu");
+PETScOptions.set("fieldsplit_0_mg_coarse_pc_factor_mat_solver_package", "superlu_dist");
+
 PETScOptions.set("fieldsplit_1_pc_factor_mat_solver_package", "superlu_dist");
 PETScOptions.set("fieldsplit_1_ksp_type", "preonly");
-PETScOptions.set("fieldsplit_0_pc_type", "lu");
 PETScOptions.set("fieldsplit_1_pc_type", "lu");
 
 # Sub domain for top and bottom
 def TopBottom(x, on_boundary):
     return abs(1.0 - x[1]) < DOLFIN_EPS or abs(x[1]) < DOLFIN_EPS
 
-mesh = UnitCubeMesh(5, 5, 5);
+mesh = UnitCubeMesh(12, 12, 12);
 
 # Create function spaces
 P2 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
