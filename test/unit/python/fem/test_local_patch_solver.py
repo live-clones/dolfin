@@ -23,11 +23,57 @@ import pytest
 from dolfin import *
 
 
-def test_instantiate():
+def test_interface():
     mesh = UnitSquareMesh(3, 3)
     V = FunctionSpace(mesh, "P", 1)
     u, v = TrialFunction(V), TestFunction(V)
     a = inner(grad(u), grad(v))*dx
     L = v*dx
+    u = Function(V)
+    b = assemble(L)
+    x = u.vector()
+    dofmap = V.dofmap()
+
+    with pytest.raises(RuntimeError):
+        LocalPatchSolver([a, a])
+    with pytest.raises(RuntimeError):
+        LocalPatchSolver([])
+    with pytest.raises(RuntimeError):
+        LocalPatchSolver([a, a, a], [L, L])
+    with pytest.raises(RuntimeError):
+        LocalPatchSolver([a, a, a], [])
+
     LocalPatchSolver([a, a, a])
-    LocalPatchSolver([a, a, a], [L, L, L])
+    solver = LocalPatchSolver([a, a, a], [L, L, L])
+
+    solver.factorize()
+    solver.clear_factorization()
+
+    solver.solve_global_rhs(u)
+    solver.solve_global_rhs([u, u, u])
+    with pytest.raises(RuntimeError):
+        solver.solve_global_rhs([u, u])
+    with pytest.raises(RuntimeError):
+        solver.solve_global_rhs([])
+
+    solver.solve_local_rhs(u)
+    solver.solve_local_rhs([u, u, u])
+    with pytest.raises(RuntimeError):
+        solver.solve_local_rhs([u, u])
+    with pytest.raises(RuntimeError):
+        solver.solve_local_rhs([])
+
+    solver.solve_local(x, b, dofmap)
+    solver.solve_local([x, x, x], [b, b, b], [dofmap, dofmap, dofmap])
+    with pytest.raises(RuntimeError):
+        solver.solve_local([x, x], [b, b, b], [dofmap, dofmap, dofmap])
+    with pytest.raises(RuntimeError):
+        solver.solve_local([], [b, b, b], [dofmap, dofmap, dofmap])
+    with pytest.raises(RuntimeError):
+        solver.solve_local([x, x, x], [b, b], [dofmap, dofmap, dofmap])
+    with pytest.raises(RuntimeError):
+        solver.solve_local([x, x, x], [b], [dofmap, dofmap, dofmap])
+    with pytest.raises(RuntimeError):
+        solver.solve_local([x, x, x], [b, b, b], [dofmap, dofmap])
+    with pytest.raises(RuntimeError):
+        solver.solve_local([x, x, x], [b, b, b], [])

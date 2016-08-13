@@ -47,14 +47,14 @@ LocalPatchSolver::LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
                                    SolverType solver_type)
   : _a(a), _formL(L), _solver_type(solver_type), _num_patches(a.size())
 {
-  // TODO: Check input
+  _check_input(&a, &L);
 }
 //-----------------------------------------------------------------------------
 LocalPatchSolver::LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
                                    SolverType solver_type)
   : _a(a), _solver_type(solver_type), _num_patches(a.size())
 {
-  // TODO: Check input
+  _check_input(&a, nullptr);
 }
 //-----------------------------------------------------------------------------
 void LocalPatchSolver::solve_global_rhs(Function& u) const
@@ -64,13 +64,12 @@ void LocalPatchSolver::solve_global_rhs(Function& u) const
 //-----------------------------------------------------------------------------
 void LocalPatchSolver::solve_global_rhs(std::vector<Function*> u) const
 {
+  _check_input(u);
 
   // Compute RHSs (global)
   std::vector<std::shared_ptr<GenericVector>> b;
-  // TODO: Check dimensions on time
   for (std::size_t i = 0; i < _num_patches; ++i)
   {
-    // TODO: add some assert on null ptrs
     b.push_back(u[i]->vector()->factory().create_vector(u[i]->vector()->mpi_comm()));
     dolfin_assert(_formL[i]);
     assemble(*b[i], *_formL[i]);
@@ -85,7 +84,6 @@ void LocalPatchSolver::solve_global_rhs(std::vector<Function*> u) const
   }
 
   // Solve local problems
-  //const std::vector<const GenericVector*> b_plain(b.begin(), b.end());
   std::vector<const GenericVector*> b_plain;
   for (const auto bi: b)
     b_plain.push_back(bi.get());
@@ -99,6 +97,8 @@ void LocalPatchSolver::solve_local_rhs(Function& u) const
 //-----------------------------------------------------------------------------
 void LocalPatchSolver::solve_local_rhs(std::vector<Function*> u) const
 {
+  _check_input(u);
+
   // Extract the vectors where the solution will be stored
   std::vector<GenericVector*> x;
   for (auto ui: u)
@@ -124,6 +124,7 @@ void LocalPatchSolver::solve_local(std::vector<GenericVector*> x,
                                    std::vector<const GenericVector*> b,
                                    std::vector<const GenericDofMap*> dofmap_b) const
 {
+  _check_input(x, b, dofmap_b);
   _solve_local(x, &b, &dofmap_b);
 }
 //-----------------------------------------------------------------------------
@@ -131,6 +132,7 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
                                     const std::vector<const GenericVector*>* global_b,
                                     const std::vector<const GenericDofMap*>* dofmap_L) const
 {
+  // TODO: Will probably work correctly only on ghosted meshes. Check it?!
 /*
   // Check that we have valid bilinear form
   dolfin_assert(_a);
@@ -361,5 +363,99 @@ void LocalPatchSolver::clear_factorization()
 {
   _cholesky_cache.clear();
   _lu_cache.clear();
+}
+//-----------------------------------------------------------------------------
+void LocalPatchSolver::_check_input(
+  const std::vector<std::shared_ptr<const Form>>* a,
+  const std::vector<std::shared_ptr<const Form>>* L) const
+{
+  if (a)
+  {
+    for (const auto ai: *a)
+      dolfin_assert(ai);
+
+    // _num_patches has been set before
+    dolfin_assert(a->size() == _num_patches);
+
+    if (a->size() == 0 || a->size() != (*a)[0]->mesh()->type().num_vertices())
+    {
+      dolfin_error("LocalPatchSolver.cpp",
+                   "instantiate LocalPatchSolver",
+                   "Number of supplied bilinear forms must be equal to number "
+                   "number of patches/vertices per cell");
+    }
+  }
+
+  if (L)
+  {
+    for (const auto Li: *L)
+      dolfin_assert(Li);
+
+    // _num_patches has been set and checked before
+    if (L->size() != _num_patches)
+    {
+      dolfin_error("LocalPatchSolver.cpp",
+                   "instantiate LocalPatchSolver",
+                   "Number of supplied linear forms must be equal to number "
+                   "number of patches/vertices per cell");
+    }
+  }
+
+  // TODO: check ranks
+  // TODO: check that we are on simplex?
+  // TODO: check compatibility of spaces?
+}
+//-----------------------------------------------------------------------------
+void LocalPatchSolver::_check_input(std::vector<Function*> u) const
+{
+  for (const auto ui: u)
+    dolfin_assert(ui);
+
+  // _num_patches has been set before
+  if (u.size() != _num_patches)
+  {
+    dolfin_error("LocalPatchSolver.cpp",
+                 "use LocalPatchSolver",
+                 "Number of supplied functions must be equal to number "
+                 "number of patches/vertices per cell");
+  }
+  // TODO: check compatibility of spaces?
+}
+//-----------------------------------------------------------------------------
+void LocalPatchSolver::_check_input(std::vector<GenericVector*> x,
+                                    std::vector<const GenericVector*> b,
+                                    std::vector<const GenericDofMap*> dofmap_b)
+  const
+{
+  for (const auto xi: x)
+    dolfin_assert(xi);
+  for (const auto bi: b)
+    dolfin_assert(bi);
+  for (const auto dofmap_bi: dofmap_b)
+    dolfin_assert(dofmap_bi);
+
+  // _num_patches has been set before
+  if (x.size() != _num_patches)
+  {
+    dolfin_error("LocalPatchSolver.cpp",
+                 "use LocalPatchSolver",
+                 "Number of supplied solution vectors must be equal to number "
+                 "number of patches/vertices per cell");
+  }
+  if (b.size() != _num_patches)
+  {
+    dolfin_error("LocalPatchSolver.cpp",
+                 "use LocalPatchSolver",
+                 "Number of supplied rhs vectors must be equal to number "
+                 "number of patches/vertices per cell");
+  }
+  if (dofmap_b.size() != _num_patches)
+  {
+    dolfin_error("LocalPatchSolver.cpp",
+                 "use LocalPatchSolver",
+                 "Number of supplied rhs dofmaps must be equal to number "
+                 "number of patches/vertices per cell");
+  }
+  // TODO: check compatibility of spaces?
 }
 //-----------------------------------------------------------------------------

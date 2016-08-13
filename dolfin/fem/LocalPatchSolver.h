@@ -138,8 +138,19 @@ namespace dolfin
     void _solve_local(std::vector<GenericVector*> x,
                       const std::vector<const GenericVector*>* global_b,
                       const std::vector<const GenericDofMap*>* dofmap_L) const;
-  };
 
+    // Check number of forms, their rank, etc.
+    void _check_input(const std::vector<std::shared_ptr<const Form>>* a,
+                      const std::vector<std::shared_ptr<const Form>>* L) const;
+
+    // Check number of functions, compatible space, etc.
+    void _check_input(std::vector<Function*> u) const;
+
+    // Check number of vectors and dofmap, compatible dimensions, etc.
+    void _check_input(std::vector<GenericVector*> x,
+                      std::vector<const GenericVector*> b,
+                      std::vector<const GenericDofMap*> dofmap_b) const;
+  };
 }
 
 #endif
