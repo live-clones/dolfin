@@ -16,6 +16,7 @@
 #include <dolfin/fem/assemble_local.h>
 #include <dolfin/fem/LocalAssembler.h>
 #include <dolfin/fem/LocalSolver.h>
+#include <dolfin/fem/LocalPatchSolver.h>
 #include <dolfin/fem/solve.h>
 #include <dolfin/fem/Form.h>
 #include <dolfin/fem/AssemblerBase.h>
