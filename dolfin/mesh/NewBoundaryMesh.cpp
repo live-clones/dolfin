@@ -179,7 +179,9 @@ NewBoundaryMesh::create_relation(std::shared_ptr<const Mesh> mesh,
                               MPI::sum(mesh->mpi_comm(), local_count));
   for (unsigned int i = 0; i != vertex_fwd_map.size(); ++i)
     editor.add_vertex(i, mesh->geometry().point(vertex_fwd_map[i]));
-  editor.close();
+
+  // Don't order for now...
+  editor.close(false);
 
   // Correct for global vertex index offset
   const std::size_t vertex_offset
@@ -238,4 +240,9 @@ NewBoundaryMesh::create_relation(std::shared_ptr<const Mesh> mesh,
 
   return relation;
 }
+//-----------------------------------------------------------------------------
+//void NewBoundaryMesh::initialise_edge_relation()
+//{
+//
+//}
 //-----------------------------------------------------------------------------

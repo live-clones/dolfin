@@ -98,6 +98,7 @@ unsigned int* MeshRelation::entities(unsigned int dim, unsigned int index)
   dolfin_assert(dest_to_src_offset.size() > dim);
   auto& offset = dest_to_src_offset[dim];
   auto& entity_indices = dest_to_src[dim];
+  dolfin_assert(index < entity_indices.size());
 
   if (offset.empty())
   {
@@ -108,5 +109,24 @@ unsigned int* MeshRelation::entities(unsigned int dim, unsigned int index)
   dolfin_assert(index < offset.size());
   return &entity_indices[offset[index]];
 }
-
-
+//-----------------------------------------------------------------------------
+unsigned int MeshRelation::entity(unsigned int dim, unsigned int index)
+{
+  dolfin_assert(dest_to_src.size() > dim);
+  if (dest_to_src[dim].empty())
+  {
+    dolfin_error("MeshRelation.cpp",
+                 "get entity relations of requested dimension",
+                 "Entity relations not initialised");
+  }
+  if (!dest_to_src_offset[dim].empty())
+  {
+    dolfin_error("MeshRelation.cpp",
+                 "get entity relation",
+    "Multiple entities correspond to this entity, use MeshRelation::entities() instead");
+  }
+  auto& entity_indices = dest_to_src[dim];
+  dolfin_assert(index < entity_indices.size());
+  return entity_indices[index];
+}
+//-----------------------------------------------------------------------------
