@@ -181,7 +181,7 @@ NewBoundaryMesh::create_relation(std::shared_ptr<const Mesh> mesh,
     editor.add_vertex(i, mesh->geometry().point(vertex_fwd_map[i]));
 
   // Don't order for now...
-  editor.close(false);
+  editor.close();
 
   // Correct for global vertex index offset
   const std::size_t vertex_offset
@@ -241,8 +241,35 @@ NewBoundaryMesh::create_relation(std::shared_ptr<const Mesh> mesh,
   return relation;
 }
 //-----------------------------------------------------------------------------
-//void NewBoundaryMesh::initialise_edge_relation()
-//{
-//
-//}
+void NewBoundaryMesh::initialise_edge_relation(std::shared_ptr<MeshRelation> meshrelation)
+{
+  const auto mesh = meshrelation->source_mesh();
+  const auto boundary = meshrelation->destination_mesh();
+
+  // FIXME: check dimensions
+
+  // Make sure edges are initialised on both meshes
+  mesh->init(2, 1);
+  boundary->init(1);
+
+  unsigned int tdim = boundary->topology().dim();
+  dolfin_assert (tdim == mesh->topology().dim() - 1);
+
+  std::vector<std::array<std::size_t, 3> > edges;
+  for (std::size_t i = 0; i != boundary->size(tdim); ++i)
+  {
+    // Get facet on original mesh
+    Facet f(*mesh, meshrelation.entity(tdim, i));
+    Cell c(*boundary, i);
+    for (unsigned int j = 0; j < 3; ++j)
+    {
+      Edge e(*mesh, f.entities(1)[j]);
+      edges[j][0] = e.entities(0)[0];
+      edges[j][1] = e.entities(0)[1];
+      edges[j][2] = e.index();
+    }
+
+  }
+
+}
 //-----------------------------------------------------------------------------
