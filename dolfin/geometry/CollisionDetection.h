@@ -51,6 +51,23 @@ namespace dolfin
     static bool collides(const MeshEntity& entity,
 			 const Point& point);
 
+    /// Check whether entity collides with line defined by two points.
+    ///
+    /// *Arguments*
+    ///     entity (_MeshEntity_)
+    ///         The entity.
+    ///     point1 (_Point_)
+    ///         The origin.
+    ///     point2 (_Point_)
+    ///         The destination.
+    ///
+    /// *Returns*
+    ///     bool
+    ///         True iff entity collides with cell.
+    static bool collides(const MeshEntity& entity,
+                         const Point& point1,
+                         const Point& point2);
+
     /// Check whether two entities collide.
     ///
     /// *Arguments*
@@ -79,6 +96,24 @@ namespace dolfin
     static bool collides_interval_point(const MeshEntity& interval,
 					const Point& point);
 
+    /// Check whether _MeshEntity_ interval collides with interval defined
+    /// by the interval (x1, x2).
+    ///
+    /// *Arguments*
+    ///     interval (_MeshEntity_)
+    ///         The mesh entity interval.
+    ///     x1 (_Point_)
+    ///         The left of the test interval.
+    ///     x2 (_Point_)
+    ///         The right of the test interval.
+    ///
+    /// *Returns*
+    ///     bool
+    ///         True iff objects collide.
+    static bool collides_interval_interval(const MeshEntity& interval,
+                                           const Point& x1,
+                                           const Point& x2);
+
     /// Check whether interval collides with interval.
     ///
     /// *Arguments*
@@ -92,6 +127,44 @@ namespace dolfin
     ///         True iff objects collide.
     static bool collides_interval_interval(const MeshEntity& interval_0,
 					   const MeshEntity& interval_1);
+
+    /// Check whether interval collides with interval.
+    ///
+    /// *Returns*
+    ///     bool
+    ///         True iff objects collide.
+    static bool collides_interval_interval(const double& x00, const double& x01,
+                                           const double& x10, const double& x11);
+
+    /// Check whether intervals defined on the (x, y) plane collide .
+    ///
+    /// *Arguments*
+    ///     interval_0 (_MeshEntity_)
+    ///         The first interval.
+    ///     interval_1 (_MeshEntity_)
+    ///         The second interval.
+    ///
+    /// *Returns*
+    ///     bool
+    ///         True iff objects collide.
+    static bool collides_interval_interval_xy(
+        const MeshEntity& interval_0, const MeshEntity& interval_1);
+
+    /// Check whether intervals defined on the (x, y) plane collide .
+    ///
+    /// *Arguments*
+    ///     interval_0 (_MeshEntity_)
+    ///         The first interval.
+    ///     interval_1 (_MeshEntity_)
+    ///         The second interval.
+    ///
+    /// *Returns*
+    ///     bool
+    ///         True iff objects collide.
+    static bool collides_interval_interval(
+        const Point &a0, const Point &a1,
+        const Point &b0, const Point &b1,
+        Point &intersect);
 
     /// Check whether triangle collides with point.
     ///
@@ -183,6 +256,33 @@ namespace dolfin
                                            const Point& p1,
                                            const Point& p2,
                                            const Point& point);
+
+    // Does the given inverval (x0, x1) intersect with the triangle MeshEntity
+    static bool collides_triangle_interval(const MeshEntity& triangle,
+                                           const Point& x0,
+                                           const Point& x1);
+
+    // The implementation of collides_triangle_triangle
+    static bool collides_triangle_interval(const Point& p0,
+                                           const Point& p1,
+                                           const Point& p2,
+                                           const Point& x0,
+                                           const Point& x1);
+
+    // Collision of triangle with line.
+    // Returns pair<bool intersects, double magnitude along d to intersect>
+    static std::pair<bool, double> collides_triangle_line(const Point& p0,
+                                                          const Point& p1,
+                                                          const Point& p2,
+                                                          const Point& o,
+                                                          const Point& d);
+
+    // Specialised implementation of collides_triangle_triangle in 2D
+    static bool collides_triangle_interval_2d(const Point& p0,
+                                              const Point& p1,
+                                              const Point& p2,
+                                              const Point& x0,
+                                              const Point& x1);
 
     // The implementation of collides_tetrahedron_point
     static bool collides_tetrahedron_point(const Point& p0,

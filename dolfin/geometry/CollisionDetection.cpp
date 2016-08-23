@@ -86,6 +86,31 @@ bool CollisionDetection::collides(const MeshEntity& entity,
   return false;
 }
 //-----------------------------------------------------------------------------
+bool CollisionDetection::collides(const MeshEntity& entity,
+                                  const Point& x1,
+                                  const Point& x2)
+{
+  switch (entity.dim())
+  {
+    case 0:
+      dolfin_not_implemented();
+      break;
+    case 1:
+      return collides_interval_interval(entity, x1, x2);
+    case 2:
+      return collides_triangle_interval(entity, x1, x2);
+    case 3:
+      dolfin_not_implemented();
+      break;
+    default:
+      dolfin_error("CollisionDetection.cpp",
+                   "collides entity with interval",
+                   "Unknown dimension of entity");
+  }
+
+  return false;
+}
+//-----------------------------------------------------------------------------
 bool
 CollisionDetection::collides(const MeshEntity& entity_0,
 			     const MeshEntity& entity_1)
@@ -189,11 +214,55 @@ CollisionDetection::collides_interval_interval(const MeshEntity& interval_0,
   const MeshGeometry& geometry_1 = interval_1.mesh().geometry();
   const unsigned int* vertices_0 = interval_0.entities(0);
   const unsigned int* vertices_1 = interval_1.entities(0);
-  const double x00 = geometry_0.point(vertices_0[0])[0];
-  const double x01 = geometry_0.point(vertices_0[1])[0];
-  const double x10 = geometry_1.point(vertices_1[0])[0];
-  const double x11 = geometry_1.point(vertices_1[1])[0];
+  const Point x00 = geometry_0.point(vertices_0[0]);
+  const Point x01 = geometry_0.point(vertices_0[1]);
+  const Point x10 = geometry_1.point(vertices_1[0]);
+  const Point x11 = geometry_1.point(vertices_1[1]);
 
+  if (interval_0.mesh().topology().dim() == 1
+      && interval_1.mesh().topology().dim() == 1)
+    return collides_interval_interval(x00[0], x01[0], x10[0], x11[0]);
+  else if (interval_0.mesh().topology().dim() == 2
+           && interval_1.mesh().topology().dim() == 2)
+  {
+    Point p;
+    return collides_interval_interval(x00, x01, x10, x11, p);
+  }
+
+  dolfin_error("CollisionDetection.cpp",
+               "collides interval with interval",
+               "Not implemented for 3D meshes");
+  return false;
+}
+//-----------------------------------------------------------------------------
+bool
+CollisionDetection::collides_interval_interval(const MeshEntity& interval,
+                                               const Point& x1,
+                                               const Point& x2)
+{
+  const unsigned int* vertices = interval.entities(0);
+  const Point interval_x1 = MeshEntity(interval.mesh(), 0, vertices[0]).midpoint();
+  const Point interval_x2 = MeshEntity(interval.mesh(), 0, vertices[1]).midpoint();
+  if (interval.mesh().topology().dim() == 1)
+  {
+    return collides_interval_interval(interval_x1[0], interval_x2[1], x1[0], x2[0]);
+  }
+  else if (interval.mesh().topology().dim() == 2)
+  {
+    Point p;
+    return collides_interval_interval(interval_x1, interval_x2, x1, x2, p);
+  }
+
+  dolfin_error("CollisionDetection.cpp",
+               "collides interval with interval",
+               "Not implemented for 3D meshes");
+  return false;
+}
+//-----------------------------------------------------------------------------
+bool
+CollisionDetection::collides_interval_interval(const double& x00, const double& x01,
+                                               const double& x10, const double& x11)
+{
   const double a0 = std::min(x00, x01);
   const double b0 = std::max(x00, x01);
   const double a1 = std::min(x10, x11);
@@ -203,6 +272,101 @@ CollisionDetection::collides_interval_interval(const MeshEntity& interval_0,
   const double dx = std::min(b0 - a0, b1 - a1);
   const double eps = std::max(DOLFIN_EPS_LARGE, DOLFIN_EPS_LARGE*dx);
   return b1 > a0 - eps && a1 < b0 + eps;
+}
+//-----------------------------------------------------------------------------
+bool
+CollisionDetection::collides_interval_interval(
+    const Point &a0, const Point &a1,
+    const Point &b0, const Point &b1,
+    Point &intersect)
+{
+  // First test if lines are collinear or parallel
+  const Point A = a1 - a0;
+  const Point B = b0 - b1;
+
+  const double d = A[1]*B[0] - A[0]*B[1];
+
+  // Are the two lines collinear or parallel?
+  if (std::abs(d) < DOLFIN_EPS)
+  {
+    const double slope = (a1[1] - a0[1])/(a1[0] - a0[0]);
+
+    // Test if parallel:
+    if (!(std::isinf(slope) || std::abs(slope) < DOLFIN_EPS))
+    {
+      const double c_a = a1[1] - slope*a1[0];
+      const double c_b = b1[1] - slope*b1[0];
+      const double dist = std::abs(c_a - c_b);
+      if (dist > DOLFIN_EPS_LARGE)
+        return false; // Lines are parallel
+    }
+
+    // Lines are collinear, but do they overlap?
+    const bool horizontal = std::abs(slope) < DOLFIN_EPS;
+    const bool descending = slope < 0 && !horizontal;
+    const double invert_y = descending || horizontal ? -1 : 1;
+
+    const Point min1(std::min(a0[0], a1[0]), std::min(a0[1] * invert_y, a1[1] * invert_y));
+    const Point max1(std::max(a0[0], a1[0]), std::max(a0[1] * invert_y, a1[1] * invert_y));
+
+    const Point min2(std::min(a1[0], a1[1]), std::min(b0[1] * invert_y, b1[1] * invert_y));
+    const Point max2(std::max(a1[0], a1[1]), std::max(b0[1] * invert_y, b1[1] * invert_y));
+
+    Point min_isect;
+    if (descending)
+      min_isect = Point(std::max(min1[0], min2[0]), std::min(min1[1] * invert_y, min2[1] * invert_y));
+    else
+      min_isect = Point(std::max(min1[0], min2[0]), std::max(min1[1] * invert_y, min2[1] * invert_y));
+
+    Point max_isect;
+    if (descending)
+      max_isect = Point(std::min(max1[0], max2[0]), std::max(max1[1] * invert_y, max2[1] * invert_y));
+    else
+      max_isect = Point(std::min(max1[0], max2[0]), std::min(max1[1] * invert_y, max2[1] * invert_y));
+
+    // FIXME: correctly implement numerical precision checks
+    bool isected = min_isect[0] <= max_isect[0] + DOLFIN_EPS &&
+                   (!descending && min_isect[1] <= max_isect[1] + DOLFIN_EPS ||
+                    descending && min_isect[1] >= max_isect[1] - DOLFIN_EPS);
+
+    intersect[0] = max_isect[0];
+    intersect[1] = max_isect[1];
+    return isected; // Collinear and overlapping?
+  }
+
+  // Test for intersection
+  // Algorithm:  Kirk, D., Graphics Gems III. (2012). Elsevier Science.
+  // pp 199 - 201.
+  const Point C = a0 - b0;
+  const double n_alpha = B[1]*C[0] - B[0]*C[1];
+
+  if (d > 0.0)
+  {
+    if ((n_alpha < 0.0) || (n_alpha > d + DOLFIN_EPS_LARGE))
+      return false;
+  }
+  else if (d < 0.0)
+  {
+    if ((n_alpha > 0.0) || (n_alpha < d - DOLFIN_EPS_LARGE))
+      return false;
+  }
+
+  const double n_beta = A[0]*C[1] - A[1]*C[0];
+
+  if (d > 0.0)
+  {
+    if ((n_beta < 0.0) || (n_beta > d + DOLFIN_EPS_LARGE))
+      return false;
+  }
+  else if (d < 0.0)
+  {
+    if ((n_beta > 0.0) || (n_beta < d - DOLFIN_EPS_LARGE))
+      return false;
+  }
+
+  const double alpha = n_alpha/d;
+  intersect = a0 + alpha*A;
+  return true;
 }
 //-----------------------------------------------------------------------------
 bool CollisionDetection::collides_triangle_point(const MeshEntity& triangle,
@@ -489,7 +653,6 @@ bool CollisionDetection::collides_interval_point(const Point& p0,
 
   return false;
 }
-
 //-----------------------------------------------------------------------------
 bool CollisionDetection::collides_triangle_point_2d(const Point& p0,
                                                     const Point& p1,
@@ -571,6 +734,129 @@ bool CollisionDetection::collides_triangle_point(const Point& p0,
   if (t3 < 0) return false;
 
   return true;
+}
+//-----------------------------------------------------------------------------
+std::pair<bool, double> CollisionDetection::collides_triangle_line(const Point& p0,
+                                                                   const Point& p1,
+                                                                   const Point& p2,
+                                                                   const Point& o,
+                                                                   const Point& d)
+{
+  // Algorithm and code from Fast, Minimum Storage Ray/Triangle Intersection.
+  // Möller & Trumbore. Journal of Graphics Tools, 1997.
+  // Description at http://www.scratchapixel.com/lessons/3d-basic-rendering/
+  // ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection
+
+  const Point e1 = p1 - p0;
+  const Point e2 = p2 - p1;
+
+  const Point P = d.cross(e2);
+  const double det = e1.dot(P);
+
+  // singular mapping
+  if (det > -DOLFIN_EPS && det < DOLFIN_EPS)
+    return std::make_pair(false, 0.0);;
+
+  const double inv_det = 1.0/det;
+
+  const Point T = o - p0;
+  const double u = T.dot(P)*inv_det;
+
+  // ray does not intersect triangle
+  if (u < 0.0 || u > 1.0)
+    return std::make_pair(false, 0.0);
+
+  const Point Q = T.cross(e1);
+
+  const double v = d.dot(Q)*inv_det;
+
+  // ray does not intersect triangle
+  if (v < 0.0 || u + v > 1.0)
+    return std::make_pair(false, 0.0);;
+
+  const double t = e2.dot(Q) * inv_det;
+
+  // ray intersects triangle at o + t*d
+  if (t > DOLFIN_EPS)
+    return std::make_pair(true, t);
+
+  return std::make_pair(false, 0.0);
+}
+//-----------------------------------------------------------------------------
+bool CollisionDetection::collides_triangle_interval(const MeshEntity& triangle,
+                                                    const Point& x0,
+                                                    const Point& x1)
+{
+
+  const unsigned int* vertices = triangle.entities(0);
+  const MeshGeometry& geometry = triangle.mesh().geometry();
+  const Point p0 = geometry.point(vertices[0]);
+  const Point p1 = geometry.point(vertices[1]);
+  const Point p2 = geometry.point(vertices[2]);
+
+  const std::size_t mesh_dim = triangle.mesh().geometry().dim();
+  if (mesh_dim == 2)
+    return collides_triangle_interval_2d(p0, p1, p2, x0, x1);
+  else if (mesh_dim == 3)
+    return collides_triangle_interval(p0, p1, p2, x0, x1);
+
+  dolfin_error("CollisionDetection.cpp",
+               "collides triangle with interval",
+               "Unsupported geometric dimension of mesh");
+  return false;
+}
+//-----------------------------------------------------------------------------
+bool CollisionDetection::collides_triangle_interval_2d(const Point& p0,
+                                                       const Point& p1,
+                                                       const Point& p2,
+                                                       const Point& x0,
+                                                       const Point& x1)
+{
+  // Deduce whether the vectors (a0, a1) and (b0, b1) intersect at infinity
+  // by deducing whether a1 and a0 share the same half-plane bisected by
+  // (b0, b1). I.e. do B and C share the same half-plane defined by A?
+  // +ve if true, -ve if false, 0 if parallel.
+  const auto isect_at_inf = [](const Point& a0, const Point& a1,
+                               const Point& b0, const Point& b1) -> double
+  {
+    const Point A = b1 - b0, B = a0 - b0, C = a1 - b0;
+    return (A[0]*B[1] - A[1]*B[0]) * (A[0]*C[1] - A[1]*C[0]); // (A x B) * (A x C)
+  };
+
+  // For the three pairs of half-planes defined by the triangle, test whether
+  // the points of the interval lie on the outside of the triangle in these
+  // half-planes
+  const double x0_012 = isect_at_inf(x0, p0, p1, p2);
+  const double x1_012 = isect_at_inf(x1, p0, p1, p2);
+  const double x0_120 = isect_at_inf(x0, p1, p2, p0);
+  const double x1_120 = isect_at_inf(x1, p1, p2, p0);
+  const double x0_201 = isect_at_inf(x0, p2, p0, p1);
+  const double x1_201 = isect_at_inf(x1, p2, p0, p1);
+
+  // If two sides of the triangle lie within the same half-plane defined by
+  // the interval (x0, x1), then the interval lies outside of the triangle
+  const double p0p1_x0x1 = isect_at_inf(p0, p1, x0, x1);
+  const double p1p2_x0x1 = isect_at_inf(p1, p2, x0, x1);
+
+  // return not (Is the interval outside the triangle?)
+  return !((x0_201 < 0 && x1_201 < 0) || (x0_012 < 0 && x1_012 < 0)
+           || (x0_120 < 0 && x1_120 < 0) || (p0p1_x0x1 > 0 && p1p2_x0x1 > 0));
+}
+//-----------------------------------------------------------------------------
+bool CollisionDetection::collides_triangle_interval(const Point& p0,
+                                                    const Point& p1,
+                                                    const Point& p2,
+                                                    const Point& x0,
+                                                    const Point& x1)
+{
+  const Point o = x0;
+  const Point d = x1 - x0;
+
+  const std::pair<bool, double> result = collides_triangle_line(p0, p1, p2, o, d);
+  const bool& collides = result.first;
+  const double& magnitude = result.second;
+
+  return collides && magnitude <= 1.0 && magnitude >= 0.0;
 }
 //-----------------------------------------------------------------------------
 bool
