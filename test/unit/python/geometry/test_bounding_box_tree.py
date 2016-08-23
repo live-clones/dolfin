@@ -221,6 +221,23 @@ def test_compute_entity_collisions_3d():
     entities = tree.compute_entity_collisions(p)
     assert set(entities) == reference
 
+#--- compute_entity_collisions with interval ---
+
+@skip_in_parallel
+def test_compute_entity_collisions_with_interval_2d():
+
+    # {topological dimension: intersected entity numbers}
+    reference = {1: set([574, 579, 626, 629, 630, 634, 681, 684, 685, 689]),
+                 2: set([364, 367, 398, 401, 400, 403, 434, 437, 436, 439, 470])}
+
+    p1, p2 = Point(0.431, 0.723), Point(0.74, 0.9)
+    mesh = UnitSquareMesh(16, 16)
+    for dim in range(1, 3):
+        tree = BoundingBoxTree()
+        tree.build(mesh, dim)
+        entities = tree.compute_entity_collisions(p1, p2)
+        assert set(entities) == reference[dim]
+
 #--- compute_entity_collisions with tree ---
 
 @skip_in_parallel

@@ -46,7 +46,7 @@ def create_triangular_mesh_3D():
 
 
 @skip_in_parallel
-def test_inteval_collides_point():
+def test_interval_collides_point():
     """Test if point collide with interval"""
 
     mesh = UnitIntervalMesh(1)
