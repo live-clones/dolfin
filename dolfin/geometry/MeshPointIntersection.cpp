@@ -37,6 +37,18 @@ MeshPointIntersection::MeshPointIntersection(const Mesh& mesh,
   _intersected_cells = tree.compute_entity_collisions(point);
 }
 //-----------------------------------------------------------------------------
+MeshPointIntersection::MeshPointIntersection(const Mesh& mesh,
+                                             const Point& x1,
+                                             const Point& x2)
+{
+  // Build bounding box tree
+  BoundingBoxTree tree;
+  tree.build(mesh);
+
+  // Compute intersection
+  _intersected_cells = tree.compute_entity_collisions(x1, x2);
+}
+//-----------------------------------------------------------------------------
 MeshPointIntersection::~MeshPointIntersection()
 {
   // Do nothing

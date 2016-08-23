@@ -43,6 +43,11 @@ namespace dolfin
     MeshPointIntersection(const Mesh& mesh,
                           const Point& point);
 
+    /// Compute intersection between mesh and interval
+    MeshPointIntersection(const Mesh& mesh,
+                          const Point& x1,
+                          const Point& x2);
+
     /// Destructor
     ~MeshPointIntersection();
 
