@@ -25,9 +25,12 @@
 #include <vector>
 #include <dolfin/common/constants.h>
 #include "GenericBoundingBoxTree.h"
+#include "dolfin/mesh/MeshEntity.h"
 
 namespace dolfin
 {
+
+  class MeshEntity;
 
   // Specialization of bounding box implementation to 1D
 
@@ -66,6 +69,25 @@ namespace dolfin
       const double* b = _bbox_coordinates.data() + 2*node;
       const double eps = DOLFIN_EPS_LARGE*(b[1] - b[0]);
       return b[0] - eps <= x[0] && x[0] <= b[1] + eps;
+    }
+
+    // Check whether point x1 -> x2 is in bounding box (node)
+    bool interval_in_bbox(const double* x1, const double* x2, unsigned int node) const
+    {
+      dolfin_error("interval_in_bbox",
+                   "compute whether interval is in bbox",
+                   "not implemented");
+      return false;
+    }
+
+    // Check whether point (x) is in bounding box (node)
+    bool mesh_entity_in_bbox(const MeshEntity& me, unsigned int node) const
+    {
+      if (me.dim() == 0)
+        return point_in_bbox(me.midpoint().coordinates(), node);
+
+      dolfin_error("mesh_entity_in_bbox", "compute whether entity is in bbox", "not implemented");
+      return false;
     }
 
     // Check whether bounding box (a) collides with bounding box (node)

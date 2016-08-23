@@ -25,6 +25,7 @@
 #include <vector>
 #include <dolfin/common/constants.h>
 #include "GenericBoundingBoxTree.h"
+#include "dolfin/mesh/MeshEntity.h"
 
 namespace dolfin
 {
@@ -81,6 +82,60 @@ namespace dolfin
       const double eps1 = DOLFIN_EPS_LARGE*(b[3] - b[1]);
       return (b[0] - eps0 <= x[0] && x[0] <= b[2] + eps0 &&
               b[1] - eps1 <= x[1] && x[1] <= b[3] + eps1);
+    }
+
+    // Check whether interval x1 -> x2 is in bounding box (node)
+    bool interval_in_bbox(const double* x1, const double* x2, unsigned int node) const
+    {
+      const double* b = _bbox_coordinates.data() + 4*node;
+      const double eps0 = DOLFIN_EPS_LARGE*(b[2] - b[0]);
+      const double eps1 = DOLFIN_EPS_LARGE*(b[3] - b[1]);
+      const Point L1 = Point(x1[0], x1[1]);
+      const Point L2 = Point(x2[0], x2[1]);
+
+      const Point Bbl(b[0], b[1]);
+      const Point Bbr(b[2], b[1]);
+      const Point Btr(b[2], b[3]);
+      const Point Btl(b[0], b[3]);
+
+      // Is the interval enclosed in the bbox?
+      if ((L1[0] >= Bbl[0] - eps0 && L2[0] >= Bbl[0] - eps0) &&
+          (L1[0] <= Bbr[0] + eps0 && L2[0] <= Bbr[0] + eps0) &&
+          (L1[1] >= Bbl[1] - eps1 && L2[1] >= Bbl[1] - eps1) &&
+          (L1[1] <= Btr[1] + eps1 && L2[1] <= Btr[1] + eps1))
+        return true;
+
+
+      // Is the interval outside of the bbox full left/right/top/bottom?
+      if ((L1[0] > Btr[0] + eps0 && L2[0] > Btr[0] + eps0) ||
+          (L1[0] < Bbl[0] - eps0 && L2[0] < Bbl[0] - eps0) ||
+          (L1[1] > Btr[1] + eps1 && L2[1] > Btr[1] + eps1) ||
+          (L1[1] < Bbr[1] - eps1 && L2[1] < Bbr[1] - eps1))
+        return false;
+
+      // We have to test for intersection with the walls of the bbox
+      Point isect;
+      return CollisionDetection::collides_interval_interval(L1, L2, Bbl, Bbr, isect) ||
+             CollisionDetection::collides_interval_interval(L1, L2, Bbr, Btr, isect) ||
+             CollisionDetection::collides_interval_interval(L1, L2, Btr, Btl, isect) ||
+             CollisionDetection::collides_interval_interval(L1, L2, Btl, Bbl, isect);
+    }
+
+    // Check whether point (x) is in bounding box (node)
+    bool mesh_entity_in_bbox(const MeshEntity& me, unsigned int node) const
+    {
+      if (me.dim() == 0)
+        return point_in_bbox(me.midpoint().coordinates(), node);
+      else if (me.dim() == 1)
+      {
+        const unsigned int* vertices = me.entities(0);
+        const double* x1 = MeshEntity(me.mesh(), 0, vertices[0]).midpoint().coordinates();
+        const double* x2 = MeshEntity(me.mesh(), 0, vertices[1]).midpoint().coordinates();
+        return interval_in_bbox(x1, x2, node);
+      }
+
+      dolfin_error("mesh_entity_in_bbox", "compute whether entity is in bbox", "not implemented");
+      return false;
     }
 
     // Check whether bounding box (a) collides with bounding box (node)
