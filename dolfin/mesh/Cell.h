@@ -32,7 +32,6 @@
 #include "MeshEntity.h"
 #include "MeshEntityIteratorBase.h"
 #include "MeshFunction.h"
-#include <dolfin/geometry/CollisionDetection.h>
 #include <dolfin/geometry/IntersectionTriangulation.h>
 
 namespace dolfin
@@ -286,43 +285,6 @@ namespace dolfin
     ///         True iff ordered.
     bool ordered(const std::vector<std::size_t>& local_to_global_vertex_indices) const
     { return _mesh->type().ordered(*this, local_to_global_vertex_indices); }
-
-    /// Check whether given point is contained in cell. This function is
-    /// identical to the function collides(point).
-    ///
-    /// *Arguments*
-    ///     point (_Point_)
-    ///         The point to be checked.
-    ///
-    /// *Returns*
-    ///     bool
-    ///         True iff point is contained in cell.
-    bool contains(const Point& point) const
-    { return CollisionDetection::collides(*this, point); }
-
-    /// Check whether given point collides with cell
-    ///
-    /// *Arguments*
-    ///     point (_Point_)
-    ///         The point to be checked.
-    ///
-    /// *Returns*
-    ///     bool
-    ///         True iff point collides with cell.
-    bool collides(const Point& point) const
-    { return CollisionDetection::collides(*this, point); }
-
-    /// Check whether given entity collides with cell
-    ///
-    /// *Arguments*
-    ///     entity (_MeshEntity_)
-    ///         The cell to be checked.
-    ///
-    /// *Returns*
-    ///     bool
-    ///         True iff entity collides with cell.
-    bool collides(const MeshEntity& entity) const
-    { return CollisionDetection::collides(*this, entity); }
 
     /// Compute triangulation of intersection with given entity
     ///
