@@ -252,24 +252,35 @@ void NewBoundaryMesh::initialise_edge_relation(std::shared_ptr<MeshRelation> mes
   mesh->init(2, 1);
   boundary->init(1);
 
+  std::vector<std::size_t> edge_fwd_map(boundary->size(1), 999);
+
   unsigned int tdim = boundary->topology().dim();
   dolfin_assert (tdim == mesh->topology().dim() - 1);
 
-  std::vector<std::array<std::size_t, 3> > edges;
+  // Iterate over triangles in boundary mesh
   for (std::size_t i = 0; i != boundary->size(tdim); ++i)
   {
-    // Get facet on original mesh
-    Facet f(*mesh, meshrelation.entity(tdim, i));
+    // Get facet on original mesh and equivalent cell in boundary mesh
+    Facet f(*mesh, meshrelation->entity(tdim, i));
     Cell c(*boundary, i);
-    for (unsigned int j = 0; j < 3; ++j)
+    const auto cell_edges = c.entities(1);
+    const auto facet_edges = f.entities(1);
+    const auto cell_vertices = c.entities(0);
+    const auto facet_vertices = f.entities(0);
+
+    // Iterate over vertices (or equivalently edges) of triangles
+    for (unsigned int j = 0; j != 3; ++j)
     {
-      Edge e(*mesh, f.entities(1)[j]);
-      edges[j][0] = e.entities(0)[0];
-      edges[j][1] = e.entities(0)[1];
-      edges[j][2] = e.index();
+      // Get vertex index on the original mesh
+      std::size_t vidx = meshrelation->entity(0, cell_vertices[j]);
+      // Find facet local index of vertex j in the cell
+      unsigned int k = std::find(facet_vertices, facet_vertices + 3,
+                                 vidx) - facet_vertices;
+
+      // Edges are opposite the vertices (e0 is opposite v0 etc)
+      edge_fwd_map[cell_edges[j]] = facet_edges[k];
     }
-
   }
-
+  meshrelation->init(1, edge_fwd_map);
 }
 //-----------------------------------------------------------------------------

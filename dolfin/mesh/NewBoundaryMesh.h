@@ -42,6 +42,11 @@ namespace dolfin
 							       std::vector<std::size_t> markers,
 							       std::size_t tdim);
 
+    /// Initialise the relationship between edges on the new Mesh and edges on the original mesh
+    /// FIXME: maybe this should be a private method, called by option from create_relation
+    static void initialise_edge_relation(std::shared_ptr<MeshRelation> meshrelation);
+
+
   };
 
 }
