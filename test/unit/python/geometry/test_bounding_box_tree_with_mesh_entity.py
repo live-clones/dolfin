@@ -98,7 +98,8 @@ def test_compute_collisions_self_intersect_interval_interval_2d():
     editor.close()
     mesh.init()
 
-    # Set up mvc to specify indices of facets
+    # Set up mvc to specify indices of facets. We do this since the facet
+    # indices are not guaranteed the same between DOLFIN versions.
     mvc = MeshValueCollection('size_t', mesh, 1)
     mvc.set_value(0, 0, 10)
     mvc.set_value(0, 1, 4)

@@ -25,7 +25,7 @@ import numpy
 
 from dolfin import BoundingBoxTree
 from dolfin import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh
-from dolfin import Point
+from dolfin import Point, Vertex
 from dolfin import MeshEntity
 from dolfin import MPI, mpi_comm_world
 from dolfin_utils.test import skip_in_parallel
@@ -225,9 +225,31 @@ def test_compute_entity_collisions_3d():
 
 @skip_in_parallel
 def test_compute_entity_collisions_with_interval_2d():
+    # The veritces of the intersected facets. We use these as a reference
+    # to the intersected facets since the indexing of the facets is not
+    # guaranteed the same between DOLFIN versions.
+    facet_verices = [[194, 211],
+                     [211, 212],
+                     [212, 229],
+                     [212, 230],
+                     [213, 230],
+                     [230, 231],
+                     [231, 248],
+                     [231, 249],
+                     [232, 249],
+                     [249, 250]]
+
+    p1, p2 = Point(0.431, 0.723), Point(0.74, 0.9)
+    mesh = UnitSquareMesh(16, 16)
+    mesh.init()
 
     # {topological dimension: intersected entity numbers}
-    reference = {1: set([574, 579, 626, 629, 630, 634, 681, 684, 685, 689]),
+    # We generate the facet indices by finding unique facets shared by the
+    # vertices in facet_vertices
+    reference = {1: set([(
+                    set(Vertex(mesh, idx_1).entities(1)) 
+                    & set(Vertex(mesh, idx_2).entities(1))).pop() 
+                    for idx_1, idx_2 in facet_verices]),
                  2: set([364, 367, 398, 401, 400, 403, 434, 437, 436, 439, 470])}
 
     p1, p2 = Point(0.431, 0.723), Point(0.74, 0.9)
