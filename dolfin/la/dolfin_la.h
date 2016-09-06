@@ -15,6 +15,8 @@
 #include <dolfin/la/GenericLinearSolver.h>
 #include <dolfin/la/GenericLUSolver.h>
 
+#include <dolfin/la/DummyMatrix.h>
+
 #include <dolfin/la/PETScOptions.h>
 #include <dolfin/la/PETScObject.h>
 #include <dolfin/la/PETScBaseMatrix.h>

@@ -6,6 +6,7 @@ set(HEADERS
   CoordinateMatrix.h
   DefaultFactory.h
   dolfin_la.h
+  DummyMatrix.h
   EigenFactory.h
   EigenKrylovSolver.h
   EigenLUSolver.h
@@ -60,6 +61,7 @@ set(SOURCES
   BlockVector.cpp
   CoordinateMatrix.cpp
   DefaultFactory.cpp
+  DummyMatrix.cpp
   EigenFactory.cpp
   EigenKrylovSolver.cpp
   EigenLUSolver.cpp
