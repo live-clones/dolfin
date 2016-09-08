@@ -241,34 +241,18 @@ _pick_one_meshfunction(std::string name,
 {
   if ((a && b) && a != b)
   {
-      warning("Bilinear and linear forms do not have same %s subdomains \
-in SystemAssembler. Taking %s subdomains from bilinear form",
-              name.c_str(), name.c_str());
+    warning("Bilinear and linear forms do not have same %s subdomains in "
+            "SystemAssembler. Taking %s subdomains from bilinear form",
+            name.c_str(), name.c_str());
   }
-  return a ? a: b;
+  return a ? a : b;
 }
 //-----------------------------------------------------------------------------
 bool SystemAssembler::check_functionspace_for_bc
   (std::shared_ptr<const FunctionSpace> fs,
    std::shared_ptr<const DirichletBC> bc) const
 {
-  std::shared_ptr<const FunctionSpace> bc_function_space
-    = bc->function_space();
-
-  if (*bc_function_space == *fs)
-    return true;
-  else
-  {
-    // Recursively check sub-spaces
-    std::size_t num_sub_elements = fs->element()->num_sub_elements();
-    for (std::size_t i = 0; i != num_sub_elements; ++i)
-      {
-        std::shared_ptr<const FunctionSpace> subspace = (*fs)[i];
-        if (check_functionspace_for_bc(subspace, bc))
-          return true;
-      }
-  }
-  return false;
+  return fs->contains(*(bc->function_space()));
 }
 //-----------------------------------------------------------------------------
 void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
@@ -369,7 +353,8 @@ void SystemAssembler::assemble(GenericMatrix* A, GenericVector* b,
 
   // Modify boundary values for incremental (typically nonlinear)
   // problems
-  // FIXME: not sure what happens when num_fs==2
+  // FIXME: not sure what happens when rectangular==true,
+  //        should we raise "not implemented error" here?
   if (x0)
   {
     dolfin_assert(x0->size()
@@ -991,7 +976,7 @@ void SystemAssembler::facet_wise_assembly(
   }
 }
 //-----------------------------------------------------------------------------
-void SystemAssembler:: compute_exterior_facet_tensor(
+void SystemAssembler::compute_exterior_facet_tensor(
   std::array<std::vector<double>, 2>& Ae,
   std::array<UFC*, 2>& ufc,
   ufc::cell& ufc_cell,
@@ -1198,6 +1183,17 @@ SystemAssembler::apply_bc(double* A, double* b,
   }
   else
   {
+    // Possibly rectangular matrix with different spaces on axes
+    // FIXME: This won't work for forms on W x W.sub(0), which would contain
+    //        diagonal. This is difficult to distinguish from form
+    //        on V x Q which would by accident contain V bc and Q bc with
+    //        same dof index, but that's not diagonal.
+    //
+    //        Essentially we need to detect if _a->function_space(0) and
+    //        _a->function_space(1) share the common super space (use
+    //        FunctionSpace::_root_space_id). In that case dof ids are shared
+    //        and matrix has diagonal. Otherwise it does not have diagonal.
+
     // Loop over rows first
     for (int i = 0; i < _matA.rows(); ++i)
     {
