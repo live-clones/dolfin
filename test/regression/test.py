@@ -126,11 +126,12 @@ def main():
        os.path.join(demodir, 'undocumented', 'timing',                      'cpp'),
        os.path.join(demodir, 'undocumented', 'mplot',                       'cpp'),
        os.path.join(demodir, 'undocumented', 'coordinates',                 'cpp'),
+       os.path.join(demodir, 'undocumented', 'matnest',                     'cpp'),
        os.path.join(demodir, 'documented',   'stokes-mini',                 'cpp'),
        os.path.join(demodir, 'documented',   'tensor-weighted-poisson',     'cpp'),
        os.path.join(demodir, 'documented',   'subdomains-poisson',          'cpp'),
        os.path.join(demodir, 'documented',   'singular-poisson-rst',        'cpp'),
-       os.path.join(demodir, 'documented',   'maxwell-eigenvalues',        'cpp'),
+       os.path.join(demodir, 'documented',   'maxwell-eigenvalues',         'cpp'),
        ]
 
     # Demos to run
