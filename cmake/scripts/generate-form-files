@@ -20,6 +20,7 @@
 # Recompile all ffc forms (use when FFC has been updated)
 # This script should be run from the top level directory.
 
+import sys
 import os
 
 # Forms that need special options
@@ -45,37 +46,47 @@ skip_optimization = ["HyperElasticity.ufl"]
 skip_basis = ["Poisson2D_5.ufl", "Poisson3D_4.ufl"]
 
 # Directories to scan
-subdirs = ["dolfin", "demo", "bench", "test"]
+#subdirs = ["dolfin", "demo", "bench", "test"]
+subdirs = ["dolfin", "test"]
 
-# Compile all form files
-topdir = os.getcwd()
-for subdir in subdirs:
-    for root, dirs, files in os.walk(subdir):
 
-        # Check for .ufl files
-        formfiles = [f for f in files if len(f) > 4 and f[-4:] == ".ufl"]
-        if len(formfiles) == 0:
-            continue
+def main():
+    # Compile all form files
+    topdir = os.getcwd()
+    for subdir in subdirs:
+        for root, dirs, files in os.walk(subdir):
 
-        # Compile files
-        os.chdir(root)
-        print("Compiling forms in %s..." % root)
-        for f in formfiles:
-            if f in special:
-                options = special[f]
-            else:
-                options = ""
-            if f in skip_optimization:
-                optimization = ""
-            else:
-                optimization = "-O"
+            # Check for .ufl files
+            formfiles = [f for f in files if f[-4:] == ".ufl"]
+            if not formfiles:
+                continue
 
-            if f in skip_basis:
-                options += " -fno-evaluate_basis -fno-evaluate_basis_derivatives"
+            # Compile files
+            os.chdir(root)
+            print("Compiling forms in %s..." % root)
+            for f in formfiles:
+                if f in special:
+                    options = special[f]
+                else:
+                    options = ""
 
-            command = "ffc -v %s -l dolfin %s %s >> compile.log" % (optimization, options, f)
-            print("  " + command)
-            ret = os.system(command)
-            if not ret == 0:
-                raise RuntimeError("Unable to compile form: %s/%s" % (root, f))
-        os.chdir(topdir)
+                if f in skip_optimization:
+                    optimization = ""
+                else:
+                    optimization = "-O"
+
+                if f in skip_basis:
+                    options += " -fno-evaluate_basis -fno-evaluate_basis_derivatives"
+
+                command = "ffc -v %s -l dolfin %s %s >> compile.log" % (optimization, options, f)
+                print("  " + command)
+                ret = os.system(command)
+                if ret != 0:
+                    print("Unable to compile form: %s/%s" % (root, f))
+                    return 1
+            os.chdir(topdir)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
