@@ -46,6 +46,7 @@ project(${PROJECT_NAME})
 # Set CMake behavior
 cmake_policy(SET CMP0004 NEW)
 
+
 # Get DOLFIN configuration data (DOLFINConfig.cmake must be in
 # DOLFIN_CMAKE_CONFIG_PATH)
 find_package(DOLFIN REQUIRED)
@@ -59,14 +60,6 @@ if (EXISTS ${DOLFIN_USE_FILE})
       "Choose the type of build, options are: Debug MinSizeRel Release RelWithDebInfo." FORCE)
   endif()
 
-  # Do not throw error for 'multi-line comments' (these are typical in
-  # rst which includes LaTeX)
-  include(CheckCXXCompilerFlag)
-  CHECK_CXX_COMPILER_FLAG("-Wno-comment" HAVE_NO_MULTLINE)
-  if (HAVE_NO_MULTLINE)
-    set(CMAKE_CXX_FLAGS "-Wno-comment ${CMAKE_CXX_FLAGS}")
-  endif()
-
 else()
   # Compiler definitions
   add_definitions(${DOLFIN_CXX_DEFINITIONS})
@@ -74,55 +67,90 @@ else()
   # Compiler flags
   set(CMAKE_CXX_FLAGS "${DOLFIN_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
-  # Do not throw error for 'multi-line comments' (these are typical in
-  # rst which includes LaTeX)
-  include(CheckCXXCompilerFlag)
-  CHECK_CXX_COMPILER_FLAG("-Wno-comment" HAVE_NO_MULTLINE)
-  if (HAVE_NO_MULTLINE)
-    set(CMAKE_CXX_FLAGS "-Wno-comment ${CMAKE_CXX_FLAGS}")
-  endif()
-
   # Include directories
   include_directories(${DOLFIN_INCLUDE_DIRS})
   include_directories(SYSTEM ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 endif()
 
-# List all ufl files to compile
+
+# Do not throw error for 'multi-line comments' (these are typical in
+# rst which includes LaTeX)
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-Wno-comment" HAVE_NO_MULTLINE)
+if (HAVE_NO_MULTLINE)
+  set(CMAKE_CXX_FLAGS "-Wno-comment ${CMAKE_CXX_FLAGS}")
+endif()
+
+
+### Running pylit
+# HACK to make pylit available without installation.
+# Should be fixed somehow, e.g. by posting pylit on pypi to make it pip installable.
+set(PYLIT %(pylit)s)
+
+# List all .foo.rst files to translate with pylit
+set(RST_FILENAMES %(rst_files)s)
+
+# Pick one of these:
+# 1) Place generated files in source directory
+set(PYLIT_OUTPUT_DIR ${CMAKE_SOURCE_DIR})
+# 2) Place generated files in build directory (needs some adjustment of paths below to work)
+#set(PYLIT_OUTPUT_DIR ${CMAKE_BINARY_DIR})
+
+# Tell cmake how to run pylit on each *.*.rst file
+foreach(RST_FILENAME ${RST_FILENAMES})
+  # Get foo.cpp from foo.cpp.rst, cannot use get_filename_component because
+  # it drops the .cpp part as well, and want to handle cpp,h,py,ufl files.
+  string(REGEX REPLACE "\\\\.[^.]*$" "" RST_BASENAME ${RST_FILENAME})
+  add_custom_command(
+    OUTPUT ${PYLIT_OUTPUT_DIR}/${RST_BASENAME}
+    MAIN_DEPENDENCY ${RST_FILENAME}
+    WORKING_DIRECTORY ${PYLIT_OUTPUT_DIR}
+    COMMAND ${PYLIT} ${CMAKE_SOURCE_DIR}/${RST_FILENAME}
+    COMMENT Running pylit on ${RST_FILENAME}.
+    )
+endforeach(RST_FILENAME)
+
+
+### Running ffc
+# List all .ufl files to compile with ffc
 set(UFL_FILENAMES %(ufl_files)s)
 
 # Pick one of these:
 # 1) Place generated files in source directory
-#set(GENERATED_DIR ${CMAKE_SOURCE_DIR})
-# 2) Place generated files in build directory
-set(GENERATED_DIR ${CMAKE_BINARY_DIR})
+#set(FFC_OUTPUT_DIR ${CMAKE_SOURCE_DIR})
+# 2) Place generated files in build directory and make headers includable
+set(FFC_OUTPUT_DIR ${CMAKE_BINARY_DIR})
+include_directories(${FFC_OUTPUT_DIR})
 
-# Assuming ufl files lie in the source dir
-set(UFL_FILES_DIR ${CMAKE_SOURCE_DIR})
-
+# Tell cmake how to run ffc on each .ufl file
 foreach(UFL_FILENAME ${UFL_FILENAMES})
   get_filename_component(UFL_BASENAME ${UFL_FILENAME} NAME_WE)
   add_custom_command(
-    OUTPUT ${GENERATED_DIR}/${UFL_BASENAME}.h ${GENERATED_DIR}/${UFL_BASENAME}.cpp
-    COMMAND ffc -l dolfin -fsplit --output-directory ${GENERATED_DIR} ${UFL_FILENAME}
+    OUTPUT ${FFC_OUTPUT_DIR}/${UFL_BASENAME}.h ${FFC_OUTPUT_DIR}/${UFL_BASENAME}.cpp
     MAIN_DEPENDENCY ${UFL_FILENAME}
-    WORKING_DIRECTORY ${UFL_FILES_DIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMAND ffc -l dolfin -fsplit --output-directory ${FFC_OUTPUT_DIR} ${UFL_FILENAME}
     COMMENT Running FEniCS Form Compiler on ${UFL_FILENAME}.
     )
-  set(UFL_GENERATED_SOURCES ${UFL_GENERATED_SOURCES} ${GENERATED_DIR}/${UFL_BASENAME}.cpp)
+  # Accumulate list of generated sources to compile into executable
+  set(FFC_GENERATED_SOURCES ${FFC_GENERATED_SOURCES} ${FFC_OUTPUT_DIR}/${UFL_BASENAME}.cpp)
 endforeach(UFL_FILENAME)
 
-# Make generated headers available
-include_directories(${GENERATED_DIR})
 
-# Executable
+### Defining target(s)
+# Define executables
 %(executables)s
 
-# Target libraries
+# Link to libraries
 %(target_libraries)s
 """
 
+# HACK to make pylit available without installation.
+# Should be fixed somehow, e.g. by posting pylit on pypi to make it pip installable.
+pylit = os.path.abspath(os.path.join(os.getcwd(), "utils/pylit/pylit.py"))
+
 # Templates for each line in %(executables)s and %(target_libraries)s
-executable_str = "add_executable(%s %s ${UFL_GENERATED_SOURCES})"
+executable_str = "add_executable(%s %s ${FFC_GENERATED_SOURCES})"
 target_link_libraries_str = "target_link_libraries(%s ${DOLFIN_LIBRARIES})"
 
 
@@ -136,7 +164,6 @@ executable_prefixes = dict(demo="demo_",
 # Projects that use custom CMakeLists.txt (shouldn't overwrite)
 #exclude_projects = [os.path.join('demo', 'undocumented', 'plot-qt')]
 exclude_projects = []
-
 
 def generate_cmake_files(subdirectory):
     """Search for C++ code and write CMakeLists.txt files"""
@@ -167,17 +194,27 @@ def generate_cmake_files(subdirectory):
         # Define project name
         project_name = executable_prefix + program_name
 
-        # Get list of .cpp and .ufl files
-        cpp_files = set()
+        # Get list of .rst, .ufl, and .cpp files
+        rst_files = set()
         ufl_files = set()
+        cpp_files = set()
         for f in os.listdir(program_dir):
             filename, extension = os.path.splitext(f)
-            if extension == ".cpp":
-                cpp_files.add(f)
-            elif ".cpp.rst" in f:
-                cpp_files.add(filename)
+            if extension == ".rst":
+                # filename is without the .rst extension:
+                subext = os.path.splitext(filename)[1]
+                if subext:
+                    # Add any file foo.subext.rst to rst_files
+                    rst_files.add(f)
+                    # Add foo.ufl or foo.cpp to their respective lists
+                    if subext == ".ufl":
+                        ufl_files.add(filename)
+                    elif subext == ".cpp":
+                        cpp_files.add(filename)
             elif extension == ".ufl":
                 ufl_files.add(f)
+            elif extension == ".cpp":
+                cpp_files.add(f)
 
         # Make sure ufl-generated files are not in the regular cpp_files list
         for f in ufl_files:
@@ -190,11 +227,10 @@ def generate_cmake_files(subdirectory):
             #print("Skipping custom CMakeLists.txt file (no .cpp file found):", root)
             continue
 
-        # For determinism
+        # Sort for determinism and format as cmake lists and 
+        rst_files = " ".join(sorted(rst_files))
+        ufl_files = " ".join(sorted(ufl_files))
         cpp_files = sorted(cpp_files)
-
-        # Format as cmake list
-        ufl_files = ";".join(sorted(ufl_files))
 
         # Compile one or multiple executables:
         if "main.cpp" in cpp_files:
@@ -219,6 +255,8 @@ def generate_cmake_files(subdirectory):
             project_name=project_name,
             executables=executables,
             target_libraries=target_libraries,
+            pylit=pylit,
+            rst_files=rst_files,
             ufl_files=ufl_files,
             )
 
