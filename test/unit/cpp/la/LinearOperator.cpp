@@ -23,8 +23,8 @@
 // Unit tests for matrix-free linear solvers (LinearOperator)
 
 #include <dolfin.h>
-#include "forms/ReactionDiffusion.h"
-#include "forms/ReactionDiffusionAction.h"
+#include "ReactionDiffusion.h"
+#include "ReactionDiffusionAction.h"
 
 #include <gtest/gtest.h>
 
