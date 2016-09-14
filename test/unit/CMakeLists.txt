@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.8.2)
 
 project(googletest-download NONE)
 
+# Set verbose output while testing CMake
+#set(CMAKE_VERBOSE_MAKEFILE 1)
+
 # Using ExternalProject to Build GTest and use the Library
 include(ExternalProject)
 

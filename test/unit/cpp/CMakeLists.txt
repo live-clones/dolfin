@@ -11,6 +11,9 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif()
 
+# Set verbose output while testing CMake
+#set(CMAKE_VERBOSE_MAKEFILE 1)
+
 # Find DOLFIN config file (not used here, but checks that tests will be able
 # to find it
 find_package(DOLFIN REQUIRED)
