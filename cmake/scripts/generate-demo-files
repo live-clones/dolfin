@@ -20,6 +20,7 @@
 # Generate .foo files from .foo.rst files in demos.
 # This script should be run from the top level directory.
 
+from __future__ import print_function
 import sys
 import os
 
