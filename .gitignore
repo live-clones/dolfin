@@ -20,15 +20,8 @@ dolfin/libdolfin.so*
 dolfin/ale/Poisson*D.h
 
 # FFC generated code in benchmarks
-bench/fem/convergence/cpp/Poisson2D_1.cpp
-bench/fem/convergence/cpp/Poisson2D_2.cpp
-bench/fem/convergence/cpp/Poisson2D_3.cpp
-bench/fem/convergence/cpp/Poisson2D_4.cpp
-bench/fem/convergence/cpp/Poisson2D_5.cpp
-bench/fem/convergence/cpp/Poisson3D_1.cpp
-bench/fem/convergence/cpp/Poisson3D_2.cpp
-bench/fem/convergence/cpp/Poisson3D_3.cpp
-bench/fem/convergence/cpp/Poisson3D_4.cpp
+bench/fem/convergence/cpp/Poisson*.cpp
+bench/fem/convergence/cpp/Poisson*.h
 
 # Log files
 *.log
