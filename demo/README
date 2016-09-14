@@ -1,6 +1,10 @@
 Documenting DOLFIN demos
 ========================
 
+A new approach to documentation has been started, some places
+you'll see files like Biharmonic.ufl.rst and main.cpp.rst.
+FIXME: Update this readme to describe the new workflow!
+
 The documentation for the DOLFIN demos is written by hand and located
 together with the demos in the DOLFIN source tree. To document a (new)
 DOLFIN demo located in the directory foo (for instance pde/poisson),
