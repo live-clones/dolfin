@@ -20,6 +20,8 @@
 # Copy all data, tests and demo to a given directory relative to the top dolfin
 # source directory
 
+from __future__ import print_function
+
 import os
 import sys
 import re
@@ -29,42 +31,45 @@ import shutil
 sub_directories = ['demo', 'test', 'bench']
 
 # Copy all files with the following suffixes
-suffix_patterns = ["py", "h", "cpp", "cpp.rst", "ufl", "ufl.rst", "xml", "xml.gz", "off", "inp", \
+suffix_patterns = ["py", "h", "cpp", "cpp.rst", "ufl", "ufl.rst", "xml", "xml.gz", "off", "inp",
                    "msh", "supp", "rst", "py.rst", "ele", "node", "grid", "edge", "sh"]
 
-suffix_pattern = re.compile("(%s),"%("|".join("[\w-]+\.%s" % pattern \
-                                             for pattern in suffix_patterns)))
+suffix_pattern = re.compile("(%s)," % ("|".join("[\w-]+\.%s" % pattern
+                                                for pattern in suffix_patterns)))
 
 script_rel_path = os.sep.join(__file__.split(os.sep)[:-1])
 script_rel_path = script_rel_path or "."
 dolfin_dir = os.path.abspath(os.path.join(script_rel_path, os.pardir, os.pardir))
 
 def copy_data(top_destdir):
-
     abs_destdir = top_destdir if os.path.isabs(top_destdir) else os.path.join(dolfin_dir, top_destdir)
 
     if abs_destdir == dolfin_dir:
-        raise RuntimeError("destination directory cannot be the same as "\
-                           "the dolfin source directory")
+        print("destination directory cannot be the same as "
+              "the dolfin source directory")
+        return 1
 
     if not os.path.isdir(abs_destdir):
-        raise RuntimeError("%s is not a directory." % abs_destdir)
+        print("%s is not a directory." % abs_destdir)
+        return 1
 
     for subdir in sub_directories:
-
         top_dir = os.path.join(dolfin_dir, subdir)
         for dirpath, dirnames, filenames in os.walk(top_dir):
             destdir = dirpath.replace(dolfin_dir, abs_destdir)
             if not os.path.isdir(destdir):
                 os.makedirs(destdir)
-            for f in re.findall(suffix_pattern, " ".join(\
-                "%s,"%f for f in filenames)):
+            # Loop over all filenames that end with any of
+            # the file extensions in suffix_patterns
+            for f in re.findall(suffix_pattern,
+                    " ".join("%s," % f for f in filenames)):
                 srcfile = os.path.join(dirpath, f)
                 shutil.copy(srcfile, destdir)
+    return 0
 
 if __name__ == "__main__":
     # Expecting a destination argument
     if len(sys.argv) != 2:
-        raise RuntimeError("Expecting 1 argument with the destination directory")
-
-    copy_data(sys.argv[-1])
+        print("Expecting 1 argument with the destination directory")
+        sys.exit(1)
+    sys.exit(copy_data(sys.argv[1]))
