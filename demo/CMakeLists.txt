@@ -14,22 +14,6 @@ find_package(DOLFIN PATHS ${CMAKE_BINARY_DIR} REQUIRED)
 # helper message
 if (DOLFIN_FOUND)
 
-  # Build list of all cpp demo directories containing a generated CMakeLists.txt files
-  file(GLOB_RECURSE list "CMakeLists.txt")
-  list(SORT list)
-  string(REGEX REPLACE "/CMakeLists.txt" "" list "${list}")
-
-  # Add each C++ demo directory
-  foreach (demo_dir ${list})
-    add_subdirectory(${demo_dir})
-  endforeach()
-
-  if ("${list}" STREQUAL "")
-    message("Could not locate any CMakeLists.txt files in demos. Try running ./cmake/scripts/generate-cmake-files from the repository root.")
-  endif()
-
-elseif (DOLFIN_FOUND)
-
   # Directories that are commented out correspond to demos that have
   # not been implemented in C++
 
