@@ -3,6 +3,9 @@
 # Require CMake 2.8
 cmake_minimum_required(VERSION 2.8)
 
+# Set verbose output while testing CMake
+set(CMAKE_VERBOSE_MAKEFILE 1)
+
 #------------------------------------------------------------------------------
 # Set project name and version number
 
@@ -24,8 +27,8 @@ endif()
 # later.
 if (NOT CMAKE_VERSION VERSION_LESS 2.8.10)
   if (CMAKE_COMPILER_IS_GNUCXX)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.6)
-      message(FATAL_ERROR "GCC version must be at least 4.6 (for sufficient C++11  support. You have version ${CMAKE_CXX_COMPILER_VERSION}")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
+      message(FATAL_ERROR "GCC version must be at least 4.8 for sufficient C++11 support. You have version ${CMAKE_CXX_COMPILER_VERSION}")
     endif()
   endif()
 endif()
@@ -183,20 +186,6 @@ endif()
 CHECK_CXX_COMPILER_FLAG("-Wall -Werror -pedantic" HAVE_PEDANTIC)
 if (HAVE_PEDANTIC)
   set(DOLFIN_CXX_DEVELOPER_FLAGS "-Wall -Werror -pedantic ${DOLFIN_CXX_DEVELOPER_FLAGS}")
-endif()
-
-# Workaround https://bugs.launchpad.net/ubuntu/+source/gcc-4.6/+bug/1352356
-# NOTE: Remove this block when bug is fixed upstream or GCC 4.6
-# support is dropped
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  if (NOT DEFINED CMAKE_CXX_COMPILER_VERSION)
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
-                    OUTPUT_VARIABLE CMAKE_CXX_COMPILER_VERSION)
-  endif()
-  if ("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS "4.7" AND
-      "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER "4.5.99")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
-  endif()
 endif()
 
 if (CYGWIN OR (WIN32 AND UNIX))
@@ -908,28 +897,31 @@ install(FILES ${CMAKE_BINARY_DIR}/dolfin-get-demos
 #------------------------------------------------------------------------------
 # Generate demo files from rst
 
-message(STATUS "")
-message(STATUS "Generating demo source files from reStructuredText")
-message(STATUS "--------------------------------------------------")
-file(GLOB_RECURSE demo_rst_files "*.py.rst" "*.cpp.rst" "*.ufl.rst")
-foreach(rst_file ${demo_rst_files})
-  execute_process(COMMAND ./utils/pylit/pylit.py ${rst_file}
-    WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR})
-  #add_custom_command(TARGET demos_source PRE_BUILD
-  #  COMMAND COMMAND ./utils/pylit/pylit.py ${rst_file}
-  #  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-endforeach()
+# Now generated when building demo instead. Can remove this:
+#message(STATUS "")
+#message(STATUS "Generating demo source files from reStructuredText")
+#message(STATUS "--------------------------------------------------")
+#file(GLOB_RECURSE demo_rst_files "*.py.rst" "*.cpp.rst" "*.ufl.rst")
+#foreach(rst_file ${demo_rst_files})
+#  execute_process(COMMAND ./utils/pylit/pylit.py ${rst_file}
+#    WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR})
+#  #add_custom_command(TARGET demos_source PRE_BUILD
+#  #  COMMAND COMMAND ./utils/pylit/pylit.py ${rst_file}
+#  #  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+#endforeach()
 
 #------------------------------------------------------------------------------
-# Generate form files for tests, bench, demos and DOLFIN if not exists
+# Generate source from form files for tests and DOLFIN if missing
 # FIXME: Generate files in Build directory instead, at least for
 # bench, demo and tests
+# FIXME: Replace this with add_custom_target for each ufl file like demos use now, allowing make to rerun ffc when needed
 
 set(COPY_DEMO_TEST_DEMO_DATA FALSE)
-if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/Poisson.h)
+set(REPRESENTATIVE_FILE ${DOLFIN_SOURCE_DIR}/dolfin/ale/Poisson3D.h)
+if (NOT EXISTS ${REPRESENTATIVE_FILE})
   message(STATUS "")
-  message(STATUS "Generating form files in demo, test, bench and dolfin directories. May take some time...")
-  message(STATUS "----------------------------------------------------------------------------------------")
+  message(STATUS "Generating code from form files in test and dolfin directories")
+  message(STATUS "--------------------------------------------------------------")
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-form-files
     WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR}
@@ -937,26 +929,25 @@ if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/Poisson.h)
     OUTPUT_VARIABLE FORM_GENERATION_OUTPUT
     ERROR_VARIABLE FORM_GENERATION_OUTPUT
     OUTPUT_QUIET)
-
   if (FORM_GENERATION_RESULT)
-    # Cleanup so download is triggered next time we run cmake
-    if (EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/Poisson.h)
-      file(REMOVE ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/Poisson.h)
+    # Failure: Cleanup so this is triggered again next time we run cmake
+    if (EXISTS ${REPRESENTATIVE_FILE})
+      file(REMOVE ${REPRESENTATIVE_FILE})
     endif()
     message(FATAL_ERROR "Generation of form files failed: \n${FORM_GENERATION_OUTPUT}")
   endif()
   set(COPY_DEMO_TEST_DEMO_DATA TRUE)
 endif()
+set(REPRESENTATIVE_FILE "")
 
 #------------------------------------------------------------------------------
-# Generate CMakeLists.txt files for bench and demos if not
-# exists
+# Generate CMakeLists.txt files for bench and demos if missing
 # FIXME: Generate files in Build directory instead?
-# NOTE: We need to call this script after generate-formfiles
-if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
+set(REPRESENTATIVE_FILE ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
+if (NOT EXISTS ${REPRESENTATIVE_FILE})
   message(STATUS "")
-  message(STATUS "Generating CMakeLists.txt files in demo, test and bench directories")
-  message(STATUS "-------------------------------------------------------------------")
+  message(STATUS "Generating CMakeLists.txt files in demo and bench directories")
+  message(STATUS "-------------------------------------------------------------")
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-cmakefiles
     WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR}
@@ -965,21 +956,21 @@ if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
     ERROR_VARIABLE CMAKE_GENERATION_OUTPUT
     OUTPUT_QUIET)
   if (CMAKE_GENERATION_RESULT)
-
-    # Cleanup so download is triggered next time we run cmake
-    if (EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
-      file(REMOVE ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
+    # Failure: Cleanup so this is triggered again next time we run cmake
+    if (EXISTS ${REPRESENTATIVE_FILE})
+      file(REMOVE ${REPRESENTATIVE_FILE})
     endif()
     message(FATAL_ERROR "Generation of CMakeLists.txt files failed: \n${CMAKE_GENERATION_OUTPUT}")
   endif()
-
   set(COPY_DEMO_TEST_DEMO_DATA TRUE)
 endif()
+set(REPRESENTATIVE_FILE "")
 
 #------------------------------------------------------------------------------
 # Check if data is downloaded
 
-if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/eigenvalue/box_with_dent.xml.gz)
+set(REPRESENTATIVE_FILE ${DOLFIN_SOURCE_DIR}/demo/documented/eigenvalue/box_with_dent.xml.gz)
+if (NOT EXISTS ${REPRESENTATIVE_FILE})
   # FIXME: What if we do not have internet connection
   message(STATUS "")
   message(STATUS "Download demo and test data. May take some time...")
@@ -992,19 +983,20 @@ if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/eigenvalue/box_with_dent.xml
     ERROR_VARIABLE DOWNLOAD_DEMO_DATA_OUTPUT
     OUTPUT_QUIET)
   if (DOWNLOAD_DEMO_DATA_RESULT)
-
-    # Cleanup so download is triggered next time we run cmake
-    if (EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/eigenvalue/box_with_dent.xml.gz)
-      file(REMOVE ${DOLFIN_SOURCE_DIR}/demo/documented/eigenvalue/box_with_dent.xml.gz)
+    # Failure: Cleanup so this is triggered again next time we run cmake
+    if (EXISTS ${REPRESENTATIVE_FILE})
+      file(REMOVE ${REPRESENTATIVE_FILE})
     endif()
     message(WARNING "Download failed: \n${DOWNLOAD_DEMO_DATA_OUTPUT}")
   endif()
   set(COPY_DEMO_TEST_DEMO_DATA TRUE)
 endif()
+set(REPRESENTATIVE_FILE "")
 
 # If data have been generated or downloaded in the demo/bench/test direcories
 # we need to copy them to the build directories
-# FIXME: We should probably just generate them directly in the build directory...
+# (this is better than downloading directly into build directory
+#  if there are multiple build directories)
 if (COPY_DEMO_TEST_DEMO_DATA)
   message(STATUS "")
   message(STATUS "Copying demo and test data to build directory.")
@@ -1034,22 +1026,23 @@ else()
   set(MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM}")
 endif()
 
-# Add taget to build .py demo files from Python rst input files, and
-# create a target to build source files from .cpp.rst and .py.rst
+# Now generated when building demo instead. Can remove this:
+# Add target to build .py demo files from Python rst input files, and
+# create a target to build source files from .ufl.rst, .cpp.rst and .py.rst
 # files (using pylit)
-file(GLOB_RECURSE rst_files "*.py.rst" "*.cpp.rst")
-add_custom_target(demos_source)
-foreach(rst_file ${rst_files})
-  add_custom_command(TARGET demos_source PRE_BUILD
-    COMMAND COMMAND ./utils/pylit/pylit.py ${rst_file}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    )
-endforeach()
+#file(GLOB_RECURSE rst_files "*.py.rst" "*.ufl.rst" "*.cpp.rst")
+#add_custom_target(demos_source)
+#foreach(rst_file ${rst_files})
+#  add_custom_command(TARGET demos_source PRE_BUILD
+#    COMMAND COMMAND ./utils/pylit/pylit.py ${rst_file}
+#    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+#    )
+#endforeach()
 
 # Add target "demo" for building the demos
 add_custom_target(demo
   COMMAND ${MAKE_PROGRAM}
-  DEPENDS copy_data_test_demo demos_source
+  DEPENDS copy_data_test_demo  # demos_source
   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/demo")
 
 # Install the demo source files
