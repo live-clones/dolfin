@@ -17,42 +17,55 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 #
-# Recompile all ffc forms (use when FFC has been updated)
+# Generate .foo files from .foo.rst files in demos.
 # This script should be run from the top level directory.
 
+import sys
 import os
 
-# Directories to scan
-subdirs = ["demo"]
+def main():
+    # Directories to scan
+    subdirs = ["demo"]
 
-# Check that we can find pylint.py
-parser = "./utils/pylit/pylit.py"
-if os.path.isfile(parser):
-    pass
-else:
-    raise RuntimeError("Cannot find pylit.py. Are you running from the top level directory")
+    # Extensions to handle
+    #extensions = [".py.rst", ".cpp.rst", ".h.rst", ".ufl.rst"]
+    extensions = [".py.rst"]  # other extensions handled in CMakeLists.txt for each cpp demo
 
-# Get absolute path to parser
-parser = os.path.abspath(parser)
+    # Check that we can find pylint.py
+    parser = "./utils/pylit/pylit.py"
+    if not os.path.isfile(parser):
+        print("Cannot find pylit.py. Are you running from the top level directory")
+        return 1
 
-# Generate .py files from all .py.rst files
-topdir = os.getcwd()
-for subdir in subdirs:
-    for root, dirs, files in os.walk(subdir):
+    # Get absolute path to parser
+    parser = os.path.abspath(parser)
 
-        # Check for .py.rst files
-        rstfiles = [f for f in files if len(f) > 7 and f[-7:] == ".py.rst"]
-        if len(rstfiles) == 0:
-            continue
+    # Generate .py files from all .py.rst files and ditto for .h, .cpp, .ufl
+    topdir = os.getcwd()
+    for subdir in subdirs:
+        for root, dirs, files in os.walk(subdir):
 
-        # Compile files
-        os.chdir(root)
-        print("Converting rst files in in {} ...".format(root))
-        for f in rstfiles:
-            command = parser + " " + os.path.abspath(f)
-            #print("  " + command)
-            ret = os.system(command)
-            if not ret == 0:
-                raise RuntimeError("Unable to convert rst file to a .py ({})".format(f))
+            # Check for .foo.rst files
+            files = [f for f in files if f.endswith(".rst")]
+            rstfiles = []
+            for ext in extensions:
+                rstfiles.extend(f for f in files if f.endswith(ext))
+            if not rstfiles:
+                continue
 
-        os.chdir(topdir)
+            # Compile files
+            os.chdir(root)
+            print("Converting rst files in in {} ...".format(root))
+            for f in rstfiles:
+                command = parser + " " + os.path.abspath(f)
+                #print("  " + command)
+                ret = os.system(command)
+                if ret != 0:
+                    print("Unable to convert rst file to a source file ({})".format(f))
+                    return 1
+            os.chdir(topdir)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
