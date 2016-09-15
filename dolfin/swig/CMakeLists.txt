@@ -33,10 +33,10 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${CLANG_FLAGS}")
 endif()
 
-# Set common include directoris
+# Set common include directories
 include_directories(${NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS} ${CMAKE_BINARY_DIR})
 
-# Set add PYTHON defines
+# Add PYTHON defines
 add_definitions(${DOLFIN_PYTHON_DEFINITIONS})
 
 # Check that swig interface is generated, otherwise re-generate it
