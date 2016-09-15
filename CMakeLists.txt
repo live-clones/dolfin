@@ -895,13 +895,19 @@ install(FILES ${CMAKE_BINARY_DIR}/dolfin-get-demos
         COMPONENT RuntimeExecutables)
 
 #------------------------------------------------------------------------------
+# This is set to TRUE inside some ifs below and checked afterwards
+set(COPY_DEMO_TEST_DEMO_DATA FALSE)
+
+#------------------------------------------------------------------------------
 # Generate demo files from rst
 
+# FIXME MARTINAL maybe we want this for .py demo files?
 # Now generated when building demo instead. Can remove this:
 #message(STATUS "")
 #message(STATUS "Generating demo source files from reStructuredText")
 #message(STATUS "--------------------------------------------------")
 #file(GLOB_RECURSE demo_rst_files "*.py.rst" "*.cpp.rst" "*.ufl.rst")
+#file(GLOB_RECURSE demo_rst_files "*.py.rst")
 #foreach(rst_file ${demo_rst_files})
 #  execute_process(COMMAND ./utils/pylit/pylit.py ${rst_file}
 #    WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR})
@@ -911,34 +917,35 @@ install(FILES ${CMAKE_BINARY_DIR}/dolfin-get-demos
 #endforeach()
 
 #------------------------------------------------------------------------------
-# Generate source from form files for tests and DOLFIN if missing
-# FIXME: Generate files in Build directory instead, at least for
-# bench, demo and tests
-# FIXME: Replace this with add_custom_target for each ufl file like demos use now, allowing make to rerun ffc when needed
+# Tell cmake how to generate sources and headers from .ufl files with ffc
 
-set(COPY_DEMO_TEST_DEMO_DATA FALSE)
-set(REPRESENTATIVE_FILE ${DOLFIN_SOURCE_DIR}/dolfin/ale/Poisson3D.h)
-if (NOT EXISTS ${REPRESENTATIVE_FILE})
-  message(STATUS "")
-  message(STATUS "Generating code from form files in test and dolfin directories")
-  message(STATUS "--------------------------------------------------------------")
-  execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-form-files
-    WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR}
-    RESULT_VARIABLE FORM_GENERATION_RESULT
-    OUTPUT_VARIABLE FORM_GENERATION_OUTPUT
-    ERROR_VARIABLE FORM_GENERATION_OUTPUT
-    OUTPUT_QUIET)
-  if (FORM_GENERATION_RESULT)
-    # Failure: Cleanup so this is triggered again next time we run cmake
-    if (EXISTS ${REPRESENTATIVE_FILE})
-      file(REMOVE ${REPRESENTATIVE_FILE})
-    endif()
-    message(FATAL_ERROR "Generation of form files failed: \n${FORM_GENERATION_OUTPUT}")
-  endif()
-  set(COPY_DEMO_TEST_DEMO_DATA TRUE)
-endif()
-set(REPRESENTATIVE_FILE "")
+# Find *.ufl files under dolfin/ and test/
+# Note: running ffc for demo and bench is dealt with in their own local CMakeLists.txt
+file(GLOB_RECURSE UFL_FILENAMES "${DOLFIN_SOURCE_DIR}/dolfin/*.ufl")
+file(GLOB_RECURSE _UFL_FILENAMES "${DOLFIN_SOURCE_DIR}/test/*.ufl")
+list(APPEND UFL_FILENAMES _UFL_FILENAMES)
+#set(COPY_DEMO_TEST_DEMO_DATA TRUE)
+
+message(STATUS "")
+message(STATUS "Setting rules for generating code from form files in test and dolfin directories")
+message(STATUS "--------------------------------------------------------------------------------")
+message(STATUS "Files:" ${UFL_FILENAMES})
+foreach(UFL_FILENAME ${UFL_FILENAMES})
+  get_filename_component(UFL_BASENAME ${UFL_FILENAME} NAME_WE)
+  get_filename_component(UFL_DIRECTORY ${UFL_FILENAME} DIRECTORY)
+  set(FFC_OUTPUT_DIR ${UFL_DIRECTORY})
+  message(STATUS "Running FEniCS Form Compiler on " ${UFL_FILENAME})
+  add_custom_command(
+    OUTPUT ${FFC_OUTPUT_DIR}/${UFL_BASENAME}.h ${FFC_OUTPUT_DIR}/${UFL_BASENAME}.cpp
+    MAIN_DEPENDENCY ${UFL_FILENAME}
+    WORKING_DIRECTORY ${UFL_DIRECTORY}
+    COMMAND ffc -l dolfin -fsplit --output-directory ${FFC_OUTPUT_DIR} ${UFL_FILENAME}
+    COMMENT Running FEniCS Form Compiler on ${UFL_FILENAME}.
+    )
+  # Accumulate list of generated sources to compile into executable
+  set(FFC_GENERATED_HEADERS ${FFC_GENERATED_HEADERS} ${FFC_OUTPUT_DIR}/${UFL_BASENAME}.h)
+  set(FFC_GENERATED_SOURCES ${FFC_GENERATED_SOURCES} ${FFC_OUTPUT_DIR}/${UFL_BASENAME}.cpp)
+endforeach(UFL_FILENAME)
 
 #------------------------------------------------------------------------------
 # Generate CMakeLists.txt files for bench and demos if missing
@@ -964,7 +971,7 @@ if (NOT EXISTS ${REPRESENTATIVE_FILE})
   endif()
   set(COPY_DEMO_TEST_DEMO_DATA TRUE)
 endif()
-set(REPRESENTATIVE_FILE "")
+unset(REPRESENTATIVE_FILE)
 
 #------------------------------------------------------------------------------
 # Check if data is downloaded
@@ -991,7 +998,7 @@ if (NOT EXISTS ${REPRESENTATIVE_FILE})
   endif()
   set(COPY_DEMO_TEST_DEMO_DATA TRUE)
 endif()
-set(REPRESENTATIVE_FILE "")
+unset(REPRESENTATIVE_FILE)
 
 # If data have been generated or downloaded in the demo/bench/test direcories
 # we need to copy them to the build directories
@@ -1026,11 +1033,13 @@ else()
   set(MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM}")
 endif()
 
+# FIXME MARTINAL: Maybe we still want this for .py files
 # Now generated when building demo instead. Can remove this:
 # Add target to build .py demo files from Python rst input files, and
 # create a target to build source files from .ufl.rst, .cpp.rst and .py.rst
 # files (using pylit)
 #file(GLOB_RECURSE rst_files "*.py.rst" "*.ufl.rst" "*.cpp.rst")
+#file(GLOB_RECURSE rst_files "*.py.rst")
 #add_custom_target(demos_source)
 #foreach(rst_file ${rst_files})
 #  add_custom_command(TARGET demos_source PRE_BUILD

@@ -33,16 +33,19 @@ foreach(_DIR_NAME ${DOLFIN_CONTENT})
 endforeach()
 
 #------------------------------------------------------------------------------
-# Install header files
+# Install header files and build list of sources
 
 foreach(DIR ${DOLFIN_DIRS})
   file(GLOB _HEADERS ${DIR}/*.h)
   list(APPEND HEADERS ${_HEADERS})
+  list(APPEND HEADERS ${FFC_GENERATED_HEADERS})
+
   install(FILES ${_HEADERS} DESTINATION ${DOLFIN_INCLUDE_DIR}/dolfin/${DIR}
     COMPONENT Development)
 
   file(GLOB _SOURCES ${DIR}/*.cpp)
   list(APPEND SOURCES ${_SOURCES})
+  list(APPEND SOURCES ${FFC_GENERATED_SOURCES})
 endforeach()
 
 #------------------------------------------------------------------------------
