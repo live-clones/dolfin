@@ -38,9 +38,8 @@ PETScOptions.set("fieldsplit_0_mg_levels_ksp_chebyshev_esteig_steps", 20);
 PETScOptions.set("fieldsplit_0_mg_levels_ksp_chebyshev_esteig_random");
 PETScOptions.set("fieldsplit_0_mg_coarse_ksp_type", "preonly");
 PETScOptions.set("fieldsplit_0_mg_coarse_pc_type", "lu");
-PETScOptions.set("fieldsplit_0_mg_coarse_pc_factor_mat_solver_package", "superlu_dist");
-
-PETScOptions.set("fieldsplit_1_pc_factor_mat_solver_package", "superlu_dist");
+PETScOptions.set("fieldsplit_0_mg_coarse_pc_factor_mat_solver_package", "mumps");
+PETScOptions.set("fieldsplit_1_pc_factor_mat_solver_package", "mumps");
 PETScOptions.set("fieldsplit_1_ksp_type", "preonly");
 PETScOptions.set("fieldsplit_1_pc_type", "lu");
 
