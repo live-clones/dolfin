@@ -82,9 +82,9 @@ Domain and boundary conditions
 In this demo, we shall consider the following definitions of the input functions, the domain, and the boundaries:
 
 * :math:`\Omega = [0,1]\times[0,1] \backslash {\rm dolphin}` (a unit square minus a dolphin shape)
-* :math:`\Gamma_D =`
-* :math:`\Gamma_N =`
-* :math:`u_0 = (- \sin(\pi x_1), 0.0)` for :math:`x_0 = 1` and :math:`u_0 = (0.0, 0.0)` otherwise
+* :math:`\Gamma_N = \partial\Omega |_{x = 1}` (external boundary where :math:`x = 1`
+* :math:`\Gamma_D = \partial\Omega \notin \Gamma_N` (all other parts of the external boundary)
+* :math:`u_0 = (- \sin(\pi y), 0.0)` for :math:`x = 1` and :math:`u_0 = (0.0, 0.0)` otherwise
 * :math:`f = (0.0, 0.0)`
 * :math:`g = (0.0, 0.0)`
 
