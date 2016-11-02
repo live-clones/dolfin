@@ -15,15 +15,15 @@ This demo illustrates how to:
 
 The mesh and subdomains look as follows:
 
-.. image:: plot_mesh.png
+.. image:: plot_th_mesh.png
 
-.. image:: plot_mesh_boundaries.png
+.. image:: plot_th_mesh_boundaries.png
 
 and the solution of u and p, respectively:
 
-.. image:: plot_u.png
+.. image:: plot_th_u.png
 
-.. image:: plot_p.png
+.. image:: plot_th_p.png
 
 Equation and problem definition
 -------------------------------
@@ -81,7 +81,7 @@ Domain and boundary conditions
 
 In this demo, we shall consider the following definitions of the input functions, the domain, and the boundaries:
 
-* :math:`\Omega = [0,1]\times[0,1] \backslash {\rm dolphin}` (a unit cube)
+* :math:`\Omega = [0,1]\times[0,1] \backslash {\rm dolphin}` (a unit square minus a dolphin shape)
 * :math:`\Gamma_D =`
 * :math:`\Gamma_N =`
 * :math:`u_0 = (- \sin(\pi x_1), 0.0)` for :math:`x_0 = 1` and :math:`u_0 = (0.0, 0.0)` otherwise
