@@ -502,7 +502,10 @@ bool CollisionDetection::collides_triangle_point_2d(const Point& p0,
   // between the edges, and evade detection.
 
   // Vectors defining each edge in consistent orientation
-  const Point r0 = p0 - p2;
+  // Points should be in increasing index number, so that
+  // these vectors (r*) are the same no matter which cell they come from
+
+  const Point r0 = p2 - p0;
   const Point r1 = p1 - p0;
   const Point r2 = p2 - p1;
 
@@ -511,21 +514,20 @@ bool CollisionDetection::collides_triangle_point_2d(const Point& p0,
 
   // Compute normal to triangle based on point and first edge
   // Will have opposite sign if outside triangle
-
   Point r = point - p0;
   double pnormal = r.x()*r0.y() - r.y()*r0.x();
   if (pnormal != 0.0 and std::signbit(normal) != std::signbit(pnormal))
     return false;
 
-  // Repeat for each edge
-  r = point - p1;
+  // Repeat for each edge (but with opposite orientation)
+  r = point - p0;
   pnormal = r.x()*r1.y() - r.y()*r1.x();
-  if (pnormal != 0.0 and std::signbit(normal) != std::signbit(pnormal))
+  if (pnormal != 0.0 and std::signbit(normal) == std::signbit(pnormal))
     return false;
 
-  r = point - p2;
+  r = point - p1;
   pnormal = r.x()*r2.y() - r.y()*r2.x();
-  if (pnormal != 0.0 and std::signbit(normal) != std::signbit(pnormal))
+  if (pnormal != 0.0 and std::signbit(normal) == std::signbit(pnormal))
     return false;
 
   return true;
