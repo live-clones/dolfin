@@ -213,6 +213,9 @@ bool CollisionDetection::collides_triangle_point(const MeshEntity& triangle,
   const MeshGeometry& geometry = triangle.mesh().geometry();
   const unsigned int* vertices = triangle.entities(0);
 
+  // Points should be in ascending index order
+  dolfin_assert(vertices[0] < vertices[1] and vertices[1] < vertices[2]);
+
   if (triangle.mesh().geometry().dim() == 2)
     return collides_triangle_point_2d(geometry.point(vertices[0]),
                                       geometry.point(vertices[1]),
@@ -256,6 +259,11 @@ CollisionDetection::collides_tetrahedron_point(const MeshEntity& tetrahedron,
   // Get the vertices as points
   const MeshGeometry& geometry = tetrahedron.mesh().geometry();
   const unsigned int* vertices = tetrahedron.entities(0);
+
+  // Check point order is ascending
+  dolfin_assert(vertices[0] < vertices[1] and
+                vertices[1] < vertices[2] and
+                vertices[2] < vertices[3]);
 
   return collides_tetrahedron_point(geometry.point(vertices[0]),
 				    geometry.point(vertices[1]),
@@ -519,8 +527,7 @@ bool CollisionDetection::collides_triangle_point_2d(const Point& p0,
   if (pnormal != 0.0 and std::signbit(normal) != std::signbit(pnormal))
     return false;
 
-  // Repeat for each edge (but with opposite orientation)
-  r = point - p0;
+  // Repeat for other edges (but now with opposite orientation)
   pnormal = r.x()*r1.y() - r.y()*r1.x();
   if (pnormal != 0.0 and std::signbit(normal) == std::signbit(pnormal))
     return false;
@@ -539,6 +546,8 @@ bool CollisionDetection::collides_triangle_point(const Point& p0,
                                                  const Point &point)
 {
   // Algorithm from http://www.blackpawn.com/texts/pointinpoly/
+
+  // FIXME: change ordering to be same as collides_triangle_point_2d
 
   // Vectors defining each edge in consistent orientation
   const Point r0 = p0 - p2;
@@ -728,16 +737,26 @@ CollisionDetection::collides_tetrahedron_point(const Point& p0,
   // Algorithm from http://www.blackpawn.com/texts/pointinpoly/
   // See also "Real-Time Collision Detection" by Christer Ericson.
 
+  // Points should be in increasing index order for consistency
   const Point *p[4] = {&p0, &p1, &p2, &p3};
+
+  unsigned int index[4] = {0, 1, 2, 3};
+  unsigned int& i0 = index[0];
+  unsigned int& i1 = index[1];
+  unsigned int& i2 = index[2];
+  unsigned int& i3 = index[3];
 
   // Consider each face in turn
   for (unsigned int i = 0; i != 4; ++i)
   {
-    // Compute vectors relative to p[i]
-    const Point v1 = *p[(i + 1)%4] - *p[i];
-    const Point v2 = *p[(i + 2)%4] - *p[i];
-    const Point v3 = *p[(i + 3)%4] - *p[i];
-    const Point v = point - *p[i];
+    // Change permutation
+    std::swap(i3, index[3 - i]);
+
+    // Compute vectors relative to p[i0]
+    const Point v1 = *p[i1] - *p[i0];
+    const Point v2 = *p[i2] - *p[i0];
+    const Point v3 = *p[i3] - *p[i0];
+    const Point v = point - *p[i0];
     // Normal to plane containing v1 and v2
     const Point n1 = v1.cross(v2);
     // Find which side of face plane points v and v3 lie
