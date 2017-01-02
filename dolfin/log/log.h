@@ -86,6 +86,11 @@ namespace dolfin
                     std::string task,
                     std::string reason, ...);
 
+  void petsc_error(PetscErrorCode ierr,
+                   std::string location,
+                   std::string task,
+                   std::string reason, ...);
+
   /// Issue deprecation warning for removed feature
   ///
   /// *Arguments*

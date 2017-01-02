@@ -38,6 +38,36 @@
 namespace dolfin
 {
 
+  class PetscException : public std::runtime_error
+  {
+  public:
+
+    /// Constructor
+    PetscException(PetscErrorCode ierr, const char* what)
+      : _ierr(ierr), std::runtime_error(what)
+    {
+      // Do nothing
+    }
+
+    /// Destructor
+    ~PetscException()
+    {
+      // Do nothing
+    }
+
+    /// Return PETSc error code
+    PetscErrorCode petsc_error_code()
+    {
+      return _ierr;
+    }
+
+  private:
+
+    // Stored PETSc error code
+    PetscErrorCode _ierr;
+  };
+
+
   class Logger
   {
   public:
@@ -65,6 +95,12 @@ namespace dolfin
                       std::string task,
                       std::string reason,
                       int mpi_rank=-1) const;
+
+    /// Print error message, prefer this to the above generic error message
+    void petsc_error(std::string location,
+                     std::string task,
+                     std::string reason,
+                     int mpi_rank=-1) const;
 
     /// Issue deprecation warning for removed feature
     void deprecation(std::string feature,

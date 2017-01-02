@@ -134,6 +134,15 @@ void dolfin::dolfin_error(std::string location,
   LogManager::logger().dolfin_error(location, task, buffer.get());
 }
 //-----------------------------------------------------------------------------
+void dolfin::petsc_error(PetscErrorCode ierr,
+                         std::string location,
+                         std::string task,
+                         std::string reason, ...)
+{
+  read(buffer.get(), reason);
+  LogManager::logger().petsc_error(ierr, location, task, buffer.get());
+}
+//-----------------------------------------------------------------------------
 void dolfin::deprecation(std::string feature,
                          std::string version_deprecated,
                          std::string message, ...)

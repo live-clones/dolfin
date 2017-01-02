@@ -185,6 +185,53 @@ void Logger::dolfin_error(std::string location,
   throw std::runtime_error(s.str());
 }
 //-----------------------------------------------------------------------------
+void Logger::petsc_error(PetscErrorCode ierr,
+                         std::string location,
+                         std::string task,
+                         std::string reason,
+                         int mpi_rank) const
+{
+
+  if (mpi_rank < 0)
+    mpi_rank = MPI::rank(_mpi_comm);
+  std::string _mpi_rank = std::to_string(mpi_rank);
+
+  std::stringstream s;
+  s << std::endl << std::endl
+    << "*** "
+    << "-------------------------------------------------------------------------"
+    << std::endl
+    << "*** DOLFIN encountered an error. If you are not able to resolve this issue"
+    << std::endl
+    << "*** using the information listed below, you can ask for help at"
+    << std::endl
+    << "***" << std::endl
+    << "***     fenics-support@googlegroups.com"
+    << std::endl
+    << "***" << std::endl
+    << "*** Remember to include the error message listed below and, if possible,"
+    << std::endl
+    << "*** include a *minimal* running example to reproduce the error."
+    << std::endl
+    << "***" << std::endl
+    << "*** "
+    << "-------------------------------------------------------------------------"
+    << std::endl
+    << "*** " << "Error:   Unable to " << task << "." << std::endl
+    << "*** " << "Reason:  " << reason << "." << std::endl
+    << "*** " << "Where:   This error was encountered inside " << location << "."
+    << std::endl
+    << "*** " << "Process: " << _mpi_rank << std::endl
+    << "*** " << std::endl
+    << "*** " << "DOLFIN version: " << dolfin_version()  << std::endl
+    << "*** " << "Git changeset:  " << git_commit_hash() << std::endl
+    << "*** "
+    << "-------------------------------------------------------------------------"
+    << std::endl;
+
+  throw PetscException(ierr, s.str());
+}
+//-----------------------------------------------------------------------------
 void Logger::deprecation(std::string feature,
                          std::string version_deprecated,
                          std::string message) const

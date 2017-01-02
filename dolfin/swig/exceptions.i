@@ -28,6 +28,7 @@
 // ---------------------------------------------------------------------------
 // Function that handles exceptions. Reduces code bloat.
 // ---------------------------------------------------------------------------
+%include "petsc4py/petsc4py.i"
 %{
 SWIGINTERN void handle_dolfin_exceptions()
 {
@@ -45,7 +46,13 @@ SWIGINTERN void handle_dolfin_exceptions()
 #endif
   }
 
-  // all runtime_error subclasses
+  // Errors in PETSc
+  // FIXME: Import petsc4py.PETSc.Error as PetscError
+  catch (PetscException &e) {
+    PyErr_SetObject(PetscError, e.petsc_error_code())
+  }
+
+  // all other runtime_error subclasses
   catch (std::runtime_error &e) {
     PyErr_SetString(PyExc_RuntimeError, const_cast<char*>(e.what()));
   }
