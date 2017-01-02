@@ -22,6 +22,7 @@
 #include <Eigen/Dense>
 
 #include <dolfin/common/ArrayView.h>
+#include <dolfin/common/Set.h>
 #include <dolfin/common/Timer.h>
 #include <dolfin/common/types.h>
 #include <dolfin/fem/LocalAssembler.h>
@@ -32,6 +33,7 @@
 #include <dolfin/log/log.h>
 #include <dolfin/log/Progress.h>
 #include <dolfin/mesh/Cell.h>
+#include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/Mesh.h>
 #include "assemble.h"
 #include "Form.h"
@@ -127,133 +129,230 @@ void LocalPatchSolver::solve_local(std::vector<GenericVector*> x,
   _check_input(x, b, dofmap_b);
   _solve_local(x, &b, &dofmap_b);
 }
+//----------------------------------------------------------------------------
+// FIXME: It is suboptimal to: first, merge cell dofs into patch dofs;
+//        second, sort them; third, reconstruct a map using this function
+std::vector<dolfin::la_index> _compute_cell_to_patch_map(
+  const ArrayView<const dolfin::la_index> cell_dofs,
+  const ArrayView<const dolfin::la_index> patch_dofs)
+{
+  std::vector<dolfin::la_index> map;
+  for (const dolfin::la_index dof: cell_dofs)
+  {
+    const auto it = std::find(patch_dofs.begin(), patch_dofs.end(), dof);
+    dolfin_assert(it != patch_dofs.end());
+    map.push_back(*it);
+  }
+  return map;
+}
 //-----------------------------------------------------------------------------
 void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
                                     const std::vector<const GenericVector*>* global_b,
                                     const std::vector<const GenericDofMap*>* dofmap_L) const
 {
-  // TODO: Will probably work correctly only on ghosted meshes. Check it?!
-/*
-  // Check that we have valid bilinear form
-  dolfin_assert(_a);
-  dolfin_assert(_a->rank() == 2);
-
   // Set timer
   Timer timer("Solve local problems");
 
   // Create UFC objects
-  UFC ufc_a(*_a);
-  std::unique_ptr<UFC> ufc_L;
+  std::vector<UFC> ufc_a;
+  for (auto a: _a)
+    ufc_a.emplace_back(*a);
+  std::vector<UFC> ufc_L;
+
+  std::vector<const GenericDofMap*> _dofmap_L_vec;
 
   // Check that we have valid linear form or a dofmap for it
   if (dofmap_L)
     dolfin_assert(global_b);
   else
   {
-    dolfin_assert(_formL);
-    dolfin_assert(_formL->rank() == 1);
-    dolfin_assert(_formL->function_space(0)->dofmap());
-    dofmap_L = _formL->function_space(0)->dofmap().get();
-    ufc_L.reset(new UFC(*_formL));
+    dofmap_L = &_dofmap_L_vec;
+    for (auto L: _formL)
+    {
+      dolfin_assert(L);
+      dolfin_assert(L->rank() == 1);
+      dolfin_assert(L->function_space(0)->dofmap());
+      //dofmap_L->push_back(L->function_space(0)->dofmap().get());
+      _dofmap_L_vec.push_back(L->function_space(0)->dofmap().get());
+      ufc_L.emplace_back(*L);
+    }
   }
 
   // Extract the mesh
-  dolfin_assert(_a->function_space(0)->mesh());
-  const Mesh& mesh = *_a->function_space(0)->mesh();
+  // FIXME: Check that mesh is common
+  dolfin_assert(_a[0]->function_space(0)->mesh());
+  const Mesh& mesh = *_a[0]->function_space(0)->mesh();
 
   // Get bilinear form dofmaps
+  // FIXME: Check that function spaces are common
   std::array<std::shared_ptr<const GenericDofMap>, 2> dofmaps_a
-    = {{_a->function_space(0)->dofmap(), _a->function_space(1)->dofmap()}};
+    = {{_a[0]->function_space(0)->dofmap(), _a[0]->function_space(1)->dofmap()}};
   dolfin_assert(dofmaps_a[0] and dofmaps_a[1]);
 
-  // Extract cell_domains etc from left-hand side form
-  const MeshFunction<std::size_t>* cell_domains
-    = _a->cell_domains().get();
-  const MeshFunction<std::size_t>* exterior_facet_domains
-    = _a->exterior_facet_domains().get();
-  const MeshFunction<std::size_t>* interior_facet_domains
-    = _a->interior_facet_domains().get();
-
   // Eigen data structures and factorisations for cell data structures
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
-                Eigen::RowMajor> A_e, b_e;
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+    A_e, b_e, A_cell, b_cell;
   Eigen::VectorXd x_e;
   Eigen::PartialPivLU<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
                                     Eigen::RowMajor>> lu;
   Eigen::LLT<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
                            Eigen::RowMajor>> cholesky;
-  bool use_cache = !(_cholesky_cache.empty() and _lu_cache.empty());
+  const bool use_cache = !(_cholesky_cache.empty() and _lu_cache.empty());
+
+  // Zero tensors
+  for (auto xi: x)
+  {
+    dolfin_assert(xi);
+    xi->zero();
+  }
 
   // Loop over cells and solve local problems
-  Progress p("Performing local (cell-wise) solve", mesh.num_cells());
-  ufc::cell ufc_cell;
-  std::vector<double> coordinate_dofs;
-  for (CellIterator cell(mesh); !cell.end(); ++cell)
+  Progress p("Performing local (patch-wise) solve", mesh.num_vertices());
+  Set<la_index> dofs_a0, dofs_a1, dofs_L;
+  ArrayView<const la_index> dofs_a0_ptr, dofs_a1_ptr, dofs_L_ptr;
+  // FIXME: Is the iterator correctly ghosted?
+  for (VertexIterator vertex(mesh); !vertex.end(); ++vertex)
   {
-    // Get local-to-global dof maps for cell
-    const ArrayView<const dolfin::la_index> dofs_a0
-      = dofmaps_a[0]->cell_dofs(cell->index());
-    const ArrayView<const dolfin::la_index> dofs_a1
-      = dofmaps_a[1]->cell_dofs(cell->index());
-    const ArrayView<const dolfin::la_index> dofs_L
-      = dofmap_L->cell_dofs(cell->index());
+    dofs_a0.clear();
+    dofs_a1.clear();
+    dofs_L.clear();
+
+    for (CellIterator cell(*vertex); !cell.end(); ++cell)
+    {
+      // Get local-to-global dof maps for cell
+      const ArrayView<const dolfin::la_index> celldofs_a0
+        = dofmaps_a[0]->cell_dofs(cell->index());
+      const ArrayView<const dolfin::la_index> celldofs_a1
+        = dofmaps_a[1]->cell_dofs(cell->index());
+      // FIXME: Check that function spaces are common
+      const ArrayView<const dolfin::la_index> celldofs_L
+        = (*dofmap_L)[0]->cell_dofs(cell->index());
+
+      dofs_a0.insert(celldofs_a0.begin(), celldofs_a0.end());
+      dofs_a1.insert(celldofs_a1.begin(), celldofs_a1.end());
+      dofs_L.insert(celldofs_L.begin(), celldofs_L.end());
+    }
+
+    dofs_a0.sort();
+    dofs_a1.sort();
+    dofs_L.sort();
+
+    dofs_a0_ptr.set(dofs_a0.set());
+    dofs_a1_ptr.set(dofs_a1.set());
+    dofs_L_ptr.set(dofs_L.set());
 
     // Check that the local matrix is square
     if (dofs_a0.size() != dofs_a1.size())
     {
       dolfin_error("LocalPatchSolver.cpp",
                    "assemble local LHS",
-                   "Local LHS dimensions is non square (%d x %d) on cell %d",
-                   dofs_a0.size(), dofs_a1.size(), cell->index());
+                   "Local LHS dimensions is non square (%d x %d) on vertex %d",
+                   dofs_a0.size(), dofs_a1.size(), vertex->index());
     }
 
-    // Check that the local RHS matches the LHS
+    // Check that the local RHS matches the matrix
     if (dofs_a0.size() != dofs_L.size())
     {
       dolfin_error("LocalPatchSolver.cpp",
                    "assemble local RHS",
                    "Local RHS dimension %d is does not match first dimension "
-                   "%d of LHS on cell %d",
-                   dofs_L.size(), dofs_a0.size(), cell->index());
+                   "%d of LHS on vertex %d",
+                   dofs_L.size(), dofs_a0.size(), vertex->index());
     }
 
-    // Update data to current cell
-    cell->get_coordinate_dofs(coordinate_dofs);
-
-    // Assemble the linear form
-    x_e.resize(dofs_L.size());
+    // Allocate and zero local tensors (if needed)
+    x_e.resize(dofs_a1.size());
     b_e.resize(dofs_L.size(), 1);
+    if (!global_b)
+      b_e.setZero();
+    if (!use_cache)
+    {
+      A_e.resize(dofs_a0.size(), dofs_a1.size());
+      A_e.setZero();
+    }
 
+    // Assemble local rhs and/or local matrix cell-by-cell (if needed)
+    if (!global_b || !use_cache)
+    {
+      ufc::cell ufc_cell;
+      std::vector<double> coordinate_dofs;
+
+      for (CellIterator cell(*vertex); !cell.end(); ++cell)
+      {
+        cell->get_coordinate_dofs(coordinate_dofs);
+
+        // Find patch index, i.e., local vertex index in cell
+        std::size_t patch;
+        {
+          VertexIterator v(*cell);
+          for (; !v.end(); ++v)
+          {
+            if (v->index() == vertex->index())
+            {
+              patch = v.pos();
+              break;
+            }
+          }
+          dolfin_assert(!v.end());
+        }
+
+        // Assemble local rhs vector if needed
+        if (!global_b)
+        {
+          // FIXME: Check that function spaces are common
+          const ArrayView<const dolfin::la_index> celldofs_L
+            = (*dofmap_L)[0]->cell_dofs(cell->index());
+          b_cell.resize(celldofs_L.size(), 1);
+          // FIXME: Retrieve domains only once
+          LocalAssembler::assemble(b_cell, ufc_L[patch],
+                                   coordinate_dofs, ufc_cell, *cell,
+                                   _formL[patch]->cell_domains().get(),
+                                   _formL[patch]->exterior_facet_domains().get(),
+                                   _formL[patch]->interior_facet_domains().get());
+          const auto _dofmap_L = _compute_cell_to_patch_map(celldofs_L, dofs_L_ptr);
+          for (int i = 0; i < b_cell.rows(); i++)
+            b_e(_dofmap_L[i], 1) += b_cell(i, 1);
+        }
+
+        // Assemble local matrix if needed
+        if (!use_cache)
+        {
+          const ArrayView<const dolfin::la_index> celldofs_a0
+            = dofmaps_a[0]->cell_dofs(cell->index());
+          const ArrayView<const dolfin::la_index> celldofs_a1
+            = dofmaps_a[1]->cell_dofs(cell->index());
+          A_cell.resize(celldofs_a0.size(), celldofs_a1.size());
+          // FIXME: Retrieve domains only once
+          LocalAssembler::assemble(A_cell, ufc_a[patch],
+                                   coordinate_dofs, ufc_cell, *cell,
+                                   _a[patch]->cell_domains().get(),
+                                   _a[patch]->exterior_facet_domains().get(),
+                                   _a[patch]->interior_facet_domains().get());
+          const auto _dofmap_a0 = _compute_cell_to_patch_map(celldofs_a0, dofs_a0_ptr);
+          const auto _dofmap_a1 = _compute_cell_to_patch_map(celldofs_a1, dofs_a1_ptr);
+          for (int i = 0; i < A_cell.rows(); i++)
+            for (int j = 0; j < A_cell.cols(); j++)
+              A_e(_dofmap_a0[i], _dofmap_a1[j]) += A_cell(i, j);
+        }
+      }
+    }
+
+    // Copy global RHS data into local RHS vector if needed
     if (global_b)
-    {
-      // Copy global RHS data into local RHS vector
-      global_b->get_local(b_e.data(), dofs_L.size(), dofs_L.data());
-    }
-    else
-    {
-      // Assemble local RHS vector
-      LocalAssembler::assemble(b_e, *ufc_L, coordinate_dofs, ufc_cell,
-                               *cell, _formL->cell_domains().get(),
-                               _formL->exterior_facet_domains().get(),
-                               _formL->interior_facet_domains().get());
-    }
+      // FIXME: This is screwed-up! Why is here index 0?
+      (*global_b)[0]->get_local(b_e.data(), dofs_L.size(), dofs_L_ptr.data());
 
+    // Solve local problem
     if (use_cache)
     {
       // Use cached factorisations
       if (_solver_type == SolverType::Cholesky)
-        x_e = _cholesky_cache[cell->index()].solve(b_e);
+        x_e = _cholesky_cache[vertex->index()].solve(b_e);
       else
-        x_e = _lu_cache[cell->index()].solve(b_e);
+        x_e = _lu_cache[vertex->index()].solve(b_e);
     }
     else
     {
-      // Assemble the bilinear form
-      A_e.resize(dofs_a0.size(), dofs_a1.size());
-      LocalAssembler::assemble(A_e, ufc_a, coordinate_dofs,
-                               ufc_cell, *cell, cell_domains,
-                               exterior_facet_domains, interior_facet_domains);
-
       // Factorise and solve
       if (_solver_type == SolverType::Cholesky)
       {
@@ -267,16 +366,17 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
       }
     }
 
-    // Insert solution in global vector
-    x.set_local(x_e.data(), dofs_a1.size(), dofs_a1.data());
+    // Add local solution to global vector
+    // FIXME: This is screwed-up! Why is here index 0?
+    x[0]->add_local(x_e.data(), dofs_a1.size(), dofs_a1_ptr.data());
 
     // Update progress
     p++;
   }
 
   // Finalise vector
-  x.apply("insert");
-*/
+  // FIXME: This is screwed-up! Why is here index 0?
+  x[0]->apply("add");
 }
 //----------------------------------------------------------------------------
 void LocalPatchSolver::factorize()
@@ -404,6 +504,7 @@ void LocalPatchSolver::_check_input(
   // TODO: check ranks
   // TODO: check that we are on simplex?
   // TODO: check compatibility of spaces?
+  // TODO: Will probably work correctly only on ghosted meshes. Check it?!
 }
 //-----------------------------------------------------------------------------
 void LocalPatchSolver::_check_input(std::vector<Function*> u) const

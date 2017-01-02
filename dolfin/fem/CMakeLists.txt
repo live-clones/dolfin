@@ -19,6 +19,7 @@ set(HEADERS
   LinearVariationalSolver.h
   LocalAssembler.h
   LocalSolver.h
+  LocalPatchSolver.h
   MultiMeshAssembler.h
   MultiMeshDirichletBC.h
   MultiMeshDofMap.h
@@ -52,6 +53,7 @@ set(SOURCES
   LinearVariationalSolver.cpp
   LocalAssembler.cpp
   LocalSolver.cpp
+  LocalPatchSolver.cpp
   MultiMeshAssembler.cpp
   MultiMeshDirichletBC.cpp
   MultiMeshDofMap.cpp

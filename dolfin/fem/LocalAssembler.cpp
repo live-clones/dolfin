@@ -61,6 +61,7 @@ LocalAssembler::assemble(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
     {
       ufc_cell.local_facet = facet.pos();
       const int Ncells = facet->num_entities(cell.dim());
+      // FIXME: WTF??
       if (Ncells == 2)
       {
         assemble_interior_facet(A, ufc, coordinate_dofs, ufc_cell, cell,
@@ -232,6 +233,7 @@ LocalAssembler::assemble_interior_facet(Eigen::Matrix<double, Eigen::Dynamic,
   const Cell cell1(mesh, cell_index_minus);
 
   // Is this facet on a domain boundary?
+  // FIXME: WTF??
   if (cell_domains && !cell_domains->empty() &&
       (*cell_domains)[cell_index_plus] < (*cell_domains)[cell_index_minus])
   {

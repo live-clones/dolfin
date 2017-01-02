@@ -130,13 +130,22 @@ void LocalSolver::_solve_local(GenericVector& x, const GenericVector* global_b,
     = {{_a->function_space(0)->dofmap(), _a->function_space(1)->dofmap()}};
   dolfin_assert(dofmaps_a[0] and dofmaps_a[1]);
 
-  // Extract cell_domains etc from left-hand side form
-  const MeshFunction<std::size_t>* cell_domains
+  // Extract domains of forms
+  const MeshFunction<std::size_t>* cell_domains_a
     = _a->cell_domains().get();
-  const MeshFunction<std::size_t>* exterior_facet_domains
+  const MeshFunction<std::size_t>* exterior_facet_domains_a
     = _a->exterior_facet_domains().get();
-  const MeshFunction<std::size_t>* interior_facet_domains
+  const MeshFunction<std::size_t>* interior_facet_domains_a
     = _a->interior_facet_domains().get();
+  const MeshFunction<std::size_t>* cell_domains_L = nullptr;
+  const MeshFunction<std::size_t>* exterior_facet_domains_L = nullptr;
+  const MeshFunction<std::size_t>* interior_facet_domains_L = nullptr;
+  if (_formL)
+  {
+    cell_domains_L = _formL->cell_domains().get();
+    exterior_facet_domains_L = _formL->exterior_facet_domains().get();
+    interior_facet_domains_L = _formL->interior_facet_domains().get();
+  }
 
   // Eigen data structures and factorisations for cell data structures
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
@@ -146,7 +155,7 @@ void LocalSolver::_solve_local(GenericVector& x, const GenericVector* global_b,
                                     Eigen::RowMajor>> lu;
   Eigen::LLT<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
                            Eigen::RowMajor>> cholesky;
-  bool use_cache = !(_cholesky_cache.empty() and _lu_cache.empty());
+  const bool use_cache = !(_cholesky_cache.empty() and _lu_cache.empty());
 
   // Loop over cells and solve local problems
   Progress p("Performing local (cell-wise) solve", mesh.num_cells());
@@ -181,8 +190,9 @@ void LocalSolver::_solve_local(GenericVector& x, const GenericVector* global_b,
                    dofs_L.size(), dofs_a0.size(), cell->index());
     }
 
-    // Update data to current cell
-    cell->get_coordinate_dofs(coordinate_dofs);
+    // Update data to current cell if needed
+    if (!global_b || !use_cache)
+      cell->get_coordinate_dofs(coordinate_dofs);
 
     // Assemble the linear form
     x_e.resize(dofs_L.size());
@@ -196,10 +206,11 @@ void LocalSolver::_solve_local(GenericVector& x, const GenericVector* global_b,
     else
     {
       // Assemble local RHS vector
-      LocalAssembler::assemble(b_e, *ufc_L, coordinate_dofs, ufc_cell,
-                               *cell, _formL->cell_domains().get(),
-                               _formL->exterior_facet_domains().get(),
-                               _formL->interior_facet_domains().get());
+      LocalAssembler::assemble(b_e, *ufc_L,
+                               coordinate_dofs, ufc_cell, *cell,
+                               cell_domains_L,
+                               exterior_facet_domains_L,
+                               interior_facet_domains_L);
     }
 
     if (use_cache)
@@ -214,9 +225,11 @@ void LocalSolver::_solve_local(GenericVector& x, const GenericVector* global_b,
     {
       // Assemble the bilinear form
       A_e.resize(dofs_a0.size(), dofs_a1.size());
-      LocalAssembler::assemble(A_e, ufc_a, coordinate_dofs,
-                               ufc_cell, *cell, cell_domains,
-                               exterior_facet_domains, interior_facet_domains);
+      LocalAssembler::assemble(A_e, ufc_a,
+                               coordinate_dofs, ufc_cell, *cell,
+                               cell_domains_a,
+                               exterior_facet_domains_a,
+                               interior_facet_domains_a);
 
       // Factorise and solve
       if (_solver_type == SolverType::Cholesky)
