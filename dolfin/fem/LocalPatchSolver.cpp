@@ -152,7 +152,7 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
   std::vector<const GenericDofMap*>* dofmap_L) const
 {
   // Set timer
-  Timer timer("Solve local problems");
+  Timer timer("Solve local patch problems");
 
   // Create UFC objects
   std::vector<UFC> ufc_a;
@@ -173,22 +173,42 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
       dolfin_assert(L);
       dolfin_assert(L->rank() == 1);
       dolfin_assert(L->function_space(0)->dofmap());
-      //dofmap_L->push_back(L->function_space(0)->dofmap().get());
       _dofmap_L_vec.push_back(L->function_space(0)->dofmap().get());
       ufc_L.emplace_back(*L);
     }
   }
 
   // Extract the mesh
-  // FIXME: Check that mesh is common
   dolfin_assert(_a[0]->function_space(0)->mesh());
   const Mesh& mesh = *_a[0]->function_space(0)->mesh();
 
   // Get bilinear form dofmaps
-  // FIXME: Check that function spaces are common
   std::array<std::shared_ptr<const GenericDofMap>, 2> dofmaps_a
     = {{_a[0]->function_space(0)->dofmap(), _a[0]->function_space(1)->dofmap()}};
-  dolfin_assert(dofmaps_a[0] and dofmaps_a[1]);
+  dolfin_assert(dofmaps_a[0] && dofmaps_a[1]);
+
+  // Extract domains of forms
+  std::vector<const MeshFunction<std::size_t>*> cell_domains_a;
+  std::vector<const MeshFunction<std::size_t>*> exterior_facet_domains_a;
+  std::vector<const MeshFunction<std::size_t>*> interior_facet_domains_a;
+  std::vector<const MeshFunction<std::size_t>*> cell_domains_L;
+  std::vector<const MeshFunction<std::size_t>*> exterior_facet_domains_L;
+  std::vector<const MeshFunction<std::size_t>*> interior_facet_domains_L;
+  for (const auto a: _a)
+  {
+    cell_domains_a.push_back(a->cell_domains().get());
+    exterior_facet_domains_a.push_back(a->exterior_facet_domains().get());
+    interior_facet_domains_a.push_back(a->interior_facet_domains().get());
+  }
+  if (!global_b)
+  {
+    for (const auto L: _formL)
+    {
+      cell_domains_L.push_back(L->cell_domains().get());
+      exterior_facet_domains_L.push_back(L->exterior_facet_domains().get());
+      interior_facet_domains_L.push_back(L->interior_facet_domains().get());
+    }
+  }
 
   // Eigen data structures and factorisations for cell data structures
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
@@ -198,7 +218,7 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
                                     Eigen::RowMajor>> lu;
   Eigen::LLT<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
                            Eigen::RowMajor>> cholesky;
-  const bool use_cache = !(_cholesky_cache.empty() and _lu_cache.empty());
+  const bool use_cache = !(_cholesky_cache.empty() && _lu_cache.empty());
 
   // Zero tensors
   for (auto xi: x)
@@ -225,7 +245,7 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
         = dofmaps_a[0]->cell_dofs(cell->index());
       const ArrayView<const dolfin::la_index> celldofs_a1
         = dofmaps_a[1]->cell_dofs(cell->index());
-      // FIXME: Check that function spaces are common
+      // FIXME: Check that function spaces are common?!
       const ArrayView<const dolfin::la_index> celldofs_L
         = (*dofmap_L)[0]->cell_dofs(cell->index());
 
@@ -304,12 +324,11 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
           const ArrayView<const dolfin::la_index> celldofs_L
             = (*dofmap_L)[0]->cell_dofs(cell->index());
           b_cell.resize(celldofs_L.size(), 1);
-          // FIXME: Retrieve domains only once
           LocalAssembler::assemble(b_cell, ufc_L[patch],
                                    coordinate_dofs, ufc_cell, *cell,
-                                   _formL[patch]->cell_domains().get(),
-                                   _formL[patch]->exterior_facet_domains().get(),
-                                   _formL[patch]->interior_facet_domains().get());
+                                   cell_domains_L[patch],
+                                   exterior_facet_domains_L[patch],
+                                   interior_facet_domains_L[patch]);
           const auto _dofmap_L = _compute_cell_to_patch_map(celldofs_L, dofs_L_ptr);
           for (int i = 0; i < b_cell.rows(); i++)
             b_e(_dofmap_L[i], 0) += b_cell(i, 0);
@@ -323,12 +342,11 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
           const ArrayView<const dolfin::la_index> celldofs_a1
             = dofmaps_a[1]->cell_dofs(cell->index());
           A_cell.resize(celldofs_a0.size(), celldofs_a1.size());
-          // FIXME: Retrieve domains only once
           LocalAssembler::assemble(A_cell, ufc_a[patch],
                                    coordinate_dofs, ufc_cell, *cell,
-                                   _a[patch]->cell_domains().get(),
-                                   _a[patch]->exterior_facet_domains().get(),
-                                   _a[patch]->interior_facet_domains().get());
+                                   cell_domains_a[patch],
+                                   exterior_facet_domains_a[patch],
+                                   interior_facet_domains_a[patch]);
           const auto _dofmap_a0 = _compute_cell_to_patch_map(celldofs_a0, dofs_a0_ptr);
           const auto _dofmap_a1 = _compute_cell_to_patch_map(celldofs_a1, dofs_a1_ptr);
           for (int i = 0; i < A_cell.rows(); i++)
@@ -470,14 +488,53 @@ void LocalPatchSolver::_check_input(
   const std::vector<std::shared_ptr<const Form>>* a,
   const std::vector<std::shared_ptr<const Form>>* L) const
 {
+  const FunctionSpace* _common_space_0 = nullptr;
+  const FunctionSpace* _common_space_1 = nullptr;
+
   if (a)
   {
     for (const auto ai: *a)
+    {
       dolfin_assert(ai);
 
-    // _num_patches has been set before
-    dolfin_assert(a->size() == _num_patches);
+      // Check rank
+      if (ai->rank() != 2)
+      {
+        dolfin_error("LocalPatchSolver.cpp",
+                     "instantiate LocalPatchSolver",
+                     "Expected bilinear forms");
+      }
 
+      // Check all the forms have same test space
+      dolfin_assert(ai->function_space(0));
+      if (_common_space_0 && _common_space_0->id() != ai->function_space(0)->id())
+      {
+        dolfin_error("LocalPatchSolver.cpp",
+                     "instantiate LocalPatchSolver",
+                     "Expected matching function spaces");
+      }
+      else
+      {
+        _common_space_0 = ai->function_space(0).get();
+      }
+
+      // Check all the forms have same trial space
+      dolfin_assert(ai->function_space(1));
+      if (_common_space_1 && _common_space_1->id() != ai->function_space(1)->id())
+      {
+        dolfin_error("LocalPatchSolver.cpp",
+                     "instantiate LocalPatchSolver",
+                     "Expected matching function spaces");
+      }
+      else
+      {
+        _common_space_1 = ai->function_space(1).get();
+      }
+    }
+
+    // Check correct number of forms to match patch
+    // NOTE: _num_patches has been set before
+    dolfin_assert(a->size() == _num_patches);
     if (a->size() == 0 || a->size() != (*a)[0]->mesh()->type().num_vertices())
     {
       dolfin_error("LocalPatchSolver.cpp",
@@ -490,9 +547,33 @@ void LocalPatchSolver::_check_input(
   if (L)
   {
     for (const auto Li: *L)
+    {
       dolfin_assert(Li);
 
-    // _num_patches has been set and checked before
+      // Check rank
+      if (Li->rank() != 1)
+      {
+        dolfin_error("LocalPatchSolver.cpp",
+                     "instantiate LocalPatchSolver",
+                     "Expected linear forms");
+      }
+
+      // Check all the forms have same space
+      dolfin_assert(Li->function_space(0));
+      if (_common_space_0 && _common_space_0->id() != Li->function_space(0)->id())
+      {
+        dolfin_error("LocalPatchSolver.cpp",
+                     "instantiate LocalPatchSolver",
+                     "Expected matching function spaces");
+      }
+      else
+      {
+        _common_space_0 = Li->function_space(0).get();
+      }
+    }
+
+    // Check correct number of forms to match patch
+    // NOTE: _num_patches been set and checked before
     if (L->size() != _num_patches)
     {
       dolfin_error("LocalPatchSolver.cpp",
@@ -502,18 +583,48 @@ void LocalPatchSolver::_check_input(
     }
   }
 
-  // TODO: check ranks
-  // TODO: check that we are on simplex?
-  // TODO: check compatibility of spaces?
-  // TODO: Will probably work correctly only on ghosted meshes. Check it?!
+  // Check that mesh is common
+  dolfin_assert(!_common_space_0 || _common_space_0->mesh());
+  dolfin_assert(!_common_space_1 || _common_space_1->mesh());
+  if (_common_space_0 && _common_space_1
+      && _common_space_0->mesh()->id() != _common_space_1->mesh()->id())
+  {
+    dolfin_error("LocalPatchSolver.cpp",
+                 "instantiate LocalPatchSolver",
+                 "Expected common mesh");
+  }
+
+  // Check that we are on simplex
+  // TODO: Make this simpler by implementing CellType::is_simplex
+  const CellType::Type& cell_type = _common_space_0->mesh()->type().cell_type();
+  if (!(cell_type == CellType::interval
+        || cell_type == CellType::triangle
+        || cell_type == CellType::tetrahedron))
+  {
+    dolfin_error("LocalPatchSolver.cpp",
+                 "instantiate LocalPatchSolver",
+                 "Expected simplicial mesh");
+  }
+
+  // FIXME: Will probably work correctly only on ghosted meshes. Check it?!
 }
 //-----------------------------------------------------------------------------
 void LocalPatchSolver::_check_input(std::vector<Function*> u) const
 {
+  // Check all the functcion have matching space to trial space
+  dolfin_assert(_a.size() > 0 && _a[0] && _a[0]->function_space(1));
+  const FunctionSpace& _common_space = *_a[0]->function_space(1);
   for (const auto ui: u)
-    dolfin_assert(ui);
+  {
+    dolfin_assert(ui && ui->function_space());
+    if (ui->function_space()->id() != _common_space.id())
+      dolfin_error("LocalPatchSolver.cpp",
+                   "instantiate LocalPatchSolver",
+                   "Expected matching function space in function and form");
+  }
 
-  // _num_patches has been set before
+  // Check correct number of functions to match patch
+  // NOTE: _num_patches has been set before
   if (u.size() != _num_patches)
   {
     dolfin_error("LocalPatchSolver.cpp",
@@ -521,7 +632,6 @@ void LocalPatchSolver::_check_input(std::vector<Function*> u) const
                  "Number of supplied functions must be equal to number "
                  "number of patches/vertices per cell");
   }
-  // TODO: check compatibility of spaces?
 }
 //-----------------------------------------------------------------------------
 void LocalPatchSolver::_check_input(std::vector<GenericVector*> x,
@@ -558,6 +668,8 @@ void LocalPatchSolver::_check_input(std::vector<GenericVector*> x,
                  "Number of supplied rhs dofmaps must be equal to number "
                  "number of patches/vertices per cell");
   }
-  // TODO: check compatibility of spaces?
+
+  // TODO: check compatibility of spaces? We could factor out code
+  //       of DirichletBC::check_arguments into DofMap::check_tensor...
 }
 //-----------------------------------------------------------------------------
