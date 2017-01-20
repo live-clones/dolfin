@@ -21,9 +21,11 @@
 
 import pytest
 from dolfin import *
+from dolfin_utils.test import pushpop_parameters
 
 
-def test_interface():
+def test_interface(pushpop_parameters):
+    parameters["ghost_mode"] = "shared_vertex"  # FIXME: Is this what is needed?
     mesh = UnitSquareMesh(3, 3)
     V = FunctionSpace(mesh, "P", 1)
     u, v = TrialFunction(V), TestFunction(V)
