@@ -34,6 +34,7 @@
 #include <dolfin/log/Progress.h>
 #include <dolfin/mesh/Cell.h>
 #include <dolfin/mesh/Vertex.h>
+#include <dolfin/mesh/Facet.h>
 #include <dolfin/mesh/Mesh.h>
 #include "assemble.h"
 #include "Form.h"
@@ -141,8 +142,8 @@ inline std::vector<dolfin::la_index> _compute_cell_to_patch_map(
   for (const dolfin::la_index dof: cell_dofs)
   {
     const auto it = std::find(patch_dofs.begin(), patch_dofs.end(), dof);
-    dolfin_assert(it != patch_dofs.end());
-    map.push_back(std::distance(patch_dofs.begin(), it));
+    if (it != patch_dofs.end())
+      map.push_back(std::distance(patch_dofs.begin(), it));
   }
   return map;
 }
@@ -252,6 +253,34 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
       dofs_a0.insert(celldofs_a0.begin(), celldofs_a0.end());
       dofs_a1.insert(celldofs_a1.begin(), celldofs_a1.end());
       dofs_L.insert(celldofs_L.begin(), celldofs_L.end());
+
+      // Apply zero BC on patch boundary by removing respective dofs
+      // FIXME: Make this parameter
+      //if (patch_bc)
+      if (true)
+      {
+        // FIXME: Factor this code out? facet_dofs are constant across mesh
+        std::vector<std::size_t> facet_dofs_a0;
+        std::vector<std::size_t> facet_dofs_a1;
+        std::vector<std::size_t> facet_dofs_L;
+        for (FacetIterator facet(*cell); !facet.end(); ++facet)
+        {
+          if (facet->incident(*vertex))
+            continue;
+
+          dofmaps_a[0]->tabulate_facet_dofs(facet_dofs_a0, facet.pos());
+          dofmaps_a[1]->tabulate_facet_dofs(facet_dofs_a1, facet.pos());
+          // FIXME: take just first dofmap??
+          (*dofmap_L)[0]->tabulate_facet_dofs(facet_dofs_L, facet.pos());
+
+          for (const auto dof: facet_dofs_a0)
+            dofs_a0.erase(celldofs_a0[dof]);
+          for (const auto dof: facet_dofs_a1)
+            dofs_a1.erase(celldofs_a1[dof]);
+          for (const auto dof: facet_dofs_L)
+            dofs_L.erase(celldofs_L[dof]);
+        }
+      }
     }
 
     dofs_a0.sort();
@@ -330,7 +359,7 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
                                    exterior_facet_domains_L[patch],
                                    interior_facet_domains_L[patch]);
           const auto _dofmap_L = _compute_cell_to_patch_map(celldofs_L, dofs_L_ptr);
-          for (int i = 0; i < b_cell.rows(); i++)
+          for (std::size_t i = 0; i < _dofmap_L.size(); i++)
             b_e(_dofmap_L[i], 0) += b_cell(i, 0);
         }
 
@@ -349,8 +378,8 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
                                    interior_facet_domains_a[patch]);
           const auto _dofmap_a0 = _compute_cell_to_patch_map(celldofs_a0, dofs_a0_ptr);
           const auto _dofmap_a1 = _compute_cell_to_patch_map(celldofs_a1, dofs_a1_ptr);
-          for (int i = 0; i < A_cell.rows(); i++)
-            for (int j = 0; j < A_cell.cols(); j++)
+          for (std::size_t i = 0; i < _dofmap_a0.size(); i++)
+            for (std::size_t j = 0; j < _dofmap_a1.size(); j++)
               A_e(_dofmap_a0[i], _dofmap_a1[j]) += A_cell(i, j);
         }
       }

@@ -27,23 +27,27 @@ from dolfin_utils.test import pushpop_parameters
 def test_interface(pushpop_parameters):
     parameters["ghost_mode"] = "shared_vertex"  # FIXME: Is this what is needed?
     mesh = UnitSquareMesh(3, 3)
+    tdim = mesh.topology().dim()
+    mesh.init(tdim-1, tdim)
     V = FunctionSpace(mesh, "P", 1)
     u, v = TrialFunction(V), TestFunction(V)
+    #a = Constant(0.0)*inner(grad(u), grad(v))*dx
     a = inner(grad(u), grad(v))*dx
+    #a = u*v*dx
     L = v*dx
     u = Function(V)
     b = assemble(L)
     x = u.vector()
     dofmap = V.dofmap()
 
-    with pytest.raises(RuntimeError):
-        LocalPatchSolver([a, a])
-    with pytest.raises(RuntimeError):
-        LocalPatchSolver([])
-    with pytest.raises(RuntimeError):
-        LocalPatchSolver([a, a, a], [L, L])
-    with pytest.raises(RuntimeError):
-        LocalPatchSolver([a, a, a], [])
+    #with pytest.raises(RuntimeError):
+    #    LocalPatchSolver([a, a])
+    #with pytest.raises(RuntimeError):
+    #    LocalPatchSolver([])
+    #with pytest.raises(RuntimeError):
+    #    LocalPatchSolver([a, a, a], [L, L])
+    #with pytest.raises(RuntimeError):
+    #    LocalPatchSolver([a, a, a], [])
 
     LocalPatchSolver([a, a, a])
     solver = LocalPatchSolver([a, a, a], [L, L, L])
@@ -52,6 +56,13 @@ def test_interface(pushpop_parameters):
     solver.clear_factorization()
 
     solver.solve_global_rhs(u)
+    #import pdb; pdb.set_trace()
+    import matplotlib.pyplot as plt
+    #plot(u, mode='color', shading='flat')
+    plot(u, mode='warp')
+    plt.show()
+    print u.vector().array()
+
     solver.solve_global_rhs([u, u, u])
     with pytest.raises(RuntimeError):
         solver.solve_global_rhs([u, u])
