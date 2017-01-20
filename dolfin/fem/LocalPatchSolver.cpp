@@ -118,7 +118,7 @@ void LocalPatchSolver::solve_local(GenericVector& x, const GenericVector& b,
 {
   const std::vector<GenericVector*> _x(_num_patches, &x);
   const std::vector<const GenericVector*> _b(_num_patches, &b);
-  const std::vector<const GenericDofMap*> _dofmap_b(_num_patches, &dofmap_b);
+  std::vector<const GenericDofMap*> _dofmap_b(_num_patches, &dofmap_b);
   _solve_local(_x, &_b, &_dofmap_b);
 }
 //-----------------------------------------------------------------------------
@@ -132,23 +132,24 @@ void LocalPatchSolver::solve_local(std::vector<GenericVector*> x,
 //----------------------------------------------------------------------------
 // FIXME: It is suboptimal to: first, merge cell dofs into patch dofs;
 //        second, sort them; third, reconstruct a map using this function
-std::vector<dolfin::la_index> _compute_cell_to_patch_map(
+inline std::vector<dolfin::la_index> _compute_cell_to_patch_map(
   const ArrayView<const dolfin::la_index> cell_dofs,
   const ArrayView<const dolfin::la_index> patch_dofs)
 {
   std::vector<dolfin::la_index> map;
+  map.reserve(cell_dofs.size());
   for (const dolfin::la_index dof: cell_dofs)
   {
     const auto it = std::find(patch_dofs.begin(), patch_dofs.end(), dof);
     dolfin_assert(it != patch_dofs.end());
-    map.push_back(*it);
+    map.push_back(std::distance(patch_dofs.begin(), it));
   }
   return map;
 }
 //-----------------------------------------------------------------------------
 void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
-                                    const std::vector<const GenericVector*>* global_b,
-                                    const std::vector<const GenericDofMap*>* dofmap_L) const
+  const std::vector<const GenericVector*>* const global_b,
+  std::vector<const GenericDofMap*>* dofmap_L) const
 {
   // Set timer
   Timer timer("Solve local problems");
@@ -311,7 +312,7 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
                                    _formL[patch]->interior_facet_domains().get());
           const auto _dofmap_L = _compute_cell_to_patch_map(celldofs_L, dofs_L_ptr);
           for (int i = 0; i < b_cell.rows(); i++)
-            b_e(_dofmap_L[i], 1) += b_cell(i, 1);
+            b_e(_dofmap_L[i], 0) += b_cell(i, 0);
         }
 
         // Assemble local matrix if needed

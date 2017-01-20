@@ -137,7 +137,7 @@ namespace dolfin
     // Helper function that does the actual calculations
     void _solve_local(std::vector<GenericVector*> x,
                       const std::vector<const GenericVector*>* global_b,
-                      const std::vector<const GenericDofMap*>* dofmap_L) const;
+                      std::vector<const GenericDofMap*>* dofmap_L) const;
 
     // Check number of forms, their rank, etc.
     void _check_input(const std::vector<std::shared_ptr<const Form>>* a,
