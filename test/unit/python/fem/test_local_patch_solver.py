@@ -84,3 +84,36 @@ def test_interface(pushpop_parameters):
         solver.solve_local([x, x, x], [b, b, b], [dofmap, dofmap])
     with pytest.raises(RuntimeError):
         solver.solve_local([x, x, x], [b, b, b], [])
+
+
+def test_flux_reconstruction(pushpop_parameters):
+    parameters["ghost_mode"] = "shared_vertex"  # FIXME: Is this what is needed?
+    mesh = UnitSquareMesh(32, 32)
+    RT = FiniteElement('Raviart-Thomas', mesh.ufl_cell(), 1)
+    DG = FiniteElement('Discontinuous Lagrange', mesh.ufl_cell(), 0)
+    W = FunctionSpace(mesh, RT*DG)
+    u, r = TrialFunctions(W)
+    v, q = TestFunctions(W)
+    a = ( inner(u, v) - inner(r, div(v)) - inner(q, div(u)) )*dx
+    D = Expression(("x[1]", "-x[0]"), degree=1)
+    L = ( inner(D, v) )*dx
+    w = Function(W)
+
+    solver = LocalPatchSolver([a, a, a], [L, L, L],
+         solver_type=LocalPatchSolver.SolverType_LU,
+         bc_type=LocalPatchSolver.BCType_topological_zero,
+         # FIXME: Check that this works like expected
+         constraint_type=LocalPatchSolver.ConstraintType_remove_last_dof)
+    solver.solve_global_rhs(w)
+
+    # FIXME: Does not work well in parallel yet!
+    #        Hint: probably fix iteration ghost type in LocalPatchSolver
+
+    u, r = w.split()
+    #import pdb; pdb.set_trace()
+    #print(w.vector().array())
+    #import matplotlib.pyplot as plt
+    #plot(u)
+    #plt.show()
+    #plot(r)
+    #plt.show()

@@ -48,18 +48,20 @@ using namespace dolfin;
 LocalPatchSolver::LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
                                    std::vector<std::shared_ptr<const Form>> L,
                                    SolverType solver_type,
-                                   BCType bc_type)
+                                   BCType bc_type,
+                                   ConstraintType constraint_type)
   : _a(a), _formL(L), _solver_type(solver_type), _bc_type(bc_type),
-    _num_patches(a.size())
+    _constraint_type(constraint_type), _num_patches(a.size())
 {
   _check_input(&a, &L);
 }
 //-----------------------------------------------------------------------------
 LocalPatchSolver::LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
                                    SolverType solver_type,
-                                   BCType bc_type)
+                                   BCType bc_type,
+                                   ConstraintType constraint_type)
   : _a(a), _solver_type(solver_type), _bc_type(bc_type),
-    _num_patches(a.size())
+    _constraint_type(constraint_type), _num_patches(a.size())
 {
   _check_input(&a, nullptr);
 }
@@ -285,6 +287,22 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
             dofs_L.erase(celldofs_L[dof]);
         }
       }
+    }
+
+    // Remove one dof if requiered
+    // FIXME: Is it deterministic? Should we do it before or after sorting?!?
+    // FIXME FIXME FIXME: Is this correct in parallel?!?!?
+    if (_constraint_type == ConstraintType::remove_first_dof)
+    {
+      dofs_a0.set().erase(dofs_a0.begin());
+      dofs_a1.set().erase(dofs_a1.begin());
+      dofs_L.set().erase(dofs_L.begin());
+    }
+    else if (_constraint_type == ConstraintType::remove_last_dof)
+    {
+      dofs_a0.set().pop_back();
+      dofs_a1.set().pop_back();
+      dofs_L.set().pop_back();
     }
 
     // Sort the patch dofs and wrap as ArrayView
