@@ -233,17 +233,19 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
     xi->zero();
   }
 
-  // Loop over cells and solve local problems
+  // Loop over vertices and solve local patch problems
   Progress p("Performing local (patch-wise) solve", mesh.num_vertices());
   Set<la_index> dofs_a0, dofs_a1, dofs_L;
   ArrayView<const la_index> dofs_a0_ptr, dofs_a1_ptr, dofs_L_ptr;
   // FIXME: Is the iterator correctly ghosted?
   for (VertexIterator vertex(mesh); !vertex.end(); ++vertex)
   {
+    // Clear the patch dofs
     dofs_a0.clear();
     dofs_a1.clear();
     dofs_L.clear();
 
+    // Get local dofs cell-by-cell on the patch
     for (CellIterator cell(*vertex); !cell.end(); ++cell)
     {
       // Get local-to-global dof maps for cell
@@ -254,22 +256,23 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
       const ArrayView<const dolfin::la_index> celldofs_L
         = (*dofmap_L)[0]->cell_dofs(cell->index());
 
+      // Add cell dofs to patch dofs list
       dofs_a0.insert(celldofs_a0.begin(), celldofs_a0.end());
       dofs_a1.insert(celldofs_a1.begin(), celldofs_a1.end());
       dofs_L.insert(celldofs_L.begin(), celldofs_L.end());
 
       // Apply zero BC on patch boundary by removing respective dofs
-      if (_bc_type == BCType::TopologicalZero)
+      if (_bc_type == BCType::topological_zero)
       {
-        // FIXME: Factor this code out? facet_dofs are constant across mesh
-        std::vector<std::size_t> facet_dofs_a0;
-        std::vector<std::size_t> facet_dofs_a1;
-        std::vector<std::size_t> facet_dofs_L;
         for (FacetIterator facet(*cell); !facet.end(); ++facet)
         {
           if (facet->incident(*vertex))
             continue;
 
+          // FIXME: Factor this code out? facet_dofs are constant across mesh
+          std::vector<std::size_t> facet_dofs_a0;
+          std::vector<std::size_t> facet_dofs_a1;
+          std::vector<std::size_t> facet_dofs_L;
           dofmaps_a[0]->tabulate_facet_dofs(facet_dofs_a0, facet.pos());
           dofmaps_a[1]->tabulate_facet_dofs(facet_dofs_a1, facet.pos());
           (*dofmap_L)[0]->tabulate_facet_dofs(facet_dofs_L, facet.pos());
@@ -284,10 +287,10 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
       }
     }
 
+    // Sort the patch dofs and wrap as ArrayView
     dofs_a0.sort();
     dofs_a1.sort();
     dofs_L.sort();
-
     dofs_a0_ptr.set(dofs_a0.set());
     dofs_a1_ptr.set(dofs_a1.set());
     dofs_L_ptr.set(dofs_L.set());

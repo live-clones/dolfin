@@ -46,7 +46,12 @@ def test_interface(pushpop_parameters):
         LocalPatchSolver([a, a, a], [])
 
     LocalPatchSolver([a, a, a])
-    solver = LocalPatchSolver([a, a, a], [L, L, L])
+    LocalPatchSolver([a, a, a],
+                     solver_type=LocalPatchSolver.SolverType_Cholesky,
+                     bc_type=LocalPatchSolver.BCType_topological_zero)
+    solver = LocalPatchSolver([a, a, a], [L, L, L],
+                              solver_type=LocalPatchSolver.SolverType_Cholesky,
+                              bc_type=LocalPatchSolver.BCType_topological_zero)
 
     solver.factorize()
     solver.clear_factorization()

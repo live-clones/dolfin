@@ -70,18 +70,18 @@ namespace dolfin
 
     enum class SolverType {LU, Cholesky};
 
-    enum class BCType {None, TopologicalZero};
+    enum class BCType {none, topological_zero};
 
     /// Constructor (shared pointer version)
     LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
                      std::vector<std::shared_ptr<const Form>> L,
                      SolverType solver_type=SolverType::LU,
-                     BCType bc_type=BCType::None);
+                     BCType bc_type=BCType::none);
 
     /// Constructor (shared pointer version)
     LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
                      SolverType solver_type=SolverType::LU,
-                     BCType bc_type=BCType::None);
+                     BCType bc_type=BCType::none);
 
     /// Solve local (cell-wise) problems A_e x_e = b_e, where A_e is
     /// the cell matrix LHS and b_e is the global RHS vector b
