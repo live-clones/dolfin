@@ -72,16 +72,20 @@ namespace dolfin
 
     enum class BCType {none, topological_zero};
 
+    enum class ConstraintType {none, remove_first_dof, remove_last_dof};
+
     /// Constructor (shared pointer version)
     LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
                      std::vector<std::shared_ptr<const Form>> L,
                      SolverType solver_type=SolverType::LU,
-                     BCType bc_type=BCType::none);
+                     BCType bc_type=BCType::none,
+                     ConstraintType constraint_type=ConstraintType::none);
 
     /// Constructor (shared pointer version)
     LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
                      SolverType solver_type=SolverType::LU,
-                     BCType bc_type=BCType::none);
+                     BCType bc_type=BCType::none,
+                     ConstraintType constraint_type=ConstraintType::none);
 
     /// Solve local (cell-wise) problems A_e x_e = b_e, where A_e is
     /// the cell matrix LHS and b_e is the global RHS vector b
@@ -131,6 +135,9 @@ namespace dolfin
 
     // BC type to use
     const BCType _bc_type;
+
+    // Constraint type to use (remove one dof)
+    const ConstraintType _constraint_type;
 
     // Number patches/vertices per cell (d+1 for d-simplex)
     std::size_t _num_patches;
