@@ -27,6 +27,10 @@
 namespace dolfin
 {
 
+  // FIXME: Check which codepaths we need or might be useful
+  //        and clean the interface
+  // FIXME: Update docstrings
+
   /// This class solves problems cell-wise. It computes the local
   /// left-hand side A_local which must be square locally but not
   /// globally. The right-hand side b_local is either computed locally
@@ -66,14 +70,18 @@ namespace dolfin
 
     enum class SolverType {LU, Cholesky};
 
-    /// Constructor (shared pointer version)
-    LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
-                     std::vector<std::shared_ptr<const Form>> L,
-                     SolverType solver_type=SolverType::LU);
+    enum class BCType {None, TopologicalZero};
 
     /// Constructor (shared pointer version)
     LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
-                     SolverType solver_type=SolverType::LU);
+                     std::vector<std::shared_ptr<const Form>> L,
+                     SolverType solver_type=SolverType::LU,
+                     BCType bc_type=BCType::None);
+
+    /// Constructor (shared pointer version)
+    LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
+                     SolverType solver_type=SolverType::LU,
+                     BCType bc_type=BCType::None);
 
     /// Solve local (cell-wise) problems A_e x_e = b_e, where A_e is
     /// the cell matrix LHS and b_e is the global RHS vector b
@@ -120,6 +128,9 @@ namespace dolfin
 
     // Solver type to use
     const SolverType _solver_type;
+
+    // BC type to use
+    const BCType _bc_type;
 
     // Number patches/vertices per cell (d+1 for d-simplex)
     std::size_t _num_patches;
