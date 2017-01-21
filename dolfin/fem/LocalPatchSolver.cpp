@@ -47,15 +47,19 @@ using namespace dolfin;
 //-----------------------------------------------------------------------------
 LocalPatchSolver::LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
                                    std::vector<std::shared_ptr<const Form>> L,
-                                   SolverType solver_type)
-  : _a(a), _formL(L), _solver_type(solver_type), _num_patches(a.size())
+                                   SolverType solver_type,
+                                   BCType bc_type)
+  : _a(a), _formL(L), _solver_type(solver_type), _bc_type(bc_type),
+    _num_patches(a.size())
 {
   _check_input(&a, &L);
 }
 //-----------------------------------------------------------------------------
 LocalPatchSolver::LocalPatchSolver(std::vector<std::shared_ptr<const Form>> a,
-                                   SolverType solver_type)
-  : _a(a), _solver_type(solver_type), _num_patches(a.size())
+                                   SolverType solver_type,
+                                   BCType bc_type)
+  : _a(a), _solver_type(solver_type), _bc_type(bc_type),
+    _num_patches(a.size())
 {
   _check_input(&a, nullptr);
 }
@@ -131,6 +135,7 @@ void LocalPatchSolver::solve_local(std::vector<GenericVector*> x,
   _solve_local(x, &b, &dofmap_b);
 }
 //----------------------------------------------------------------------------
+// FIXME: Should the function be in a namespace? It's not in any header.
 // FIXME: It is suboptimal to: first, merge cell dofs into patch dofs;
 //        second, sort them; third, reconstruct a map using this function
 inline std::vector<dolfin::la_index> _compute_cell_to_patch_map(
@@ -246,7 +251,6 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
         = dofmaps_a[0]->cell_dofs(cell->index());
       const ArrayView<const dolfin::la_index> celldofs_a1
         = dofmaps_a[1]->cell_dofs(cell->index());
-      // FIXME: Check that function spaces are common?!
       const ArrayView<const dolfin::la_index> celldofs_L
         = (*dofmap_L)[0]->cell_dofs(cell->index());
 
@@ -255,9 +259,7 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
       dofs_L.insert(celldofs_L.begin(), celldofs_L.end());
 
       // Apply zero BC on patch boundary by removing respective dofs
-      // FIXME: Make this parameter
-      //if (patch_bc)
-      if (true)
+      if (_bc_type == BCType::TopologicalZero)
       {
         // FIXME: Factor this code out? facet_dofs are constant across mesh
         std::vector<std::size_t> facet_dofs_a0;
@@ -270,7 +272,6 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
 
           dofmaps_a[0]->tabulate_facet_dofs(facet_dofs_a0, facet.pos());
           dofmaps_a[1]->tabulate_facet_dofs(facet_dofs_a1, facet.pos());
-          // FIXME: take just first dofmap??
           (*dofmap_L)[0]->tabulate_facet_dofs(facet_dofs_L, facet.pos());
 
           for (const auto dof: facet_dofs_a0)
@@ -349,7 +350,6 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
         // Assemble local rhs vector if needed
         if (!global_b)
         {
-          // FIXME: Check that function spaces are common
           const ArrayView<const dolfin::la_index> celldofs_L
             = (*dofmap_L)[0]->cell_dofs(cell->index());
           b_cell.resize(celldofs_L.size(), 1);
@@ -429,82 +429,7 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
 //----------------------------------------------------------------------------
 void LocalPatchSolver::factorize()
 {
-/*
-  // Check that we have valid bilinear and linear forms
-  dolfin_assert(_a);
-  dolfin_assert(_a->rank() == 2);
-
-  // Set timer
-  Timer timer("Factorise local problems");
-
-  // Extract the mesh
-  dolfin_assert(_a->function_space(0)->mesh());
-  const Mesh& mesh = *_a->function_space(0)->mesh();
-
-  // Resize cache
-  if (_solver_type == SolverType::Cholesky)
-    _cholesky_cache.resize(mesh.num_cells());
-  else
-    _lu_cache.resize(mesh.num_cells());
-
-  // Create UFC objects
-  UFC ufc_a(*_a);
-
-  // Get dofmaps
-  std::array<std::shared_ptr<const GenericDofMap>, 2> dofmaps_a
-    = {{_a->function_space(0)->dofmap(), _a->function_space(1)->dofmap()}};
-  dolfin_assert(dofmaps_a[0] and dofmaps_a[1]);
-
-  // Extract cell_domains etc from left-hand side form
-  const MeshFunction<std::size_t>* cell_domains
-    = _a->cell_domains().get();
-  const MeshFunction<std::size_t>* exterior_facet_domains
-    = _a->exterior_facet_domains().get();
-  const MeshFunction<std::size_t>* interior_facet_domains
-    = _a->interior_facet_domains().get();
-
-  // Local dense matrix
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> A_e;
-
-  // Loop over cells and solve local problems
-  Progress p("Performing local (cell-wise) factorization", mesh.num_cells());
-  ufc::cell ufc_cell;
-  std::vector<double> coordinate_dofs;
-  for (CellIterator cell(mesh); !cell.end(); ++cell)
-  {
-    // Get local-to-global dof maps for cell
-    const ArrayView<const dolfin::la_index> dofs_a0
-      = dofmaps_a[0]->cell_dofs(cell->index());
-    const ArrayView<const dolfin::la_index> dofs_a1
-      = dofmaps_a[1]->cell_dofs(cell->index());
-
-    // Check that the local matrix is square
-    if (dofs_a0.size() != dofs_a1.size())
-    {
-      dolfin_error("LocalPatchSolver.cpp",
-                   "assemble local LHS",
-                   "Local LHS dimensions is non square (%d x %d) on cell %d",
-                   dofs_a0.size(), dofs_a1.size(), cell->index());
-    }
-
-    // Update data to current cell
-    cell->get_coordinate_dofs(coordinate_dofs);
-    A_e.resize(dofs_a0.size(), dofs_a1.size());
-
-    // Assemble the bilinear form
-    LocalAssembler::assemble(A_e, ufc_a, coordinate_dofs,
-                             ufc_cell, *cell, cell_domains,
-                             exterior_facet_domains, interior_facet_domains);
-
-    if (_solver_type == SolverType::Cholesky)
-      _cholesky_cache[cell->index()].compute(A_e);
-    else
-      _lu_cache[cell->index()].compute(A_e);
-
-    // Update progress
-    p++;
-  }
-*/
+  // FIXME: Implement me
 }
 //----------------------------------------------------------------------------
 void LocalPatchSolver::clear_factorization()
@@ -668,14 +593,7 @@ void LocalPatchSolver::_check_input(std::vector<GenericVector*> x,
                                     std::vector<const GenericDofMap*> dofmap_b)
   const
 {
-  for (const auto xi: x)
-    dolfin_assert(xi);
-  for (const auto bi: b)
-    dolfin_assert(bi);
-  for (const auto dofmap_bi: dofmap_b)
-    dolfin_assert(dofmap_bi);
-
-  // _num_patches has been set before
+  // NOTE: _num_patches has been set before
   if (x.size() != _num_patches)
   {
     dolfin_error("LocalPatchSolver.cpp",
@@ -698,7 +616,36 @@ void LocalPatchSolver::_check_input(std::vector<GenericVector*> x,
                  "number of patches/vertices per cell");
   }
 
-  // TODO: check compatibility of spaces? We could factor out code
-  //       of DirichletBC::check_arguments into DofMap::check_tensor...
+  for (const auto xi: x)
+  {
+    dolfin_assert(xi);
+    // FIXME: Check for compatibility of tensors. We could factor out code
+    //        of DirichletBC::check_arguments into DofMap::check_tensor...
+  }
+  for (const auto bi: b)
+  {
+    dolfin_assert(bi);
+    // FIXME: Check for compatibility of tensors. We could factor out code
+    //        of DirichletBC::check_arguments into DofMap::check_tensor...
+  }
+
+  // Check all that passed dofmaps match lhs dofmap
+  dolfin_assert(_a.size());
+  dolfin_assert(_a[0]->function_space(0));
+  dolfin_assert(_a[0]->function_space(0)->dofmap());
+  const GenericDofMap& _expected_dofmap = *_a[0]->function_space(0)->dofmap();
+  for (const auto dofmap_bi: dofmap_b)
+  {
+    dolfin_assert(dofmap_bi);
+
+    // FIXME: What is the motivation to pass in rhs dofmap in LocalSolver?
+    //        Can it be different from lhs dofmap?
+    if (dofmap_bi->id() != _expected_dofmap.id())
+    {
+      dolfin_error("LocalPatchSolver.cpp",
+                   "prepare LocalPatchSolver",
+                   "Expected matching dofmap on rhs and lhs");
+    }
+  }
 }
 //-----------------------------------------------------------------------------
