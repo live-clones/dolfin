@@ -145,6 +145,7 @@ list(APPEND OPTIONAL_PACKAGES "UMFPACK")
 list(APPEND OPTIONAL_PACKAGES "CHOLMOD")
 list(APPEND OPTIONAL_PACKAGES "SCOTCH")
 list(APPEND OPTIONAL_PACKAGES "ParMETIS")
+list(APPEND OPTIONAL_PACKAGES "SUNDIALS")
 list(APPEND OPTIONAL_PACKAGES "zlib")
 list(APPEND OPTIONAL_PACKAGES "Python")
 list(APPEND OPTIONAL_PACKAGES "Sphinx")
@@ -494,6 +495,14 @@ if (DOLFIN_ENABLE_MPI AND MPI_C_FOUND)
       DESCRIPTION "Parallel Graph Partitioning and Fill-reducing Matrix Ordering"
       URL "http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview"
       PURPOSE "Enables parallel graph partitioning")
+  endif()
+  
+  if (DOLFIN_ENABLE_SUNDIALS)
+    find_package(SUNDIALS 2.7.0)
+    set_package_properties(SUNDIALS PROPERTIES TYPE OPTIONAL
+      DESCRIPTION "SUite of Nonlinear and DIfferential/ALgebraic Equation Solvers"
+      URL "http://computation.llnl.gov/projects/sundials"
+      PURPOSE "Provides robust time integrators and nonlinear solvers that can easily be incorporated into existing simulation codes.")
   endif()
 
   if (DOLFIN_ENABLE_SCOTCH)
