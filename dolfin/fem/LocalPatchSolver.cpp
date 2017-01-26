@@ -28,7 +28,7 @@
 #include <dolfin/fem/LocalAssembler.h>
 #include <dolfin/function/Function.h>
 #include <dolfin/function/FunctionSpace.h>
-#include <dolfin/la/GenericLinearAlgebraFactory.h>
+#include <dolfin/la/DefaultFactory.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/log/log.h>
 #include <dolfin/log/Progress.h>
@@ -75,13 +75,25 @@ void LocalPatchSolver::solve_global_rhs(std::vector<Function*> u) const
 {
   _check_input(u);
 
+  const auto& factory = DefaultFactory::factory();
+
   // Compute RHSs (global)
   std::vector<std::shared_ptr<GenericVector>> b;
   for (std::size_t i = 0; i < _num_patches; ++i)
   {
-    b.push_back(u[i]->vector()->factory().create_vector(u[i]->vector()->mpi_comm()));
     dolfin_assert(_formL[i]);
-    assemble(*b[i], *_formL[i]);
+    MPI_Comm comm = _formL[i]->function_space(0)->mesh()->mpi_comm();
+
+    // Create ghosted vector
+    const auto vec = factory.create_vector(comm);
+    const auto tensor_layout = factory.create_layout(1);
+    const auto index_map = _formL[i]->function_space(0)->dofmap()->index_map();
+    tensor_layout->init(comm, {index_map}, TensorLayout::Ghosts::GHOSTED);
+    vec->init(*tensor_layout);
+
+    // Assemble and store rhs
+    assemble(*vec, *_formL[i]);
+    b.push_back(vec);
   }
 
   // Extract the vectors where the solution will be stored

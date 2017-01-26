@@ -32,9 +32,18 @@ def test_interface(pushpop_parameters):
     a = inner(grad(u), grad(v))*dx
     L = v*dx
     u = Function(V)
-    b = assemble(L)
     x = u.vector()
     dofmap = V.dofmap()
+
+    # Need a ghosted rhs
+    # FIXME: Implement a check in LocalPatchSolver that rhs is ghosted,
+    #        otherwise strange things happen
+    b = Vector(mesh.mpi_comm())
+    b_layout = b.factory().create_layout(b.rank())
+    b_layout.init(b.mpi_comm(), [dofmap.index_map()], TensorLayout.Ghosts_GHOSTED)
+    b.init(b_layout)
+
+    assemble(L, tensor=b)
 
     with pytest.raises(RuntimeError):
         LocalPatchSolver([a, a])
@@ -108,6 +117,8 @@ def test_flux_reconstruction(pushpop_parameters):
 
     # FIXME: Does not work well in parallel yet!
     #        Hint: probably fix iteration ghost type in LocalPatchSolver
+    # Maybe visualisation artifact
+    # Need some rudimentary tests
 
     u, r = w.split()
     #import pdb; pdb.set_trace()
