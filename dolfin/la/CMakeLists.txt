@@ -42,6 +42,7 @@ set(HEADERS
   SLEPcEigenSolver.h
   solve.h
   SparsityPattern.h
+  SUNDIALSNVector.h
   TensorLayout.h
   test_nullspace.h
   TpetraFactory.h
