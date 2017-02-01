@@ -189,6 +189,9 @@
 %shared_ptr(dolfin::MueluPreconditioner)
 #endif
 
+// FIXME: #ifdef has SUNDIALS
+%shared_ptr(dolfin::NVector)
+
 #ifdef HAS_SLEPC
 %shared_ptr(dolfin::SLEPcEigenSolver)
 #endif
