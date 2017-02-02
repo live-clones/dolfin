@@ -192,6 +192,7 @@
 
 #ifdef HAS_SUNDIALS
 %shared_ptr(dolfin::NVector)
+#endif
 
 #ifdef HAS_SLEPC
 %shared_ptr(dolfin::SLEPcEigenSolver)
