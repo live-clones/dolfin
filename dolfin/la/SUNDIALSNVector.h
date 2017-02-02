@@ -26,6 +26,8 @@
 #ifndef __DOLFIN_N_VECTOR_H
 #define __DOLFIN_N_VECTOR_H
 
+#ifdef HAS_SUNDIALS
+
 #include <string>
 #include <utility>
 #include <memory>
@@ -144,7 +146,7 @@ namespace dolfin
     /// on the local process)
     virtual void get_local(double* block, std::size_t m,
                            const dolfin::la_index* rows) const
-    { vector->get_local(block, m, rows); }
+    { vector->get_local(block, m, rows); }	
 
     /// Set block of values using global indices
     virtual void set(const double* block, std::size_t m,
@@ -290,14 +292,48 @@ namespace dolfin
 
   private:
 
+
+
     // Pointer to concrete implementation
     std::shared_ptr<GenericVector> vector;
-    std::shared_ptr<_generic_N_Vector_Ops> N_Vector_Ops;
-    std::shared_ptr<_generic_N_Vector> N_Vector;
+//    std::shared_ptr<_generic_N_Vector_Ops> N_Vector_Ops;
+    std::shared_ptr<_generic_N_Vector> N_Vector;    
 //    std::unique_ptr<N_Vector> N_Vector_S;
+
+/* Structure containing function pointers to vector operations  */  
+    struct _generic_N_Vector_Ops {
+      N_Vector_ID (*N_VGetVectorID)(NVector);
+      NVector    (*N_VClone)(NVector);
+      NVector    (*N_VCloneEmpty)(NVector);
+      void        (*N_VDestroy)(NVector);
+      void        (*N_VSpace)(NVector, long int *, long int *);
+      realtype*   (*N_VGetArrayPointer)(NVector);
+      void        (*N_VSetArrayPointer)(realtype *, NVector);
+      void        (*N_VLinearSum)(realtype, NVector, realtype, NVector, NVector); 
+      void        (*N_VConst)(realtype, NVector);
+      void        (*N_VProd)(NVector, NVector, NVector);
+      void        (*N_VDiv)(NVector, NVector, NVector);
+      void        (*N_VScale)(realtype, NVector, NVector);
+      void        (*N_VAbs)(NVector, NVector);
+      void        (*N_VInv)(NVector, NVector);
+      void        (*N_VAddConst)(NVector, realtype, NVector);
+      realtype    (*N_VDotProd)(NVector, NVector);
+      realtype    (*N_VMaxNorm)(NVector);
+      realtype    (*N_VWrmsNorm)(NVector, NVector);
+      realtype    (*N_VWrmsNormMask)(NVector, NVector, NVector);
+      realtype    (*N_VMin)(NVector);
+      realtype    (*N_VWl2Norm)(NVector, NVector);
+      realtype    (*N_VL1Norm)(NVector);
+      void        (*N_VCompare)(realtype, NVector, NVector);
+      booleantype (*N_VInvtest)(NVector, NVector);
+      booleantype (*N_VConstrMask)(NVector, NVector, NVector);
+      realtype    (*N_VMinQuotient)(NVector, NVector);
+    };
   };
 
 
 }
+
+#endif
 
 #endif
