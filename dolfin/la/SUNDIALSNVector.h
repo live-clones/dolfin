@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
+// Modified by Chris Hadjigeorgiou: 2017.
+//
 // First added:  2017-01-31
 // Last changed: 2011-02-07
 
@@ -79,20 +81,66 @@ namespace dolfin
       *v = c;
     }
 
-    static N_Vector N_VProd(N_Vector x, N_Vector y)
+    static NVector N_VProd(N_Vector x, N_Vector y)
     {
-      // auto vx = (GenericVector *)(x->content);
-      // auto vy = (GenericVector *)(y->content);
+ 	auto vx = static_cast<GenericVector *>(x->content);
+//      auto vy = std::shared_ptr<GenericVector>(y->content);
 
-      // NVector z(vx->mpi_comm(), vx->size());
-      // GenericVector vz = z.vec();
+      NVector z(vx->mpi_comm(), vx->size());
+//      std::shared_ptr<GenericVector> vz = z.vec();
 
-      // vz = vx;
+//      vz = vx;
 
-      // vz *= vy;
+//      *vz *= *vy;
 
+      return z;
+    }
+    
+    static NVector N_VDiv(N_Vector x, N_Vector y)
+    {
+      auto vx = static_cast<GenericVector *>(x->content);
+      NVector z(vx->mpi_comm(), vx->size());
+      return z;
+    }
 
-      // return z.nvector();
+    static NVector N_VScale(double d, N_Vector x)
+    {
+      auto vx = static_cast<GenericVector *>(x->content);
+      NVector y(vx->mpi_comm(), vx->size());
+      return y;
+    }
+
+    static NVector N_VAbs(N_Vector x)
+    {
+      auto vx = static_cast<GenericVector *>(x->content);
+      NVector y(vx->mpi_comm(), vx->size());
+      return y;
+    }
+
+    static NVector N_VInv(N_Vector x)
+    {
+      auto vx = static_cast<GenericVector *>(x->content);
+      NVector y(vx->mpi_comm(), vx->size());
+      return y;
+    }
+
+    static NVector N_VAddConst(double d, N_Vector x)
+    {
+      auto vx = static_cast<GenericVector *>(x->content);
+      NVector y(vx->mpi_comm(), vx->size());
+      return y;
+    }
+
+    static NVector N_VDotProd(N_Vector x)
+    {
+      auto vx = static_cast<GenericVector *>(x->content);
+      NVector y(vx->mpi_comm(), vx->size());
+      return y;
+    }
+    static double N_VMaxNorm(NVector x)
+    {
+	double d;
+	return d;
     }
 
     //-----------------------------------------------------------------------------
