@@ -120,8 +120,6 @@ int main() {
     mark_as_advanced(SUNDIALS_VERSION_OK)
 
     # Build and run test program
-#    include(CheckCXXSourceRuns)
-#    check_cxx_source_runs("
     set(SUNDIALS_TEST_LIB_CPP "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/sundials_test_lib.cpp")
     file(WRITE ${SUNDIALS_TEST_LIB_CPP} "
 #define MPICH_IGNORE_CXX_SEEK 1
