@@ -30,16 +30,14 @@
 #include <sundials/sundials_nvector.h>
 #include "DefaultFactory.h"
 #include "GenericVector.h"
+#include "Vector.h"
 
 namespace dolfin
 {
 
   template<typename T> class Array;
 
-  /// This class provides the default DOLFIN vector class,
-  /// based on the default DOLFIN linear algebra backend.
-
-  class NVector : public GenericVector
+  class NVector
   {
   public:
 
@@ -58,6 +56,7 @@ namespace dolfin
       vector->init(N);
       N_V = std::shared_ptr<_generic_N_Vector>(new _generic_N_Vector);
       N_V->ops = &ops;
+      N_V->content = (void *)(vector.get());
     }
 
     /// Copy constructor
@@ -74,234 +73,42 @@ namespace dolfin
       return SUNDIALS_NVEC_CUSTOM;
     }
 
-    static N_Vector N_VConst(double c,N_Vector nv)
+    static void N_VConst(double c, N_Vector nv)
     {
-      N_Vector x;
-      return x; 
+      auto v = static_cast<GenericVector *>(nv->content);
+      *v = c;
     }
 
-    N_Vector N_VProd(N_Vector x, N_Vector y)
+    static N_Vector N_VProd(N_Vector x, N_Vector y)
     {
-      N_Vector z;
-      N_V->ops->nvprod(x,y,z);
-      return z; 
+      // auto vx = (GenericVector *)(x->content);
+      // auto vy = (GenericVector *)(y->content);
+
+      // NVector z(vx->mpi_comm(), vx->size());
+      // GenericVector vz = z.vec();
+
+      // vz = vx;
+
+      // vz *= vy;
+
+
+      // return z.nvector();
     }
 
+    //-----------------------------------------------------------------------------
 
-    //--- Implementation of the GenericTensor interface ---
-
-    /// Return copy of vector
-    virtual std::shared_ptr<GenericVector> copy() const
+    /// Get underlying raw SUNDIALS N_Vector struct
+    N_Vector nvector() const
     {
-      std::shared_ptr<NVector> x(new NVector(*this));
-      return x;
+      return N_V.get();
     }
 
-    /// Set all entries to zero and keep any sparse structure
-    virtual void zero()
-    { vector->zero(); }
+    /// Get underlying GenericVector
+    std::shared_ptr<GenericVector> vec() const
+    {
+      return vector;
+    }
 
-    /// Finalize assembly of tensor
-    virtual void apply(std::string mode)
-    { vector->apply(mode); }
-
-    /// Return MPI communicator
-    virtual MPI_Comm mpi_comm() const
-    { return vector->mpi_comm(); }
-
-    /// Return informal string representation (pretty-print)
-    virtual std::string str(bool verbose) const
-    { return "<NVector wrapper of " + vector->str(verbose) + ">"; }
-
-    //--- Implementation of the GenericVector interface ---
-
-    /// Initialize vector to size N
-    virtual void init(std::size_t N)
-    { vector->init(N); }
-
-    /// Initialize vector with given ownership range
-    virtual void init(std::pair<std::size_t, std::size_t> range)
-    { vector->init(range); }
-
-    /// Initialize vector with given ownership range and with ghost
-    /// values
-    virtual void init(std::pair<std::size_t, std::size_t> range,
-                      const std::vector<std::size_t>& local_to_global_map,
-                      const std::vector<la_index>& ghost_indices)
-    { vector->init(range, local_to_global_map, ghost_indices); }
-
-    // Bring init function from GenericVector into scope
-    using GenericVector::init;
-
-    /// Return true if vector is empty
-    virtual bool empty() const
-    { return vector->empty(); }
-
-    /// Return size of vector
-    virtual std::size_t size() const
-    { return vector->size(); }
-
-    /// Return local size of vector
-    virtual std::size_t local_size() const
-    { return vector->local_size(); }
-
-    /// Return local ownership range of a vector
-    virtual std::pair<std::int64_t, std::int64_t> local_range() const
-    { return vector->local_range(); }
-
-    /// Determine whether global vector index is owned by this process
-    virtual bool owns_index(std::size_t i) const
-    { return vector->owns_index(i); }
-
-    /// Get block of values using global indices (values must all live
-    /// on the local process, ghosts are no accessible)
-    virtual void get(double* block, std::size_t m,
-                     const dolfin::la_index* rows) const
-    { vector->get(block, m, rows); }
-
-    /// Get block of values using local indices (values must all live
-    /// on the local process)
-    virtual void get_local(double* block, std::size_t m,
-                           const dolfin::la_index* rows) const
-    { vector->get_local(block, m, rows); }
-
-    /// Set block of values using global indices
-    virtual void set(const double* block, std::size_t m,
-                     const dolfin::la_index* rows)
-    { vector->set(block, m, rows); }
-
-    /// Set block of values using local indices
-    virtual void set_local(const double* block, std::size_t m,
-                     const dolfin::la_index* rows)
-    { vector->set_local(block, m, rows); }
-
-    /// Add block of values using global indices
-    virtual void add(const double* block, std::size_t m,
-                     const dolfin::la_index* rows)
-    { vector->add(block, m, rows); }
-
-    /// Add block of values using local indices
-    virtual void add_local(const double* block, std::size_t m,
-                           const dolfin::la_index* rows)
-    { vector->add_local(block, m, rows); }
-
-    /// Get all values on local process
-    virtual void get_local(std::vector<double>& values) const
-    { vector->get_local(values); }
-
-    /// Set all values on local process
-    virtual void set_local(const std::vector<double>& values)
-    { vector->set_local(values); }
-
-    /// Add values to each entry on local process
-    virtual void add_local(const Array<double>& values)
-    { vector->add_local(values); }
-
-    /// Gather entries (given by global indices) into local
-    /// vector x
-    virtual void gather(GenericVector& x,
-                        const std::vector<dolfin::la_index>& indices) const
-    { vector->gather(x, indices); }
-
-    /// Gather entries (given by global indices) into x
-    virtual void gather(std::vector<double>& x,
-                        const std::vector<dolfin::la_index>& indices) const
-    { vector->gather(x, indices); }
-
-    /// Gather all entries into x on process 0
-    virtual void gather_on_zero(std::vector<double>& x) const
-    { vector->gather_on_zero(x); }
-
-    /// Add multiple of given vector (AXPY operation)
-    virtual void axpy(double a, const GenericVector& x)
-    { vector->axpy(a, x); }
-
-    /// Replace all entries in the vector by their absolute values
-    virtual void abs()
-    { vector->abs(); }
-
-    /// Return inner product with given vector
-    virtual double inner(const GenericVector& x) const
-    { return vector->inner(x); }
-
-    /// Return norm of vector
-    virtual double norm(std::string norm_type) const
-    { return vector->norm(norm_type); }
-
-    /// Return minimum value of vector
-    virtual double min() const
-    { return vector->min(); }
-
-    /// Return maximum value of vector
-    virtual double max() const
-    { return vector->max(); }
-
-    /// Return sum of values of vector
-    virtual double sum() const
-    { return vector->sum(); }
-
-    virtual double sum(const Array<std::size_t>& rows) const
-    { return vector->sum(rows); }
-
-    /// Multiply vector by given number
-    virtual const NVector& operator*= (double a)
-    { *vector *= a; return *this; }
-
-    /// Multiply vector by another vector pointwise
-    virtual const NVector& operator*= (const GenericVector& x)
-    { *vector *= x; return *this; }
-
-    /// Divide vector by given number
-    virtual const NVector& operator/= (double a)
-    { *this *= 1.0 / a; return *this; }
-
-    /// Add given vector
-    virtual const NVector& operator+= (const GenericVector& x)
-    { axpy(1.0, x); return *this; }
-
-    /// Add number to all components of a vector
-    virtual const GenericVector& operator+= (double a)
-    { *vector += a; return *this; }
-
-    /// Subtract given vector
-    virtual const NVector& operator-= (const GenericVector& x)
-    { axpy(-1.0, x); return *this; }
-
-    /// Subtract number from all components of a vector
-    virtual const GenericVector& operator-= (double a)
-    { *vector -= a; return *this; }
-
-    /// Assignment operator
-    virtual const GenericVector& operator= (const GenericVector& x)
-    { *vector = x; return *this; }
-
-    /// Assignment operator
-    const NVector& operator= (double a)
-    { *vector = a; return *this; }
-
-    //--- Special functions ---
-
-    /// Return linear algebra backend factory
-    virtual GenericLinearAlgebraFactory& factory() const
-    { return vector->factory(); }
-
-    //--- Special functions, intended for library use only ---
-
-    /// Return concrete instance / unwrap (const version)
-    virtual const GenericVector* instance() const
-    { return vector.get(); }
-
-    /// Return concrete instance / unwrap (non-const version)
-    virtual GenericVector* instance()
-    { return vector.get(); }
-
-    virtual std::shared_ptr<const LinearAlgebraObject> shared_instance() const
-    { return vector; }
-
-    virtual std::shared_ptr<LinearAlgebraObject> shared_instance()
-    { return vector; }
-
-    //--- Special Vector functions ---
 
     /// Assignment operator
     const NVector& operator= (const NVector& x)
@@ -311,9 +118,10 @@ namespace dolfin
 
     // Pointer to concrete implementation
     std::shared_ptr<GenericVector> vector;
-//    std::shared_ptr<_generic_N_Vector_Ops> N_Vector_Ops;
+
+    // Pointer to SUNDIALS struct
     std::shared_ptr<_generic_N_Vector> N_V;
-//    std::unique_ptr<N_Vector> N_Vector_S;
+
 
 /* Structure containing function pointers to vector operations  */
     struct _generic_N_Vector_Ops ops = {N_VGetVectorID,    //   N_Vector_ID (*N_VGetVectorID)(NVector);
@@ -324,7 +132,7 @@ namespace dolfin
                                         NULL,    //   realtype*   (*N_VGetArrayPointer)(NVector);
                                         NULL,    //   void        (*N_VSetArrayPointer)(realtype *, NVector);
                                         NULL,    //   void        (*N_VLinearSum)(realtype, NVector, realtype, NVector, NVector);
-                                        NULL,    //   void        (*N_VConst)(realtype, NVector);
+                                        N_VConst,          //   void        (*N_VConst)(realtype, NVector);
                                         NULL,    //   void        (*N_VProd)(NVector, NVector, NVector);
                                         NULL,    //   void        (*N_VDiv)(NVector, NVector, NVector);
                                         NULL,    //   void        (*N_VScale)(realtype, NVector, NVector);
