@@ -15,13 +15,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
-// Modified by Anders Logg, 2007-2010.
-// Modified by Kent-Andre Mardal, 2008.
-// Modified by Ola Skavhaug, 2008.
-// Modified by Martin Sandve Alnes, 2008.
-//
-// First added:  2007-07-03
-// Last changed: 2011-01-14
+// First added:  2017-01-31
+// Last changed: 2011-02-07
 
 #ifndef __DOLFIN_N_VECTOR_H
 #define __DOLFIN_N_VECTOR_H
@@ -61,8 +56,8 @@ namespace dolfin
       DefaultFactory factory;
       vector = factory.create_vector(comm);
       vector->init(N);
-      N_Vector = std::shared_ptr<_generic_N_Vector>(new _generic_N_Vector);
-      N_Vector->ops = &ops;
+      N_V = std::shared_ptr<_generic_N_Vector>(new _generic_N_Vector);
+      N_V->ops = &ops;
     }
 
     /// Copy constructor
@@ -78,6 +73,20 @@ namespace dolfin
       // ID for custom NVector implementation
       return SUNDIALS_NVEC_CUSTOM;
     }
+
+    static N_Vector N_VConst(double c,N_Vector nv)
+    {
+      N_Vector x;
+      return x; 
+    }
+
+    N_Vector N_VProd(N_Vector x, N_Vector y)
+    {
+      N_Vector z;
+      N_V->ops->nvprod(x,y,z);
+      return z; 
+    }
+
 
     //--- Implementation of the GenericTensor interface ---
 
@@ -303,65 +312,36 @@ namespace dolfin
     // Pointer to concrete implementation
     std::shared_ptr<GenericVector> vector;
 //    std::shared_ptr<_generic_N_Vector_Ops> N_Vector_Ops;
-    std::shared_ptr<_generic_N_Vector> N_Vector;
+    std::shared_ptr<_generic_N_Vector> N_V;
 //    std::unique_ptr<N_Vector> N_Vector_S;
 
 /* Structure containing function pointers to vector operations  */
-    struct _generic_N_Vector_Ops ops = {N_VGetVectorID,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL};
-
-    // {
-    //   N_Vector_ID (*N_VGetVectorID)(NVector);
-    //   NVector    (*N_VClone)(NVector);
-    //   NVector    (*N_VCloneEmpty)(NVector);
-    //   void        (*N_VDestroy)(NVector);
-    //   void        (*N_VSpace)(NVector, long int *, long int *);
-    //   realtype*   (*N_VGetArrayPointer)(NVector);
-    //   void        (*N_VSetArrayPointer)(realtype *, NVector);
-    //   void        (*N_VLinearSum)(realtype, NVector, realtype, NVector, NVector);
-    //   void        (*N_VConst)(realtype, NVector);
-    //   void        (*N_VProd)(NVector, NVector, NVector);
-    //   void        (*N_VDiv)(NVector, NVector, NVector);
-    //   void        (*N_VScale)(realtype, NVector, NVector);
-    //   void        (*N_VAbs)(NVector, NVector);
-    //   void        (*N_VInv)(NVector, NVector);
-    //   void        (*N_VAddConst)(NVector, realtype, NVector);
-    //   realtype    (*N_VDotProd)(NVector, NVector);
-    //   realtype    (*N_VMaxNorm)(NVector);
-    //   realtype    (*N_VWrmsNorm)(NVector, NVector);
-    //   realtype    (*N_VWrmsNormMask)(NVector, NVector, NVector);
-    //   realtype    (*N_VMin)(NVector);
-    //   realtype    (*N_VWl2Norm)(NVector, NVector);
-    //   realtype    (*N_VL1Norm)(NVector);
-    //   void        (*N_VCompare)(realtype, NVector, NVector);
-    //   booleantype (*N_VInvtest)(NVector, NVector);
-    //   booleantype (*N_VConstrMask)(NVector, NVector, NVector);
-    //   realtype    (*N_VMinQuotient)(NVector, NVector);
-    // };
+    struct _generic_N_Vector_Ops ops = {N_VGetVectorID,    //   N_Vector_ID (*N_VGetVectorID)(NVector);
+                                        NULL,    //   NVector    (*N_VClone)(NVector);
+                                        NULL,    //   NVector    (*N_VCloneEmpty)(NVector);
+                                        NULL,    //   void        (*N_VDestroy)(NVector);
+                                        NULL,    //   void        (*N_VSpace)(NVector, long int *, long int *);
+                                        NULL,    //   realtype*   (*N_VGetArrayPointer)(NVector);
+                                        NULL,    //   void        (*N_VSetArrayPointer)(realtype *, NVector);
+                                        NULL,    //   void        (*N_VLinearSum)(realtype, NVector, realtype, NVector, NVector);
+                                        NULL,    //   void        (*N_VConst)(realtype, NVector);
+                                        NULL,    //   void        (*N_VProd)(NVector, NVector, NVector);
+                                        NULL,    //   void        (*N_VDiv)(NVector, NVector, NVector);
+                                        NULL,    //   void        (*N_VScale)(realtype, NVector, NVector);
+                                        NULL,    //   void        (*N_VAbs)(NVector, NVector);
+                                        NULL,    //   void        (*N_VInv)(NVector, NVector);
+                                        NULL,    //   void        (*N_VAddConst)(NVector, realtype, NVector);
+                                        NULL,    //   realtype    (*N_VDotProd)(NVector, NVector);
+                                        NULL,    //   realtype    (*N_VMaxNorm)(NVector);
+                                        NULL,    //   realtype    (*N_VWrmsNorm)(NVector, NVector);
+                                        NULL,    //   realtype    (*N_VWrmsNormMask)(NVector, NVector, NVector);
+                                        NULL,    //   realtype    (*N_VMin)(NVector);
+                                        NULL,    //   realtype    (*N_VWl2Norm)(NVector, NVector);
+                                        NULL,    //   realtype    (*N_VL1Norm)(NVector);
+                                        NULL,    //   void        (*N_VCompare)(realtype, NVector, NVector);
+                                        NULL,    //   booleantype (*N_VInvtest)(NVector, NVector);
+                                        NULL,    //   booleantype (*N_VConstrMask)(NVector, NVector, NVector);
+                                        NULL};    //   realtype    (*N_VMinQuotient)(NVector, NVector);
   };
 
 
