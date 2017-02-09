@@ -41,28 +41,38 @@ if (MPI_CXX_FOUND)
     HINTS ${SUNDIALS_DIR}/include $ENV{SUNDIALS_DIR}/include ${PETSC_INCLUDE_DIRS}
     DOC "Directory where the SUNDIALS CVODE header files are located"
   )
-  find_library(SUNDIALS_LIBRARY sundials_cvode
+  find_library(SUNDIALS_LIBRARY 
+    NAMES sundials_cvode
     HINTS ${SUNDIALS_DIR}/lib $ENV{SUNDIALS_DIR}/lib ${PETSC_LIBRARY_DIRS}
     NO_DEFAULT_PATH
     DOC "Directory where the SUNDIALS CVODE library is located"
   )
-  find_library(SUNDIALS_LIBRARY sundials_cvode
-    DOC "Directory where the SUNDIALS_CVODE library is located"
+#  find_library(SUNDIALS_LIBRARY sundials_cvode
+#    DOC "Directory where the SUNDIALS_CVODE library is located"
+#  )
+  find_library(SUNDIALS_NVECTOR_PARALLEL_LIBRARY
+    NAMES sundials_nvecparallel
+    HINTS ${SUNDIALS_DIR}/lib $ENV{SUNDIALS_DIR}/lib ${PETSC_LIBRARY_DIRS}
+    NO_DEFAULT_PATH
+    DOC "Directory where the SUNDIALS CVODE library is located"
   )
-  find_library(SUNDIALS_NVECTOR_PARALLEL_LIBRARY sundials_nvecparallel
+  find_library(SUNDIALS_NVECTOR_SERIAL_LIBRARY
+    NAMES sundials_nvecserial
     HINTS ${SUNDIALS_DIR}/lib $ENV{SUNDIALS_DIR}/lib ${PETSC_LIBRARY_DIRS}
     NO_DEFAULT_PATH
     DOC "Directory where the SUNDIALS CVODE library is located"
   )
 
-  set(SUNDIALS_LIBRARIES ${SUNDIALS_LIBRARY} ${SUNDIALS_NVECTOR_PARALLEL_LIBRARY})
-  set(LINK_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${SUNDIALS_LIBRARIES} ${MPI_CPP_LIBRARIES})
+  set(SUNDIALS_LIBRARIES ${SUNDIALS_LIBRARY})
+  set(SUNDIALS_LIBRARIES ${SUNDIALS_LIBRARIES} ${SUNDIALS_NVECTOR_PARALLEL_LIBRARY})
+  set(SUNDIALS_LIBRARIES ${SUNDIALS_LIBRARIES} ${SUNDIALS_NVECTOR_SERIAL_LIBRARY})
+
   # Try compiling and running test program
   if (DOLFIN_SKIP_BUILD_TESTS)
     set(SUNDIALS_TEST_RUNS TRUE)
     set(SUNDIALS_VERSION "UNKNOWN")
     set(SUNDIALS_VERSION_OK TRUE)
-  elseif (SUNDIALS_INCLUDE_DIRS AND SUNDIALS_LIBRARY)
+  elseif (SUNDIALS_INCLUDE_DIRS AND SUNDIALS_LIBRARIES)
 
   # Set flags for building test program
   set(CMAKE_REQUIRED_INCLUDES  ${CMAKE_REQUIRED_INCLUDES} ${MPI_CXX_INCLUDE_PATH})
@@ -193,7 +203,7 @@ endif()
 find_package_handle_standard_args(SUNDIALS
                                   "SUNDIALS could not be found/configured."
                                   SUNDIALS_LIBRARIES
-                                  SUNDIALS_TEST_RUNS
+				  SUNDIALS_TEST_RUNS
                                   SUNDIALS_INCLUDE_DIRS
 				  SUNDIALS_VERSION
 				  SUNDIALS_VERSION_OK)
