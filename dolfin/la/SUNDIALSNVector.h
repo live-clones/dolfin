@@ -56,7 +56,7 @@ namespace dolfin
       DefaultFactory factory;
       vector = factory.create_vector(comm);
       vector->init(N);
-      N_V = std::shared_ptr<_generic_N_Vector>(new _generic_N_Vector);
+      N_V = std::make_shared<_generic_N_Vector>();
       N_V->ops = &ops;
       N_V->content = (void *)(vector.get());
     }
@@ -64,8 +64,13 @@ namespace dolfin
     /// Copy constructor
     NVector(const NVector& x) : vector(x.vector->copy()) {}
 
-    /// Create a Vector from a GenericVector
-    NVector(const GenericVector& x) : vector(x.copy()) {}
+    /// Create an NVector from a GenericVector
+    NVector(const GenericVector& x) : vector(x.copy())
+    {
+      N_V = std::make_shared<_generic_N_Vector>();
+      N_V->ops = &ops;
+      N_V->content = (void *)(vector.get());
+    }
 
     //--- Implementation of N_Vector ops
 
@@ -95,7 +100,7 @@ namespace dolfin
 
       return z;
     }
-    
+
     static NVector N_VDiv(N_Vector x, N_Vector y)
     {
       auto vx = static_cast<GenericVector *>(x->content);
