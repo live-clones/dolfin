@@ -86,61 +86,70 @@ namespace dolfin
       *v = c;
     }
 
-    static NVector N_VProd(N_Vector x, N_Vector y)
+    static N_Vector N_VProd(N_Vector x, N_Vector y)
     {
- 	auto vx = static_cast<GenericVector *>(x->content);
-//      auto vy = std::shared_ptr<GenericVector>(y->content);
-
+      auto vx = static_cast<GenericVector*>(x->content);
+      auto vy = static_cast<GenericVector*>(y->content);
+	
       NVector z(vx->mpi_comm(), vx->size());
-//      std::shared_ptr<GenericVector> vz = z.vec();
+      std::shared_ptr<GenericVector> vz = z.vec();
 
 //      vz = vx;
 
-//      *vz *= *vy;
+      *vx *= *vy;
+	
+//      x->content = (void *)(vx.get());
 
-      return z;
+      return x; 
     }
 
-    static NVector N_VDiv(N_Vector x, N_Vector y)
+    static N_Vector N_VDiv(N_Vector x, N_Vector y)
     {
       auto vx = static_cast<GenericVector *>(x->content);
+      auto vy = static_cast<GenericVector *>(y->content);
       NVector z(vx->mpi_comm(), vx->size());
-      return z;
+      *vx = *vy;
+      return x;
     }
 
-    static NVector N_VScale(double d, N_Vector x)
+    static N_Vector N_VScale(double d, N_Vector x)
     {
       auto vx = static_cast<GenericVector *>(x->content);
+//      auto vy = std::shared_ptr<GenericVector>(y->content);
       NVector y(vx->mpi_comm(), vx->size());
-      return y;
+      return x;
     }
 
-    static NVector N_VAbs(N_Vector x)
+    static N_Vector N_VAbs(N_Vector x)
     {
       auto vx = static_cast<GenericVector *>(x->content);
+//      auto vy = std::shared_ptr<GenericVector>(y->content);
       NVector y(vx->mpi_comm(), vx->size());
-      return y;
+      return x;
     }
 
-    static NVector N_VInv(N_Vector x)
+    static N_Vector N_VInv(N_Vector x)
     {
       auto vx = static_cast<GenericVector *>(x->content);
+//      auto vy = std::shared_ptr<GenericVector>(y->content);
       NVector y(vx->mpi_comm(), vx->size());
-      return y;
+      return x;
     }
 
-    static NVector N_VAddConst(double d, N_Vector x)
+    static N_Vector N_VAddConst(double d, N_Vector x)
     {
       auto vx = static_cast<GenericVector *>(x->content);
+//      auto vy = std::shared_ptr<GenericVector>(y->content);
       NVector y(vx->mpi_comm(), vx->size());
-      return y;
+      return x;
     }
 
-    static NVector N_VDotProd(N_Vector x)
+    static N_Vector N_VDotProd(N_Vector x)
     {
       auto vx = static_cast<GenericVector *>(x->content);
+//      auto vy = std::shared_ptr<GenericVector>(y->content);
       NVector y(vx->mpi_comm(), vx->size());
-      return y;
+      return x;
     }
     static double N_VMaxNorm(NVector x)
     {
