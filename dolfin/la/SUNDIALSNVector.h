@@ -39,19 +39,19 @@ namespace dolfin
 
   template<typename T> class Array;
 
-  class NVector
+  class SUNDIALSNVector
   {
   public:
 
     /// Create empty vector
-    NVector(MPI_Comm comm=MPI_COMM_WORLD)
+    SUNDIALSNVector(MPI_Comm comm=MPI_COMM_WORLD)
     {
       DefaultFactory factory;
       vector = factory.create_vector(comm);
     }
 
     /// Create vector of size N
-    NVector(MPI_Comm comm, std::size_t N)
+    SUNDIALSNVector(MPI_Comm comm, std::size_t N)
     {
       DefaultFactory factory;
       vector = factory.create_vector(comm);
@@ -62,10 +62,10 @@ namespace dolfin
     }
 
     /// Copy constructor
-    NVector(const NVector& x) : vector(x.vector->copy()) {}
+    SUNDIALSNVector(const SUNDIALSNVector& x) : vector(x.vector->copy()) {}
 
-    /// Create an NVector from a GenericVector
-    NVector(const GenericVector& x) : vector(x.copy())
+    /// Create an SUNDIALSNVector from a GenericVector
+    SUNDIALSNVector(const GenericVector& x) : vector(x.copy())
     {
       N_V = std::make_shared<_generic_N_Vector>();
       N_V->ops = &ops;
@@ -76,7 +76,7 @@ namespace dolfin
 
     static N_Vector_ID N_VGetVectorID(N_Vector nv)
     {
-      // ID for custom NVector implementation
+      // ID for custom SUNDIALSNVector implementation
       return SUNDIALS_NVEC_CUSTOM;
     }
 
@@ -91,7 +91,7 @@ namespace dolfin
       auto vx = static_cast<GenericVector*>(x->content);
       auto vy = static_cast<GenericVector*>(y->content);
 	
-      NVector z(vx->mpi_comm(), vx->size());
+      SUNDIALSNVector z(vx->mpi_comm(), vx->size());
       std::shared_ptr<GenericVector> vz = z.vec();
 
 //      vz = vx;
@@ -107,7 +107,7 @@ namespace dolfin
     {
       auto vx = static_cast<GenericVector *>(x->content);
       auto vy = static_cast<GenericVector *>(y->content);
-      NVector z(vx->mpi_comm(), vx->size());
+      SUNDIALSNVector z(vx->mpi_comm(), vx->size());
       *vx = *vy;
       return x;
     }
@@ -116,7 +116,7 @@ namespace dolfin
     {
       auto vx = static_cast<GenericVector *>(x->content);
 //      auto vy = std::shared_ptr<GenericVector>(y->content);
-      NVector y(vx->mpi_comm(), vx->size());
+      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
       return x;
     }
 
@@ -124,7 +124,7 @@ namespace dolfin
     {
       auto vx = static_cast<GenericVector *>(x->content);
 //      auto vy = std::shared_ptr<GenericVector>(y->content);
-      NVector y(vx->mpi_comm(), vx->size());
+      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
       return x;
     }
 
@@ -132,7 +132,7 @@ namespace dolfin
     {
       auto vx = static_cast<GenericVector *>(x->content);
 //      auto vy = std::shared_ptr<GenericVector>(y->content);
-      NVector y(vx->mpi_comm(), vx->size());
+      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
       return x;
     }
 
@@ -140,7 +140,7 @@ namespace dolfin
     {
       auto vx = static_cast<GenericVector *>(x->content);
 //      auto vy = std::shared_ptr<GenericVector>(y->content);
-      NVector y(vx->mpi_comm(), vx->size());
+      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
       return x;
     }
 
@@ -148,10 +148,10 @@ namespace dolfin
     {
       auto vx = static_cast<GenericVector *>(x->content);
 //      auto vy = std::shared_ptr<GenericVector>(y->content);
-      NVector y(vx->mpi_comm(), vx->size());
+      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
       return x;
     }
-    static double N_VMaxNorm(NVector x)
+    static double N_VMaxNorm(SUNDIALSNVector x)
     {
 	double d;
 	return d;
@@ -173,7 +173,7 @@ namespace dolfin
 
 
     /// Assignment operator
-    const NVector& operator= (const NVector& x)
+    const SUNDIALSNVector& operator= (const SUNDIALSNVector& x)
     { *vector = *x.vector; return *this; }
 
   private:
@@ -186,7 +186,7 @@ namespace dolfin
 
 
 /* Structure containing function pointers to vector operations  */
-    struct _generic_N_Vector_Ops ops = {N_VGetVectorID,    //   N_Vector_ID (*N_VGetVectorID)(NVector);
+    struct _generic_N_Vector_Ops ops = {N_VGetVectorID,    //   N_Vector_ID (*N_VGetVectorID)(SUNDIALSNVector);
                                         NULL,    //   NVector    (*N_VClone)(NVector);
                                         NULL,    //   NVector    (*N_VCloneEmpty)(NVector);
                                         NULL,    //   void        (*N_VDestroy)(NVector);
