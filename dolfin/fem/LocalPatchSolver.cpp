@@ -166,6 +166,31 @@ inline std::vector<dolfin::la_index> _compute_cell_to_patch_map(
   }
   return map;
 }
+//----------------------------------------------------------------------------
+// FIXME: Should the function be in a namespace? It's not in any header.
+// Decide if this rank (must be equal to mpi_rank) is an unique
+// owner of the patch associated with given vertex
+bool _patch_is_owned(Vertex& vertex, unsigned int mpi_rank)
+{
+  // Start with no owner
+  unsigned int patch_owner = std::numeric_limits<unsigned int>::max();
+
+  // Own by minimal cell owner
+  for (CellIterator cell(vertex); !cell.end(); ++cell)
+  {
+    unsigned int cell_owner;
+    if (cell->is_ghost())
+      cell_owner = cell->owner();
+    else
+      cell_owner = mpi_rank;
+    patch_owner = std::min(patch_owner, cell_owner);
+  }
+
+  // Check if we are owner
+  // NOTE: Must be equality test; might happen that all cells
+  //       are ghosts so the owner is bigger than this rank
+  return patch_owner == mpi_rank;
+}
 //-----------------------------------------------------------------------------
 void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
   const std::vector<const GenericVector*>* const global_b,
@@ -198,9 +223,10 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
     }
   }
 
-  // Extract the mesh
+  // Extract the mesh and MPI rank
   dolfin_assert(_a[0]->function_space(0)->mesh());
   const Mesh& mesh = *_a[0]->function_space(0)->mesh();
+  const unsigned int mpi_rank = dolfin::MPI::rank(mesh.mpi_comm());
 
   // Get bilinear form dofmaps
   std::array<std::shared_ptr<const GenericDofMap>, 2> dofmaps_a
@@ -248,12 +274,19 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
   }
 
   // Loop over vertices and solve local patch problems
-  Progress p("Performing local (patch-wise) solve", mesh.num_vertices());
+  Progress p("Performing local (patch-wise) solve",
+             mesh.topology().ghost_offset(0));
   Set<la_index> dofs_a0, dofs_a1, dofs_L;
   ArrayView<const la_index> dofs_a0_ptr, dofs_a1_ptr, dofs_L_ptr;
-  // FIXME: Is the iterator correctly ghosted?
-  for (VertexIterator vertex(mesh); !vertex.end(); ++vertex)
+  for (VertexIterator vertex(mesh, "regular"); !vertex.end(); ++vertex)
   {
+    // Deal with every patch on single process only
+    if (!_patch_is_owned(*vertex, mpi_rank))
+    {
+      p++;
+      continue;
+    }
+
     // Clear the patch dofs
     dofs_a0.clear();
     dofs_a1.clear();
