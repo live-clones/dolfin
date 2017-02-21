@@ -86,13 +86,17 @@ namespace dolfin
       *v = c;
     }
 
-    static N_Vector N_VProd(N_Vector x, N_Vector y)
+    static N_Vector N_VClone(N_Vector nv)
+    {
+	return nv;
+    }
+    static void N_VProd(N_Vector x, N_Vector y, N_Vector z)
     {
       auto vx = static_cast<GenericVector*>(x->content);
       auto vy = static_cast<GenericVector*>(y->content);
 	
-      SUNDIALSNVector z(vx->mpi_comm(), vx->size());
-      std::shared_ptr<GenericVector> vz = z.vec();
+//      SUNDIALSNVector z(vx->mpi_comm(), vx->size());
+//      std::shared_ptr<GenericVector> vz = z.vec();
 
 //      vz = vx;
 
@@ -100,68 +104,67 @@ namespace dolfin
 	
 //      x->content = (void *)(vx.get());
 
-      return x; 
     }
 
-    static N_Vector N_VDiv(N_Vector x, N_Vector y)
+    static void N_VDiv(N_Vector x, N_Vector y, N_Vector z)
     {
       auto vx = static_cast<GenericVector *>(x->content);
       auto vy = static_cast<GenericVector *>(y->content);
-      SUNDIALSNVector z(vx->mpi_comm(), vx->size());
+//      SUNDIALSNVector z(vx->mpi_comm(), vx->size());
       *vx = *vy;
-      return x;
     }
 
-    static N_Vector N_VScale(double d, N_Vector x)
+    static void N_VScale(double d, N_Vector x, N_Vector y)
     {
       auto vx = static_cast<GenericVector *>(x->content);
 //      auto vy = std::shared_ptr<GenericVector>(y->content);
-      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
-      return x;
+//      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
     }
 
-    static N_Vector N_VAbs(N_Vector x)
+    static void N_VAbs(N_Vector x, N_Vector y)
     {
       auto vx = static_cast<GenericVector *>(x->content);
 //      auto vy = std::shared_ptr<GenericVector>(y->content);
-      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
-      return x;
+//      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
     }
 
-    static N_Vector N_VInv(N_Vector x)
+    static void N_VInv(N_Vector x, N_Vector y)
     {
       auto vx = static_cast<GenericVector *>(x->content);
 //      auto vy = std::shared_ptr<GenericVector>(y->content);
-      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
-      return x;
+//      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
     }
 
-    static N_Vector N_VAddConst(double d, N_Vector x)
+    static void N_VAddConst(N_Vector x, double d, N_Vector y)
     {
       auto vx = static_cast<GenericVector *>(x->content);
 //      auto vy = std::shared_ptr<GenericVector>(y->content);
-      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
-      return x;
+//      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
     }
 
-    static N_Vector N_VDotProd(N_Vector x)
+    static void N_VDotProd(N_Vector x, N_Vector y)
     {
       auto vx = static_cast<GenericVector *>(x->content);
 //      auto vy = std::shared_ptr<GenericVector>(y->content);
-      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
-      return x;
+//      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
     }
-    static double N_VMaxNorm(SUNDIALSNVector x)
+    static double N_VMaxNorm(N_Vector x)
     {
 	double d;
 	return d;
     }
 
+    static double N_VMin(N_Vector x)
+    {
+	double d;
+	return d;
+    }
     //-----------------------------------------------------------------------------
 
     /// Get underlying raw SUNDIALS N_Vector struct
     N_Vector nvector() const
     {
+      N_V->content = (void *)(vector.get());
       return N_V.get();
     }
 
@@ -187,25 +190,25 @@ namespace dolfin
 
 /* Structure containing function pointers to vector operations  */
     struct _generic_N_Vector_Ops ops = {N_VGetVectorID,    //   N_Vector_ID (*N_VGetVectorID)(SUNDIALSNVector);
-                                        NULL,    //   NVector    (*N_VClone)(NVector);
+                                        N_VClone,    //   NVector    (*N_VClone)(NVector);
                                         NULL,    //   NVector    (*N_VCloneEmpty)(NVector);
-                                        NULL,    //   void        (*N_VDestroy)(NVector);
+                                        N_VDestroy,    //   void        (*N_VDestroy)(NVector);
                                         NULL,    //   void        (*N_VSpace)(NVector, long int *, long int *);
                                         NULL,    //   realtype*   (*N_VGetArrayPointer)(NVector);
                                         NULL,    //   void        (*N_VSetArrayPointer)(realtype *, NVector);
-                                        NULL,    //   void        (*N_VLinearSum)(realtype, NVector, realtype, NVector, NVector);
+                                        N_VLinearSum,    //   void        (*N_VLinearSum)(realtype, NVector, realtype, NVector, NVector);
                                         N_VConst,          //   void        (*N_VConst)(realtype, NVector);
-                                        NULL,    //   void        (*N_VProd)(NVector, NVector, NVector);
-                                        NULL,    //   void        (*N_VDiv)(NVector, NVector, NVector);
-                                        NULL,    //   void        (*N_VScale)(realtype, NVector, NVector);
-                                        NULL,    //   void        (*N_VAbs)(NVector, NVector);
-                                        NULL,    //   void        (*N_VInv)(NVector, NVector);
-                                        NULL,    //   void        (*N_VAddConst)(NVector, realtype, NVector);
+                                        N_VProd,    //   void        (*N_VProd)(NVector, NVector, NVector);
+                                        N_VDiv,    //   void        (*N_VDiv)(NVector, NVector, NVector);
+                                        N_VScale,    //   void        (*N_VScale)(realtype, NVector, NVector);
+                                        N_VAbs,    //   void        (*N_VAbs)(NVector, NVector);
+                                        N_VInv,    //   void        (*N_VInv)(NVector, NVector);
+                                        N_VAddConst,    //   void        (*N_VAddConst)(NVector, realtype, NVector);
                                         NULL,    //   realtype    (*N_VDotProd)(NVector, NVector);
-                                        NULL,    //   realtype    (*N_VMaxNorm)(NVector);
-                                        NULL,    //   realtype    (*N_VWrmsNorm)(NVector, NVector);
+                                        N_VMaxNorm,    //   realtype    (*N_VMaxNorm)(NVector);
+                                        N_VWrmsNorm,    //   realtype    (*N_VWrmsNorm)(NVector, NVector);
                                         NULL,    //   realtype    (*N_VWrmsNormMask)(NVector, NVector, NVector);
-                                        NULL,    //   realtype    (*N_VMin)(NVector);
+                                        N_VMin,    //   realtype    (*N_VMin)(NVector);
                                         NULL,    //   realtype    (*N_VWl2Norm)(NVector, NVector);
                                         NULL,    //   realtype    (*N_VL1Norm)(NVector);
                                         NULL,    //   void        (*N_VCompare)(realtype, NVector, NVector);
