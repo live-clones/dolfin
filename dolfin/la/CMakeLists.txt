@@ -43,6 +43,7 @@ set(HEADERS
   solve.h
   SparsityPattern.h
   SUNDIALSNVector.h
+  SUNDIALSCVode.h
   TensorLayout.h
   test_nullspace.h
   TpetraFactory.h
