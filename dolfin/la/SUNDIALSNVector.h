@@ -108,14 +108,13 @@ namespace dolfin
 
     static void N_VDiv(N_Vector x, N_Vector y, N_Vector z)
     {
-      auto vx = static_cast<GenericVector *>(x->content);
-      auto vy = static_cast<GenericVector *>(y->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      // z = 1/y
+      N_VInv(y, z);
 
-      // z = x/y
-      *vz = *vx;
-      for(auto i=0;i<vz->size();i++)
-        vz->setitem(i,vz->getitem(i)/vy->getitem(i));
+      // z = z*x
+      auto vx = static_cast<GenericVector *>(x->content);
+      auto vz = static_cast<GenericVector *>(z->content);
+      *vz *= *vx;
     }
 
     static void N_VScale(double c, N_Vector x, N_Vector z)
@@ -123,10 +122,9 @@ namespace dolfin
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
-      // y = d*x
+      // z = c*x
       *vz = *vx;
       *vz *= c;
-
     }
 
     static void N_VAbs(N_Vector x, N_Vector z)
@@ -143,9 +141,12 @@ namespace dolfin
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
-      *vz = 1.0;
-      for(auto i=0;i<vx->size();i++)
-        vz->setitem(i,(vz->getitem(i)/vx->getitem(i)));
+      // z = 1/x
+      std::vector<double> xvals;
+      vx->get_local(xvals);
+      for (auto &val : xvals)
+        val = 1.0/val;
+      vz->set_local(xvals);
     }
 
     static void N_VAddConst(N_Vector x, double c, N_Vector z)
@@ -165,7 +166,7 @@ namespace dolfin
 
       *vz *= *vx;
       return vz->sum();
-      
+
     }
 
     static double N_VMaxNorm(N_Vector x)
