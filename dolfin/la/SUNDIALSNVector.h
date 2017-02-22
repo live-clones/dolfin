@@ -80,15 +80,15 @@ namespace dolfin
       return SUNDIALS_NVEC_CUSTOM;
     }
 
-    static void N_VConst(double c, N_Vector nv)
+    static void N_VConst(double c, N_Vector z)
     {
-      auto v = static_cast<GenericVector *>(nv->content);
+      auto v = static_cast<GenericVector *>(z->content);
       *v = c;
     }
 
-    static N_Vector N_VClone(N_Vector nv)
+    static N_Vector N_VClone(N_Vector z)
     {
-	return nv;
+	return z;
     }
 
     static void N_VProd(N_Vector x, N_Vector y, N_Vector z)
@@ -110,56 +110,67 @@ namespace dolfin
     {
       auto vx = static_cast<GenericVector *>(x->content);
       auto vy = static_cast<GenericVector *>(y->content);
-      auto vz = static_cast<GenericVector*>(z->content);
+      auto vz = static_cast<GenericVector *>(z->content);
 
       // z = x/y
       *vz = *vx;
-      *vz /= *vy;
+      for(auto i=0;i<vz->size();i++)
+        vz->setitem(i,vz->getitem(i)/vy->getitem(i));
     }
 
-    static void N_VScale(double d, N_Vector x, N_Vector y)
+    static void N_VScale(double c, N_Vector x, N_Vector z)
     {
       auto vx = static_cast<GenericVector *>(x->content);
-      auto vy = static_cast<GenericVector *>(y->content);
+      auto vz = static_cast<GenericVector *>(z->content);
 
       // y = d*x
-      *vy = *vx;
-      *vy *= d;
+      *vz = *vx;
+      *vz *= c;
 
     }
 
-    static void N_VAbs(N_Vector x, N_Vector y)
+    static void N_VAbs(N_Vector x, N_Vector z)
     {
       auto vx = static_cast<GenericVector *>(x->content);
-//      auto vy = std::shared_ptr<GenericVector>(y->content);
-//      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
+      auto vz = static_cast<GenericVector *>(z->content);
+
+      for(auto i=0;i<vx->size();i++)
+        vz->setitem(i,std::fabs(vx->getitem(i)));
     }
 
-    static void N_VInv(N_Vector x, N_Vector y)
+    static void N_VInv(N_Vector x, N_Vector z)
     {
       auto vx = static_cast<GenericVector *>(x->content);
-      auto vy = static_cast<GenericVector *>(y->content);
+      auto vz = static_cast<GenericVector *>(z->content);
 
-      *vy = 1.0;
-      *vy /= *vx;
+      *vz = 1.0;
+      for(auto i=0;i<vx->size();i++)
+        vz->setitem(i,(vz->getitem(i)/vx->getitem(i)));
     }
 
-    static void N_VAddConst(N_Vector x, double d, N_Vector y)
+    static void N_VAddConst(N_Vector x, double c, N_Vector z)
     {
       auto vx = static_cast<GenericVector *>(x->content);
-//      auto vy = std::shared_ptr<GenericVector>(y->content);
-//      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
+      auto vz = static_cast<GenericVector *>(z->content);
+
+      *vz = *vx;
+      *vz += c;
+
     }
 
-    static void N_VDotProd(N_Vector x, N_Vector y)
+    static double N_VDotProd(N_Vector x, N_Vector z)
     {
       auto vx = static_cast<GenericVector *>(x->content);
-//      auto vy = std::shared_ptr<GenericVector>(y->content);
-//      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
+      auto vz = static_cast<GenericVector *>(z->content);
+
+      *vz *= *vx;
+      return vz->sum();
+      
     }
+
     static double N_VMaxNorm(N_Vector x)
     {
-	double d;
+	double c;
 	return d;
     }
 
@@ -213,7 +224,7 @@ namespace dolfin
                                         N_VAbs,    //   void        (*N_VAbs)(NVector, NVector);
                                         N_VInv,    //   void        (*N_VInv)(NVector, NVector);
                                         N_VAddConst,    //   void        (*N_VAddConst)(NVector, realtype, NVector);
-                                        NULL,    //   realtype    (*N_VDotProd)(NVector, NVector);
+                                        N_VDotProd,    //   realtype    (*N_VDotProd)(NVector, NVector);
                                         N_VMaxNorm,    //   realtype    (*N_VMaxNorm)(NVector);
                                         N_VWrmsNorm,    //   realtype    (*N_VWrmsNorm)(NVector, NVector);
                                         NULL,    //   realtype    (*N_VWrmsNormMask)(NVector, NVector, NVector);
