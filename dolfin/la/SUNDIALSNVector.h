@@ -90,35 +90,42 @@ namespace dolfin
     {
 	return nv;
     }
+
     static void N_VProd(N_Vector x, N_Vector y, N_Vector z)
     {
       auto vx = static_cast<GenericVector*>(x->content);
       auto vy = static_cast<GenericVector*>(y->content);
-	
-//      SUNDIALSNVector z(vx->mpi_comm(), vx->size());
-//      std::shared_ptr<GenericVector> vz = z.vec();
 
-//      vz = vx;
+      // FIXME: should we check that z->content is actually pointing
+      // to a GenericVector? e.g. dynamic_cast with try/catch?
+      auto vz = static_cast<GenericVector*>(z->content);
 
-      *vx *= *vy;
-	
-//      x->content = (void *)(vx.get());
-
+      // Copy x to z
+      *vz = *vx;
+      // Multiply by y
+      *vz *= *vy;
     }
 
     static void N_VDiv(N_Vector x, N_Vector y, N_Vector z)
     {
       auto vx = static_cast<GenericVector *>(x->content);
       auto vy = static_cast<GenericVector *>(y->content);
-//      SUNDIALSNVector z(vx->mpi_comm(), vx->size());
-      *vx = *vy;
+      auto vz = static_cast<GenericVector*>(z->content);
+
+      // z = x/y
+      *vz = *vx;
+      *vz /= *vy;
     }
 
     static void N_VScale(double d, N_Vector x, N_Vector y)
     {
       auto vx = static_cast<GenericVector *>(x->content);
-//      auto vy = std::shared_ptr<GenericVector>(y->content);
-//      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
+      auto vy = static_cast<GenericVector *>(y->content);
+
+      // y = d*x
+      *vy = *vx;
+      *vy *= d;
+
     }
 
     static void N_VAbs(N_Vector x, N_Vector y)
@@ -131,8 +138,10 @@ namespace dolfin
     static void N_VInv(N_Vector x, N_Vector y)
     {
       auto vx = static_cast<GenericVector *>(x->content);
-//      auto vy = std::shared_ptr<GenericVector>(y->content);
-//      SUNDIALSNVector y(vx->mpi_comm(), vx->size());
+      auto vy = static_cast<GenericVector *>(y->content);
+
+      *vy = 1.0;
+      *vy /= *vx;
     }
 
     static void N_VAddConst(N_Vector x, double d, N_Vector y)
