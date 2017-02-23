@@ -132,8 +132,8 @@ namespace dolfin
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
-      for(auto i=0;i<vx->size();i++)
-        vz->setitem(i,std::fabs(vx->getitem(i)));
+      *vz = *vx;
+      vz->abs();
     }
 
     static void N_VInv(N_Vector x, N_Vector z)
