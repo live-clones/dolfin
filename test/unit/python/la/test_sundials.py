@@ -25,6 +25,6 @@ from dolfin import *
 from dolfin_utils.test import skip_if_not_PETSc, skip_in_parallel, pushpop_parameters
 
 def test_nvector():
-    nvector = NVector()
+    nvector = SUNDIALSNVector()
     print(dir(nvector))
     assert True
