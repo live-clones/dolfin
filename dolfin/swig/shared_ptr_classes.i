@@ -190,7 +190,7 @@
 #endif
 
 #ifdef HAS_SUNDIALS
-%shared_ptr(dolfin::NVector)
+%shared_ptr(dolfin::SUNDIALSNVector)
 #endif
 
 #ifdef HAS_SLEPC
