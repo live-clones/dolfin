@@ -10,12 +10,12 @@ pipelines:
         script:
           - wget http://computation.llnl.gov/projects/sundials/download/sundials-2.7.0.tar.gz
           - tar xf sundials-2.7.0.tar.gz
-          - cd sundials-2.7.0
-          - mkdir -p build
-          - cd build
+          - mkdir -p sundials-2.7.0/build
+          - cd sundials-2.7.0/build
           - cmake ..
           - make
           - make install
+	  - cd ../..
           - pip2 install git+https://bitbucket.org/fenics-project/fiat.git@master
           - pip2 install git+https://bitbucket.org/fenics-project/ufl.git@master
           - pip2 install git+https://bitbucket.org/fenics-project/dijitso.git@master
