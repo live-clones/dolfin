@@ -9,7 +9,7 @@ pipelines:
     - step:
         script:
           - wget http://computation.llnl.gov/projects/sundials/download/sundials-2.7.0.tar.gz
-          - tar xf sundials-2.7.0
+          - tar xf sundials-2.7.0.tar.gz
           - cd sundials-2.7.0
           - mkdir -p build
           - cd build
