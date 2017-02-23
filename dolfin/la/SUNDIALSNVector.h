@@ -172,7 +172,7 @@ namespace dolfin
     static double N_VMaxNorm(N_Vector x)
     {
 	double c;
-	return d;
+	return c;
     }
 
     static double N_VMin(N_Vector x)
