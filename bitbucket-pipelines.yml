@@ -15,7 +15,7 @@ pipelines:
           - cmake ..
           - make
           - make install
-	  - cd ../..
+          - cd ../..
           - pip2 install git+https://bitbucket.org/fenics-project/fiat.git@master
           - pip2 install git+https://bitbucket.org/fenics-project/ufl.git@master
           - pip2 install git+https://bitbucket.org/fenics-project/dijitso.git@master
