@@ -12,7 +12,7 @@ pipelines:
           - tar xf sundials-2.7.0.tar.gz
           - mkdir -p sundials-2.7.0/build
           - cd sundials-2.7.0/build
-          - cmake ..
+          - cmake -DMPI_ENABLE=ON ..
           - make
           - make install
           - cd ../..
