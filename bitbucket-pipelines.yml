@@ -16,6 +16,7 @@ pipelines:
           - make
           - make install
           - cd ../..
+          - export SUNDIALS_DIR=/usr/local
           - pip2 install git+https://bitbucket.org/fenics-project/fiat.git@master
           - pip2 install git+https://bitbucket.org/fenics-project/ufl.git@master
           - pip2 install git+https://bitbucket.org/fenics-project/dijitso.git@master
