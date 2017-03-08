@@ -88,7 +88,9 @@ namespace dolfin
 
     static N_Vector N_VClone(N_Vector z)
     {
-	return z;
+      auto vz = static_cast<GenericVector *>(z->content);
+       
+      return z;
     }
 
     static void N_VProd(N_Vector x, N_Vector y, N_Vector z)
@@ -164,8 +166,8 @@ namespace dolfin
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
-      *vz *= *vx;
-      return vz->sum();
+      //*vz *= *vx;
+      return vx->inner(vz);
 
     }
 
