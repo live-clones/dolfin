@@ -89,17 +89,27 @@ namespace dolfin
     static N_Vector N_VClone(N_Vector z)
     {
       auto vz = static_cast<GenericVector *>(z->content);
-      auto vector = vz->copy();
+
+      Vector *new_vector = new Vector(*vz);
+
+      std::cout << "New vector at " << new_vector << "\n";
+
+
+      //      new_vector->init(vz->local_range());
 
       N_Vector *V = new N_Vector;
+      std::cout << "New object at " << V << "\n";
       (*V)->ops = z->ops;
-      (*V)->content = (void *)(vector.get());
+      (*V)->content = (void *)(new_vector);
 
       return (*V);
     }
 
     static void N_VDestroy(N_Vector z)
     {
+      std::cout << "Delete vector at " << z->content << "\n";
+      delete (GenericVector*)(z->content);
+      std::cout << "Delete object at " << &z << "\n";
       delete &z;
     }
 
