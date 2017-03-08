@@ -91,14 +91,14 @@ namespace dolfin
       auto vz = static_cast<GenericVector *>(z->content);
       auto vector = vz->copy();
 
-      V = new N_Vector;
-      V->ops = &ops;
-      V->content = (void *)(vector.get());
+      N_Vector *V = new N_Vector;
+      (*V)->ops = z->ops;
+      (*V)->content = (void *)(vector.get());
 
-      return &V;
+      return (*V);
     }
 
-    static N_Vector N_VDestroy(N_Vector z)
+    static void N_VDestroy(N_Vector z)
     {
       delete &z;
     }
@@ -177,7 +177,7 @@ namespace dolfin
       auto vz = static_cast<GenericVector *>(z->content);
 
       //*vz *= *vx;
-      return vx->inner(vz);
+      return vx->inner(*vz);
 
     }
 
