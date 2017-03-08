@@ -1,4 +1,4 @@
-// Copyright (C) 2007 Garth N. Wells
+// Copyright (C) 2017
 //
 // This file is part of DOLFIN.
 //
@@ -89,8 +89,18 @@ namespace dolfin
     static N_Vector N_VClone(N_Vector z)
     {
       auto vz = static_cast<GenericVector *>(z->content);
-       
-      return z;
+      auto vector = vz->copy();
+
+      V = new N_Vector;
+      V->ops = &ops;
+      V->content = (void *)(vector.get());
+
+      return &V;
+    }
+
+    static N_Vector N_VDestroy(N_Vector z)
+    {
+      delete &z;
     }
 
     static void N_VProd(N_Vector x, N_Vector y, N_Vector z)
