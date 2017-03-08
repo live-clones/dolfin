@@ -41,6 +41,8 @@ namespace dolfin
   /// i), where dim is the topological dimension and i is the index of
   /// the entity within that topological dimension.
 
+  class MeshViewMapping;
+
   class MeshTopology
   {
   public:
@@ -197,6 +199,8 @@ namespace dolfin
     // Connectivity for pairs of topological dimensions
     std::vector<std::vector<MeshConnectivity> > connectivity;
 
+    // Mapping to another Mesh
+    std::shared_ptr<MeshViewMapping> _mapping;
   };
 
 }
