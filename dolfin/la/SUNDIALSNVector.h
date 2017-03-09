@@ -158,10 +158,9 @@ namespace dolfin
     static void N_VAbs(N_Vector x, N_Vector z)
     {
       std::cout << "Abs\n";
-      auto vx = static_cast<GenericVector *>(x->content);
+      z = SUNDIALSNVector::N_VClone(x);
       auto vz = static_cast<GenericVector *>(z->content);
-
-      *vz = *vx;
+      
       vz->abs();
     }
 
@@ -204,16 +203,32 @@ namespace dolfin
     static double N_VMaxNorm(N_Vector x)
     {
       std::cout << "MaxNorm\n";
-      double c = 0;
-      return c;
+      N_Vector y = new _generic_N_Vector;
+      N_VAbs(x,y);
+      auto vx = static_cast<GenericVector *>(x->content);
+      auto vy = static_cast<GenericVector *>(y->content);
+      vx->abs();
+      return vx->max();
     }
 
     static double N_VMin(N_Vector x)
     {
       std::cout << "Min\n";
-      double d = 0;
-      return d;
+      return (static_cast<GenericVector *>(x->content))->min();
     }
+
+    static void N_VLinearSum(double a, N_Vector x, double b, N_Vector y, N_Vector z)
+    {
+      auto vx = static_cast<GenericVector *>(x->content);
+      auto vy = static_cast<GenericVector *>(y->content);
+    
+      *vx *= a;
+      *vy *= b;
+      
+      *vx += *vy;
+  
+    }
+
     //-----------------------------------------------------------------------------
 
     /// Get underlying raw SUNDIALS N_Vector struct
