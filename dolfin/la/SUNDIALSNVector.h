@@ -76,45 +76,48 @@ namespace dolfin
 
     static N_Vector_ID N_VGetVectorID(N_Vector nv)
     {
+      std::cout << "GetVectorID\n";
       // ID for custom SUNDIALSNVector implementation
       return SUNDIALS_NVEC_CUSTOM;
     }
 
     static void N_VConst(double c, N_Vector z)
     {
+      std::cout << "Const\n";
       auto v = static_cast<GenericVector *>(z->content);
       *v = c;
     }
 
     static N_Vector N_VClone(N_Vector z)
     {
+      std::cout << "Clone\n";
       auto vz = static_cast<GenericVector *>(z->content);
 
-      Vector *new_vector = new Vector(*vz);
+      GenericVector *new_vector = new Vector(MPI_COMM_WORLD);
+      new_vector->init(vz->local_range());
 
+      std::cout << "New vector size = " << new_vector->size() << "\n";
       std::cout << "New vector at " << new_vector << "\n";
 
-
-      //      new_vector->init(vz->local_range());
-
-      N_Vector *V = new N_Vector;
+      _generic_N_Vector *V = new _generic_N_Vector;
       std::cout << "New object at " << V << "\n";
-      (*V)->ops = z->ops;
-      (*V)->content = (void *)(new_vector);
+      V->ops = z->ops;
+      V->content = (void *)(new_vector);
 
-      return (*V);
+      return V;
     }
 
     static void N_VDestroy(N_Vector z)
     {
       std::cout << "Delete vector at " << z->content << "\n";
       delete (GenericVector*)(z->content);
-      std::cout << "Delete object at " << &z << "\n";
-      delete &z;
+      std::cout << "Delete object at " << z << "\n";
+      delete z;
     }
 
     static void N_VProd(N_Vector x, N_Vector y, N_Vector z)
     {
+      std::cout << "Prod\n";
       auto vx = static_cast<GenericVector*>(x->content);
       auto vy = static_cast<GenericVector*>(y->content);
 
@@ -130,6 +133,7 @@ namespace dolfin
 
     static void N_VDiv(N_Vector x, N_Vector y, N_Vector z)
     {
+      std::cout << "Div\n";
       // z = 1/y
       N_VInv(y, z);
 
@@ -141,6 +145,8 @@ namespace dolfin
 
     static void N_VScale(double c, N_Vector x, N_Vector z)
     {
+      std::cout << "Scale vector at " << x->content << " into " << z->content << "\n";
+
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
@@ -151,6 +157,7 @@ namespace dolfin
 
     static void N_VAbs(N_Vector x, N_Vector z)
     {
+      std::cout << "Abs\n";
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
@@ -160,6 +167,7 @@ namespace dolfin
 
     static void N_VInv(N_Vector x, N_Vector z)
     {
+      std::cout << "Inv\n";
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
@@ -173,6 +181,7 @@ namespace dolfin
 
     static void N_VAddConst(N_Vector x, double c, N_Vector z)
     {
+      std::cout << "AddConst\n";
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
@@ -183,6 +192,7 @@ namespace dolfin
 
     static double N_VDotProd(N_Vector x, N_Vector z)
     {
+      std::cout << "Dot\n";
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
@@ -193,14 +203,16 @@ namespace dolfin
 
     static double N_VMaxNorm(N_Vector x)
     {
-	double c;
-	return c;
+      std::cout << "MaxNorm\n";
+      double c = 0;
+      return c;
     }
 
     static double N_VMin(N_Vector x)
     {
-	double d;
-	return d;
+      std::cout << "Min\n";
+      double d = 0;
+      return d;
     }
     //-----------------------------------------------------------------------------
 
@@ -216,7 +228,6 @@ namespace dolfin
     {
       return vector;
     }
-
 
     /// Assignment operator
     const SUNDIALSNVector& operator= (const SUNDIALSNVector& x)
