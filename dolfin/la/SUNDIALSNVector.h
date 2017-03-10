@@ -221,12 +221,57 @@ namespace dolfin
     {
       auto vx = static_cast<GenericVector *>(x->content);
       auto vy = static_cast<GenericVector *>(y->content);
+      auto vz = static_cast<GenericVector *>(z->content);
     
       *vx *= a;
       *vy *= b;
       
       *vx += *vy;
-  
+      
+      *vz = *vx;
+      
+    }
+
+    static double N_VWrmsNorm(N_Vector x, N_Vector z)
+    {
+      double c;
+      auto vx = static_cast<GenericVector *>(x->content);
+      auto vz = static_cast<GenericVector *>(z->content);
+      
+      *vz *= *vx;
+      c = std::sqrt(vz->sum()/vz->size());
+      return c;
+    }
+
+    static void N_VCompare(double c, N_Vector x, N_Vector z)
+    {
+      
+      auto vx = static_cast<GenericVector *>(x->content);
+      auto vz = static_cast<GenericVector *>(z->content);
+
+      std::vector<double> xvals;
+      vx->get_local(xvals);
+      for (auto &val : xvals)
+        val = (val >= c) ? 1.0 : 0.0;
+      vz->set_local(xvals);
+
+    }
+
+    static int N_VInvTest(N_Vector x, N_Vector z)
+    {
+      int no_zero_found = true;
+      auto vx = static_cast<GenericVector *>(x->content);
+      auto vz = static_cast<GenericVector *>(z->content);
+
+      std::vector<double> xvals;
+      vx->get_local(xvals);
+      for (auto &val : xvals)
+        if(val != 0)
+	  val = 1.0/val;
+	else
+	  no_zero_found = false;
+      vz->set_local(xvals);
+      return no_zero_found;
     }
 
     //-----------------------------------------------------------------------------
@@ -280,8 +325,8 @@ namespace dolfin
                                         N_VMin,    //   realtype    (*N_VMin)(NVector);
                                         NULL,    //   realtype    (*N_VWl2Norm)(NVector, NVector);
                                         NULL,    //   realtype    (*N_VL1Norm)(NVector);
-                                        NULL,    //   void        (*N_VCompare)(realtype, NVector, NVector);
-                                        NULL,    //   booleantype (*N_VInvtest)(NVector, NVector);
+                                        N_VCompare,    //   void        (*N_VCompare)(realtype, NVector, NVector);
+                                        N_VInvTest,    //   booleantype (*N_VInvtest)(NVector, NVector);
                                         NULL,    //   booleantype (*N_VConstrMask)(NVector, NVector, NVector);
                                         NULL};    //   realtype    (*N_VMinQuotient)(NVector, NVector);
   };
