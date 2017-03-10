@@ -239,7 +239,7 @@ namespace dolfin
       auto vz = static_cast<GenericVector *>(z->content);
       
       *vz *= *vx;
-      c = std::sqrt(vz->sum()/vz->size());
+      c = std::sqrt(std::pow(vz->sum(),2)/vz->size());
       return c;
     }
 
