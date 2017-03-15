@@ -161,7 +161,6 @@ namespace dolfin
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
-      // z = x
       *vz = *vx;
       vz->abs();
     }
@@ -205,10 +204,13 @@ namespace dolfin
     static double N_VMaxNorm(N_Vector x)
     {
       std::cout << "MaxNorm\n";
+
+      N_Vector y = N_VClone(x);
       auto vx = static_cast<GenericVector *>(x->content);
-      Vector vy(*vx);
-      vy.abs();
-      return vy.max();
+      auto vy = static_cast<GenericVector *>(y->content);
+      *vy = *vx;
+      vy->abs();
+      return vy->max();
     }
 
     static double N_VMin(N_Vector x)
@@ -239,7 +241,9 @@ namespace dolfin
       auto vz = static_cast<GenericVector *>(z->content);
 
       *vz *= *vx;
-      c = std::sqrt(std::pow(vz->sum(),2)/vz->size());
+      *vz *= *vz;
+      c = std::sqrt(vz->sum()/vz->size());
+      std::cout << "WrmsNorm" << std::endl;
       return c;
     }
 
@@ -248,12 +252,12 @@ namespace dolfin
 
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
-
       std::vector<double> xvals;
       vx->get_local(xvals);
       for (auto &val : xvals)
-        val = (val >= c) ? 1.0 : 0.0;
+        val = (std::abs(val) >= c) ? 1.0 : 0.0;
       vz->set_local(xvals);
+      std::cout << "Compare" << std::endl;
 
     }
 
@@ -271,6 +275,7 @@ namespace dolfin
 	else
 	  no_zero_found = false;
       vz->set_local(xvals);
+      std::cout << "InvTest" << std::endl;
       return no_zero_found;
     }
 
