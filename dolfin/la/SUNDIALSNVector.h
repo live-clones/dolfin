@@ -177,6 +177,7 @@ namespace dolfin
       for (auto &val : xvals)
         val = 1.0/val;
       vz->set_local(xvals);
+      vz->apply("insert");
     }
 
     static void N_VAddConst(N_Vector x, double c, N_Vector z)
@@ -255,6 +256,8 @@ namespace dolfin
       for (auto &val : xvals)
         val = (std::abs(val) >= c) ? 1.0 : 0.0;
       vz->set_local(xvals);
+      vz->apply("insert");
+
       std::cout << "Compare" << std::endl;
 
     }
@@ -273,6 +276,9 @@ namespace dolfin
 	else
 	  no_zero_found = false;
       vz->set_local(xvals);
+
+      vz->apply("insert");
+
       std::cout << "InvTest" << std::endl;
       return no_zero_found;
     }
