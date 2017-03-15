@@ -205,7 +205,6 @@ namespace dolfin
       std::cout << "MaxNorm\n";
       auto vx = static_cast<GenericVector *>(x->content);
       Vector vy = Vector(*vx);
-//      auto vy = static_cast<GenericVector *>(y->content);
       vy = *vx;
       vy.abs();
       return vy.max();
