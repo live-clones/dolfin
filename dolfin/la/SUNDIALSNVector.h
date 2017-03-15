@@ -239,7 +239,9 @@ namespace dolfin
       auto vz = static_cast<GenericVector *>(z->content);
 
       *vz *= *vx;
-      c = std::sqrt(std::pow(vz->sum(),2)/vz->size());
+      *vz *= *vz;
+      c = std::sqrt(vz->sum()/vz->size());
+      std::cout << "WrmsNorm" << std::endl;
       return c;
     }
 
@@ -248,12 +250,12 @@ namespace dolfin
 
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
-
       std::vector<double> xvals;
       vx->get_local(xvals);
       for (auto &val : xvals)
-        val = (val >= c) ? 1.0 : 0.0;
+        val = (std::abs(val) >= c) ? 1.0 : 0.0;
       vz->set_local(xvals);
+      std::cout << "Compare" << std::endl;
 
     }
 
@@ -271,6 +273,7 @@ namespace dolfin
 	else
 	  no_zero_found = false;
       vz->set_local(xvals);
+      std::cout << "InvTest" << std::endl;
       return no_zero_found;
     }
 
