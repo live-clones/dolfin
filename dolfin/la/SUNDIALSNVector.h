@@ -121,8 +121,6 @@ namespace dolfin
       auto vx = static_cast<GenericVector*>(x->content);
       auto vy = static_cast<GenericVector*>(y->content);
 
-      // FIXME: should we check that z->content is actually pointing
-      // to a GenericVector? e.g. dynamic_cast with try/catch?
       auto vz = static_cast<GenericVector*>(z->content);
 
       // Copy x to z
@@ -188,7 +186,6 @@ namespace dolfin
 
       *vz = *vx;
       *vz += c;
-
     }
 
     static double N_VDotProd(N_Vector x, N_Vector z)
@@ -197,9 +194,7 @@ namespace dolfin
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
-      //*vz *= *vx;
       return vx->inner(*vz);
-
     }
 
     static double N_VMaxNorm(N_Vector x)
@@ -224,13 +219,16 @@ namespace dolfin
       auto vy = static_cast<GenericVector *>(y->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
-      *vx *= a;
-      *vy *= b;
+      // w = a*x
+      Vector w(*vx);
+      w *= a;
 
-      *vx += *vy;
+      // z = b*y
+      *vz = *vy;
+      *vz *= b;
 
-      *vz = *vx;
-
+      // z = a*x + b*y
+      *vz += w;
     }
 
     static double N_VWrmsNorm(N_Vector x, N_Vector z)
