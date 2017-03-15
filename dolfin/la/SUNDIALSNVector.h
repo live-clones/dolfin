@@ -215,9 +215,9 @@ namespace dolfin
 
     static void N_VLinearSum(double a, N_Vector x, double b, N_Vector y, N_Vector z)
     {
-      auto vx = static_cast<GenericVector *>(x->content);
-      auto vy = static_cast<GenericVector *>(y->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<Vector *>(x->content);
+      auto vy = static_cast<Vector *>(y->content);
+      auto vz = static_cast<Vector *>(z->content);
 
       // w = a*x
       Vector w(*vx);
