@@ -148,6 +148,21 @@ namespace dolfin
     list_attributes(const hid_t hdf5_file_handle,
                     const std::string dataset_path);
 
+    /// Set MPI atomicity. See
+    /// https://support.hdfgroup.org/HDF5/doc/RM/RM_H5F.html#File-SetMpiAtomicity
+    /// and
+    /// https://www.open-mpi.org/doc/v2.0/man3/MPI_File_set_atomicity.3.php
+    /// Writes must be followed by an MPI_Barrier on the communicator before
+    /// any subsequent reads are guaranteed to return the same data.
+    static void set_mpi_atomicity(const hid_t hdf5_file_handle,
+                                  const bool atomic);
+
+    /// Get MPI atomicity. See
+    /// https://support.hdfgroup.org/HDF5/doc/RM/RM_H5F.html#File-GetMpiAtomicity
+    /// and
+    /// https://www.open-mpi.org/doc/v2.0/man3/MPI_File_get_atomicity.3.php
+    static bool get_mpi_atomicity(const hid_t hdf5_file_handle);
+
   private:
 
     static herr_t attribute_iteration_function(hid_t loc_id,
@@ -300,8 +315,14 @@ namespace dolfin
     const hid_t plist_id = H5Pcreate(H5P_DATASET_XFER);
     if (use_mpi_io)
     {
+     #ifdef H5_HAVE_PARALLEL
       status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);
       dolfin_assert(status != HDF5_FAIL);
+     #else
+      dolfin_error("HDF5Interface.h",
+                   "use MPI",
+                   "HDF5 library has not been configured with MPI");
+     #endif
     }
 
     // Write local dataset into selected hyperslab

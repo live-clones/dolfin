@@ -360,7 +360,7 @@ double TetrahedronCell::facet_area(const Cell& cell, std::size_t facet) const
 //-----------------------------------------------------------------------------
 void TetrahedronCell::order(
   Cell& cell,
-  const std::vector<std::size_t>& local_to_global_vertex_indices) const
+  const std::vector<std::int64_t>& local_to_global_vertex_indices) const
 {
   // Sort i - j for i > j: 1 - 0, 2 - 0, 2 - 1, 3 - 0, 3 - 1, 3 - 2
 
@@ -558,7 +558,12 @@ std::size_t TetrahedronCell::find_edge(std::size_t i, const Cell& cell) const
   dolfin_assert(e);
 
   // Ordering convention for edges (order of non-incident vertices)
-  static std::size_t EV[6][2] = {{0, 1}, {0, 2}, {0, 3}, {1, 2}, {1, 3}, {2, 3}};
+  static const std::size_t EV[6][2] = {{0, 1},
+                                       {0, 2},
+                                       {0, 3},
+                                       {1, 2},
+                                       {1, 3},
+                                       {2, 3}};
 
   // Look for edge satisfying ordering convention
   for (std::size_t j = 0; j < 6; j++)

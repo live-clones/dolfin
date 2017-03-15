@@ -39,6 +39,7 @@
 #include <dolfin/geometry/BoundingBoxTree.h>
 #include "BoundaryMesh.h"
 #include "Cell.h"
+#include "DistributedMeshTools.h"
 #include "Facet.h"
 #include "LocalMeshData.h"
 #include "MeshColoring.h"
@@ -61,14 +62,15 @@ Mesh::Mesh() : Mesh(MPI_COMM_WORLD)
 //-----------------------------------------------------------------------------
 Mesh::Mesh(MPI_Comm comm) : Variable("mesh", "DOLFIN mesh"),
                             Hierarchical<Mesh>(*this), _ordered(false),
-                            _mpi_comm(comm)
+                            _mpi_comm(comm), _ghost_mode("none")
 {
   // Do nothing
 }
 //-----------------------------------------------------------------------------
 Mesh::Mesh(const Mesh& mesh) : Variable("mesh", "DOLFIN mesh"),
                                Hierarchical<Mesh>(*this), _ordered(false),
-                               _mpi_comm(mesh.mpi_comm())
+                               _mpi_comm(mesh.mpi_comm()),
+                               _ghost_mode("none")
 {
   *this = mesh;
 }
@@ -80,7 +82,7 @@ Mesh::Mesh(std::string filename) : Mesh(MPI_COMM_WORLD, filename)
 //-----------------------------------------------------------------------------
 Mesh::Mesh(MPI_Comm comm, std::string filename)
   : Variable("mesh", "DOLFIN mesh"), Hierarchical<Mesh>(*this), _ordered(false),
-  _mpi_comm(comm)
+  _mpi_comm(comm), _ghost_mode("none")
 {
   File file(_mpi_comm, filename);
   file >> *this;
@@ -88,7 +90,7 @@ Mesh::Mesh(MPI_Comm comm, std::string filename)
 //-----------------------------------------------------------------------------
 Mesh::Mesh(MPI_Comm comm, LocalMeshData& local_mesh_data)
   : Variable("mesh", "DOLFIN mesh"), Hierarchical<Mesh>(*this),
-  _ordered(false), _mpi_comm(comm)
+  _ordered(false), _mpi_comm(comm), _ghost_mode("none")
 {
   const std::string ghost_mode = parameters["ghost_mode"];
   MeshPartitioning::build_distributed_mesh(*this, local_mesh_data, ghost_mode);
@@ -112,6 +114,7 @@ const Mesh& Mesh::operator=(const Mesh& mesh)
     _cell_type.reset();
   _ordered = mesh._ordered;
   _cell_orientations = mesh._cell_orientations;
+  _ghost_mode = mesh._ghost_mode;
 
   // Rename
   rename(mesh.name(), mesh.label());
@@ -220,6 +223,12 @@ void Mesh::init() const
   for (std::size_t d0 = 0; d0 <= topology().dim(); d0++)
     for (std::size_t d1 = 0; d1 <= topology().dim(); d1++)
       init(d0, d1);
+}
+//-----------------------------------------------------------------------------
+void Mesh::init_global(std::size_t dim) const
+{
+  init(dim);
+  DistributedMeshTools::number_entities(*this, dim);
 }
 //-----------------------------------------------------------------------------
 void Mesh::clean()
@@ -459,5 +468,13 @@ void Mesh::init_cell_orientations(const Expression& global_normal)
     dolfin_assert(cell->index() < _cell_orientations.size());
     _cell_orientations[cell->index()] = cell->orientation(up);
   }
+}
+//-----------------------------------------------------------------------------
+std::string Mesh::ghost_mode() const
+{
+  dolfin_assert(_ghost_mode == "none"
+                || _ghost_mode == "shared_vertex"
+                || _ghost_mode == "shared_facet");
+  return _ghost_mode;
 }
 //-----------------------------------------------------------------------------

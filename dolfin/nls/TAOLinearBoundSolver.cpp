@@ -47,8 +47,10 @@ const std::map<std::string, const KSPType> TAOLinearBoundSolver::_ksp_methods
     {"minres",     KSPMINRES},
     {"tfqmr",      KSPTFQMR},
     {"richardson", KSPRICHARDSON},
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 7 && PETSC_VERSION_RELEASE == 1
     {"nash",       KSPNASH},
     {"stcg",       KSPSTCG},
+    #endif
     {"bicgstab",   KSPBCGS} };
 //-----------------------------------------------------------------------------
 // Mapping from method string to description
@@ -312,12 +314,13 @@ void TAOLinearBoundSolver::set_ksp(std::string ksp_type)
     if (ierr != 0) petsc_error(ierr, __FILE__, "TaoGetKSP");
     if (ksp)
     {
+      dolfin_assert(_ksp_methods.find(ksp_type) != _ksp_methods.end());
       ierr = KSPSetType(ksp, _ksp_methods.find(ksp_type)->second);
       if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetType");
     }
     else
     {
-      log(WARNING, "The selected tao solver does not allow to set a specific "\
+      log(WARNING, "The selected tao solver does not allow one to set a specific "\
       "Krylov solver. Option %s is ignored", ksp_type.c_str());
     }
   }
@@ -344,19 +347,10 @@ void TAOLinearBoundSolver::read_parameters()
   PetscErrorCode ierr;
 
   // Set tolerances
-  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 6 && PETSC_VERSION_RELEASE == 1
-  ierr = TaoSetTolerances(_tao, parameters["function_absolute_tol"],
-                                parameters["function_relative_tol"],
-                                parameters["gradient_absolute_tol"],
-                                parameters["gradient_relative_tol"],
-                                parameters["gradient_t_tol"]);
-  if (ierr != 0) petsc_error(ierr, __FILE__, "TaoSetTolerances");
-  #else
   ierr = TaoSetTolerances(_tao, parameters["gradient_absolute_tol"],
                                 parameters["gradient_relative_tol"],
                                 parameters["gradient_t_tol"]);
   if (ierr != 0) petsc_error(ierr, __FILE__, "TaoSetTolerances");
-  #endif
 
   // Set TAO solver maximum iterations
   if (parameters["maximum_iterations"].is_set())
@@ -417,10 +411,6 @@ void TAOLinearBoundSolver::set_ksp_options()
     {
       if (krylov_parameters["monitor_convergence"])
       {
-        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 6 && PETSC_VERSION_RELEASE == 1
-        ierr = TaoSetMonitor(_tao, __TAOMonitor, this, NULL);
-        if (ierr != 0) petsc_error(ierr, __FILE__, "TaoSetMonitor");
-        #else
         PetscViewer viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp));
         PetscViewerFormat format = PETSC_VIEWER_DEFAULT;
         PetscViewerAndFormat *vf;
@@ -428,7 +418,6 @@ void TAOLinearBoundSolver::set_ksp_options()
         ierr = KSPMonitorSet(ksp, (PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*)) KSPMonitorTrueResidualNorm,
                              vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);
         if (ierr != 0) petsc_error(ierr, __FILE__, "KSPMonitorSet");
-        #endif
       }
     }
 

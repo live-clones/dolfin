@@ -1,7 +1,7 @@
 project(dolfin-tests)
 
 # Require CMake 2.8
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 # FIXME: Temporary fix for whitespace error
 cmake_policy(SET CMP0004 OLD)
@@ -83,6 +83,7 @@ if (DOLFIN_FOUND)
   endif()
 
   add_executable(unittests_cpp ${added_files})
+  add_dependencies(unittests_cpp googletest)
   target_link_libraries(unittests_cpp ${DOLFIN_LIBRARIES} gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 else()
