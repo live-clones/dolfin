@@ -235,13 +235,12 @@ namespace dolfin
 
     static double N_VWrmsNorm(N_Vector x, N_Vector z)
     {
-      double c;
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
-      *vz *= *vx;
-      *vz *= *vz;
-      c = std::sqrt(vz->sum()/vz->size());
+      Vector y(*vx);
+      y *= *vz;
+      double c = y.norm("l2")/std::sqrt(y.size());
       std::cout << "WrmsNorm" << std::endl;
       return c;
     }
