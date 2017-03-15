@@ -205,12 +205,10 @@ namespace dolfin
     static double N_VMaxNorm(N_Vector x)
     {
       std::cout << "MaxNorm\n";
-      N_Vector y = new _generic_N_Vector;
-      N_VAbs(x,y);
       auto vx = static_cast<GenericVector *>(x->content);
-      auto vy = static_cast<GenericVector *>(y->content);
-      vx->abs();
-      return vx->max();
+      Vector vy(*vx);
+      vy.abs();
+      return vy.max();
     }
 
     static double N_VMin(N_Vector x)
