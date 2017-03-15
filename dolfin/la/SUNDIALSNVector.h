@@ -158,9 +158,11 @@ namespace dolfin
     static void N_VAbs(N_Vector x, N_Vector z)
     {
       std::cout << "Abs\n";
-      z = SUNDIALSNVector::N_VClone(x);
+      auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
-      
+
+      // z = x
+      *vz = *vx;
       vz->abs();
     }
 
@@ -222,14 +224,14 @@ namespace dolfin
       auto vx = static_cast<GenericVector *>(x->content);
       auto vy = static_cast<GenericVector *>(y->content);
       auto vz = static_cast<GenericVector *>(z->content);
-    
+
       *vx *= a;
       *vy *= b;
-      
+
       *vx += *vy;
-      
+
       *vz = *vx;
-      
+
     }
 
     static double N_VWrmsNorm(N_Vector x, N_Vector z)
@@ -237,7 +239,7 @@ namespace dolfin
       double c;
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
-      
+
       *vz *= *vx;
       c = std::sqrt(std::pow(vz->sum(),2)/vz->size());
       return c;
@@ -245,7 +247,7 @@ namespace dolfin
 
     static void N_VCompare(double c, N_Vector x, N_Vector z)
     {
-      
+
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
