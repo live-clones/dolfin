@@ -83,24 +83,19 @@ namespace dolfin
 
     static void N_VConst(double c, N_Vector z)
     {
-      std::cout << "Const\n";
+      dolfin_debug("N_VConst");
       auto v = static_cast<GenericVector *>(z->content);
       *v = c;
     }
 
     static N_Vector N_VClone(N_Vector z)
     {
-      std::cout << "Clone\n";
-      auto vz = static_cast<GenericVector *>(z->content);
+      dolfin_debug("N_VClone");
+      auto vz = static_cast<const GenericVector *>(z->content);
 
-      GenericVector *new_vector = new Vector(MPI_COMM_WORLD);
-      new_vector->init(vz->local_range());
-
-      std::cout << "New vector size = " << new_vector->size() << "\n";
-      std::cout << "New vector at " << new_vector << "\n";
+      GenericVector *new_vector = new Vector(*vz);
 
       _generic_N_Vector *V = new _generic_N_Vector;
-      std::cout << "New object at " << V << "\n";
       V->ops = z->ops;
       V->content = (void *)(new_vector);
 
@@ -210,7 +205,7 @@ namespace dolfin
     static double N_VMin(N_Vector x)
     {
       std::cout << "Min\n";
-      return (static_cast<GenericVector *>(x->content))->min();
+      return (static_cast<const GenericVector *>(x->content))->min();
     }
 
     static void N_VLinearSum(double a, N_Vector x, double b, N_Vector y, N_Vector z)
@@ -233,14 +228,13 @@ namespace dolfin
 
     static double N_VWrmsNorm(N_Vector x, N_Vector z)
     {
+      std::cout << "WrmsNorm" << std::endl;
       auto vx = static_cast<GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
-      Vector y(*vx);
-      y *= *vz;
-      double c = y.norm("l2")/std::sqrt(y.size());
-      std::cout << "WrmsNorm" << std::endl;
-      return c;
+      auto y = vx->copy();
+      *y *= *vz;
+      return y->norm("l2")/std::sqrt(y->size());
     }
 
     static void N_VCompare(double c, N_Vector x, N_Vector z)
