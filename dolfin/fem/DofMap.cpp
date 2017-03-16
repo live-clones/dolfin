@@ -77,7 +77,7 @@ DofMap::DofMap(const DofMap& parent_dofmap,
   DofMapBuilder::build_sub_map_view(*this, parent_dofmap, component, mesh);
 }
 //-----------------------------------------------------------------------------
-DofMap::DofMap(std::unordered_map<std::size_t, std::size_t>& collapsed_map,
+DofMap::DofMap(std::unordered_map<int, int>& collapsed_map,
                const DofMap& dofmap_view, const Mesh& mesh)
   : _cell_dimension(0), _ufc_dofmap(dofmap_view._ufc_dofmap), _is_view(false),
     _global_dimension(0), _ufc_offset(0), _multimesh_offset(0),
@@ -116,9 +116,8 @@ DofMap::DofMap(std::unordered_map<std::size_t, std::size_t>& collapsed_map,
   collapsed_map.clear();
   for (std::size_t i = 0; i < mesh.num_cells(); ++i)
   {
-    const ArrayView<const dolfin::la_index> view_cell_dofs
-      = dofmap_view.cell_dofs(i);
-    const ArrayView<const dolfin::la_index> cell_dofs = this->cell_dofs(i);
+    const auto view_cell_dofs = dofmap_view.cell_dofs(i);
+    const auto cell_dofs = this->cell_dofs(i);
     dolfin_assert(view_cell_dofs.size() == cell_dofs.size());
 
     for (std::size_t j = 0; j < view_cell_dofs.size(); ++j)
@@ -471,12 +470,11 @@ std::shared_ptr<GenericDofMap>
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<GenericDofMap>
-  DofMap::collapse(std::unordered_map<std::size_t, std::size_t>&
-                   collapsed_map,
-                   const Mesh& mesh) const
+DofMap::collapse(std::unordered_map<int, int>& collapsed_map,
+                 const Mesh& mesh) const
 {
   return std::shared_ptr<GenericDofMap>(new DofMap(collapsed_map,
-                                                     *this, mesh));
+                                                   *this, mesh));
 }
 //-----------------------------------------------------------------------------
 std::vector<dolfin::la_index> DofMap::dofs(const Mesh& mesh,

@@ -152,15 +152,15 @@ const Function& Function::operator= (const Function& v)
   else
   {
     // Create new collapsed FunctionSpace
-    std::unordered_map<std::size_t, std::size_t> collapsed_map;
+    std::unordered_map<int, int> collapsed_map;
     _function_space = v._function_space->collapse(collapsed_map);
 
     // Get row indices of original and new vectors
-    std::unordered_map<std::size_t, std::size_t>::const_iterator entry;
     std::vector<dolfin::la_index> new_rows(collapsed_map.size());
     std::vector<dolfin::la_index> old_rows(collapsed_map.size());
     std::size_t i = 0;
-    for (entry = collapsed_map.begin(); entry != collapsed_map.end(); ++entry)
+    for (auto entry = collapsed_map.begin(); entry != collapsed_map.end();
+         ++entry)
     {
       new_rows[i]   = entry->first;
       old_rows[i++] = entry->second;

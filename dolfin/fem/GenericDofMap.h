@@ -164,8 +164,8 @@ namespace dolfin
 
     /// Create a "collapsed" a dofmap (collapses from a sub-dofmap view)
     virtual std::shared_ptr<GenericDofMap>
-        collapse(std::unordered_map<std::size_t, std::size_t>& collapsed_map,
-                 const Mesh& mesh) const = 0;
+      collapse(std::unordered_map<int, int>& collapsed_map,
+               const Mesh& mesh) const = 0;
 
     /// Return list of dof indices on this process that belong to mesh
     /// entities of dimension dim

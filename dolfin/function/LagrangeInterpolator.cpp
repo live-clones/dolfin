@@ -390,9 +390,9 @@ LagrangeInterpolator::extract_dof_component_map(std::unordered_map<std::size_t,
   // Extract sub dofmaps recursively and store dof to component map
   if (V.element()->num_sub_elements() == 0)
   {
-    std::unordered_map<std::size_t, std::size_t> collapsed_map;
+    std::unordered_map<int, int> collapsed_map;
     std::shared_ptr<GenericDofMap> dummy
-      = V.dofmap()->collapse(collapsed_map, *V.mesh());
+                       = V.dofmap()->collapse(collapsed_map, *V.mesh());
     (*component)++;
     for (const auto &map_it : collapsed_map)
       dof_component_map[map_it.second] = (*component);

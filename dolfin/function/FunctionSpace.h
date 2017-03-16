@@ -234,14 +234,14 @@ namespace dolfin
     /// from new to old dofs
     ///
     /// *Arguments*
-    ///     collapsed_dofs (std::unordered_map<std::size_t, std::size_t>)
+    ///     collapsed_dofs (std::unordered_map<int, int>)
     ///         The map from new to old dofs.
     ///
     /// *Returns*
     ///     _FunctionSpace_
     ///       The new function space.
     std::shared_ptr<FunctionSpace>
-    collapse(std::unordered_map<std::size_t, std::size_t>& collapsed_dofs) const;
+      collapse(std::unordered_map<int, int>& collapsed_dofs) const;
 
     /// Check if function space has given cell
     ///

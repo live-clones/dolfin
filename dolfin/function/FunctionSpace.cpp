@@ -310,12 +310,12 @@ FunctionSpace::extract_sub_space(const std::vector<std::size_t>& component) cons
 //-----------------------------------------------------------------------------
 std::shared_ptr<FunctionSpace> FunctionSpace::collapse() const
 {
-  std::unordered_map<std::size_t, std::size_t> collapsed_dofs;
+  std::unordered_map<int, int> collapsed_dofs;
   return collapse(collapsed_dofs);
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<FunctionSpace>FunctionSpace::collapse(
-  std::unordered_map<std::size_t, std::size_t>& collapsed_dofs) const
+  std::unordered_map<int, int>& collapsed_dofs) const
 {
   dolfin_assert(_mesh);
 
@@ -331,9 +331,7 @@ std::shared_ptr<FunctionSpace>FunctionSpace::collapse(
     collapsed_dofmap(_dofmap->collapse(collapsed_dofs, *_mesh));
 
   // Create new FunctionSpace and return
-  std::shared_ptr<FunctionSpace>
-    collapsed_sub_space(new FunctionSpace(_mesh, _element, collapsed_dofmap));
-  return collapsed_sub_space;
+  return std::make_shared<FunctionSpace>(_mesh, _element, collapsed_dofmap);
 }
 //-----------------------------------------------------------------------------
 std::vector<std::size_t> FunctionSpace::component() const

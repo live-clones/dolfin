@@ -83,7 +83,7 @@ namespace dolfin
            const Mesh& mesh);
 
     // Create a collapsed dofmap from parent_dofmap
-    DofMap(std::unordered_map<std::size_t, std::size_t>& collapsed_map,
+    DofMap(std::unordered_map<int, int>& collapsed_map,
            const DofMap& dofmap_view, const Mesh& mesh);
 
     // Copy constructor
@@ -362,8 +362,8 @@ namespace dolfin
     ///     DofMap
     ///         The collapsed dofmap.
     std::shared_ptr<GenericDofMap>
-      collapse(std::unordered_map<std::size_t, std::size_t>&
-               collapsed_map, const Mesh& mesh) const;
+      collapse(std::unordered_map<int, int>& collapsed_map,
+               const Mesh& mesh) const;
 
     // FIXME: Document this function properly
     /// Return list of dof indices on this process that belong to mesh
