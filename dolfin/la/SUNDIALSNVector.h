@@ -76,7 +76,7 @@ namespace dolfin
 
     static N_Vector_ID N_VGetVectorID(N_Vector nv)
     {
-      std::cout << "GetVectorID\n";
+      dolfin_debug("N_VGetVectorID");
       // ID for custom SUNDIALSNVector implementation
       return SUNDIALS_NVEC_CUSTOM;
     }
@@ -104,18 +104,16 @@ namespace dolfin
 
     static void N_VDestroy(N_Vector z)
     {
-      std::cout << "Delete vector at " << z->content << "\n";
+      dolfin_debug("N_VDestroy");
       delete (GenericVector*)(z->content);
-      std::cout << "Delete object at " << z << "\n";
       delete z;
     }
 
     static void N_VProd(N_Vector x, N_Vector y, N_Vector z)
     {
-      std::cout << "Prod\n";
-      auto vx = static_cast<GenericVector*>(x->content);
-      auto vy = static_cast<GenericVector*>(y->content);
-
+      dolfin_debug("N_VProd");
+      auto vx = static_cast<const GenericVector*>(x->content);
+      auto vy = static_cast<const GenericVector*>(y->content);
       auto vz = static_cast<GenericVector*>(z->content);
 
       // Copy x to z
@@ -126,21 +124,21 @@ namespace dolfin
 
     static void N_VDiv(N_Vector x, N_Vector y, N_Vector z)
     {
-      std::cout << "Div\n";
+      dolfin_debug("N_VDiv");
       // z = 1/y
       N_VInv(y, z);
 
       // z = z*x
-      auto vx = static_cast<GenericVector *>(x->content);
+      auto vx = static_cast<const GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
       *vz *= *vx;
     }
 
     static void N_VScale(double c, N_Vector x, N_Vector z)
     {
-      std::cout << "Scale vector at " << x->content << " into " << z->content << "\n";
 
-      auto vx = static_cast<GenericVector *>(x->content);
+      dolfin_debug("N_VScale");
+      auto vx = static_cast<const GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
       // z = c*x
@@ -150,8 +148,8 @@ namespace dolfin
 
     static void N_VAbs(N_Vector x, N_Vector z)
     {
-      std::cout << "Abs\n";
-      auto vx = static_cast<GenericVector *>(x->content);
+      dolfin_debug("N_VAbs");
+      auto vx = static_cast<const GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
       // z = x
@@ -161,8 +159,8 @@ namespace dolfin
 
     static void N_VInv(N_Vector x, N_Vector z)
     {
-      std::cout << "Inv\n";
-      auto vx = static_cast<GenericVector *>(x->content);
+      dolfin_debug("N_VInv");
+      auto vx = static_cast<const GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
       // z = 1/x
@@ -176,8 +174,8 @@ namespace dolfin
 
     static void N_VAddConst(N_Vector x, double c, N_Vector z)
     {
-      std::cout << "AddConst\n";
-      auto vx = static_cast<GenericVector *>(x->content);
+      dolfin_debug("N_VAddConst");
+      auto vx = static_cast<const GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
       *vz = *vx;
@@ -186,8 +184,8 @@ namespace dolfin
 
     static double N_VDotProd(N_Vector x, N_Vector z)
     {
-      std::cout << "Dot\n";
-      auto vx = static_cast<GenericVector *>(x->content);
+      dolfin_debug("N_VDotProd");
+      auto vx = static_cast<const GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
       return vx->inner(*vz);
@@ -195,24 +193,25 @@ namespace dolfin
 
     static double N_VMaxNorm(N_Vector x)
     {
-      std::cout << "MaxNorm\n";
-      auto vx = static_cast<GenericVector *>(x->content);
-      Vector vy(*vx);
-      vy.abs();
-      return vy.max();
+      dolfin_debug("N_VMaxNorm");
+      auto vx = static_cast<const GenericVector *>(x->content);
+      auto vy = vx->copy();
+      vy->abs();
+      return vy->max();
     }
 
     static double N_VMin(N_Vector x)
     {
-      std::cout << "Min\n";
+      dolfin_debug("N_VMin");
       return (static_cast<const GenericVector *>(x->content))->min();
     }
 
     static void N_VLinearSum(double a, N_Vector x, double b, N_Vector y, N_Vector z)
     {
-      auto vx = static_cast<Vector *>(x->content);
-      auto vy = static_cast<Vector *>(y->content);
-      auto vz = static_cast<Vector *>(z->content);
+      dolfin_debug("N_VLinearSum");
+      auto vx = static_cast<const GenericVector *>(x->content);
+      auto vy = static_cast<const GenericVector *>(y->content);
+      auto vz = static_cast<GenericVector *>(z->content);
 
       // w = a*x
       Vector w(*vx);
@@ -228,8 +227,8 @@ namespace dolfin
 
     static double N_VWrmsNorm(N_Vector x, N_Vector z)
     {
-      std::cout << "WrmsNorm" << std::endl;
-      auto vx = static_cast<GenericVector *>(x->content);
+      dolfin_debug("N_VWrmsNorm");
+      auto vx = static_cast<const GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
       auto y = vx->copy();
@@ -239,8 +238,8 @@ namespace dolfin
 
     static void N_VCompare(double c, N_Vector x, N_Vector z)
     {
-
-      auto vx = static_cast<GenericVector *>(x->content);
+      dolfin_debug("N_VCompare");
+      auto vx = static_cast<const GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
       std::vector<double> xvals;
       vx->get_local(xvals);
@@ -255,8 +254,9 @@ namespace dolfin
 
     static int N_VInvTest(N_Vector x, N_Vector z)
     {
+      dolfin_debug("N_VInvTest");
       int no_zero_found = true;
-      auto vx = static_cast<GenericVector *>(x->content);
+      auto vx = static_cast<const GenericVector *>(x->content);
       auto vz = static_cast<GenericVector *>(z->content);
 
       std::vector<double> xvals;
