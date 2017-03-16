@@ -14,11 +14,6 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-//
-// Modified by Niclas Jansson 2009.
-// Modified by Garth Wells 2009-2012
-// Modified by Mikael Mortensen 2012.
-// Modified by Martin Alnaes, 2015
 
 #ifndef __DOF_MAP_BUILDER_H
 #define __DOF_MAP_BUILDER_H

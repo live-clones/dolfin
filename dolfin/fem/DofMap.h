@@ -290,9 +290,11 @@ namespace dolfin
     ///     cell_entity_index (std::size_t)
     ///         The local entity index on the cell.
     void tabulate_entity_dofs(std::vector<std::size_t>& element_dofs,
-                              std::size_t entity_dim, std::size_t cell_entity_index) const;
+                              std::size_t entity_dim,
+                              std::size_t cell_entity_index) const;
 
-    /// Tabulate local-local mapping of dofs on closure of entity (dim, local_entity)
+    /// Tabulate local-local mapping of dofs on closure of entity
+    /// (dim, local_entity)
     ///
     /// *Arguments*
     ///     element_dofs (std::size_t)
@@ -302,7 +304,8 @@ namespace dolfin
     ///     cell_entity_index (std::size_t)
     ///         The local entity index on the cell.
     void tabulate_entity_closure_dofs(std::vector<std::size_t>& element_dofs,
-                                      std::size_t entity_dim, std::size_t cell_entity_index) const;
+                                      std::size_t entity_dim,
+                                      std::size_t cell_entity_index) const;
 
     /// Tabulate globally supported dofs
     ///
@@ -313,7 +316,8 @@ namespace dolfin
     {
       dolfin_assert(_global_nodes.empty() || block_size() == 1);
       element_dofs.resize(_global_nodes.size());
-      std::copy(_global_nodes.cbegin(), _global_nodes.cend(), element_dofs.begin());
+      std::copy(_global_nodes.cbegin(), _global_nodes.cend(),
+                element_dofs.begin());
     }
 
     /// Create a copy of the dof map

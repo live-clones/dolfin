@@ -100,6 +100,22 @@ DofMap::DofMap(std::unordered_map<int, int>& collapsed_map,
   // Check dimensional consistency between UFC dofmap and the mesh
   check_provided_entities(*_ufc_dofmap, mesh);
 
+  // Work on building process ownership for dofs.
+  /*
+  // Mark dofs as owned or not owned
+  std::vector<int> ufc_local_proc_owner;
+  const int num_owned = dofmap_view.index_map()->size(IndexMap::MapSize::OWNED);
+  const int my_rank = dolfin::MPI::rank(mesh.mpi_comm());
+  for (std::size_t i = 0; i < dofmap_view._ufc_local_to_local.size(); ++i)
+  {
+    const int local_dof = dofmap_view._ufc_local_to_local[i];
+    if (local_dof < num_owned)
+      ufc_local_proc_owner.push_back(my_rank);
+    else
+      ufc_local_proc_owner.push_back(-1);
+  }
+  */
+
   // Build new dof map
   DofMapBuilder::build(*this, mesh, constrained_domain);
 

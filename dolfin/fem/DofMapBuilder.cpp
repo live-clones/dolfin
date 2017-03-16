@@ -14,21 +14,15 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-//
-// Modified by Niclas Jansson 2009
-// Modified by Garth N. Wells 2010-2012
-// Modified by Mikael Mortensen, 2012.
-// Modified by Joachim B Haga, 2012
-// Modified by Martin Alnaes, 2013-2015
-// Modified by Chris Richardson, 2014
 
 #include <cstdlib>
+#include <memory>
 #include <random>
 #include <utility>
-#include <memory>
 #include <ufc.h>
 
 #include <dolfin/common/Timer.h>
+#include <dolfin/common/utils.h>
 #include <dolfin/graph/BoostGraphOrdering.h>
 #include <dolfin/graph/GraphBuilder.h>
 #include <dolfin/graph/SCOTCH.h>
@@ -44,10 +38,7 @@
 #include "DofMap.h"
 #include "DofMapBuilder.h"
 
-#include <dolfin/common/utils.h>
-
 using namespace dolfin;
-
 
 //-----------------------------------------------------------------------------
 void DofMapBuilder::build(DofMap& dofmap, const Mesh& mesh,
@@ -173,8 +164,8 @@ void DofMapBuilder::build(DofMap& dofmap, const Mesh& mesh,
     // ghost nodes are marked as -3
     std::vector<int> shared_nodes;
     compute_shared_nodes(shared_nodes, node_graph0,
-                           node_local_to_global0.size(),
-                           *ufc_node_dofmap, mesh);
+                         node_local_to_global0.size(),
+                         *ufc_node_dofmap, mesh);
 
     // Compute:
     // (a) owned and shared nodes (and owned and un-owned):
@@ -196,7 +187,7 @@ void DofMapBuilder::build(DofMap& dofmap, const Mesh& mesh,
 
     // Sanity check
     dolfin_assert(MPI::sum(mesh.mpi_comm(),
-       (std::size_t) dofmap._index_map->size(IndexMap::MapSize::OWNED))
+                           (std::size_t) dofmap._index_map->size(IndexMap::MapSize::OWNED))
                   == dofmap._global_dimension);
 
     // Compute node re-ordering for process index locality and spatial
@@ -331,9 +322,7 @@ DofMapBuilder::build_sub_map_view(DofMap& sub_dofmap,
   for (std::size_t i = 0; i < sub_dofmap_graph.size(); ++i)
   {
     for (std::size_t j = 0; j < sub_dofmap_graph[i].size(); ++j)
-    {
       sub_dofmap_graph[i][j] += ufc_offset;
-    }
   }
 
   // Store number of global mesh entities and set global dimension
@@ -1686,7 +1675,7 @@ void DofMapBuilder::build_dofmap(
     for (std::size_t j = 0; j < local_dim0; ++j)
     {
       const int old_node = node_dofmap[i][j];
-      dolfin_assert(old_node < (int)  old_to_new_node_local.size());
+      dolfin_assert(old_node < (int) old_to_new_node_local.size());
       const int new_node = old_to_new_node_local[old_node];
       for (std::size_t block = 0; block < block_size; ++block)
       {
