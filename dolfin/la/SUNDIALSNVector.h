@@ -68,6 +68,14 @@ namespace dolfin
       N_V->content = (void *)(vector.get());
     }
 
+    /// Create a SUNDIALSNVector wrapper to an existing GenericVector
+    SUNDIALSNVector(std::shared_ptr<GenericVector> x) : vector(x)
+    {
+      N_V = std::make_shared<_generic_N_Vector>();
+      N_V->ops = &ops;
+      N_V->content = (void *)(vector.get());
+    }
+
     //--- Implementation of N_Vector ops
 
     static N_Vector_ID N_VGetVectorID(N_Vector nv)
@@ -242,9 +250,6 @@ namespace dolfin
         val = (std::abs(val) >= c) ? 1.0 : 0.0;
       vz->set_local(xvals);
       vz->apply("insert");
-
-      std::cout << "Compare" << std::endl;
-
     }
 
     static int N_VInvTest(N_Vector x, N_Vector z)
@@ -265,7 +270,6 @@ namespace dolfin
 
       vz->apply("insert");
 
-      std::cout << "InvTest" << std::endl;
       return no_zero_found;
     }
 
