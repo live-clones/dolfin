@@ -62,7 +62,7 @@ namespace dolfin
     }
 
     /// Copy constructor
-    SUNDIALSNVector(const SUNDIALSNVector& x) : vector(x.vector->copy()) {}
+    SUNDIALSNVector(const SUNDIALSNVector& x) : vector(x.vec()->copy()) {}
 
     /// Create an SUNDIALSNVector from a GenericVector
     SUNDIALSNVector(const GenericVector& x) : vector(x.copy())
@@ -73,7 +73,7 @@ namespace dolfin
     }
 
     /// Create a SUNDIALSNVector wrapper to an existing GenericVector
-    SUNDIALSNVector(std::shared_ptr<GenericVector> x) : vector(x)
+    SUNDIALSNVector(std::shared_ptr<GenericVector> x) : vector(x->copy())
     {
       N_V = std::make_shared<_generic_N_Vector>();
       N_V->ops = &ops;
@@ -99,7 +99,7 @@ namespace dolfin
     static N_Vector N_VClone(N_Vector z)
     {
       dolfin_debug("N_VClone");
-      auto vz = static_cast<const SUNDIALSNVector *>(z->content)->vec();
+      auto vz = static_cast<const SUNDIALSNVector *>(z->content);
 
       SUNDIALSNVector *new_vector = new SUNDIALSNVector(*vz);
 
@@ -110,19 +110,43 @@ namespace dolfin
       return V;
     }
 
+    static N_Vector N_VCloneEmpty(N_Vector x)
+    {
+      dolfin_debug("N_VCloneEmpty");
+      dolfin_not_implemented();
+    }
+
     static void N_VDestroy(N_Vector z)
     {
       dolfin_debug("N_VDestroy");
-      delete (GenericVector*)(z->content);
+      delete (SUNDIALSNVector*)(z->content);
       delete z;
+    }
+
+    static void N_VSpace(N_Vector x, long int *y, long int *z)
+    {
+      dolfin_debug("N_VSpace");
+      dolfin_not_implemented();
+    }
+
+    static double* N_VGetArrayPointer(N_Vector x)
+    {
+      dolfin_debug("N_VGetArrayPointer");
+      dolfin_not_implemented();
+    }
+
+    static void N_VSetArrayPointer(double* c,N_Vector x)
+    {
+      dolfin_debug("N_VSetArrayPointer");
+      dolfin_not_implemented();
     }
 
     static void N_VProd(N_Vector x, N_Vector y, N_Vector z)
     {
       dolfin_debug("N_VProd");
-      auto vx = static_cast<const GenericVector*>(x->content);
-      auto vy = static_cast<const GenericVector*>(y->content);
-      auto vz = static_cast<GenericVector*>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector*>(x->content)->vec();
+      auto vy = static_cast<const SUNDIALSNVector*>(y->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector*>(z->content)->vec();
 
       // Copy x to z
       *vz = *vx;
@@ -137,22 +161,16 @@ namespace dolfin
       N_VInv(y, z);
 
       // z = z*x
-      auto vx = static_cast<const GenericVector *>(x->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
       *vz *= *vx;
     }
 
-    //    {
-    //  dolfin_debug("N_VGetArrayPointer");
-    //  dolfin_not_implemented();
-    //  }
-
     static void N_VScale(double c, N_Vector x, N_Vector z)
     {
-
       dolfin_debug("N_VScale");
-      auto vx = static_cast<const GenericVector *>(x->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
 
       // z = c*x
       *vz = *vx;
@@ -162,8 +180,8 @@ namespace dolfin
     static void N_VAbs(N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VAbs");
-      auto vx = static_cast<const GenericVector *>(x->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
 
       // z = x
       *vz = *vx;
@@ -173,8 +191,8 @@ namespace dolfin
     static void N_VInv(N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VInv");
-      auto vx = static_cast<const GenericVector *>(x->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
 
       // z = 1/x
       std::vector<double> xvals;
@@ -188,8 +206,8 @@ namespace dolfin
     static void N_VAddConst(N_Vector x, double c, N_Vector z)
     {
       dolfin_debug("N_VAddConst");
-      auto vx = static_cast<const GenericVector *>(x->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
 
       *vz = *vx;
       *vz += c;
@@ -198,8 +216,8 @@ namespace dolfin
     static double N_VDotProd(N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VDotProd");
-      auto vx = static_cast<const GenericVector *>(x->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
 
       return vx->inner(*vz);
     }
@@ -207,7 +225,7 @@ namespace dolfin
     static double N_VMaxNorm(N_Vector x)
     {
       dolfin_debug("N_VMaxNorm");
-      auto vx = static_cast<const GenericVector *>(x->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
       auto vy = vx->copy();
       vy->abs();
       return vy->max();
@@ -216,15 +234,15 @@ namespace dolfin
     static double N_VMin(N_Vector x)
     {
       dolfin_debug("N_VMin");
-      return (static_cast<const GenericVector *>(x->content))->min();
+      return (static_cast<const SUNDIALSNVector *>(x->content)->vec())->min();
     }
 
     static void N_VLinearSum(double a, N_Vector x, double b, N_Vector y, N_Vector z)
     {
       dolfin_debug("N_VLinearSum");
-      auto vx = static_cast<const GenericVector *>(x->content);
-      auto vy = static_cast<const GenericVector *>(y->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vy = static_cast<const SUNDIALSNVector *>(y->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
 
       // w = a*x
       Vector w(*vx);
@@ -241,19 +259,37 @@ namespace dolfin
     static double N_VWrmsNorm(N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VWrmsNorm");
-      auto vx = static_cast<const GenericVector *>(x->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
 
       auto y = vx->copy();
       *y *= *vz;
       return y->norm("l2")/std::sqrt(y->size());
     }
 
+    static double N_VWrmsNormMask(N_Vector x, N_Vector y, N_Vector z)
+    {
+      dolfin_debug("N_VWrmsNormMask");
+      dolfin_not_implemented();
+    }
+
+    static double N_VWl2Norm(N_Vector x, N_Vector z )
+    {
+      dolfin_debug("N_VWl2Norm");
+      dolfin_not_implemented();
+    }
+
+    static double N_VL1Norm(N_Vector x )
+    {
+      dolfin_debug("N_VL1Norm");
+      dolfin_not_implemented();
+    }
+
     static void N_VCompare(double c, N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VCompare");
-      auto vx = static_cast<const GenericVector *>(x->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
       std::vector<double> xvals;
       vx->get_local(xvals);
       for (auto &val : xvals)
@@ -266,8 +302,8 @@ namespace dolfin
     {
       dolfin_debug("N_VInvTest");
       int no_zero_found = true;
-      auto vx = static_cast<const GenericVector *>(x->content);
-      auto vz = static_cast<GenericVector *>(z->content);
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
 
       std::vector<double> xvals;
       vx->get_local(xvals);
@@ -283,12 +319,24 @@ namespace dolfin
       return no_zero_found;
     }
 
+    static int N_VConstrMask(N_Vector x, N_Vector y, N_Vector z )
+    {
+      dolfin_debug("N_VConstrMask");
+      dolfin_not_implemented();
+    }
+
+    static double N_VMinQuotient(N_Vector x, N_Vector z )
+    {
+      dolfin_debug("N_VConstrMask");
+      dolfin_not_implemented();
+    }
+
     //-----------------------------------------------------------------------------
 
     /// Get underlying raw SUNDIALS N_Vector struct
     N_Vector nvector() const
     {
-      N_V->content = (void *)(vector.get());
+      N_V->content = (void *)(this);
       return N_V.get();
     }
 
@@ -314,11 +362,11 @@ namespace dolfin
 /* Structure containing function pointers to vector operations  */
     struct _generic_N_Vector_Ops ops = {N_VGetVectorID,    //   N_Vector_ID (*N_VGetVectorID)(SUNDIALSNVector);
                                         N_VClone,    //   NVector    (*N_VClone)(NVector);
-                                        NULL,    //   NVector    (*N_VCloneEmpty)(NVector);
+                                        N_VCloneEmpty,    //   NVector    (*N_VCloneEmpty)(NVector);
                                         N_VDestroy,    //   void        (*N_VDestroy)(NVector);
-                                        NULL,    //   void        (*N_VSpace)(NVector, long int *, long int *);
-                                        NULL,    //   realtype*   (*N_VGetArrayPointer)(NVector);
-                                        NULL,    //   void        (*N_VSetArrayPointer)(realtype *, NVector);
+                                        NULL, //N_VSpace,    //   void        (*N_VSpace)(NVector, long int *, long int *);
+                                        N_VGetArrayPointer,    //   realtype*   (*N_VGetArrayPointer)(NVector);
+                                        N_VSetArrayPointer,    //   void        (*N_VSetArrayPointer)(realtype *, NVector);
                                         N_VLinearSum,    //   void        (*N_VLinearSum)(realtype, NVector, realtype, NVector, NVector);
                                         N_VConst,          //   void        (*N_VConst)(realtype, NVector);
                                         N_VProd,    //   void        (*N_VProd)(NVector, NVector, NVector);
@@ -330,14 +378,14 @@ namespace dolfin
                                         N_VDotProd,    //   realtype    (*N_VDotProd)(NVector, NVector);
                                         N_VMaxNorm,    //   realtype    (*N_VMaxNorm)(NVector);
                                         N_VWrmsNorm,    //   realtype    (*N_VWrmsNorm)(NVector, NVector);
-                                        NULL,    //   realtype    (*N_VWrmsNormMask)(NVector, NVector, NVector);
+                                        N_VWrmsNormMask,    //   realtype    (*N_VWrmsNormMask)(NVector, NVector, NVector);
                                         N_VMin,    //   realtype    (*N_VMin)(NVector);
-                                        NULL,    //   realtype    (*N_VWl2Norm)(NVector, NVector);
-                                        NULL,    //   realtype    (*N_VL1Norm)(NVector);
+                                        N_VWl2Norm,    //   realtype    (*N_VWl2Norm)(NVector, NVector);
+                                        N_VL1Norm,    //   realtype    (*N_VL1Norm)(NVector);
                                         N_VCompare,    //   void        (*N_VCompare)(realtype, NVector, NVector);
                                         N_VInvTest,    //   booleantype (*N_VInvtest)(NVector, NVector);
-                                        NULL,    //   booleantype (*N_VConstrMask)(NVector, NVector, NVector);
-                                        NULL};    //   realtype    (*N_VMinQuotient)(NVector, NVector);
+                                        N_VConstrMask,    //   booleantype (*N_VConstrMask)(NVector, NVector, NVector);
+                                        N_VMinQuotient};    //   realtype    (*N_VMinQuotient)(NVector, NVector);
   };
 
 
