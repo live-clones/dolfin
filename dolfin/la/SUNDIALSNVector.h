@@ -69,7 +69,7 @@ namespace dolfin
     }
 
     /// Create a SUNDIALSNVector wrapper to an existing GenericVector
-    SUNDIALSNVector(std::shared_ptr<GenericVector> x) : vector(x->copy())
+    SUNDIALSNVector(std::shared_ptr<GenericVector> x) : vector(x)
     {
       N_V = std::make_shared<_generic_N_Vector>();
       N_V->ops = &ops;
