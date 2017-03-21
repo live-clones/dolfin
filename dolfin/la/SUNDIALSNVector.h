@@ -54,7 +54,7 @@ namespace dolfin
       vector->init(N);
       N_V = std::make_shared<_generic_N_Vector>();
       N_V->ops = &ops;
-      N_V->content = (void *)(vector.get());
+      N_V->content = (void *)(this);
     }
 
     /// Copy constructor
@@ -65,7 +65,7 @@ namespace dolfin
     {
       N_V = std::make_shared<_generic_N_Vector>();
       N_V->ops = &ops;
-      N_V->content = (void *)(vector.get());
+      N_V->content = (void *)(this);
     }
 
     /// Create a SUNDIALSNVector wrapper to an existing GenericVector
@@ -73,7 +73,7 @@ namespace dolfin
     {
       N_V = std::make_shared<_generic_N_Vector>();
       N_V->ops = &ops;
-      N_V->content = (void *)(vector.get());
+      N_V->content = (void *)(this);
     }
 
     //--- Implementation of N_Vector ops
@@ -88,16 +88,16 @@ namespace dolfin
     static void N_VConst(double c, N_Vector z)
     {
       dolfin_debug("N_VConst");
-      auto v = static_cast<GenericVector *>(z->content);
+      auto v = static_cast<SUNDIALSNVector *>(z->content)->vec();
       *v = c;
     }
 
     static N_Vector N_VClone(N_Vector z)
     {
       dolfin_debug("N_VClone");
-      auto vz = static_cast<const GenericVector *>(z->content);
+      auto vz = static_cast<const SUNDIALSNVector *>(z->content)->vec();
 
-      GenericVector *new_vector = new Vector(*vz);
+      SUNDIALSNVector *new_vector = new SUNDIALSNVector(*vz);
 
       _generic_N_Vector *V = new _generic_N_Vector;
       V->ops = z->ops;
@@ -137,6 +137,11 @@ namespace dolfin
       auto vz = static_cast<GenericVector *>(z->content);
       *vz *= *vx;
     }
+
+    //    {
+    //  dolfin_debug("N_VGetArrayPointer");
+    //  dolfin_not_implemented();
+    //  }
 
     static void N_VScale(double c, N_Vector x, N_Vector z)
     {
