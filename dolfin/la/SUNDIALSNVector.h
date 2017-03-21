@@ -52,7 +52,7 @@ namespace dolfin
       DefaultFactory factory;
       vector = factory.create_vector(comm);
       vector->init(N);
-      N_V = std::make_shared<_generic_N_Vector>();
+      N_V = std::unique_ptr<_generic_N_Vector>(new _generic_N_Vector);
       N_V->ops = &ops;
       N_V->content = (void *)(this);
     }
@@ -63,7 +63,7 @@ namespace dolfin
     /// Create an SUNDIALSNVector from a GenericVector
     SUNDIALSNVector(const GenericVector& x) : vector(x.copy())
     {
-      N_V = std::make_shared<_generic_N_Vector>();
+      N_V = std::unique_ptr<_generic_N_Vector>(new _generic_N_Vector);
       N_V->ops = &ops;
       N_V->content = (void *)(this);
     }
@@ -71,7 +71,7 @@ namespace dolfin
     /// Create a SUNDIALSNVector wrapper to an existing GenericVector
     SUNDIALSNVector(std::shared_ptr<GenericVector> x) : vector(x)
     {
-      N_V = std::make_shared<_generic_N_Vector>();
+      N_V = std::unique_ptr<_generic_N_Vector>(new _generic_N_Vector);
       N_V->ops = &ops;
       N_V->content = (void *)(this);
     }
@@ -351,7 +351,7 @@ namespace dolfin
     std::shared_ptr<GenericVector> vector;
 
     // Pointer to SUNDIALS struct
-    std::shared_ptr<_generic_N_Vector> N_V;
+    std::unique_ptr<_generic_N_Vector> N_V;
 
     // Structure containing function pointers to vector operations
     struct _generic_N_Vector_Ops ops = {N_VGetVectorID,        //   N_Vector_ID (*N_VGetVectorID)(SUNDIALSNVector);
