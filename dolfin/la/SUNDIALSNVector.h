@@ -353,13 +353,12 @@ namespace dolfin
     // Pointer to SUNDIALS struct
     std::shared_ptr<_generic_N_Vector> N_V;
 
-
-/* Structure containing function pointers to vector operations  */
-    struct _generic_N_Vector_Ops ops = {N_VGetVectorID,    //   N_Vector_ID (*N_VGetVectorID)(SUNDIALSNVector);
-                                        N_VClone,    //   NVector    (*N_VClone)(NVector);
-                                        N_VCloneEmpty,    //   NVector    (*N_VCloneEmpty)(NVector);
-                                        N_VDestroy,    //   void        (*N_VDestroy)(NVector);
-                                        NULL, //N_VSpace,    //   void        (*N_VSpace)(NVector, long int *, long int *);
+    // Structure containing function pointers to vector operations
+    struct _generic_N_Vector_Ops ops = {N_VGetVectorID,        //   N_Vector_ID (*N_VGetVectorID)(SUNDIALSNVector);
+                                        N_VClone,              //   NVector    (*N_VClone)(NVector);
+                                        N_VCloneEmpty,         //   NVector    (*N_VCloneEmpty)(NVector);
+                                        N_VDestroy,            //   void        (*N_VDestroy)(NVector);
+                                        NULL,                  //N_VSpace,    //   void        (*N_VSpace)(NVector, long int *, long int *);
                                         N_VGetArrayPointer,    //   realtype*   (*N_VGetArrayPointer)(NVector);
                                         N_VSetArrayPointer,    //   void        (*N_VSetArrayPointer)(realtype *, NVector);
                                         N_VLinearSum,    //   void        (*N_VLinearSum)(realtype, NVector, realtype, NVector, NVector);
