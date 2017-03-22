@@ -73,7 +73,7 @@ namespace dolfin
     /// @param solver
     /// @param fields
     /// @param split_names
-    void set_fieldsplit(PETScKrylovSolver& solver,
+    static void set_fieldsplit(PETScKrylovSolver& solver,
             const std::vector<std::vector<dolfin::la_index>>& fields,
             const std::vector<std::string>& split_names);
 

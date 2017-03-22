@@ -32,6 +32,11 @@ namespace dolfin
   class GenericVector;
   class FunctionSpace;
 
+  /// PETScNestMatrix creates an NxN nested matrix from a list
+  /// of 'sub-matrices' in order from top left down to bottom right.
+  /// Therefore the number of matrices supplied must be a perfect
+  /// square. If any matrices are empty, a NULL pointer can be supplied.
+
   class PETScNestMatrix : public PETScMatrix
   {
   public:
