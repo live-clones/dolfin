@@ -49,6 +49,7 @@ namespace dolfin
   {
   public:
 
+    /// Select type by name
     static void set_type(PETScKrylovSolver& solver, std::string type);
 
     /// Create a particular preconditioner object
@@ -66,15 +67,18 @@ namespace dolfin
     /// can be generated using GenericDofMap::tabulate_all_dofs.
     void set_coordinates(const std::vector<double>& x, std::size_t dim);
 
-    // FIXME: Document
-    // FIXME: Use shared pointers for the fields, so we can use
-    // PETSC_USE_POINTER instead of PETSC_COPY_VALUES
-    static void
-      set_fieldsplit(PETScKrylovSolver& solver,
-                     const std::vector<std::vector<dolfin::la_index>>& fields,
-                     const std::vector<std::string>& split_names);
+
+    /// Assign indices from fields as separate PETSc index sets, with
+    /// given names
+    /// @param solver
+    /// @param fields
+    /// @param split_names
+    void set_fieldsplit(PETScKrylovSolver& solver,
+            const std::vector<std::vector<dolfin::la_index>>& fields,
+            const std::vector<std::string>& split_names);
 
     /// Return informal string representation (pretty-print)
+    /// @param verbose
     std::string str(bool verbose) const;
 
     /// Return a list of available preconditioners
