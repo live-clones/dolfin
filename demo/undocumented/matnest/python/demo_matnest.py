@@ -95,10 +95,10 @@ P11 = PETScMatrix()
 assemblerP = SystemAssembler(p11, L1, bcsQ)
 assemblerP.assemble(P11)
 
-print "A00 = ", A00.size(0), "x" , A00.size(1), A00.norm("frobenius")
-print "A01 = ", A01.size(0), "x" , A01.size(1), A01.norm("frobenius")
-print "A10 = ", A10.size(0), "x" , A10.size(1), A10.norm("frobenius")
-print "P11 = ", P11.size(0), "x" , P11.size(1), P11.norm("frobenius")
+print("A00 = ", A00.size(0), "x" , A00.size(1), A00.norm("frobenius"))
+print("A01 = ", A01.size(0), "x" , A01.size(1), A01.norm("frobenius"))
+print("A10 = ", A10.size(0), "x" , A10.size(1), A10.norm("frobenius"))
+print("P11 = ", P11.size(0), "x" , P11.size(1), P11.norm("frobenius"))
 
 # Combine matrices
 AA = PETScNestMatrix([A00, A01, A10, None])
@@ -123,7 +123,7 @@ PETScPreconditioner.set_fieldsplit(solver, AA, ["0", "1"]);
 
 solver.solve(x, b)
 
-print "u.norm = ", u.vector().norm("l2")
+print("u.norm = ", u.vector().norm("l2"))
 
 xdmf = XDMFFile("solution.xdmf")
 xdmf.parameters['time_series']=False
