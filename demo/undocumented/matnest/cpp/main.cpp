@@ -37,6 +37,8 @@
 
 using namespace dolfin;
 
+#ifdef HAS_PETSC
+
 // Function to compute the near nullspace A00 operator
 VectorSpaceBasis build_nullspace_nested(const FunctionSpace& V,
                                         const GenericVector& x)
@@ -310,3 +312,13 @@ int main(int argc, char *argv[])
 
   return 0;
 }
+
+#else
+
+int main()
+{
+  info("DOLFIN has not been configured with PETSc. Exiting.");
+  return 0;
+}
+
+#endif
