@@ -126,6 +126,5 @@ solver.solve(x, b)
 print("u.norm = ", u.vector().norm("l2"))
 
 xdmf = XDMFFile("solution.xdmf")
-xdmf.parameters['time_series']=False
-xdmf.write(u)
-xdmf.write(p)
+xdmf.write(u, XDMFFile.Encoding_ASCII)
+xdmf.write(p, XDMFFile.Encoding_ASCII)
