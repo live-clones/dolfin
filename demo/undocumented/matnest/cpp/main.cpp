@@ -296,11 +296,14 @@ int main(int argc, char *argv[])
                                               {"0", "1"});
   solver.solve(xvec, bvec);
 
-  XDMFFile xdmf_u(mesh->mpi_comm(), "u0.xdmf");
-  xdmf_u.write(*u0);
+  if (has_hdf5_parallel())
+  {
+    XDMFFile xdmf_u(mesh->mpi_comm(), "u0.xdmf");
+    xdmf_u.write(*u0);
 
-  XDMFFile xdmf_p(mesh->mpi_comm(), "p0.xdmf");
-  xdmf_p.write(*p0);
+    XDMFFile xdmf_p(mesh->mpi_comm(), "p0.xdmf");
+    xdmf_p.write(*p0);
+  }
 
   double unorm = u0->vector()->norm("l2");
   if (MPI::rank(mesh->mpi_comm()) == 0)
