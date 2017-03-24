@@ -154,3 +154,30 @@ def test_options_prefix(pushpop_parameters):
     # Test KY solver
     #solver = PETScLUSolver()
     #run_test(solver, init_solver)
+
+@skip_if_not_PETSc
+def test_nest_matrix(pushpop_parameters):
+
+    # Create Matrices and insert into nest
+    A00 = PETScMatrix()
+    A01 = PETScMatrix()
+    A10 = PETScMatrix()
+    mesh = UnitSquareMesh(12, 12)
+    V = FunctionSpace(mesh, "Lagrange", 2)
+    Q = FunctionSpace(mesh, "Lagrange", 1)
+    u, v = TrialFunction(V), TestFunction(V)
+    p, q = TrialFunction(Q), TestFunction(Q)
+    assemble(u*v*dx, tensor=A00)
+    assemble(p*v*dx, tensor=A01)
+    assemble(u*q*dx, tensor=A10)
+
+    AA = PETScNestMatrix([A00, A01, A10, None])
+
+    # Create compatible RHS Vectors and insert into nest
+    u = PETScVector()
+    p = PETScVector()
+    x = PETScVector()
+
+    A00.init_vector(u, 1)
+    A01.init_vector(p, 1)
+    AA.init_vectors(x, [u, p])
