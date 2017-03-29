@@ -3,6 +3,7 @@ set(HEADERS
   MultiStageScheme.h
   PointIntegralSolver.h
   RKSolver.h
+  CVode.h
   PARENT_SCOPE)
 
 set(SOURCES
