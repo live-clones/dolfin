@@ -44,63 +44,47 @@ namespace dolfin
     /// Create empty CVode object 
     CVode(MPI_Comm comm=MPI_COMM_WORLD)
     {
-      C_V = std::shared_ptr<void>();
-      auto cv = C_V.get();
-      cv = CVodeCreate(CV_ADAMS,CV_NEWTON);
+      C_V = CVodeCreate(CV_BDF,CV_NEWTON);
     }
 
     /// Create CVode object with size N
     CVode(MPI_Comm comm, int lmm, int iter)
     {
-      C_V = std::shared_ptr<void>();
-      auto cv = C_V.get();
-      cv = CVodeCreate(lmm, iter);
+      C_V = CVodeCreate(lmm, iter);
     }
 
     /// Destructor 
     ~CVode()
     {
+      CVodeFree(&C_V);
     }
 
     //--- Implementation of CVode functions
 
-    void init(std::shared_ptr<GenericVector> u0, double t, double atol, double rtol)
+    void init(std::shared_ptr<dolfin::SUNDIALSNVector> u0, CVRhsFn f, double t, double atol, double rtol)
     {
-//      CVodeInit(C_V,f,t,u0.nvector());
-      CVodeSStolerances(C_V.get(),atol, rtol);
+      CVodeInit(C_V,f,t,u0->nvector());
+      CVodeSStolerances(C_V,atol, rtol);
     }
 
-    double step(double dt)
+    double step(std::shared_ptr<dolfin::SUNDIALSNVector> u0, double dt, double *t)
     {
+      ::CVode(C_V, dt, u0->nvector(), t, CV_NORMAL);
     }
 
-    
-
-//    void *CVodeCreate(int lmm, int iter)
-//    {
-//        void* cv = CVodeCreate(lmm,iter);
-//	return cv;	
-//   }
-
-    //int SUNDIALSCVodeInit(void* cv,
-    //                   int (f)(double,N_Vector,N_Vector, void *),
-    //                   double t,
-    //                   dolfin::SUNDIALSNVector n0)
-    //{
-	
-//	int flag = CVodeInit(cv,f,t,n0.nvector());
-//	return flag;
-//    }
     //-----------------------------------------------------------------------------
 
     /// Assignment operator
     const CVode& operator= (const CVode& x)
     { return *this; }
+    
 
   private:
 
-    // Pointer to SUNDIALS struct
-    std::shared_ptr<void> C_V;
+    // Pointer to CVode memory struct
+    void * C_V;
+    void * cv_mem()
+    {  return C_V; }
 
   };
 
