@@ -29,12 +29,8 @@
 #include <utility>
 #include <memory>
 #include <dolfin/common/types.h>
-#include <sundials/sundials_nvector.h>
 #include <cvode/cvode.h>
-#include "DefaultFactory.h"
-#include "GenericVector.h"
-#include "Vector.h"
-#include "SUNDIALSNVector.h"
+#include <dolfin/la/SUNDIALSNVector.h>
 
 namespace dolfin
 {
@@ -48,24 +44,18 @@ namespace dolfin
     /// Create empty CVode object 
     CVode(MPI_Comm comm=MPI_COMM_WORLD)
     {
-      C_V = CVodeCreate(CV_ADAMS,CV_NEWTON);
+      C_V = std::shared_ptr<void>();
+      auto cv = C_V.get();
+      cv = CVodeCreate(CV_ADAMS,CV_NEWTON);
     }
 
     /// Create CVode object with size N
     CVode(MPI_Comm comm, int lmm, int iter)
     {
-      C_V = CVodeCreate(lmm, iter);
+      C_V = std::shared_ptr<void>();
+      auto cv = C_V.get();
+      cv = CVodeCreate(lmm, iter);
     }
-
-    /// Copy constructor
-//    SUNDIALSCVode(const SUNDIALSCVode& x) : vector(x.vector->copy()) {}
-
-    /// Create an SUNDIALSCVode from a GenericVector
-//    SUNDIALSCVode(const GenericVector& x) : vector(x.copy())
-//    {
-//      C_V = std::make_shared<CVodeMem>();
-//    }
-
 
     /// Destructor 
     ~CVode()
@@ -74,8 +64,10 @@ namespace dolfin
 
     //--- Implementation of CVode functions
 
-    void init(shared_ptr<GenericVector> u0, double tol)
+    void init(std::shared_ptr<GenericVector> u0, double t, double atol, double rtol)
     {
+//      CVodeInit(C_V,f,t,u0.nvector());
+      CVodeSStolerances(C_V.get(),atol, rtol);
     }
 
     double step(double dt)
@@ -107,40 +99,10 @@ namespace dolfin
 
   private:
 
-
     // Pointer to SUNDIALS struct
     std::shared_ptr<void> C_V;
 
-
-/* Structure containing function pointers to vector operations  */
-    struct _generic_N_Vector_Ops ops = {N_VGetVectorID,    //   N_Vector_ID (*N_VGetVectorID)(SUNDIALSCVode);
-                                        NULL,    //   CVode    (*N_VClone)(CVode);
-                                        NULL,    //   CVode    (*N_VCloneEmpty)(CVode);
-                                        NULL,    //   void        (*N_VDestroy)(CVode);
-                                        NULL,    //   void        (*N_VSpace)(CVode, long int *, long int *);
-                                        NULL,    //   realtype*   (*N_VGetArrayPointer)(CVode);
-                                        NULL,    //   void        (*N_VSetArrayPointer)(realtype *, CVode);
-                                        NULL,    //   void        (*N_VLinearSum)(realtype, CVode, realtype, CVode, CVode);
-                                        N_VConst,          //   void        (*N_VConst)(realtype, CVode);
-                                        NULL,    //   void        (*N_VProd)(CVode, CVode, CVode);
-                                        NULL,    //   void        (*N_VDiv)(CVode, CVode, CVode);
-                                        NULL,    //   void        (*N_VScale)(realtype, CVode, CVode);
-                                        NULL,    //   void        (*N_VAbs)(CVode, CVode);
-                                        NULL,    //   void        (*N_VInv)(CVode, CVode);
-                                        NULL,    //   void        (*N_VAddConst)(CVode, realtype, CVode);
-                                        NULL,    //   realtype    (*N_VDotProd)(CVode, CVode);
-                                        NULL,    //   realtype    (*N_VMaxNorm)(CVode);
-                                        NULL,    //   realtype    (*N_VWrmsNorm)(CVode, CVode);
-                                        NULL,    //   realtype    (*N_VWrmsNormMask)(CVode, CVode, CVode);
-                                        NULL,    //   realtype    (*N_VMin)(CVode);
-                                        NULL,    //   realtype    (*N_VWl2Norm)(CVode, CVode);
-                                        NULL,    //   realtype    (*N_VL1Norm)(CVode);
-                                        NULL,    //   void        (*N_VCompare)(realtype, CVode, CVode);
-                                        NULL,    //   booleantype (*N_VInvtest)(CVode, CVode);
-                                        NULL,    //   booleantype (*N_VConstrMask)(CVode, CVode, CVode);
-                                        NULL};    //   realtype    (*N_VMinQuotient)(CVode, CVode);
   };
-
 
 }
 
