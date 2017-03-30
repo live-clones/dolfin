@@ -72,6 +72,8 @@ namespace dolfin
       ::CVode(C_V, dt, u0->nvector(), t, CV_NORMAL);
     }
 
+    void * cv_mem()
+    {  return C_V; }
     //-----------------------------------------------------------------------------
 
     /// Assignment operator
@@ -83,8 +85,6 @@ namespace dolfin
 
     // Pointer to CVode memory struct
     void * C_V;
-    void * cv_mem()
-    {  return C_V; }
 
   };
 
