@@ -273,6 +273,10 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
     xi->zero();
   }
 
+  // Initialize connectivity needed for recognition of Dirichlet facets
+  if (_bc_type == BCType::topological_zero)
+    mesh.init(mesh.topology().dim()-1, 0);
+
   // Loop over vertices and solve local patch problems
   Progress p("Performing local (patch-wise) solve",
              mesh.topology().ghost_offset(0));
@@ -334,6 +338,11 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
       }
     }
 
+    // Sort the patch dofs
+    dofs_a0.sort();
+    dofs_a1.sort();
+    dofs_L.sort();
+
     // Remove one dof if requiered
     // FIXME: Is it deterministic? Should we do it before or after sorting?!?
     // FIXME FIXME FIXME: Is this correct in parallel?!?!?
@@ -350,10 +359,7 @@ void LocalPatchSolver::_solve_local(std::vector<GenericVector*> x,
       dofs_L.set().pop_back();
     }
 
-    // Sort the patch dofs and wrap as ArrayView
-    dofs_a0.sort();
-    dofs_a1.sort();
-    dofs_L.sort();
+    // Wrap the patch dofs as ArrayView
     dofs_a0_ptr.set(dofs_a0.set());
     dofs_a1_ptr.set(dofs_a1.set());
     dofs_L_ptr.set(dofs_L.set());
