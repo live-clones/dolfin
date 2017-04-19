@@ -33,7 +33,7 @@ namespace dolfin
     CVode()
     {
       // Create CVode memory block
-      cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+      cvode_mem = CVodeCreate(CV_BDF, CV_ADAMS);
       dolfin_assert(cvode_mem);
 
       // Point user_data back to this object
