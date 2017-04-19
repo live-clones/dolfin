@@ -50,15 +50,12 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double rtol, double atol)
 
   flag = CVodeSStolerances(cvode_mem, rtol, atol);
   dolfin_assert(flag == CV_SUCCESS);
-
-  flag = CVDiag(cvode_mem);
-  dolfin_assert(flag == CV_SUCCESS);
 }
 //-----------------------------------------------------------------------------
 double CVode::step(double dt)
 {
   double tout = t + dt;
-  int flag = CVode(cvode_mem, tout, _u->nvector(), &t, CV_NORMAL);
+  int flag = ::CVode(cvode_mem, tout, _u->nvector(), &t, CV_NORMAL);
   dolfin_assert(flag == CV_SUCCESS);
 
   return t;
@@ -68,7 +65,7 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 {
   // f is a static function (from C), so need to get pointer to "this" object
   // passed though in user_data
-  CVode* cv = (CVODE*)user_data;
+  CVode* cv = (CVode*)user_data;
 
   auto uvec = static_cast<SUNDIALSNVector*>(u->content)->vec();
   auto udotvec = static_cast<SUNDIALSNVector*>(udot->content)->vec();
@@ -82,7 +79,7 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                    std::shared_ptr<GenericVector> udot)
 {
-  dolfin_error("CVODE.cpp",
+  dolfin_error("CVode.cpp",
                "form time derivative",
                "This function should be overloaded");
 }

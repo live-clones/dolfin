@@ -25,17 +25,14 @@
 
 namespace dolfin
 {
-
-  template<typename T> class Array;
-
   class CVode
   {
   public:
 
     /// Constructor
-    CVODE()
+    CVode()
     {
-      // Create CVODE memory block
+      // Create CVode memory block
       cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
       dolfin_assert(cvode_mem);
 
@@ -48,7 +45,6 @@ namespace dolfin
     /// Destructor
     ~CVode()
     {
-      PrintFinalStats(cvode_mem);  // Print some final statistics (debug use)
       CVodeFree(&cvode_mem);
     }
 

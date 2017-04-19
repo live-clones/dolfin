@@ -10,4 +10,5 @@ set(SOURCES
   MultiStageScheme.cpp
   PointIntegralSolver.cpp
   RKSolver.cpp
+  CVode.cpp
   PARENT_SCOPE)

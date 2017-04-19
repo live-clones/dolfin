@@ -36,9 +36,6 @@
 
 namespace dolfin
 {
-
-  template<typename T> class Array;
-
   class SUNDIALSNVector
   {
   public:
@@ -114,6 +111,7 @@ namespace dolfin
     {
       dolfin_debug("N_VCloneEmpty");
       dolfin_not_implemented();
+      return NULL;
     }
 
     static void N_VDestroy(N_Vector z)
@@ -133,6 +131,7 @@ namespace dolfin
     {
       dolfin_debug("N_VGetArrayPointer");
       dolfin_not_implemented();
+      return NULL;
     }
 
     static void N_VSetArrayPointer(double* c,N_Vector x)
@@ -271,18 +270,21 @@ namespace dolfin
     {
       dolfin_debug("N_VWrmsNormMask");
       dolfin_not_implemented();
+      return 0.0;
     }
 
     static double N_VWl2Norm(N_Vector x, N_Vector z )
     {
       dolfin_debug("N_VWl2Norm");
       dolfin_not_implemented();
+      return 0.0;
     }
 
     static double N_VL1Norm(N_Vector x )
     {
       dolfin_debug("N_VL1Norm");
       dolfin_not_implemented();
+      return 0.0;
     }
 
     static void N_VCompare(double c, N_Vector x, N_Vector z)
@@ -323,12 +325,14 @@ namespace dolfin
     {
       dolfin_debug("N_VConstrMask");
       dolfin_not_implemented();
+      return 0;
     }
 
     static double N_VMinQuotient(N_Vector x, N_Vector z )
     {
       dolfin_debug("N_VConstrMask");
       dolfin_not_implemented();
+      return 0.0;
     }
 
     //-----------------------------------------------------------------------------
