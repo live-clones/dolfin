@@ -43,7 +43,7 @@ namespace dolfin
     }
 
     /// Destructor
-    ~CVode()
+    virtual ~CVode()
     {
       CVodeFree(&cvode_mem);
     }

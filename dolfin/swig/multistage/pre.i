@@ -26,7 +26,7 @@
 // modules has been loaded.
 //=============================================================================
 
-// Ignore access methods to MultiStageScheme as equivalent methods are added 
+// Ignore access methods to MultiStageScheme as equivalent methods are added
 // to a wrapped Python class
 %ignore dolfin::MultiStageScheme::stage_forms;
 %ignore dolfin::MultiStageScheme::last_stage;
@@ -37,3 +37,6 @@
 
 %ignore dolfin::PointIntegralSolver::scheme;
 %ignore dolfin::RKSolver::scheme;
+
+// Enable overloading of CVode::derivs
+%feature("director") dolfin::CVode;
