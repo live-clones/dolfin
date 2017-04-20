@@ -398,3 +398,29 @@ class TestVectorForAnyBackend:
         v = as_backend_type(v)
         data = v.data()
         assert (data==array).all()
+
+
+    def test_ghost_state(self, any_backend):
+        mesh = UnitSquareMesh(4, 4)
+        V = FunctionSpace(mesh, "P", 1)
+
+        b = Vector(mesh.mpi_comm())
+        with pytest.raises(RuntimeError):
+            b.is_ghosted()
+
+        b = Vector(mesh.mpi_comm())
+        b_layout = b.factory().create_layout(b.rank())
+        b_layout.init(b.mpi_comm(), [V.dofmap().index_map()], TensorLayout.Ghosts_GHOSTED)
+        b.init(b_layout)
+        assert b.is_ghosted() == TensorLayout.Ghosts_GHOSTED
+
+        b = Vector(mesh.mpi_comm())
+        b_layout = b.factory().create_layout(b.rank())
+        b_layout.init(b.mpi_comm(), [V.dofmap().index_map()], TensorLayout.Ghosts_UNGHOSTED)
+        b.init(b_layout)
+        assert b.is_ghosted() == TensorLayout.Ghosts_UNGHOSTED
+
+        u = Function(V)
+        assert u.vector().is_ghosted() == TensorLayout.Ghosts_UNGHOSTED
+        b = assemble(TestFunction(V)*dx)
+        assert b.is_ghosted() == TensorLayout.Ghosts_UNGHOSTED

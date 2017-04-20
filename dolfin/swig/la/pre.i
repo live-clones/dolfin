@@ -137,6 +137,7 @@
 %ignore dolfin::GenericVector::operator-=;
 %ignore dolfin::GenericVector::getitem;
 %ignore dolfin::GenericVector::setitem;
+%ignore dolfin::GenericVector::is_ghosted;
 
 //-----------------------------------------------------------------------------
 // Ignore the get and set functions used for blocks

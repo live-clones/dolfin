@@ -131,6 +131,10 @@ namespace dolfin
     virtual bool owns_index(std::size_t i) const
     { return vector->owns_index(i); }
 
+    /// Determine whether vector is ghosted
+    virtual TensorLayout::Ghosts is_ghosted() const
+    { return vector->is_ghosted(); }
+
     /// Get block of values using global indices (values must all live
     /// on the local process, ghosts are no accessible)
     virtual void get(double* block, std::size_t m,

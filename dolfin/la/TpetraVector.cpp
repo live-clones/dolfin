@@ -34,17 +34,20 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-TpetraVector::TpetraVector(MPI_Comm comm) : _mpi_comm(comm)
+TpetraVector::TpetraVector(MPI_Comm comm) : _mpi_comm(comm),
+  _is_ghosted(TensorLayout::Ghosts::UNGHOSTED)
 {
   // Do nothing
 }
 //-----------------------------------------------------------------------------
-TpetraVector::TpetraVector(MPI_Comm comm, std::size_t N) : _mpi_comm(comm)
+TpetraVector::TpetraVector(MPI_Comm comm, std::size_t N) : _mpi_comm(comm),
+  _is_ghosted(TensorLayout::Ghosts::UNGHOSTED)
 {
   init(N);
 }
 //-----------------------------------------------------------------------------
 TpetraVector::TpetraVector(const TpetraVector& v) : _mpi_comm(v._mpi_comm)
+  _is_ghosted(v._is_ghosted)
 {
   if (v._x.is_null())
     return;

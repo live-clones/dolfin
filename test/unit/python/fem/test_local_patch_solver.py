@@ -157,9 +157,9 @@ def test_correctness(mesh):
     # FIXME: Implement a check in LocalPatchSolver that rhs is ghosted,
     #        otherwise strange things happen
     b = Vector(mesh.mpi_comm())
-    b_layout = b.factory().create_layout(b.rank())
-    b_layout.init(b.mpi_comm(), [V.dofmap().index_map()], TensorLayout.Ghosts_GHOSTED)
-    b.init(b_layout)
+    #b_layout = b.factory().create_layout(b.rank())
+    #b_layout.init(b.mpi_comm(), [V.dofmap().index_map()], TensorLayout.Ghosts_GHOSTED)
+    #b.init(b_layout)
     assemble(L, tensor=b)
 
     # Test solves with assembled rhs

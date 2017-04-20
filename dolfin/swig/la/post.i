@@ -131,6 +131,11 @@ def la_index_dtype():
   {
     (*self) *= other;
   }
+
+  bool is_ghosted() const
+  {
+    return self->is_ghosted() == TensorLayout::Ghosts::GHOSTED ? true : false;
+  }
 // ---------------------------------------------------------------------------
   %pythoncode
   %{

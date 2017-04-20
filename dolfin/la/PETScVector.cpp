@@ -50,7 +50,8 @@ PETScVector::PETScVector() : PETScVector(MPI_COMM_WORLD)
   // Do nothing
 }
 //-----------------------------------------------------------------------------
-PETScVector::PETScVector(MPI_Comm comm) : _x(nullptr)
+PETScVector::PETScVector(MPI_Comm comm) : _x(nullptr),
+  _is_ghosted(TensorLayout::Ghosts::UNGHOSTED)
 {
   PetscErrorCode ierr = VecCreate(comm, &_x);
   CHECK_ERROR("VecCreate");
@@ -69,13 +70,15 @@ PETScVector::PETScVector(const SparsityPattern& sparsity_pattern)
   _init(sparsity_pattern.local_range(0), {}, {});
 }
 //-----------------------------------------------------------------------------
-PETScVector::PETScVector(Vec x) : _x(x)
+PETScVector::PETScVector(Vec x) : _x(x),
+  _is_ghosted(TensorLayout::Ghosts::UNGHOSTED)  // FIXME
 {
   // Increase reference count to PETSc object
   PetscObjectReference((PetscObject)_x);
 }
 //-----------------------------------------------------------------------------
-PETScVector::PETScVector(const PETScVector& v) : _x(nullptr)
+PETScVector::PETScVector(const PETScVector& v) : _x(nullptr),
+  _is_ghosted(v._is_ghosted)
 {
   dolfin_assert(v._x);
 

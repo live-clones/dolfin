@@ -48,6 +48,9 @@ namespace dolfin
   {
   public:
 
+    /// Constructor
+    GenericVector() : _is_ghosted(TensorLayout::Ghosts::UNGHOSTED) {}
+
     /// Destructor
     virtual ~GenericVector() {}
 
@@ -83,6 +86,7 @@ namespace dolfin
           ghosts[i] = local_to_global[i + nowned];
       }
 
+      _is_ghosted = tensor_layout.is_ghosted();
       init(tensor_layout.local_range(0), local_to_global, ghosts);
       zero();
     }
@@ -182,6 +186,18 @@ namespace dolfin
 
     /// Determine whether global vector index is owned by this process
     virtual bool owns_index(std::size_t i) const = 0;
+
+    /// Determine whether vector is ghosted
+    virtual TensorLayout::Ghosts is_ghosted() const
+    {
+      if (empty())
+      {
+        dolfin_error("GenericVector.h",
+                     "determine ghost state of vector",
+                     "Vector is not initialized");
+      }
+      return _is_ghosted;
+    }
 
     /// Get block of values using global indices (values must all live
     /// on the local process, ghosts cannot be accessed)
@@ -296,6 +312,10 @@ namespace dolfin
     /// before using using the object.
     virtual void setitem(dolfin::la_index i, double value)
     { set(&value, 1, &i); }
+
+  private:
+
+    TensorLayout::Ghosts _is_ghosted;
 
   };
 

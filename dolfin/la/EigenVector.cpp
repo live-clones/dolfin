@@ -31,20 +31,22 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-EigenVector::EigenVector() : EigenVector(MPI_COMM_SELF)
+EigenVector::EigenVector() : EigenVector(MPI_COMM_SELF),
+  _is_ghosted(TensorLayout::Ghosts::UNGHOSTED)
 {
   // Do nothing
 }
 //-----------------------------------------------------------------------------
 EigenVector::EigenVector(MPI_Comm comm) : _x(new Eigen::VectorXd),
-                                          _mpi_comm(comm)
+  _mpi_comm(comm), _is_ghosted(TensorLayout::Ghosts::UNGHOSTED)
 {
   // Check size of communicator
   check_mpi_size(comm);
 }
 //-----------------------------------------------------------------------------
 EigenVector::EigenVector(MPI_Comm comm, std::size_t N)
-  : _x(new Eigen::VectorXd(N)), _mpi_comm(comm)
+  : _x(new Eigen::VectorXd(N)), _mpi_comm(comm),
+  _is_ghosted(TensorLayout::Ghosts::UNGHOSTED)
 {
   // Check size of communicator
   check_mpi_size(comm);
@@ -54,12 +56,14 @@ EigenVector::EigenVector(MPI_Comm comm, std::size_t N)
 }
 //-----------------------------------------------------------------------------
 EigenVector::EigenVector(const EigenVector& x)
-  : _x(new Eigen::VectorXd(*(x._x))), _mpi_comm(x._mpi_comm)
+  : _x(new Eigen::VectorXd(*(x._x))), _mpi_comm(x._mpi_comm),
+  _is_ghosted(x._is_ghosted)
 {
   // Do nothing
 }
 //-----------------------------------------------------------------------------
-EigenVector::EigenVector(std::shared_ptr<Eigen::VectorXd> x) : _x(x)
+EigenVector::EigenVector(std::shared_ptr<Eigen::VectorXd> x) : _x(x),
+  _is_ghosted(TensorLayout::Ghosts::UNGHOSTED)
 {
   // Do nothing
 }
