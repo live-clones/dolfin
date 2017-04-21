@@ -41,10 +41,9 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double rtol, double atol)
   // Make a sundials n_vector sharing data with u0
   _u = std::make_shared<SUNDIALSNVector>(u0);
 
-  // Reset time to zero
-  t = 0.0;
-
   // Initialise
+  std::cout << "Initialising with t = " << t << "\n";
+
   int flag = CVodeInit(cvode_mem, f, t, _u->nvector());
   dolfin_assert(flag == CV_SUCCESS);
 
@@ -54,9 +53,13 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double rtol, double atol)
 //-----------------------------------------------------------------------------
 double CVode::step(double dt)
 {
+  //  std::cout << "t_in = " << t;
+
   double tout = t + dt;
   int flag = ::CVode(cvode_mem, tout, _u->nvector(), &t, CV_NORMAL);
   dolfin_assert(flag == CV_SUCCESS);
+
+  //  std::cout << "t_out = " << t;
 
   return t;
 }
@@ -65,12 +68,12 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 {
   // f is a static function (from C), so need to get pointer to "this" object
   // passed though in user_data
-  CVode* cv = (CVode*)user_data;
+  CVode* cv = static_cast<CVode*>(user_data);
 
   auto uvec = static_cast<SUNDIALSNVector*>(u->content)->vec();
   auto udotvec = static_cast<SUNDIALSNVector*>(udot->content)->vec();
 
-  // Callback to actually calculate the derivatives
+  // Callback to actually calculate the derivatives (user function)
   cv->derivs(t, uvec, udotvec);
 
   return 0;

@@ -30,7 +30,7 @@ namespace dolfin
   public:
 
     /// Constructor
-    CVode()
+  CVode() : t(0.0)
     {
       // Create CVode memory block
       cvode_mem = CVodeCreate(CV_BDF, CV_ADAMS);
@@ -55,8 +55,12 @@ namespace dolfin
     double step(double dt);
 
     /// Get current time
-    double time()
+    double get_time() const
     { return t; }
+
+    /// Set the current time
+    void set_time(double t0)
+    { t = t0; }
 
     /// Overloaded function for time derivatives of u at time t
     /// Given the vector u, at time t, provide the time derivative udot.
