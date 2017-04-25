@@ -16,6 +16,8 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifdef HAS_SUNDIALS
+
 #include <cmath>
 
 #include <dolfin/common/MPI.h>
@@ -33,8 +35,9 @@
 #include "CVode.h"
 
 using namespace dolfin;
+
 //-----------------------------------------------------------------------------
-void CVode::init(std::shared_ptr<GenericVector> u0, double rtol, double atol)
+void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol)
 {
   dolfin_assert(cvode_mem);
 
@@ -87,3 +90,5 @@ void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                "This function should be overloaded");
 }
 //-----------------------------------------------------------------------------
+
+#endif
