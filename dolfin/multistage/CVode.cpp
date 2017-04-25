@@ -90,5 +90,4 @@ void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                "This function should be overloaded");
 }
 //-----------------------------------------------------------------------------
-
 #endif
