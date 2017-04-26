@@ -25,6 +25,7 @@
 
 namespace dolfin
 {
+  /// Wrapper class to SUNDIALS CVODE
   class CVode
   {
   public:
