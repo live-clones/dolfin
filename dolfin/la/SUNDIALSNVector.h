@@ -32,6 +32,9 @@
 
 namespace dolfin
 {
+  ///
+  ///   Interface to SUNDIALS NVector
+  ///
   class SUNDIALSNVector
   {
   public:
@@ -73,15 +76,16 @@ namespace dolfin
       N_V->content = (void *)(this);
     }
 
-    //--- Implementation of N_Vector ops
+    ///--- Implementation of N_Vector ops
 
+    /// Get ID for custom SUNDIALSNVector implementation
     static N_Vector_ID N_VGetVectorID(N_Vector nv)
     {
       dolfin_debug("N_VGetVectorID");
-      // ID for custom SUNDIALSNVector implementation
       return SUNDIALS_NVEC_CUSTOM;
     }
 
+    /// Sets all components of the N_Vector z to realtype c.
     static void N_VConst(double c, N_Vector z)
     {
       dolfin_debug("N_VConst");
@@ -89,6 +93,9 @@ namespace dolfin
       *v = c;
     }
 
+    /// Creates a new N_Vector of the same type as an existing vector z
+    /// and sets the ops field.  It does not copy the vector, but rather
+    /// allocates storage for the new vector.
     static N_Vector N_VClone(N_Vector z)
     {
       dolfin_debug("N_VClone");
@@ -103,6 +110,8 @@ namespace dolfin
       return V;
     }
 
+    /// Creates a new N_Vector of the same type as an existing vector
+    /// x and sets the ops field. It does not allocate storage for data.
     static N_Vector N_VCloneEmpty(N_Vector x)
     {
       dolfin_debug("N_VCloneEmpty");
@@ -110,6 +119,8 @@ namespace dolfin
       return NULL;
     }
 
+    /// Destroys the N_Vector v and frees memory allocated for its
+    /// internal data.
     static void N_VDestroy(N_Vector z)
     {
       dolfin_debug("N_VDestroy");
@@ -117,12 +128,15 @@ namespace dolfin
       delete z;
     }
 
+    /// Returns storage requirements for one N_Vector. lrw contains the
+    /// number of realtype words and liw contains the number of integer words.
     static void N_VSpace(N_Vector x, long int *y, long int *z)
     {
       dolfin_debug("N_VSpace");
       dolfin_not_implemented();
     }
 
+    /// Returns a pointer to a realtype array from the N_Vector v.
     static double* N_VGetArrayPointer(N_Vector x)
     {
       dolfin_debug("N_VGetArrayPointer");
@@ -130,12 +144,15 @@ namespace dolfin
       return NULL;
     }
 
+    /// Overwrites the data in an N_Vector with a given array of realtype.
     static void N_VSetArrayPointer(double* c,N_Vector x)
     {
       dolfin_debug("N_VSetArrayPointer");
       dolfin_not_implemented();
     }
 
+    /// Sets the N_Vector z to be the component-wise product of the N_Vector
+    /// inputs x and y.
     static void N_VProd(N_Vector x, N_Vector y, N_Vector z)
     {
       dolfin_debug("N_VProd");
@@ -149,6 +166,8 @@ namespace dolfin
       *vz *= *vy;
     }
 
+    /// Sets the N_Vector z to be the component-wise ratio of the N_Vector
+    /// inputs x and y
     static void N_VDiv(N_Vector x, N_Vector y, N_Vector z)
     {
       dolfin_debug("N_VDiv");
@@ -161,6 +180,7 @@ namespace dolfin
       *vz *= *vx;
     }
 
+    /// Scales the N_Vector x by the double scalar c and returns the result in z
     static void N_VScale(double c, N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VScale");
@@ -172,6 +192,8 @@ namespace dolfin
       *vz *= c;
     }
 
+    /// Sets the components of the N_Vector z to be the absolute values of the
+    /// components of the N_Vector x
     static void N_VAbs(N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VAbs");
@@ -182,6 +204,8 @@ namespace dolfin
       vz->abs();
     }
 
+    /// Sets the components of the N_Vector z to be the inverses of the
+    /// components of the N_Vector x
     static void N_VInv(N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VInv");
@@ -197,6 +221,8 @@ namespace dolfin
       vz->apply("insert");
     }
 
+    /// Adds the double scalar c to all components of x and returns the result
+    /// in the N_Vector z
     static void N_VAddConst(N_Vector x, double c, N_Vector z)
     {
       dolfin_debug("N_VAddConst");
@@ -207,6 +233,7 @@ namespace dolfin
       *vz += c;
     }
 
+    /// Returns the value of the ordinary dot product of x and y
     static double N_VDotProd(N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VDotProd");
@@ -216,6 +243,7 @@ namespace dolfin
       return vx->inner(*vz);
     }
 
+    /// Returns the maximum norm of the N_Vector x
     static double N_VMaxNorm(N_Vector x)
     {
       dolfin_debug("N_VMaxNorm");
@@ -225,12 +253,15 @@ namespace dolfin
       return vy->max();
     }
 
+    /// Returns the smallest element of the N_Vector x
     static double N_VMin(N_Vector x)
     {
       dolfin_debug("N_VMin");
       return (static_cast<const SUNDIALSNVector *>(x->content)->vec())->min();
     }
 
+    /// Performs the operation z = ax + by , where a and b are double scalars
+    /// and x and y are of type N_Vector
     static void N_VLinearSum(double a, N_Vector x, double b, N_Vector y, N_Vector z)
     {
       dolfin_debug("N_VLinearSum");
@@ -250,6 +281,8 @@ namespace dolfin
       *vz += *w;
     }
 
+    /// Returns  the  weighted  root-mean-square  norm  of  the N_Vector x with
+    /// double weight vector w
     static double N_VWrmsNorm(N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VWrmsNorm");
@@ -261,6 +294,9 @@ namespace dolfin
       return y->norm("l2")/std::sqrt(y->size());
     }
 
+    /// Returns the weighted root mean square norm of the N_Vector x with double
+    /// weight vector w built using only the elements of x corresponding to
+    /// nonzero elements of the N_Vector id
     static double N_VWrmsNormMask(N_Vector x, N_Vector y, N_Vector z)
     {
       dolfin_debug("N_VWrmsNormMask");
@@ -268,6 +304,8 @@ namespace dolfin
       return 0.0;
     }
 
+    /// Returns the weighted Euclidean l2 norm  of the N_Vector x with double
+    /// weight vector w
     static double N_VWl2Norm(N_Vector x, N_Vector z )
     {
       dolfin_debug("N_VWl2Norm");
@@ -275,6 +313,7 @@ namespace dolfin
       return 0.0;
     }
 
+    /// Returns the l1 norm of the N_Vector x
     static double N_VL1Norm(N_Vector x )
     {
       dolfin_debug("N_VL1Norm");
@@ -282,6 +321,8 @@ namespace dolfin
       return 0.0;
     }
 
+    /// Compares the components of the N_Vector x to the double scalar c and 
+    /// returns an N_Vector z
     static void N_VCompare(double c, N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VCompare");
@@ -295,6 +336,8 @@ namespace dolfin
       vz->apply("insert");
     }
 
+    /// Sets the components of the N_Vector z to be the inverses of the
+    /// components of the N_Vector x, with prior testing for zero values
     static int N_VInvTest(N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VInvTest");
@@ -316,6 +359,7 @@ namespace dolfin
       return no_zero_found;
     }
 
+    /// Performs constraint tests
     static int N_VConstrMask(N_Vector x, N_Vector y, N_Vector z )
     {
       dolfin_debug("N_VConstrMask");
@@ -323,6 +367,8 @@ namespace dolfin
       return 0;
     }
 
+    /// This routine returns the minimum of the quotients obtained by termwise
+    /// dividing x by denom z
     static double N_VMinQuotient(N_Vector x, N_Vector z )
     {
       dolfin_debug("N_VConstrMask");
