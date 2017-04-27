@@ -75,6 +75,26 @@ namespace dolfin
       N_V->ops = &ops;
       N_V->content = (void *)(this);
     }
+    //-----------------------------------------------------------------------------
+
+    /// Get underlying raw SUNDIALS N_Vector struct
+    N_Vector nvector() const
+    {
+      N_V->content = (void *)(this);
+      return N_V.get();
+    }
+
+    /// Get underlying GenericVector
+    std::shared_ptr<GenericVector> vec() const
+    {
+      return vector;
+    }
+
+    /// Assignment operator
+    const SUNDIALSNVector& operator= (const SUNDIALSNVector& x)
+    { *vector = *x.vector; return *this; }
+
+  private:
 
     ///--- Implementation of N_Vector ops
 
@@ -83,6 +103,18 @@ namespace dolfin
     {
       dolfin_debug("N_VGetVectorID");
       return SUNDIALS_NVEC_CUSTOM;
+    }
+
+    /// Sets the components of the N_Vector z to be the absolute values of the
+    /// components of the N_Vector x
+    static void N_VAbs(N_Vector x, N_Vector z)
+    {
+      dolfin_debug("N_VAbs");
+      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
+
+      *vz = *vx;
+      vz->abs();
     }
 
     /// Sets all components of the N_Vector z to realtype c.
@@ -190,18 +222,6 @@ namespace dolfin
       // z = c*x
       *vz = *vx;
       *vz *= c;
-    }
-
-    /// Sets the components of the N_Vector z to be the absolute values of the
-    /// components of the N_Vector x
-    static void N_VAbs(N_Vector x, N_Vector z)
-    {
-      dolfin_debug("N_VAbs");
-      auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
-      auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
-
-      *vz = *vx;
-      vz->abs();
     }
 
     /// Sets the components of the N_Vector z to be the inverses of the
@@ -359,13 +379,6 @@ namespace dolfin
       return no_zero_found;
     }
 
-    /// Performs constraint tests
-    static int N_VConstrMask(N_Vector x, N_Vector y, N_Vector z )
-    {
-      dolfin_debug("N_VConstrMask");
-      dolfin_not_implemented();
-      return 0;
-    }
 
     /// This routine returns the minimum of the quotients obtained by termwise
     /// dividing x by denom z
@@ -376,26 +389,13 @@ namespace dolfin
       return 0.0;
     }
 
-    //-----------------------------------------------------------------------------
-
-    /// Get underlying raw SUNDIALS N_Vector struct
-    N_Vector nvector() const
+    /// Performs constraint tests
+    static int N_VConstrMask(N_Vector x, N_Vector y, N_Vector z )
     {
-      N_V->content = (void *)(this);
-      return N_V.get();
+      dolfin_debug("N_VConstrMask");
+      dolfin_not_implemented();
+      return 0;
     }
-
-    /// Get underlying GenericVector
-    std::shared_ptr<GenericVector> vec() const
-    {
-      return vector;
-    }
-
-    /// Assignment operator
-    const SUNDIALSNVector& operator= (const SUNDIALSNVector& x)
-    { *vector = *x.vector; return *this; }
-
-  private:
 
     // Pointer to concrete implementation
     std::shared_ptr<GenericVector> vector;
