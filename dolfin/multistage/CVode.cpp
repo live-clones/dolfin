@@ -105,6 +105,12 @@ std::map<std::string, long double> CVode::statistics()
   stats.insert(std::pair<std::string, long double>("LastOrder",cv->cv_qu));
   stats.insert(std::pair<std::string, long double>("CurrentOrder",cv->cv_next_q));
   stats.insert(std::pair<std::string, long double>("StabLimOrderReds",cv->cv_nor));
+  stats.insert(std::pair<std::string, long double>("ActualInitStep",cv->cv_h0u));
+  stats.insert(std::pair<std::string, long double>("LastStep",cv->cv_hu));
+  stats.insert(std::pair<std::string, long double>("CurrentStep",cv->cv_next_h));
+  stats.insert(std::pair<std::string, long double>("CurrentTime",cv->cv_tn));
+  stats.insert(std::pair<std::string, long double>("TolScaleFactor",cv->cv_tolsf));
+  stats.insert(std::pair<std::string, long double>("NumGEvals",cv->cv_nge));
 
   return stats;
 }
