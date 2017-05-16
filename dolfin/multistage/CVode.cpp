@@ -26,8 +26,11 @@
 
 #include <vector>
 #include <iostream>
+#include <map>
+#include <string>
 
 #include <cvode/cvode.h>
+#include <cvode/cvode_impl.h>
 #include <cvode/cvode_dense.h>
 #include <sundials/sundials_dense.h>
 #include <sundials/sundials_types.h>
@@ -90,4 +93,19 @@ void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                "This function should be overloaded");
 }
 //-----------------------------------------------------------------------------
+std::map<std::string, long double> CVode::statistics()
+{
+  std::map<std::string, long double> stats;
+  auto cv = static_cast<CVodeMem>(cvode_mem);
+
+  stats.insert(std::pair<std::string, long double>("Steps",cv->cv_nst));
+  stats.insert(std::pair<std::string, long double>("RHSEvals",cv->cv_nfe));
+  stats.insert(std::pair<std::string, long double>("LinSolvSetups",cv->cv_nsetups));
+  stats.insert(std::pair<std::string, long double>("ErrTestFails",cv->cv_netf));
+  stats.insert(std::pair<std::string, long double>("LastOrder",cv->cv_qu));
+  stats.insert(std::pair<std::string, long double>("CurrentOrder",cv->cv_next_q));
+  stats.insert(std::pair<std::string, long double>("StabLimOrderReds",cv->cv_nor));
+
+  return stats;
+}
 #endif
