@@ -68,7 +68,7 @@ namespace dolfin
     virtual void derivs(double t, std::shared_ptr<GenericVector> u,
                         std::shared_ptr<GenericVector> udot);
 
-    std::map<std::string, long double> statistics();
+    std::map<std::string,double> statistics();
 
   private:
     // Internal callback from CVode to get time derivatives - passed on to derivs (above)

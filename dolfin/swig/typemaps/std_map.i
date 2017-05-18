@@ -243,3 +243,22 @@ MAP_OUT_TYPEMAPS(int, unsigned int, uint, NPY_UINT)
   // Append the output to $result
   %append_output(ret);
 }
+
+// Add 'out' typemap for std::map<std::string, double>
+%typemap(out) std::map<std::string, double> \
+  (std::map<std::string, double>::const_iterator it,
+   PyObject* item0, PyObject* item1)
+{
+  PyObject *ret = PyDict_New();
+  for (it = $1.begin(); it != $1.end(); ++it)
+  {
+    item0 = SWIG_From_dec(std::string)(it->first);
+    item1 = SWIG_From_dec(double)(it->second);
+    PyDict_SetItem(ret, item0, item1);
+    Py_XDECREF(item0);
+    Py_XDECREF(item1);
+  }
+
+  // Append the output to $result
+  %append_output(ret);
+}
