@@ -93,24 +93,24 @@ void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                "This function should be overloaded");
 }
 //-----------------------------------------------------------------------------
-std::map<std::string, long double> CVode::statistics()
+std::map<std::string, double> CVode::statistics()
 {
-  std::map<std::string, long double> stats;
+  std::map<std::string, double> stats;
   auto cv = static_cast<CVodeMem>(cvode_mem);
 
-  stats.insert(std::pair<std::string, long double>("Steps",cv->cv_nst));
-  stats.insert(std::pair<std::string, long double>("RHSEvals",cv->cv_nfe));
-  stats.insert(std::pair<std::string, long double>("LinSolvSetups",cv->cv_nsetups));
-  stats.insert(std::pair<std::string, long double>("ErrTestFails",cv->cv_netf));
-  stats.insert(std::pair<std::string, long double>("LastOrder",cv->cv_qu));
-  stats.insert(std::pair<std::string, long double>("CurrentOrder",cv->cv_next_q));
-  stats.insert(std::pair<std::string, long double>("StabLimOrderReds",cv->cv_nor));
-  stats.insert(std::pair<std::string, long double>("ActualInitStep",cv->cv_h0u));
-  stats.insert(std::pair<std::string, long double>("LastStep",cv->cv_hu));
-  stats.insert(std::pair<std::string, long double>("CurrentStep",cv->cv_next_h));
-  stats.insert(std::pair<std::string, long double>("CurrentTime",cv->cv_tn));
-  stats.insert(std::pair<std::string, long double>("TolScaleFactor",cv->cv_tolsf));
-  stats.insert(std::pair<std::string, long double>("NumGEvals",cv->cv_nge));
+  stats["Steps"] = cv->cv_nst;
+  stats["RHSEvals"] = cv->cv_nfe;
+  stats["LinSolvSetups"] = cv->cv_nsetups;
+  stats["ErrTestFails"] = cv->cv_netf;
+  stats["LastOrder"] = cv->cv_qu;
+  stats["CurrentOrder"] = cv->cv_next_q;
+  stats["StabLimOrderReds"] = cv->cv_nor;
+  stats["ActualInitStep"] = cv->cv_h0u;
+  stats["LastStep"] = cv->cv_hu;
+  stats["CurrentStep"] = cv->cv_next_h;
+  stats["CurrentTime"] = cv->cv_tn;
+  stats["TolScaleFactor"] = cv->cv_tolsf;
+  stats["GEvals"] = cv->cv_nge;
 
   return stats;
 }
