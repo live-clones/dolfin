@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 
 from dolfin import *
-import pytest
-from dolfin_utils.test import skip_in_parallel
 
 class MyCVode(CVode):
 
@@ -21,7 +19,5 @@ def test_sundials():
     dt = 0.1
     for i in range(nstep):
         t = cv.step(dt)
-        print(t, phi.max())
-
         
     assert (exp(-t)-phi.max())<1e-5
