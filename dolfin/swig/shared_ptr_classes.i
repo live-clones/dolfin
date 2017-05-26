@@ -209,6 +209,7 @@
 %shared_ptr(dolfin::GenericFile)
 %shared_ptr(dolfin::File)
 %shared_ptr(dolfin::XDMFFile)
+%shared_ptr(dolfin::XDMFFile2)
 %shared_ptr(dolfin::HDF5File)
 %shared_ptr(dolfin::X3DOM)
 

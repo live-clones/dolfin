@@ -6,6 +6,7 @@
 #include <dolfin/io/GenericFile.h>
 #include <dolfin/io/File.h>
 #include <dolfin/io/XDMFFile.h>
+#include <dolfin/io/XDMFFile2.h>
 #include <dolfin/io/HDF5File.h>
 #include <dolfin/io/HDF5Attribute.h>
 #include <dolfin/io/X3DOM.h>

@@ -15,6 +15,7 @@ set(HEADERS
   X3DFile.h
   X3DOM.h
   XDMFFile.h
+  XDMFFile2.h
   XMLArray.h
   XMLFile.h
   XMLFunctionData.h
@@ -44,6 +45,7 @@ set(SOURCES
   X3DFile.cpp
   X3DOM.cpp
   XDMFFile.cpp
+  XDMFFile2.cpp
   XMLFile.cpp
   XMLFunctionData.cpp
   XMLMesh.cpp
