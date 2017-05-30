@@ -249,37 +249,6 @@ namespace dolfin
     bool ordered(const std::vector<std::int64_t>& local_to_global_vertex_indices) const
     { return _mesh->type().ordered(*this, local_to_global_vertex_indices); }
 
-    /// Check whether given point is contained in cell. This function is
-    /// identical to the function collides(point).
-    ///
-    /// @param     point
-    ///         The point to be checked.
-    ///
-    /// @return     bool
-    ///         True iff point is contained in cell.
-    bool contains(const Point& point) const
-    { return CollisionDetection::collides(*this, point); }
-
-    /// Check whether given point collides with cell
-    ///
-    /// @param    point
-    ///         The point to be checked.
-    ///
-    /// @return     bool
-    ///         True iff point collides with cell.
-    bool collides(const Point& point) const
-    { return CollisionDetection::collides(*this, point); }
-
-    /// Check whether given entity collides with cell
-    ///
-    /// @param    entity
-    ///         The cell to be checked.
-    ///
-    /// @return     bool
-    ///         True iff entity collides with cell.
-    bool collides(const MeshEntity& entity) const
-    { return CollisionDetection::collides(*this, entity); }
-
     /// Compute triangulation of intersection with given entity
     ///
     /// @param    entity

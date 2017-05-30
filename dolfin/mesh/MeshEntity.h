@@ -28,6 +28,7 @@
 #include <iostream>
 
 #include <dolfin/geometry/Point.h>
+#include <dolfin/geometry/CollisionDetection.h>
 #include "Mesh.h"
 
 namespace dolfin
@@ -199,6 +200,56 @@ namespace dolfin
     /// @return Point
     ///         The midpoint of the cell.
     Point midpoint() const;
+
+    /// Check whether given point is contained in cell. This function is
+    /// identical to the function collides(point).
+    ///
+    /// *Arguments*
+    ///     point (_Point_)
+    ///         The point to be checked.
+    ///
+    /// *Returns*
+    ///     bool
+    ///         True iff point is contained in cell.
+    bool contains(const Point& point) const
+    { return CollisionDetection::collides(*this, point); }
+
+    /// Check whether given point collides with _MeshEntity_
+    ///
+    /// *Arguments*
+    ///     point (_Point_)
+    ///         The point to be checked.
+    ///
+    /// *Returns*
+    ///     bool
+    ///         True iff point collides with _MeshEntity_.
+    bool collides(const Point& point) const
+    { return CollisionDetection::collides(*this, point); }
+
+    /// Check whether given interval defined by (x1, x2)
+    /// collides with _MeshEntity_
+    ///
+    /// *Arguments*
+    ///     point (_Point_)
+    ///         The point to be checked.
+    ///
+    /// *Returns*
+    ///     bool
+    ///         True iff point collides with _MeshEntity_.
+    bool collides(const Point& x1, const Point& x2) const
+    { return CollisionDetection::collides(*this, x1, x2); }
+
+    /// Check whether given entity collides with _MeshEntity_
+    ///
+    /// *Arguments*
+    ///     entity (_MeshEntity_)
+    ///         The cell to be checked.
+    ///
+    /// *Returns*
+    ///     bool
+    ///         True iff entity collides with _MeshEntity_.
+    bool collides(const MeshEntity& entity) const
+    { return CollisionDetection::collides(*this, entity); }
 
     /// Determine whether an entity is a 'ghost' from another
     /// process
