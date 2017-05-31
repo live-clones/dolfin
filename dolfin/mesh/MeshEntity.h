@@ -204,37 +204,31 @@ namespace dolfin
     /// Check whether given point is contained in cell. This function is
     /// identical to the function collides(point).
     ///
-    /// *Arguments*
-    ///     point (_Point_)
-    ///         The point to be checked.
+    /// @param point (_Point_)
+    ///     The point to be checked.
     ///
-    /// *Returns*
-    ///     bool
-    ///         True iff point is contained in cell.
+    /// @return bool
+    ///     True iff point is contained in cell.
     bool contains(const Point& point) const
     { return CollisionDetection::collides(*this, point); }
 
     /// Check whether given point collides with _MeshEntity_
     ///
-    /// *Arguments*
-    ///     point (_Point_)
-    ///         The point to be checked.
+    /// @param point (_Point_)
+    ///     The point to be checked.
     ///
-    /// *Returns*
-    ///     bool
-    ///         True iff point collides with _MeshEntity_.
+    /// @return bool
+    ///     True iff point collides with _MeshEntity_.
     bool collides(const Point& point) const
     { return CollisionDetection::collides(*this, point); }
 
     /// Check whether given entity collides with _MeshEntity_
     ///
-    /// *Arguments*
-    ///     entity (_MeshEntity_)
-    ///         The cell to be checked.
+    /// @param entity (_MeshEntity_)
+    ///     The _MeshEntity_ to be checked.
     ///
-    /// *Returns*
-    ///     bool
-    ///         True iff entity collides with _MeshEntity_.
+    /// @return bool
+    ///     True iff entity collides with _MeshEntity_.
     bool collides(const MeshEntity& entity) const
     { return CollisionDetection::collides(*this, entity); }
 
