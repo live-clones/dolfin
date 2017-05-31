@@ -60,6 +60,11 @@ namespace dolfin
     std::vector<unsigned int>
     compute_collisions(const Point& point) const;
 
+    /// Compute all collisions between bounding boxes and the vector between
+    /// (_Point_, _Point_)
+    std::vector<unsigned int>
+    compute_collisions(const Point& x1, const Point& x2) const;
+
     /// Compute all collisions between bounding boxes and _BoundingBoxTree_
     std::pair<std::vector<unsigned int>, std::vector<unsigned int> >
     compute_collisions(const GenericBoundingBoxTree& tree) const;
@@ -67,6 +72,17 @@ namespace dolfin
     /// Compute all collisions between entities and _Point_
     std::vector<unsigned int>
     compute_entity_collisions(const Point& point,
+                              const Mesh& mesh) const;
+
+    /// Compute all collisions between entities and interval (_Point_, _Point_)
+    std::vector<unsigned int>
+    compute_entity_collisions(const Point& x1,
+                              const Point& x2,
+                              const Mesh& mesh) const;
+
+    /// Compute all collisions between entities and _MeshEntity_
+    std::vector<unsigned int>
+    compute_entity_collisions(const MeshEntity& me,
                               const Mesh& mesh) const;
 
     /// Compute all collisions between processes and _Point_
@@ -149,6 +165,23 @@ namespace dolfin
     static void
     _compute_collisions(const GenericBoundingBoxTree& tree,
                         const Point& point,
+                        unsigned int node,
+                        std::vector<unsigned int>& entities,
+                        const Mesh* mesh);
+
+    // Compute collisions with interval (x1, x2) (recursive)
+    static void
+    _compute_collisions(const GenericBoundingBoxTree& tree,
+                        const Point& x1,
+                        const Point& x2,
+                        unsigned int node,
+                        std::vector<unsigned int>& entities,
+                        const Mesh* mesh);
+
+    // Compute collisions with MeshEntity (recursive)
+    static void
+    _compute_collisions(const GenericBoundingBoxTree& tree,
+                        const MeshEntity& me,
                         unsigned int node,
                         std::vector<unsigned int>& entities,
                         const Mesh* mesh);
@@ -333,6 +366,14 @@ namespace dolfin
     /// Check whether point (x) is in bounding box (node)
     virtual bool
     point_in_bbox(const double* x, unsigned int node) const = 0;
+
+    /// Check whether mesh entity (me) is in bounding box (node)
+    virtual bool
+    interval_in_bbox(const double* x1, const double* x2, unsigned int node) const = 0;
+
+    /// Check whether mesh entity (me) is in bounding box (node)
+    virtual bool
+    mesh_entity_in_bbox(const MeshEntity& me, unsigned int node) const = 0;
 
     /// Check whether bounding box (a) collides with bounding box (node)
     virtual bool

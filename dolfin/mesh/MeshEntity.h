@@ -222,6 +222,20 @@ namespace dolfin
     bool collides(const Point& point) const
     { return CollisionDetection::collides(*this, point); }
 
+    /// Check whether given interval defined by (x1, x2)
+    /// collides with _MeshEntity_
+    ///
+    /// *Arguments*
+    ///     point (_Point_)
+    ///         The point to be checked.
+    ///
+    /// *Returns*
+    ///     bool
+    ///         True iff point collides with _MeshEntity_.
+    bool collides(const Point& x1, const Point& x2) const
+    { return CollisionDetection::collides(*this, x1, x2); }
+
+
     /// Check whether given entity collides with _MeshEntity_
     ///
     /// @param entity (_MeshEntity_)
