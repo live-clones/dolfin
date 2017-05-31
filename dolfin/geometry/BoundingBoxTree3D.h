@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <vector>
 #include <dolfin/common/constants.h>
+#include <dolfin/mesh/MeshEntity.h>
 #include "GenericBoundingBoxTree.h"
 
 namespace dolfin
@@ -125,6 +126,26 @@ namespace dolfin
               b[1] - eps1 <= a[4] && a[1] <= b[4] + eps1 &&
               b[2] - eps2 <= a[5] && a[2] <= b[5] + eps2);
     }
+
+    /// Check whether finite ray vector (x1, x2) is in bounding box (node)
+    bool interval_in_bbox(const double* x1, const double* x2, unsigned int node) const
+    {
+      dolfin_error("interval_in_bbox",
+                   "compute whether interval is in bbox",
+                   "not implemented");
+      return false;
+    }
+
+    /// Check whether mesh entity (a) is in bounding box (node)
+    bool mesh_entity_in_bbox(const MeshEntity& me, unsigned int node) const
+    {
+      if (me.dim() == 0)
+        return point_in_bbox(me.midpoint().coordinates(), node);
+
+      dolfin_error("mesh_entity_in_bbox", "compute whether entity is in bbox", "not implemented");
+      return false;
+    }
+
 
     /// Compute squared distance between point and bounding box
     double compute_squared_distance_bbox(const double* x,

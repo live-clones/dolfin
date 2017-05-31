@@ -32,6 +32,7 @@ namespace dolfin
   class Point;
   class GenericBoundingBoxTree;
   class Mesh;
+  class MeshEntity;
 
   /// This class implements a (distributed) axis aligned bounding box
   /// tree (AABB tree). Bounding box trees can be created from meshes
@@ -128,6 +129,36 @@ namespace dolfin
     ///         The point.
     std::vector<unsigned int>
     compute_entity_collisions(const Point& point) const;
+
+    /// Compute all collisions between entities and the interval defined
+    /// by the pair of points _Point_ x1, _Point_ x2.
+    ///
+    /// *Returns*
+    ///     std::vector<unsigned int>
+    ///         A list of local indices for entities that collide with
+    ///         (intersect) the given point.
+    ///
+    /// *Arguments*
+    ///     x1 (_Point_)
+    ///         Interval start.
+    ///     x2 (_Point_)
+    ///         Interval end.
+    std::vector<unsigned int>
+    compute_entity_collisions(const Point& x1, const Point& x2) const;
+
+    /// Compute all collisions between entities and _MeshEntity_.
+    ///
+    /// *Returns*
+    ///     std::vector<unsigned int>
+    ///         A list of local indices for entities that collide with
+    ///         (intersect) the given mesh entity.
+    ///
+    /// *Arguments*
+    ///     point (_Point_)
+    ///         The point.
+    std::vector<unsigned int>
+    compute_entity_collisions(const MeshEntity& me) const;
+
 
     /// Compute all collisions between process bounding boxes
     /// and _Point_. Effectively a list of processes which may
