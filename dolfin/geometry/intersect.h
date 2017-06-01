@@ -29,7 +29,7 @@ namespace dolfin
   // Forward declarations
   class Mesh;
   class Point;
-  class MeshPointIntersection;
+  class MeshEntityIntersection;
 
   /// Compute and return intersection between _Mesh_ and _Point_.
   ///
