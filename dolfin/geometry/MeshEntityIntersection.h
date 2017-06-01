@@ -32,33 +32,35 @@ namespace dolfin
   class Point;
 
   /// This class represents an intersection between a _Mesh_ and a
-  /// _Point_. The resulting intersection is stored as a list of zero
-  /// or more cells.
+  /// _Point_ or a _Mesh_ and a vector defined by two _Point_s.
+  /// The resulting intersection is stored as a list of zero
+  /// or more _MeshEntity_s.
 
-  class MeshPointIntersection
+  class MeshEntityIntersection
   {
   public:
 
     /// Compute intersection between mesh and point
-    MeshPointIntersection(const Mesh& mesh,
-                          const Point& point);
+    MeshEntityIntersection(const Mesh& mesh,
+                           const Point& point,
+                           const std::size_t t_dim);
 
     /// Compute intersection between mesh and interval
-    MeshPointIntersection(const Mesh& mesh,
-                          const Point& x1,
-                          const Point& x2);
+    MeshEntityIntersection(const Mesh& mesh,
+                           const Point& x1,
+                           const Point& x2,
+                           const std::size_t t_dim);
 
-    /// Destructor
-    ~MeshPointIntersection();
+    ~MeshEntityIntersection() {};
 
-    /// Return the list of (local) indices for intersected cells
-    const std::vector<unsigned int>& intersected_cells() const
-    { return _intersected_cells; }
+    /// Return the list of (local) indices for intersected entities
+    const std::vector<unsigned int>& intersected_entities() const
+    { return _intersected_entities; }
 
   private:
 
-    // The list of (local) indices for intersected cells
-    std::vector<unsigned int> _intersected_cells;
+    // The list of (local) indices for intersected entities
+    std::vector<unsigned int> _intersected_entities;
 
   };
 

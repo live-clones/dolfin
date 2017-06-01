@@ -18,16 +18,38 @@
 // First added:  2013-05-30
 // Last changed: 2013-05-30
 
-#include "MeshPointIntersection.h"
+#include <dolfin/mesh/Mesh.h>
+#include "MeshEntityIntersection.h"
 #include "intersect.h"
 
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-std::shared_ptr<const MeshPointIntersection>
+std::shared_ptr<const MeshEntityIntersection>
 dolfin::intersect(const Mesh& mesh, const Point& point)
 {
-  return std::shared_ptr<const MeshPointIntersection>
-    (new MeshPointIntersection(mesh, point));
+  return intersect(mesh, point, mesh.geometry().dim());
+}
+//-----------------------------------------------------------------------------
+std::shared_ptr<const MeshEntityIntersection>
+dolfin::intersect(const Mesh& mesh, const Point& point,
+                  const std::size_t tdim)
+{
+  return std::shared_ptr<const MeshEntityIntersection>
+      (new MeshEntityIntersection(mesh, point, tdim));
+}
+//-----------------------------------------------------------------------------
+std::shared_ptr<const MeshEntityIntersection>
+dolfin::intersect(const Mesh& mesh, const Point& x1, const Point& x2)
+{
+  return intersect(mesh, x1, x2, mesh.geometry().dim());
+}
+//-----------------------------------------------------------------------------
+std::shared_ptr<const MeshEntityIntersection>
+dolfin::intersect(const Mesh& mesh, const Point& x1, const Point& x2,
+                  const std::size_t tdim)
+{
+  return std::shared_ptr<const MeshEntityIntersection>
+      (new MeshEntityIntersection(mesh, x1, x2, tdim));
 }
 //-----------------------------------------------------------------------------

@@ -33,17 +33,68 @@ namespace dolfin
 
   /// Compute and return intersection between _Mesh_ and _Point_.
   ///
-  /// *Arguments*
-  ///     mesh (_Mesh_)
+  /// @param    mesh (_Mesh_)
   ///         The mesh to be intersected.
-  ///     point (_Point_)
+  /// @param    point (_Point_)
   ///         The point to be intersected.
   ///
-  /// *Returns*
-  ///     _MeshPointIntersection_
+  /// @return
+  ///     _MeshEntityIntersection_
   ///         The intersection data.
-  std::shared_ptr<const MeshPointIntersection>
+  std::shared_ptr<const MeshEntityIntersection>
   intersect(const Mesh& mesh, const Point& point);
+
+  /// Compute and return intersection between _Mesh_ and _Point_.
+  ///
+  /// @param    mesh (_Mesh_)
+  ///         The mesh to be intersected.
+  /// @param    point (_Point_)
+  ///         The point to be intersected.
+  /// @param    tdim (_size_t_)
+  ///         The topology dimension of intersected entities
+  ///
+  /// @return
+  ///     _MeshEntityIntersection_
+  ///         The intersection data.
+  std::shared_ptr<const MeshEntityIntersection>
+  intersect(const Mesh& mesh, const Point& point,
+            const std::size_t tdim);
+
+  /// Compute and return intersection between _Mesh_ and vector between
+  /// two _Point_s.
+  ///
+  /// @param    mesh (_Mesh_)
+  ///         The mesh to be intersected.
+  /// @param    x1 (_Point_)
+  ///         The vector origin.
+  /// @param    x2 (_Point_)
+  ///         The vector destination.
+  ///
+  /// @return
+  ///     _MeshEntityIntersection_
+  ///         The intersection data.
+  std::shared_ptr<const MeshEntityIntersection>
+  intersect(const Mesh& mesh, const Point& x1, const Point& x2);
+
+
+  /// Compute and return intersection between _Mesh_ and vector between
+  /// two _Point_s.
+  ///
+  /// @param    mesh (_Mesh_)
+  ///         The mesh to be intersected.
+  /// @param    x1 (_Point_)
+  ///         The vector origin.
+  /// @param    x2 (_Point_)
+  ///         The vector destination.
+  /// @param    tdim (_size_t_)
+  ///         The topology dimension of intersected entities
+  ///
+  /// @return
+  ///     _MeshEntityIntersection_
+  ///         The intersection data.
+  std::shared_ptr<const MeshEntityIntersection>
+  intersect(const Mesh& mesh, const Point& x1, const Point& x2,
+            const std::size_t tdim);
 
 }
 

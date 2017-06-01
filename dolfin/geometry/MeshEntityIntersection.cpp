@@ -21,7 +21,7 @@
 #include <dolfin/log/LogStream.h>
 #include <dolfin/mesh/Cell.h>
 #include "BoundingBoxTree.h"
-#include "MeshPointIntersection.h"
+#include "MeshEntityIntersection.h"
 
 using namespace dolfin;
 
@@ -52,5 +52,30 @@ MeshPointIntersection::MeshPointIntersection(const Mesh& mesh,
 MeshPointIntersection::~MeshPointIntersection()
 {
   // Do nothing
+}
+//-----------------------------------------------------------------------------
+MeshEntityIntersection::MeshEntityIntersection(const Mesh& mesh,
+                                               const Point& point,
+                                               const std::size_t t_dim)
+{
+  // Build bounding box tree
+  BoundingBoxTree tree;
+  tree.build(mesh, t_dim);
+
+  // Compute intersection
+  _intersected_entities = tree.compute_entity_collisions(point);
+}
+//-----------------------------------------------------------------------------
+MeshEntityIntersection::MeshEntityIntersection(const Mesh& mesh,
+                                               const Point& x1,
+                                               const Point& x2,
+                                               const std::size_t t_dim)
+{
+  // Build bounding box tree
+  BoundingBoxTree tree;
+  tree.build(mesh, t_dim);
+
+  // Compute intersection
+  _intersected_entities = tree.compute_entity_collisions(x1, x2);
 }
 //-----------------------------------------------------------------------------
