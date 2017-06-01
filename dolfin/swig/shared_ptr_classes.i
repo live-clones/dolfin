@@ -238,4 +238,4 @@
 %shared_ptr(dolfin::GaussianQuadrature)
 
 // geometry
-%shared_ptr(dolfin::MeshPointIntersection)
+%shared_ptr(dolfin::MeshEntityIntersection)

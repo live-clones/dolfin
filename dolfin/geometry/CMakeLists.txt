@@ -8,7 +8,7 @@ set(HEADERS
   GenericBoundingBoxTree.h
   intersect.h
   IntersectionTriangulation.h
-  MeshPointIntersection.h
+  MeshEntityIntersection.h
   Point.h
   SimplexQuadrature.h
   PARENT_SCOPE)
@@ -19,7 +19,7 @@ set(SOURCES
   GenericBoundingBoxTree.cpp
   intersect.cpp
   IntersectionTriangulation.cpp
-  MeshPointIntersection.cpp
+  MeshEntityIntersection.cpp
   Point.cpp
   SimplexQuadrature.cpp
   PARENT_SCOPE)
