@@ -38,7 +38,7 @@ def test_mesh_point_1d():
 
     intersection = intersect(mesh, point)
 
-    assert intersection.intersected_cells() == [1]
+    assert intersection.intersected_entities() == [1]
 
 @skip_in_parallel
 def test_mesh_point_2d():
@@ -49,7 +49,7 @@ def test_mesh_point_2d():
 
     intersection = intersect(mesh, point)
 
-    assert intersection.intersected_cells() == [98]
+    assert intersection.intersected_entities() == [98]
 
 @skip_in_parallel
 def test_mesh_point_3d():
@@ -60,4 +60,4 @@ def test_mesh_point_3d():
 
     intersection = intersect(mesh, point)
 
-    assert intersection.intersected_cells() == [816]
+    assert intersection.intersected_entities() == [816]
