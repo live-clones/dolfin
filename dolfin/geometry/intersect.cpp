@@ -33,10 +33,10 @@ dolfin::intersect(const Mesh& mesh, const Point& point)
 //-----------------------------------------------------------------------------
 std::shared_ptr<const MeshEntityIntersection>
 dolfin::intersect(const Mesh& mesh, const Point& point,
-                  const std::size_t tdim)
+                  const std::size_t t_dim)
 {
   return std::shared_ptr<const MeshEntityIntersection>
-      (new MeshEntityIntersection(mesh, point, tdim));
+      (new MeshEntityIntersection(mesh, point, t_dim));
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<const MeshEntityIntersection>
@@ -47,9 +47,9 @@ dolfin::intersect(const Mesh& mesh, const Point& x1, const Point& x2)
 //-----------------------------------------------------------------------------
 std::shared_ptr<const MeshEntityIntersection>
 dolfin::intersect(const Mesh& mesh, const Point& x1, const Point& x2,
-                  const std::size_t tdim)
+                  const std::size_t t_dim)
 {
   return std::shared_ptr<const MeshEntityIntersection>
-      (new MeshEntityIntersection(mesh, x1, x2, tdim));
+      (new MeshEntityIntersection(mesh, x1, x2, t_dim));
 }
 //-----------------------------------------------------------------------------

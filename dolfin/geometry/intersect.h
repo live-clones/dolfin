@@ -58,7 +58,7 @@ namespace dolfin
   ///         The intersection data.
   std::shared_ptr<const MeshEntityIntersection>
   intersect(const Mesh& mesh, const Point& point,
-            const std::size_t tdim);
+            const std::size_t t_dim);
 
   /// Compute and return intersection between _Mesh_ and vector between
   /// two _Point_s.
@@ -94,7 +94,7 @@ namespace dolfin
   ///         The intersection data.
   std::shared_ptr<const MeshEntityIntersection>
   intersect(const Mesh& mesh, const Point& x1, const Point& x2,
-            const std::size_t tdim);
+            const std::size_t t_dim);
 
 }
 
