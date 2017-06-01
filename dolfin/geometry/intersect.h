@@ -50,7 +50,7 @@ namespace dolfin
   ///         The mesh to be intersected.
   /// @param    point (_Point_)
   ///         The point to be intersected.
-  /// @param    tdim (_size_t_)
+  /// @param    t_dim (_size_t_)
   ///         The topology dimension of intersected entities
   ///
   /// @return
@@ -86,7 +86,7 @@ namespace dolfin
   ///         The vector origin.
   /// @param    x2 (_Point_)
   ///         The vector destination.
-  /// @param    tdim (_size_t_)
+  /// @param    t_dim (_size_t_)
   ///         The topology dimension of intersected entities
   ///
   /// @return
