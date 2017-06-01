@@ -126,18 +126,6 @@ namespace dolfin
 
     /// Check whether intervals defined on the (x, y) plane collide.
     ///
-    /// @param    interval_0 (_MeshEntity_)
-    ///         The first interval.
-    /// @param    interval_1 (_MeshEntity_)
-    ///         The second interval.
-    ///
-    /// @return   bool
-    ///         True iff objects collide.
-    static bool collides_interval_interval_xy(
-        const MeshEntity& interval_0, const MeshEntity& interval_1);
-
-    /// Check whether intervals defined on the (x, y) plane collide.
-    ///
     /// @return   bool
     ///         True iff objects collide.
     static bool collides_interval_interval(
