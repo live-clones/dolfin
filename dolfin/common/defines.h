@@ -61,6 +61,9 @@ namespace dolfin
   /// Return true if DOLFIN is compiled with Scotch
   bool has_scotch();
 
+  /// Return true if DOLFIN is compiled with SUNDIALS
+  bool has_sundials();
+
   /// Return true if DOLFIN is compiled with Umfpack
   bool has_umfpack();
 
