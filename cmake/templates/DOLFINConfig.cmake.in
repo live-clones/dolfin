@@ -5,12 +5,23 @@
 
 # FIXME: Check that naming conforms to CMake standards
 
+if (POLICY CMP0011)
+  cmake_policy(SET CMP0011 NEW)
+endif()
+
+if (POLICY CMP0012)
+  cmake_policy(SET CMP0012 NEW)
+endif()
+
+# Compute path
+get_filename_component(DOLFIN_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
 # Library dependencies (contains definitions for IMPORTED targets)
 # NOTE: DOLFIN demo CMakeLists.txt are written to be stand-alone, as
 # well as the build system building the demo. Therefore, we need the
 # below guard to avoid exporting the targets twice.
 if (NOT TARGET dolfin)
-  include("@CMAKE_INSTALL_PREFIX@/@DOLFIN_SHARE_DIR@/cmake/DOLFINTargets.cmake")
+  include("${DOLFIN_CMAKE_DIR}/DOLFINTargets.cmake")
 endif()
 
 # Compilers
@@ -31,15 +42,22 @@ set(DOLFIN_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/@DOLFIN_INCLUDE_DIR@")
 # Third party include directories
 set(DOLFIN_3RD_PARTY_INCLUDE_DIRS "@DOLFIN_DEP_INCLUDE_DIRECTORIES@;@DOLFIN_DEP_SYSTEM_INCLUDE_DIRECTORIES@")
 
-# Python include directories
-set(DOLFIN_PYTHON_INCLUDE_DIRS "@NUMPY_INCLUDE_DIR@;@PYTHON_INCLUDE_DIRS@")
+# Python variables
+if ("@DOLFIN_ENABLE_PYTHON@" AND "@PYTHON_FOUND@")
+  if (NOT PYTHON_EXECUTABLE)
+    set(PYTHON_EXECUTABLE @PYTHON_EXECUTABLE@)
+  endif()
+  # Find Python interpreter (defines PYTHON_VERSION)
+  find_package(PythonInterp)
 
-# Python definitions
-set(DOLFIN_PYTHON_DEFINITIONS "@DOLFIN_PYTHON_DEFINITIONS@")
+  set(DOLFIN_PYTHON_FILE
+    "${DOLFIN_CMAKE_DIR}/DOLFINPython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.cmake")
+  if (EXISTS "${DOLFIN_PYTHON_FILE}")
+    include("${DOLFIN_PYTHON_FILE}")
+  endif()
+endif()
 
-# Python libraries
-set(DOLFIN_PYTHON_LIBRARIES "@PYTHON_LIBRARIES@")
-
+# SWIG executable
 set(DOLFIN_SWIG_EXECUTABLE "@SWIG_EXECUTABLE@")
 
 # DOLFIN library
@@ -52,4 +70,4 @@ set(DOLFIN_VERSION_MICRO "@DOLFIN_VERSION_MICRO@")
 set(DOLFIN_VERSION_STR   "@DOLFIN_VERSION@")
 
 # The location of the UseDOLFIN.cmake file
-set(DOLFIN_USE_FILE "@CMAKE_INSTALL_PREFIX@/@DOLFIN_SHARE_DIR@/cmake/UseDOLFIN.cmake")
+set(DOLFIN_USE_FILE "${DOLFIN_CMAKE_DIR}/UseDOLFIN.cmake")

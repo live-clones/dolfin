@@ -1,6 +1,6 @@
-# Code snippets for autogenerations of SWIG code
+# Code snippets for autogeneration of SWIG code
 #
-# Copyright (C) 2012 Johan Hake
+# Copyright (C) 2012-2016 Johan Hake
 #
 # This file is part of DOLFIN.
 #
@@ -16,15 +16,12 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# First added:  2012-01-17
-# Last changed: 2012-07-03
 
 import sys
 
 copyright_statement = r"""%(comment)s Auto generated SWIG file for Python interface of DOLFIN
 %(comment)s
-%(comment)s Copyright (C) 2012 %(holder)s
+%(comment)s Copyright (C) 2012-2016 %(holder)s
 %(comment)s
 %(comment)s This file is part of DOLFIN.
 %(comment)s
@@ -41,13 +38,6 @@ copyright_statement = r"""%(comment)s Auto generated SWIG file for Python interf
 %(comment)s You should have received a copy of the GNU Lesser General Public License
 %(comment)s along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 %(comment)s
-
-"""
-
-# FIXME: Removed date from copyright form
-"""
-%(comment)s First added:  2012-01-18
-%(comment)s Last changed: %(year)d-%(month)0.2d-%(day)0.2d
 
 """
 
@@ -83,10 +73,12 @@ import_array();
 
 """
 
+
 if sys.version_info[0] < 3:
-    py3 = ""
+    swig_py_args = ""
 else:
-    py3 = "\n  -py3 \n  -relativeimport"
+    swig_py_args = "\n  -py3 \n  -relativeimport"
+
 
 swig_cmakelists_str = \
 """# Automatic get the module name
@@ -122,10 +114,10 @@ set(CMAKE_SWIG_FLAGS
 file(READ ${CMAKE_CURRENT_BINARY_DIR}/dependencies.txt DOLFIN_SWIG_DEPENDENCIES )
 
 # This prevents swig being run unnecessarily
-set_source_files_properties(module.i PROPERTIES SWIG_MODULE_NAME ${SWIG_MODULE_NAME})
+set_property(SOURCE module.i PROPERTY SWIG_MODULE_NAME ${SWIG_MODULE_NAME})
 
 # Tell CMake SWIG has generated a C++ file
-set_source_files_properties(module.i PROPERTIES CPLUSPLUS ON)
+set_property(SOURCE module.i PROPERTY CPLUSPLUS ON)
 
 # Generate SWIG files in
 set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
@@ -134,15 +126,13 @@ set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 # when recompile
 set(SWIG_MODULE_${SWIG_MODULE_NAME}_EXTRA_DEPS copy_swig_files ${DOLFIN_SWIG_DEPENDENCIES})
 
-# Work-around for bug in CMake 3.0.0 (see
-# http://www.cmake.org/Bug/view.php?id=14990)
-set(SWIG_MODULE_NAME_ORIG "${SWIG_MODULE_NAME}")
-if (${CMAKE_VERSION} MATCHES "3.0.0")
-  set(SWIG_MODULE_NAME "_${SWIG_MODULE_NAME}")
+# Tell CMake to run SWIG on module.i and to link against libdolfin
+if (CMAKE_VERSION VERSION_LESS "3.8")
+  swig_add_module(${SWIG_MODULE_NAME} python module.i)
+else()
+  swig_add_library(${SWIG_MODULE_NAME} LANGUAGE python SOURCES module.i)
 endif()
 
-# Tell CMake to run SWIG on module.i and to link against libdolfin
-swig_add_module(${SWIG_MODULE_NAME} python module.i)
 swig_link_libraries(${SWIG_MODULE_NAME} dolfin ${PYTHON_LIBRARIES})
 
 # Install Python targets and .py files
@@ -152,8 +142,8 @@ install(TARGETS
   COMPONENT RuntimeLibraries
   )
 install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/${SWIG_MODULE_NAME_ORIG}.py
+  ${CMAKE_CURRENT_BINARY_DIR}/${SWIG_MODULE_NAME}.py
   DESTINATION ${DOLFIN_INSTALL_PYTHON_MODULE_DIR}/dolfin/cpp
   COMPONENT RuntimeLibraries
   )
-""" % py3
+""" % (swig_py_args,)

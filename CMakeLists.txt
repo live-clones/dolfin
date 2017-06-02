@@ -1,14 +1,14 @@
 # Top level CMakeLists.txt file for DOLFIN
 
-# Require CMake 2.8
-cmake_minimum_required(VERSION 2.8)
+# Require CMake 3.5
+cmake_minimum_required(VERSION 3.5)
 
 #------------------------------------------------------------------------------
 # Set project name and version number
 
 project(DOLFIN)
 set(DOLFIN_VERSION_RELEASE 0)
-set(DOLFIN_VERSION_MAJOR "2016")
+set(DOLFIN_VERSION_MAJOR "2017")
 set(DOLFIN_VERSION_MINOR "2")
 set(DOLFIN_VERSION_MICRO "0")
 set(DOLFIN_VERSION "${DOLFIN_VERSION_MAJOR}.${DOLFIN_VERSION_MINOR}.${DOLFIN_VERSION_MICRO}")
@@ -17,16 +17,25 @@ if (NOT DOLFIN_VERSION_RELEASE)
 endif()
 
 #------------------------------------------------------------------------------
+# Require and use C++11
+
+# Use C++11
+set(CMAKE_CXX_STANDARD 11)
+
+# Require C++11
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Do not enable compler-specific extensions
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+#------------------------------------------------------------------------------
 # Check compiler version
 
 # Check for GCC version - earlier versions have insuffcient C++11
-# support, or bugs. Version info is only available in CMake 2.8.0 and
-# later.
-if (NOT CMAKE_VERSION VERSION_LESS 2.8.10)
-  if (CMAKE_COMPILER_IS_GNUCXX)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.6)
-      message(FATAL_ERROR "GCC version must be at least 4.6 (for sufficient C++11  support. You have version ${CMAKE_CXX_COMPILER_VERSION}")
-    endif()
+# support, or bugs.
+if (CMAKE_COMPILER_IS_GNUCXX)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8.3)
+    message(FATAL_ERROR "GCC version must be at least 4.8.3 (for sufficient C++11  support and to avoid some compiler bugs). You have version ${CMAKE_CXX_COMPILER_VERSION}")
   endif()
 endif()
 
@@ -54,9 +63,7 @@ endif()
 if (COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
   cmake_policy(SET CMP0004 NEW)
-  if(POLICY CMP0042)
-    cmake_policy(SET CMP0042 NEW)
-  endif()
+  cmake_policy(SET CMP0042 NEW)
 endif()
 
 # Set location of our FindFoo.cmake modules
@@ -74,15 +81,15 @@ include(FeatureSummary)
 option(BUILD_SHARED_LIBS "Build DOLFIN with shared libraries." ON)
 option(CMAKE_USE_RELATIVE_PATHS "Use relative paths in makefiles and projects." OFF)
 option(DOLFIN_AUTO_DETECT_MPI "Detect MPI automatically (turn this off to use the MPI compiler wrappers directly via setting CXX, CXX, FC)." ON)
-option(DOLFIN_ENABLE_CODE_COVERAGE "Enable code coverage." OFF)
-option(DOLFIN_WITH_LIBRARY_VERSION "Build with library version information." ON)
-option(DOLFIN_ENABLE_TESTING "Enable testing." OFF)
-option(DOLFIN_ENABLE_GTEST "Enable C++ unit tests with Google Test if DOLFIN_ENABLE_TESTING is true (requires Internet connection to download Google Test when first configured)." ON)
-option(DOLFIN_ENABLE_BENCHMARKS "Enable benchmark programs." OFF)
-option(DOLFIN_ENABLE_DOCS "Enable generation of documentation." ON)
-option(DOLFIN_SKIP_BUILD_TESTS "Skip build tests for testing usability of dependency packages." OFF)
 option(DOLFIN_DEPRECATION_ERROR "Turn deprecation warnings into errors." OFF)
+option(DOLFIN_ENABLE_BENCHMARKS "Enable benchmark programs." OFF)
+option(DOLFIN_ENABLE_CODE_COVERAGE "Enable code coverage." OFF)
+option(DOLFIN_ENABLE_DOCS "Enable generation of documentation." ON)
+option(DOLFIN_ENABLE_GTEST "Enable C++ unit tests with Google Test if DOLFIN_ENABLE_TESTING is true (requires Internet connection to download Google Test when first configured)." ON)
+option(DOLFIN_ENABLE_TESTING "Enable testing." OFF)
 option(DOLFIN_IGNORE_PETSC4PY_VERSION "Ignore version of PETSc4py." OFF)
+option(DOLFIN_SKIP_BUILD_TESTS "Skip build tests for testing usability of dependency packages." OFF)
+option(DOLFIN_WITH_LIBRARY_VERSION "Build with library version information." ON)
 
 add_feature_info(BUILD_SHARED_LIBS BUILD_SHARED_LIBS "Build DOLFIN with shared libraries.")
 add_feature_info(CMAKE_USE_RELATIVE_PATHS CMAKE_USE_RELATIVE_PATHS "Use relative paths in makefiles and projects.")
@@ -151,6 +158,9 @@ foreach (OPTIONAL_PACKAGE ${OPTIONAL_PACKAGES})
   add_feature_info(${OPTION_NAME} ${OPTION_NAME} "Compile with support for ${OPTIONAL_PACKAGE}.")
 endforeach()
 
+# Default Python version
+option(DOLFIN_USE_PYTHON3 "Use Python 3." ON)
+
 #------------------------------------------------------------------------------
 # General compiler defintions
 
@@ -183,44 +193,6 @@ endif()
 CHECK_CXX_COMPILER_FLAG("-Wall -Werror -pedantic" HAVE_PEDANTIC)
 if (HAVE_PEDANTIC)
   set(DOLFIN_CXX_DEVELOPER_FLAGS "-Wall -Werror -pedantic ${DOLFIN_CXX_DEVELOPER_FLAGS}")
-endif()
-
-# Workaround https://bugs.launchpad.net/ubuntu/+source/gcc-4.6/+bug/1352356
-# NOTE: Remove this block when bug is fixed upstream or GCC 4.6
-# support is dropped
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  if (NOT DEFINED CMAKE_CXX_COMPILER_VERSION)
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
-                    OUTPUT_VARIABLE CMAKE_CXX_COMPILER_VERSION)
-  endif()
-  if ("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS "4.7" AND
-      "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER "4.5.99")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
-  endif()
-endif()
-
-if (CYGWIN OR (WIN32 AND UNIX))
-  # Use -std=gnu++11 instead of -std=c++11 on Cygwin to work around
-  # problem when using vsnprintf.
-  CHECK_CXX_COMPILER_FLAG(-std=gnu++11 HAVE_STD_GNUPP11)
-  if (HAVE_STD_GNUPP11)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-  else()
-    CHECK_CXX_COMPILER_FLAG(-std=gnu++0x HAVE_STD_GNUPP0x)
-    if (HAVE_STD_GNUPP0x)
-      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
-    endif()
-  endif()
-else()
-  CHECK_CXX_COMPILER_FLAG(-std=c++11 HAVE_STD_CPP11)
-  if (HAVE_STD_CPP11)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  else()
-    CHECK_CXX_COMPILER_FLAG(-std=c++0x HAVE_STD_CPP0x)
-    if (HAVE_STD_CPP0x)
-      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-    endif()
-  endif()
 endif()
 
 # Debug flags
@@ -268,8 +240,8 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   endif()
 endif()
 
-# Set system include flags to get around CMake bug on OSX with gcc
-# See http://public.kitware.com/Bug/print_bug_page.php?bug_id=10837
+# Set system include flags to get around CMake bug on OSX with gcc See
+# http://public.kitware.com/Bug/print_bug_page.php?bug_id=10837
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 endif()
@@ -279,16 +251,6 @@ if (APPLE)
   set(CMAKE_CXX_FLAGS_DEVELOPER "${CMAKE_CXX_FLAGS_DEVELOPER} -Wno-long-long")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-long-long")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Wno-long-long")
-endif()
-
-#------------------------------------------------------------------------------
-# Enable Fortran if available. Used for some configuration tests (e.g. BLAS)
-
-# This workaround address a CMake bug (http://cmake.org/Bug/view.php?id=9220)
-include(language_support_v2)
-workaround_9220(Fortran Fortran_language_works)
-if (Fortran_language_works)
-  enable_language(Fortran OPTIONAL)
 endif()
 
 #------------------------------------------------------------------------------
@@ -313,13 +275,9 @@ if (DOLFIN_ENABLE_MPI)
     set_package_properties(MPI PROPERTIES TYPE OPTIONAL
       DESCRIPTION "Message Passing Interface (MPI)"
       PURPOSE "Enables DOLFIN to run in parallel with MPI")
-    if (MPI_CXX_FOUND)
-      set(MPI_FOUND TRUE)
-    endif()
   else()
     # Assume user has set MPI compiler wrappers (via CXX, etc or
     # CMAKE_CXX_COMPILER, etc)
-    set(MPI_FOUND TRUE)
     set(MPI_CXX_FOUND TRUE)
     set(MPI_C_FOUND TRUE)
   endif()
@@ -352,18 +310,30 @@ endif()
 set(Boost_NO_BOOST_CMAKE true)
 
 set(Boost_USE_MULTITHREADED $ENV{BOOST_USE_MULTITHREADED})
-set(Boost_ADDITIONAL_VERSIONS 1.48 1.48.0 1.49 1.49.0 1.50 1.50.0)
-
 find_package(Boost 1.48 QUIET REQUIRED)
 
-set(DOLFIN_BOOST_COMPONENTS filesystem program_options system iostreams timer)
-find_package(Boost COMPONENTS ${DOLFIN_BOOST_COMPONENTS} REQUIRED)
+# Boost public/private libraries to link to.
+# Note: These should all be private as they do not appear in the
+# DOLFIN public interface , but there is a linking issues with older
+# Boost or CMake. Ubuntu 16.04 requires linking DOLFIN programs with
+# filesystem, whereas Ubuntu 16.10 and macOS (Homebrew) do not.
+if (Boost_VERSION VERSION_LESS 106100)
+  set(DOLFIN_BOOST_COMPONENTS_PUBLIC filesystem timer)
+  set(DOLFIN_BOOST_COMPONENTS_PRIVATE program_options iostreams)
+else()
+  set(DOLFIN_BOOST_COMPONENTS_PUBLIC timer)
+  set(DOLFIN_BOOST_COMPONENTS_PRIVATE filesystem program_options iostreams)
+endif()
+
+# Find required Boost libraries
+find_package(Boost COMPONENTS
+  ${DOLFIN_BOOST_COMPONENTS_PUBLIC} ${DOLFIN_BOOST_COMPONENTS_PRIVATE} REQUIRED)
 set_package_properties(Boost PROPERTIES TYPE REQUIRED
   DESCRIPTION "Boost C++ libraries"
   URL "http://www.boost.org")
 
 # Check for required package Eigen3
-find_package(Eigen3 3.2.0 REQUIRED)
+find_package(Eigen3 3.2.8 REQUIRED)
 set_package_properties(Eigen3 PROPERTIES TYPE REQUIRED
   DESCRIPTION "Lightweight C++ template library for linear algebra"
   URL "http://eigen.tuxfamily.org")
@@ -374,8 +344,12 @@ set_package_properties(Eigen3 PROPERTIES TYPE REQUIRED
 # Note: Check for Python interpreter even when Python is disabled
 #       because it is used to get the installation path for
 #       dolfin_utils
-# FIXME PY3: Select python 3 based on config flag?
-find_package(PythonInterp 2)
+if (DOLFIN_USE_PYTHON3)
+  find_package(PythonInterp 3)
+else()
+  find_package(PythonInterp 2.7)
+endif()
+
 set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED
   DESCRIPTION "Interactive high-level object-oriented language"
   URL "http://www.python.org")
@@ -388,15 +362,15 @@ if (DOLFIN_ENABLE_PYTHON)
   if (PYTHONINTERP_FOUND)
     # Get Python include path from Python interpretter
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
-                           "import distutils.sysconfig, sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"
-                    OUTPUT_VARIABLE _PYTHON_INCLUDE_PATH
-                    RESULT_VARIABLE _PYTHON_INCLUDE_RESULT)
+      "import distutils.sysconfig, sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"
+      OUTPUT_VARIABLE _PYTHON_INCLUDE_PATH
+      RESULT_VARIABLE _PYTHON_INCLUDE_RESULT)
 
     # Get Python library path from interpreter
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
-                          "import os, sys, inspect; sys.stdout.write(os.path.split(os.path.split(inspect.getfile(inspect))[0])[0])"
-                    OUTPUT_VARIABLE _PYTHON_LIB_PATH
-                    RESULT_VARIABLE _PYTHON_LIB_RESULT)
+      "import os, sys, inspect; sys.stdout.write(os.path.split(os.path.split(inspect.getfile(inspect))[0])[0])"
+      OUTPUT_VARIABLE _PYTHON_LIB_PATH
+      RESULT_VARIABLE _PYTHON_LIB_RESULT)
 
     # Set include path, if returned by interpreter
     if ("${_PYTHON_INCLUDE_RESULT}" STREQUAL "0")
@@ -458,14 +432,16 @@ if (DOLFIN_ENABLE_PYTHON)
 endif()
 
 # Check for required package UFC
-find_package(UFC MODULE 2016.2)
+find_package(UFC MODULE 2017.2)
 set_package_properties(UFC PROPERTIES TYPE REQUIRED
   DESCRIPTION "Unified language for form-compilers (part of FFC)"
   URL "https://bitbucket.org/fenics-project/ffc")
 
 # Check for PETSc, SLEPc and petsc4py, slepc4py
+set(PETSC_FOUND FALSE)
+set(SLEPC_FOUND FALSE)
 if (DOLFIN_ENABLE_PETSC)
-  find_package(PETSc 3.6)
+  find_package(PETSc 3.7)
   set_package_properties(PETSc PROPERTIES TYPE OPTIONAL
     DESCRIPTION "Portable, Extensible Toolkit for Scientific Computation"
     URL "https://www.mcs.anl.gov/petsc/"
@@ -485,8 +461,9 @@ if (DOLFIN_ENABLE_PETSC)
     endif()
   endif()
 
+  set(SLEPC_FOUND FALSE)
   if (PETSC_FOUND AND DOLFIN_ENABLE_SLEPC)
-    find_package(SLEPc 3.6)
+    find_package(SLEPc 3.7)
     set_package_properties(SLEPc PROPERTIES TYPE OPTIONAL
       DESCRIPTION "Scalable Library for Eigenvalue Problem Computations"
       URL "http://slepc.upv.es/")
@@ -553,29 +530,16 @@ if (DOLFIN_ENABLE_HDF5)
     set(ENV{HDF5_ROOT} "$ENV{HDF5_DIR}")
   endif()
   set(HDF5_PREFER_PARALLEL TRUE)
-  find_package(HDF5)
+  find_package(HDF5 COMPONENTS C)
   set_package_properties(HDF5 PROPERTIES TYPE OPTIONAL
     DESCRIPTION "Hierarchical Data Format 5 (HDF5)"
     URL "https://www.hdfgroup.org/HDF5")
-
-  # Check that HDF5 has parallel support
-  if (HDF5_FOUND)
-    if (DOLFIN_ENABLE_MPI)
-      if (NOT (HDF5_IS_PARALLEL OR HDF5_ENABLE_PARALLEL))
-        message(STATUS "HDF5 has been found, but is missing parallel support. It will not be enabled.")
-        set(HDF5_FOUND false)
-      endif()
-    else()
-      message(STATUS "HDF5 has been found, but MPI support is missing. It will not be enabled.")
-      set(HDF5_FOUND false)
-    endif()
-  endif()
 endif()
 
 # Check for Trilinos and the requires Trilinos packages
 if (DOLFIN_ENABLE_TRILINOS)
   message(STATUS "Checking for Trilinos")
-  find_package(Trilinos PATHS ${TRILINOS_DIR} ${Trilinos_DIR}
+  find_package(Trilinos QUIET PATHS ${TRILINOS_DIR} ${Trilinos_DIR}
     $ENV{TRILINOS_DIR})
   set(DOLFIN_TRILINOS_PACKAGES "Tpetra;Zoltan;MueLu;Amesos2;Ifpack2;Belos")
 
@@ -668,7 +632,7 @@ endif()
 # Check for VTK
 if (DOLFIN_ENABLE_VTK)
   # Find all modules
-  find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} NO_MODULE)
+  find_package(VTK QUIET HINTS ${VTK_DIR} $ENV{VTK_DIR} NO_MODULE)
   set_package_properties(VTK PROPERTIES TYPE OPTIONAL
     DESCRIPTION "The Visualization Toolkit - A high level 3D visualization library"
     URL "https://www.vtk.org"
@@ -883,13 +847,23 @@ install(FILES ${CMAKE_BINARY_DIR}/dolfin.conf
         COMPONENT Development)
 
 #------------------------------------------------------------------------------
-# Generate and install helper file dolfin-version
+# Generate and install helper scripts dolfin-version, fenics-version
 
 # FIXME: not cross-platform compatible
-# Create and install dolfin-version file
+
+# Create and install dolfin-version
 configure_file(${DOLFIN_CMAKE_DIR}/templates/dolfin-version.in
                ${CMAKE_BINARY_DIR}/dolfin-version @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/dolfin-version
+  DESTINATION ${DOLFIN_BIN_DIR}
+  PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+  OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE
+  COMPONENT RuntimeExecutables)
+
+# Create and install fenics-version
+configure_file(${DOLFIN_CMAKE_DIR}/templates/fenics-version.in
+               ${CMAKE_BINARY_DIR}/fenics-version @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/fenics-version
         DESTINATION ${DOLFIN_BIN_DIR}
   PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
         OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE
@@ -899,29 +873,47 @@ install(FILES ${CMAKE_BINARY_DIR}/dolfin-version
 # Generate and install utility script dolfin-get-demos
 
 configure_file(${DOLFIN_CMAKE_DIR}/templates/dolfin-get-demos.in
-               ${CMAKE_BINARY_DIR}/dolfin-get-demos @ONLY)
+  ${CMAKE_BINARY_DIR}/dolfin-get-demos @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/dolfin-get-demos
-        DESTINATION ${DOLFIN_BIN_DIR}
-  PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE
-        COMPONENT RuntimeExecutables)
+  DESTINATION ${DOLFIN_BIN_DIR}
+  PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+  OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE
+  COMPONENT RuntimeExecutables)
 
 #------------------------------------------------------------------------------
-# Generate form files for tests, bench, demos and dolfin if not exists
+# Generate demo files from rst
+
+if (PYTHONINTERP_FOUND)
+  message(STATUS "")
+  message(STATUS "Generating demo source files from reStructuredText")
+  message(STATUS "--------------------------------------------------")
+  file(GLOB_RECURSE demo_rst_files "demo/*.py.rst" "demo/*.cpp.rst" "demo/*.ufl.rst")
+  foreach(rst_file ${demo_rst_files})
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} ./utils/pylit/pylit.py ${rst_file}
+      WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR})
+    #add_custom_command(TARGET demos_source PRE_BUILD
+    #  COMMAND ${PYTHON_EXECUTABLE} ./utils/pylit/pylit.py ${rst_file}
+    #  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  endforeach()
+endif()
+
+#------------------------------------------------------------------------------
+# Generate form files for tests, bench, demos and DOLFIN if not exists
 # FIXME: Generate files in Build directory instead, at least for
 # bench, demo and tests
 
 set(COPY_DEMO_TEST_DEMO_DATA FALSE)
 if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/Poisson.h)
   message(STATUS "")
-  message(STATUS "Generating form files in demo, test, bench and dolfin directories. May take some time...")
+  message(STATUS "Generating form files in demo, test and bench directories. May take some time...")
   message(STATUS "----------------------------------------------------------------------------------------")
   execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-form-files
+    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-form-files.py
     WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR}
     RESULT_VARIABLE FORM_GENERATION_RESULT
     OUTPUT_VARIABLE FORM_GENERATION_OUTPUT
     ERROR_VARIABLE FORM_GENERATION_OUTPUT
-    OUTPUT_QUIET)
+    )
 
   if (FORM_GENERATION_RESULT)
     # Cleanup so download is triggered next time we run cmake
@@ -934,40 +926,25 @@ if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/Poisson.h)
 endif()
 
 #------------------------------------------------------------------------------
-# Generate demo files from rst
+# Generate CMakeLists.txt files for bench and demos if not existing
 
-message(STATUS "")
-message(STATUS "Generating demo source files")
-message(STATUS "--------------------------------------------------")
-file(GLOB_RECURSE demo_rst_files "*.py.rst" "*.cpp.rst")
-foreach(rst_file ${demo_rst_files})
-  execute_process(COMMAND ./utils/pylit/pylit.py ${rst_file}
-    WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR})
-  #add_custom_command(TARGET demos_source PRE_BUILD
-  #  COMMAND COMMAND ./utils/pylit/pylit.py ${rst_file}
-  #  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-endforeach()
-
-
-#------------------------------------------------------------------------------
-# Generate CMakeLists.txt files for bench and demos if not
-# exists
 # FIXME: Generate files in Build directory instead?
 # NOTE: We need to call this script after generate-formfiles
+
 if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
   message(STATUS "")
   message(STATUS "Generating CMakeLists.txt files in demo, test and bench directories")
   message(STATUS "-------------------------------------------------------------------")
   execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-cmakefiles
+    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-cmakefiles.py
     WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR}
     RESULT_VARIABLE CMAKE_GENERATION_RESULT
     OUTPUT_VARIABLE CMAKE_GENERATION_OUTPUT
     ERROR_VARIABLE CMAKE_GENERATION_OUTPUT
-    OUTPUT_QUIET)
+    )
   if (CMAKE_GENERATION_RESULT)
 
-    # Cleanup so download is triggered next time we run cmake
+    # Cleanup so FFC rebuild is triggered next time we run cmake
     if (EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
       file(REMOVE ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
     endif()
@@ -978,45 +955,21 @@ if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
 endif()
 
 #------------------------------------------------------------------------------
-# Check if data is downloaded
+# Copy data in demo/bench/test direcories to the build directories
 
-if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/eigenvalue/box_with_dent.xml.gz)
-  # FIXME: What if we do not have internet connection
-  message(STATUS "")
-  message(STATUS "Download demo and test data. May take some time...")
-  message(STATUS "--------------------------------------------------")
-  execute_process(
-    COMMAND ${DOLFIN_SOURCE_DIR}/cmake/scripts/download-demo-data
-    WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR}
-    RESULT_VARIABLE DOWNLOAD_DEMO_DATA_RESULT
-    OUTPUT_VARIABLE DOWNLOAD_DEMO_DATA_OUTPUT
-    ERROR_VARIABLE DOWNLOAD_DEMO_DATA_OUTPUT
-    OUTPUT_QUIET)
-  if (DOWNLOAD_DEMO_DATA_RESULT)
+# FIXME: We should probably just generate them directly in the build
+# directory...
 
-    # Cleanup so download is triggered next time we run cmake
-    if (EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/eigenvalue/box_with_dent.xml.gz)
-      file(REMOVE ${DOLFIN_SOURCE_DIR}/demo/documented/eigenvalue/box_with_dent.xml.gz)
-    endif()
-    message(WARNING "Download failed: \n${DOWNLOAD_DEMO_DATA_OUTPUT}")
-  endif()
-  set(COPY_DEMO_TEST_DEMO_DATA TRUE)
-endif()
-
-# If data have been generated or downloaded in the demo/bench/test direcories
-# we need to copy them to the build directories
-# FIXME: We should probably just generate them directly in the build directory...
 if (COPY_DEMO_TEST_DEMO_DATA)
   message(STATUS "")
   message(STATUS "Copying demo and test data to build directory.")
   message(STATUS "----------------------------------------------")
   execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/copy-test-demo-data ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/copy-test-demo-data.py ${CMAKE_CURRENT_BINARY_DIR}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     RESULT_VARIABLE COPY_DEMO_DATA_RESULT
     OUTPUT_VARIABLE COPY_DEMO_DATA_OUTPUT
-    ERROR_VARIABLE COPY_DEMO_DATA_OUTPUT
-    OUTPUT_QUIET)
+    ERROR_VARIABLE COPY_DEMO_DATA_OUTPUT)
   if (COPY_DEMO_DATA_RESULT)
     message(FATAL_ERROR "Copy demo data failed: \n${COPY_DEMO_DATA_OUTPUT}")
   endif()
@@ -1026,6 +979,7 @@ endif()
 # Add demos and install demo source files and mesh files
 
 # Add demo but do not add to default target
+set(CMAKE_MODULE_PATH "${DOLFIN_CMAKE_DIR}/modules")
 add_subdirectory(demo EXCLUDE_FROM_ALL)
 
 # Set make program
@@ -1038,14 +992,15 @@ endif()
 # Add taget to build .py demo files from Python rst input files, and
 # create a target to build source files from .cpp.rst and .py.rst
 # files (using pylit)
-file(GLOB_RECURSE rst_files "*.py.rst" "*.cpp.rst")
-add_custom_target(demos_source)
-foreach(rst_file ${rst_files})
-  add_custom_command(TARGET demos_source PRE_BUILD
-    COMMAND COMMAND ./utils/pylit/pylit.py ${rst_file}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    )
-endforeach()
+if (PYTHONINTERP_FOUND)
+  file(GLOB_RECURSE demo_rst_files "demo/*.py.rst" "demo/*.cpp.rst" "demo/*.ufl.rst")
+  add_custom_target(demos_source)
+  foreach(rst_file ${rst_files})
+    add_custom_command(TARGET demos_source PRE_BUILD
+      COMMAND ${PYTHON_EXECUTABLE} ./utils/pylit/pylit.py ${rst_file}
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  endforeach()
+endif()
 
 # Add target "demo" for building the demos
 add_custom_target(demo
@@ -1055,17 +1010,17 @@ add_custom_target(demo
 
 # Install the demo source files
 install(DIRECTORY demo DESTINATION ${DOLFIN_SHARE_DIR}
-        FILES_MATCHING
-        PATTERN "CMakeLists.txt"
-        PATTERN "*.cpp"
-        PATTERN "*.ufl"
-        PATTERN "*.h"
-        PATTERN "*.py"
-        PATTERN "*.xml*"
-        PATTERN "*.off"
-        PATTERN "CMakeFiles" EXCLUDE)
+  FILES_MATCHING
+  PATTERN "CMakeLists.txt"
+  PATTERN "*.cpp"
+  PATTERN "*.ufl"
+  PATTERN "*.h"
+  PATTERN "*.py"
+  PATTERN "*.xml*"
+  PATTERN "*.off"
+  PATTERN "CMakeFiles" EXCLUDE)
 
-# Install meshes (data directory)
+ # Install meshes (data directory)
 install(DIRECTORY data DESTINATION ${DOLFIN_SHARE_DIR})
 
 #------------------------------------------------------------------------------
@@ -1131,7 +1086,7 @@ if (DOLFIN_ENABLE_TESTING)
 
   # Add target "copy_data_test_demo"
   add_custom_target(copy_data_test_demo
-    COMMAND ${PYTHON_EXECUTABLE} "-B" ${DOLFIN_SOURCE_DIR}/cmake/scripts/copy-test-demo-data ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${PYTHON_EXECUTABLE} "-B" ${DOLFIN_SOURCE_DIR}/cmake/scripts/copy-test-demo-data.py ${CMAKE_CURRENT_BINARY_DIR}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
   # Add target "run_memorytests" for running memory tests
@@ -1146,26 +1101,50 @@ if (DOLFIN_ENABLE_TESTING)
     DEPENDS copy_data_test_demo demo demos_source
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/regression")
 
+  # Add target "run_regressiontests_cpp" for running C++ regression tests
+  add_custom_target(run_regressiontests_cpp
+    COMMAND ${CMAKE_COMMAND} -E env DISABLE_PYTHON_TESTING=1 DISABLE_PARALLEL_TESTING=1 ${PYTHON_EXECUTABLE} "-B" "test.py"
+    DEPENDS copy_data_test_demo demo demos_source
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/regression")
+
+  # Add target "run_regressiontests_cpp_mpi" for running C++ regression tests with mpi
+  add_custom_target(run_regressiontests_cpp_mpi
+    COMMAND ${CMAKE_COMMAND} -E env DISABLE_PYTHON_TESTING=1 DISABLE_SERIAL_TESTING=1 ${PYTHON_EXECUTABLE} "-B" "test.py"
+    DEPENDS copy_data_test_demo demo demos_source
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/regression")
+
+  # Add target "run_regressiontests_py" for running Python regression tests
+  add_custom_target(run_regressiontests_py
+    COMMAND ${CMAKE_COMMAND} -E env DISABLE_CPP_TESTING=1 DISABLE_PARALLEL_TESTING=1 ${PYTHON_EXECUTABLE} "-B" "test.py"
+    DEPENDS copy_data_test_demo demo demos_source
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/regression")
+
+  # Add target "run_regressiontests_py_mpi" for running Python regression tests with mpi
+  add_custom_target(run_regressiontests_py_mpi
+    COMMAND ${CMAKE_COMMAND} -E env DISABLE_CPP_TESTING=1 DISABLE_SERIAL_TESTING=1 ${PYTHON_EXECUTABLE} "-B" "test.py"
+    DEPENDS copy_data_test_demo demo demos_source
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/regression")
+
   # Add target "run_unittests" for running unit tests
   add_custom_target(run_unittests
     DEPENDS run_unittests_cpp run_unittests_py run_unittests_py_mpi)
 
   # Add target "run_unittests_py" for running Python unit tests
   add_custom_target(run_unittests_py
-    COMMAND ${PYTHON_EXECUTABLE} "-B" "-u" "-m" "pytest" "-vs"
+    COMMAND ${PYTHON_EXECUTABLE} "-B" "-u" "-m" "pytest"
     DEPENDS copy_data_test_demo
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/unit/python")
 
   # Add target "run_unittests_py_mpi" for running Python unit tests with mpi
   add_custom_target(run_unittests_py_mpi
-    COMMAND ${MPIEXEC} "-np" "3" "./mpipipe.sh" ${PYTHON_EXECUTABLE} "-B" "-u" "-m" "pytest" "-vs"
+    COMMAND ${MPIEXEC} "-np" "3" "./mpipipe.sh" ${PYTHON_EXECUTABLE} "-B" "-u" "-m" "pytest"
     DEPENDS copy_data_test_demo
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/unit/python")
 
   # Add target "run_quicktest" for running only Python unit tests not
   # marked as 'slow'
   add_custom_target(run_quicktest
-    COMMAND ${PYTHON_EXECUTABLE} "-B" "-u" "-m" "pytest" "-vs" "-k" "'not" "slow'"
+    COMMAND ${PYTHON_EXECUTABLE} "-B" "-u" "-m" "pytest" "-k" "'not" "slow'"
     DEPENDS copy_data_test_demo
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/unit/python")
 

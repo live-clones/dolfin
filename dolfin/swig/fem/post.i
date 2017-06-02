@@ -26,6 +26,30 @@
 // modules has been loaded.
 // ===========================================================================
 
+// ---------------------------------------------------------------------------
+// Extend PETScDMCollection using petsc4py
+// ---------------------------------------------------------------------------
+#ifdef HAS_PETSC
+#ifdef HAS_PETSC4PY
+%feature("docstring") dolfin::PETScDMCollection::get_dm "Return petsc4py representation of PETSc DM";
+%extend dolfin::PETScDMCollection
+{
+  void get_dm(DM& dm, int i)
+  { dm = self->get_dm(i); }
+}
+#else
+%extend dolfin::PETScDMCollection {
+    %pythoncode %{
+     def get_dm(self, i):
+            common.dolfin_error("dolfin/swig/fem/post.i",
+                                "access PETScDMCollection objects in Python",
+                                "dolfin must be configured with petsc4py enabled")
+            return None
+    %}
+}
+#endif
+#endif
+
 //-----------------------------------------------------------------------------
 // Extend GenericDofMap
 //-----------------------------------------------------------------------------
@@ -37,7 +61,6 @@
         return self._cell_dofs(i)
 %}
 }
-
 
 //-----------------------------------------------------------------------------
 // Extend Function so f.function_space() return a dolfin.FunctionSpace

@@ -23,9 +23,8 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
 endif()
 
 # Prevent clang emitting warnings for SWIG-generated code
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  set(CLANG_FLAGS "-Wno-logical-not-parentheses -Wno-logical-op-parentheses \
--Wno-tautological-constant-out-of-range-compare")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+  set(CLANG_FLAGS "-Wno-logical-not-parentheses -Wno-logical-op-parentheses -Wno-tautological-constant-out-of-range-compare")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CLANG_FLAGS}")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CLANG_FLAGS}")
   set(CMAKE_CXX_FLAGS_DEVELOPER "${CMAKE_CXX_FLAGS_DEVELOPER} ${CLANG_FLAGS}")
@@ -33,7 +32,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${CLANG_FLAGS}")
 endif()
 
-# Set common include directoris
+# Set common include directories
 include_directories(${NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS} ${CMAKE_BINARY_DIR})
 
 # Set add PYTHON defines
@@ -45,10 +44,10 @@ if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/modules)
   message(STATUS "Generating SWIG interface.")
   message(STATUS "--------------------------")
   execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-interface ${CMAKE_BINARY_DIR}
+    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-interface.py ${CMAKE_BINARY_DIR}
     WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR})
   execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-docstrings ${CMAKE_BINARY_DIR}
+    COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-docstrings.py ${CMAKE_BINARY_DIR}
     WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR})
 endif()
 
@@ -64,38 +63,31 @@ file(GLOB_RECURSE ORIGINAL_INTERFACE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.i)
 
 # Target to copy all swig files from source to build directory
 add_custom_target(copy_swig_files
-  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/copy-swig-files ${CMAKE_BINARY_DIR}
+  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/copy-swig-files.py ${CMAKE_BINARY_DIR}
   DEPENDS ${ORIGINAL_INTERFACE_FILES}
   )
 
 # Target to generate all swig interface files
 add_custom_target(generate_swig_files
-  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-interface ${CMAKE_BINARY_DIR}
-  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-docstrings ${CMAKE_BINARY_DIR}
+  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-interface.py ${CMAKE_BINARY_DIR}
+  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-docstrings.py ${CMAKE_BINARY_DIR}
   WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR}
   COMMENT "Generating all SWIG interface files"
   )
 
 # Target to generate swig interface files
 add_custom_target(generate_swig_interface
-  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-interface ${CMAKE_BINARY_DIR}
+  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-interface.py ${CMAKE_BINARY_DIR}
   WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR}
   COMMENT "Generating SWIG interface files"
   )
 
 # Target to generate swig docstring files
 add_custom_target(generate_swig_docstrings
-  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-docstrings ${CMAKE_BINARY_DIR}
+  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-docstrings.py ${CMAKE_BINARY_DIR}
   WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR}
   COMMENT "Generating SWIG docstring files from C++ headers"
-  )
-
-# Target to generate swig docstring files with debug
-add_custom_target(generate_swig_docstrings_with_debug
-  COMMAND ${PYTHON_EXECUTABLE} ${DOLFIN_SOURCE_DIR}/cmake/scripts/generate-swig-docstrings ${CMAKE_BINARY_DIR} DEBUG
-  WORKING_DIRECTORY ${DOLFIN_SOURCE_DIR}
-  COMMENT "Generating SWIG docstring files from C++ headers (DEBUG modus)"
-  )
+)
 
 # Iterate over the combined modules and add each as a target
 foreach(COMBINED_MODULE_DIR ${COMBINED_MODULES})

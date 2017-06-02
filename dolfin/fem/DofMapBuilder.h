@@ -44,7 +44,7 @@ namespace dolfin
   class SubDomain;
   class UFC;
 
-  /// Documentation of class
+  /// Builds a DofMap on a Mesh
 
   class DofMapBuilder
   {
@@ -53,10 +53,19 @@ namespace dolfin
 
     /// Build dofmap. The constrained domain may be a null pointer, in
     /// which case it is ignored.
+    ///
+    /// @param[out] dofmap
+    /// @param[in] dolfin_mesh
+    /// @param[in] constrained_domain
     static void build(DofMap& dofmap, const Mesh& dolfin_mesh,
                       std::shared_ptr<const SubDomain> constrained_domain);
 
     /// Build sub-dofmap. This is a view into the parent dofmap.
+    ///
+    /// @param[out] sub_dofmap
+    /// @param[in] parent_dofmap
+    /// @param[in] component
+    /// @param[in] mesh
     static void build_sub_map_view(DofMap& sub_dofmap,
                                    const DofMap& parent_dofmap,
                                    const std::vector<std::size_t>& component,
@@ -70,7 +79,7 @@ namespace dolfin
       const Mesh& mesh,
       const std::map<unsigned int, std::pair<unsigned int,
       unsigned int>>& slave_to_master_vertices,
-      std::vector<std::size_t>& modified_vertex_indices_global);
+      std::vector<std::int64_t>& modified_vertex_indices_global);
 
     // Build simple local UFC-based dofmap data structure (does not
     // account for master/slave constraints)
@@ -135,7 +144,7 @@ namespace dolfin
     static std::size_t compute_blocksize(const ufc::dofmap& ufc_dofmap);
 
     static void compute_constrained_mesh_indices(
-      std::vector<std::vector<std::size_t>>& global_entity_indices,
+      std::vector<std::vector<std::int64_t>>& global_entity_indices,
       std::vector<std::size_t>& num_mesh_entities_global,
       const std::vector<bool>& needs_mesh_entities,
       const Mesh& mesh,
@@ -194,7 +203,7 @@ namespace dolfin
 
     static void get_cell_entities_global_constrained(const Cell& cell,
       std::vector<std::vector<std::size_t>>& entity_indices,
-      const std::vector<std::vector<std::size_t>>& global_entity_indices,
+      const std::vector<std::vector<std::int64_t>>& global_entity_indices,
       const std::vector<bool>& needs_mesh_entities);
 
     // Compute number of mesh entities for dimensions required by

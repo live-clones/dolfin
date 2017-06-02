@@ -117,6 +117,8 @@ def main():
     not_implemented = \
       [os.path.join(demodir, 'undocumented', 'projection-interpolation',    'cpp'),
        os.path.join(demodir, 'undocumented', 'interpolation',               'cpp'),
+       os.path.join(demodir, 'undocumented', 'gmg-poisson',                 'python'),
+       os.path.join(demodir, 'undocumented', 'gmg-stokes',                  'python'),
        os.path.join(demodir, 'undocumented', 'adaptive-poisson',            'cpp'),
        os.path.join(demodir, 'undocumented', 'multistage-solver',           'cpp'),
        os.path.join(demodir, 'undocumented', 'smoothing',                   'cpp'),
@@ -133,11 +135,25 @@ def main():
        os.path.join(demodir, 'documented',   'maxwell-eigenvalues',        'cpp'),
        ]
 
+    # Check if we should run only Python tests, use for quick testing
+    if (len(sys.argv) == 2 and sys.argv[1] == "--only-python") or \
+       "DISABLE_CPP_TESTING" in os.environ:
+        only_python = True
+    else:
+        only_python = False
+
+    # Check if we should run only C++ tests
+    if (len(sys.argv) == 2 and sys.argv[1] == "--only-cpp") or \
+       "DISABLE_PYTHON_TESTING" in os.environ:
+        only_cpp = True
+    else:
+        only_cpp = False
+
     # Demos to run
     cppdemos = []
     pydemos = []
     for dpath, dnames, fnames in os.walk(demodir):
-        if os.path.basename(dpath) == 'cpp':
+        if os.path.basename(dpath) == 'cpp' and not only_python:
             if os.path.isfile(os.path.join(dpath, 'Makefile')):
                 cppdemos.append(dpath)
                 assert not dpath in not_implemented, \
@@ -145,7 +161,7 @@ def main():
             else:
                 assert dpath in not_implemented, \
                     "Non-existing demo '%s' not marked as not_implemented" % dpath
-        elif os.path.basename(dpath) == 'python':
+        elif os.path.basename(dpath) == 'python' and not only_cpp:
             tmp = dpath.split(os.path.sep)[-2]
             if os.path.isfile(os.path.join(dpath, 'demo_' + tmp + '.py')):
                 pydemos.append(dpath)
@@ -189,8 +205,8 @@ def main():
        os.path.join(demodir, 'undocumented', 'extrapolation',               'cpp'),
        os.path.join(demodir, 'undocumented', 'extrapolation',               'python'),
        os.path.join(demodir, 'undocumented', 'meshfunction-refinement',     'cpp'),
-       os.path.join(demodir, 'undocumented', 'nonmatching-interpolation',   'cpp'),
-       os.path.join(demodir, 'undocumented', 'nonmatching-interpolation',   'python'),
+       os.path.join(demodir, 'documented',   'nonmatching-interpolation',   'cpp'),
+       os.path.join(demodir, 'documented',   'nonmatching-interpolation',   'python'),
        os.path.join(demodir, 'undocumented', 'nonmatching-projection',      'cpp'),
        os.path.join(demodir, 'undocumented', 'nonmatching-projection',      'python'),
        os.path.join(demodir, 'undocumented', 'poisson-disc',                'python'),
@@ -213,16 +229,15 @@ def main():
     failed = []
     timing = []
 
-    # Check if we should run only Python tests, use for quick testing
-    if len(sys.argv) == 2 and sys.argv[1] == "--only-python":
-        only_python = True
-    else:
-        only_python = False
-
     # Check if we should skip C++ demos
     if only_python:
         print("Skipping C++ demos")
         cppdemos = []
+
+    # Check if we should skip Python demos
+    if only_cpp:
+        print("Skipping Python demos")
+        pydemos = []
 
     # Build prefix list
     prefixes = [""]
@@ -234,7 +249,13 @@ def main():
 
     # Allow to disable parallel testing
     if "DISABLE_PARALLEL_TESTING" in os.environ:
+        print("Skip running demos in parallel")
         prefixes = [""]
+
+    # Allow to disable serial testing
+    if "DISABLE_SERIAL_TESTING" in os.environ:
+        print("Skip running demos in serial")
+        prefixes.remove("")
 
     # Run in serial, then in parallel
     for prefix in prefixes:

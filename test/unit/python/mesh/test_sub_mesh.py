@@ -20,20 +20,18 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import gc
 import pytest
 from dolfin import *
 import six
-from dolfin_utils.test import skip_in_parallel, datadir
+from dolfin_utils.test import skip_in_parallel, datadir, fixture
 
 
-@pytest.fixture(scope='module', params=range(3))
-def MeshFunc(request):
-    test_mesh = [(UnitIntervalMesh, (10,)),
-                 (UnitSquareMesh, (10, 10)),
-                 (UnitCubeMesh, (10, 10, 10))]
-    return test_mesh[request.param]
-
-
+@pytest.mark.parametrize("MeshFunc", [
+    (UnitIntervalMesh, (10,)),
+    (UnitSquareMesh, (10, 10)),
+    (UnitCubeMesh, (10, 10, 10)),
+])
 @skip_in_parallel
 def test_creation(MeshFunc):
     """Create SubMesh."""
@@ -78,7 +76,7 @@ def test_facet_domain_propagation(datadir):
 
     # Boxes contains two subdomains with marked faces between
     # them.  These faces are marked with 5, 10, 15.
-    mesh = Mesh(os.path.join(datadir, "boxes.xml.gz"))
+    mesh = Mesh(os.path.join(datadir, "boxes.xml"))
     inner = SubMesh(mesh, 1)
     outer = SubMesh(mesh, 2)
 

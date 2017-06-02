@@ -34,9 +34,10 @@
 
 using namespace dolfin;
 
-// Callback function for PETSc mult function
+
 namespace dolfin
 {
+  /// Callback function for PETSc mult function
   int usermult(Mat A, Vec x, Vec y)
   {
     // Wrap PETSc Vec as dolfin::PETScVector
@@ -141,6 +142,10 @@ void PETScLinearOperator::init_layout(const GenericVector& x,
   // Set matrix type to 'shell'
   ierr = MatSetType(_matA, MATSHELL);
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetType");
+
+  // Set-up matrix
+  ierr = MatSetUp(_matA);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetUp");
 
   // Set context
   ierr = MatShellSetContext(_matA, (void*) this);

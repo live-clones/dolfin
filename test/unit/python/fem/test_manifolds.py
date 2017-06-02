@@ -276,7 +276,6 @@ def basis_test(family, degree, basemesh, rotmesh, rotation, piola=False):
     parameters["form_compiler"]["no-evaluate_basis_derivatives"] = basis_derivatives
 
 
-@use_gc_barrier
 def test_elliptic_eqn_on_intersecting_surface(datadir):
     """Solves -grad^2 u + u = f on domain of two intersecting square
      surfaces embedded in 3D with natural bcs. Test passes if at end
@@ -288,7 +287,7 @@ def test_elliptic_eqn_on_intersecting_surface(datadir):
     #mesh = make_mesh(num_vertices_side)
     #file = File("intersecting_surfaces.xml.gz", "compressed")
     #file << mesh
-    filename = os.path.join(datadir, "intersecting_surfaces.xml.gz")
+    filename = os.path.join(datadir, "intersecting_surfaces.xml")
     mesh = Mesh(filename)
 
     # function space, etc

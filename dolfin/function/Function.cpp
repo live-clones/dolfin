@@ -217,36 +217,6 @@ Function& Function::operator[] (std::size_t i) const
   }
 }
 //-----------------------------------------------------------------------------
-FunctionAXPY Function::operator+(const Function& other) const
-{
-  return FunctionAXPY(*this, other, FunctionAXPY::Direction::ADD_ADD);
-}
-//-----------------------------------------------------------------------------
-FunctionAXPY Function::operator+(const FunctionAXPY& axpy) const
-{
-  return FunctionAXPY(axpy, *this, FunctionAXPY::Direction::ADD_ADD);
-}
-//-----------------------------------------------------------------------------
-FunctionAXPY Function::operator-(const Function& other) const
-{
-  return FunctionAXPY(*this, other, FunctionAXPY::Direction::ADD_SUB);
-}
-//-----------------------------------------------------------------------------
-FunctionAXPY Function::operator-(const FunctionAXPY& axpy) const
-{
-  return FunctionAXPY(axpy, *this, FunctionAXPY::Direction::SUB_ADD);
-}
-//-----------------------------------------------------------------------------
-FunctionAXPY Function::operator*(double scalar) const
-{
-  return FunctionAXPY(*this, scalar);
-}
-//-----------------------------------------------------------------------------
-FunctionAXPY Function::operator/(double scalar) const
-{
-  return FunctionAXPY(*this, 1.0/scalar);
-}
-//-----------------------------------------------------------------------------
 void Function::operator=(const FunctionAXPY& axpy)
 {
   if (axpy.pairs().size() == 0)
@@ -257,14 +227,20 @@ void Function::operator=(const FunctionAXPY& axpy)
   }
 
   // Make an initial assign and scale
+  dolfin_assert(axpy.pairs()[0].second);
   *this = *(axpy.pairs()[0].second);
   if (axpy.pairs()[0].first != 1.0)
     *_vector *= axpy.pairs()[0].first;
 
   // Start from item 2 and axpy
-  std::vector<std::pair<double, const Function*>>::const_iterator it;
+  std::vector<std::pair<double, std::shared_ptr<const Function>>>
+    ::const_iterator it;
   for (it = axpy.pairs().begin()+1; it != axpy.pairs().end(); it++)
+  {
+    dolfin_assert(it->second);
+    dolfin_assert(it->second->vector());
     _vector->axpy(it->first, *(it->second->vector()));
+  }
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<GenericVector> Function::vector()
@@ -376,6 +352,7 @@ void Function::eval(Array<double>& values, const Array<double>& x,
     element.evaluate_basis(i, basis.data(), x.data(),
                            coordinate_dofs.data(),
                            ufc_cell.orientation);
+
     for (std::size_t j = 0; j < value_size_loc; ++j)
       values[j] += coefficients[i]*basis[j];
   }

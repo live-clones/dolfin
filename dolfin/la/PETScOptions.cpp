@@ -14,9 +14,6 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-//
-// First added:  2013-08-12
-// Last changed:
 
 #ifdef HAS_PETSC
 
@@ -27,47 +24,49 @@ using namespace dolfin;
 //-----------------------------------------------------------------------------
 void PETScOptions::set(std::string option)
 {
-  set<std::string>(option, "");
+  PETScOptions::set<std::string>(option, "");
 }
 //-----------------------------------------------------------------------------
 void PETScOptions::set(std::string option, bool value)
 {
-  set<bool>(option, value);
+  PETScOptions::set<bool>(option, value);
 }
 //-----------------------------------------------------------------------------
 void PETScOptions::set(std::string option, int value)
 {
-  set<int>(option, value);
+  PETScOptions::set<int>(option, value);
 }
 //-----------------------------------------------------------------------------
 void PETScOptions::set(std::string option, double value)
 {
-  set<double>(option, value);
+  PETScOptions::set<double>(option, value);
 }
 //-----------------------------------------------------------------------------
 void PETScOptions::set(std::string option, std::string value)
 {
-  set<std::string>(option, value);
+  PETScOptions::set<std::string>(option, value);
 }
 //-----------------------------------------------------------------------------
 void PETScOptions::clear(std::string option)
 {
   SubSystemsManager::init_petsc();
-  PetscErrorCode ierr;
-  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 6 && PETSC_VERSION_RELEASE == 1
-  ierr = PetscOptionsClearValue(option.c_str());
-  #else
-  ierr = PetscOptionsClearValue(NULL, option.c_str());
-  #endif
-  if (ierr != 0)
-  {
-    dolfin_error("PETScOptions.cpp",
-                 "clear PETSc option/parameter '" + option + "'",
-                 "PETSc error code is: %d", ierr);
 
-  }
+  if (option[0] != '-')
+    option = '-' + option;
+
+  PetscErrorCode ierr;
+  ierr = PetscOptionsClearValue(NULL, option.c_str());
+  if (ierr != 0)
+    PETScObject::petsc_error(ierr, __FILE__, "PetscOptionsClearValue");
 }
 //-----------------------------------------------------------------------------
-
+void PETScOptions::clear()
+{
+  SubSystemsManager::init_petsc();
+  PetscErrorCode ierr = PetscOptionsClear(NULL);
+  if (ierr != 0)
+    PETScObject::petsc_error(ierr, __FILE__, "PetscOptionsClear");
+}
+//-----------------------------------------------------------------------------
 
 #endif

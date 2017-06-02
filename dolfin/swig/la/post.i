@@ -390,17 +390,8 @@ def la_index_dtype():
             return ret
         return NotImplemented
 
-    def __div__(self,other):
-        """x.__div__(y) <==> x/y"""
-        from numpy import isscalar
-        if isscalar(other):
-            ret = self.copy()
-            ret._scale(1.0 / other)
-            return ret
-        return NotImplemented
-
     def __truediv__(self,other):
-        """x.__div__(y) <==> x/y"""
+        """x.__truediv__(y) <==> x/y"""
         from numpy import isscalar
         if isscalar(other):
             ret = self.copy()
@@ -427,8 +418,8 @@ def la_index_dtype():
             return ret
         return NotImplemented
 
-    def __rdiv__(self, other):
-        """x.__rdiv__(y) <==> y/x"""
+    def __rtruediv__(self, other):
+        """x.__rtruediv__(y) <==> y/x"""
         return NotImplemented
 
     def __iadd__(self, other):
@@ -464,16 +455,8 @@ def la_index_dtype():
             return self
         return NotImplemented
 
-    def __idiv__(self, other):
-        """x.__idiv__(y) <==> x/y"""
-        from numpy import isscalar
-        if isscalar(other):
-            self._scale(1.0 / other)
-            return self
-        return NotImplemented
-
     def __itruediv__(self, other):
-        """x.__idiv__(y) <==> x/y"""
+        """x.__itruediv__(y) <==> x/y"""
         from numpy import isscalar
         if isscalar(other):
             self._scale(1.0 / other)
@@ -482,6 +465,13 @@ def la_index_dtype():
 
     def __iter__(self):
         return iter(self.array())
+
+    import sys
+    if sys.version_info[0] == 2:
+        __div__ = __truediv__
+        __rdiv__ = __rtruediv__
+        __idiv__ = __itruediv__
+    del sys
   %}
 }
 
@@ -701,7 +691,7 @@ def la_index_dtype():
                 raise ValueError("Provide a NumPy array with length %d"%self.size(1))
             vec_type = _matrix_vector_mul_map[get_tensor_type(self)][0]
             vec = vec_type()
-            vec.init(self.mpi_comm(), vec_size)
+            vec.init(vec_size)
             vec.set_local(other)
             vec.apply("insert")
             result_vec = vec.copy()
@@ -712,17 +702,8 @@ def la_index_dtype():
             return result_vec.get_local()
         return NotImplemented
 
-    def __div__(self,other):
-        """x.__div__(y) <==> x/y"""
-        from numpy import isscalar
-        if isscalar(other):
-            ret = self.copy()
-            ret._scale(1.0/other)
-            return ret
-        return NotImplemented
-
     def __truediv__(self,other):
-        """x.__div__(y) <==> x/y"""
+        """x.__truediv__(y) <==> x/y"""
         from numpy import isscalar
         if isscalar(other):
             ret = self.copy()
@@ -734,9 +715,11 @@ def la_index_dtype():
         """x.__radd__(y) <==> y+x"""
         return self.__add__(other)
 
-    def __rsub__(self,other):
+    def __rsub__(self, other):
         """x.__rsub__(y) <==> y-x"""
-        return self.__sub__(other)
+        ret = self.__sub__(other)
+        ret.__imul__(-1.0)
+        return ret
 
     def __rmul__(self,other):
         """x.__rmul__(y) <==> y*x"""
@@ -747,8 +730,8 @@ def la_index_dtype():
             return ret
         return NotImplemented
 
-    def __rdiv__(self,other):
-        """x.__rdiv__(y) <==> y/x"""
+    def __rtruediv__(self,other):
+        """x.__rtruediv__(y) <==> y/x"""
         return NotImplemented
 
     def __iadd__(self,other):
@@ -773,22 +756,20 @@ def la_index_dtype():
             return self
         return NotImplemented
 
-    def __idiv__(self,other):
-        """x.__idiv__(y) <==> x/y"""
-        from numpy import isscalar
-        if isscalar(other):
-            self._scale(1.0 / other)
-            return self
-        return NotImplemented
-
     def __itruediv__(self,other):
-        """x.__idiv__(y) <==> x/y"""
+        """x.__itruediv__(y) <==> x/y"""
         from numpy import isscalar
         if isscalar(other):
             self._scale(1.0 / other)
             return self
         return NotImplemented
 
+    import sys
+    if sys.version_info[0] == 2:
+        __div__ = __truediv__
+        __rdiv__ = __rtruediv__
+        __idiv__ = __itruediv__
+    del sys
   %}
 }
 
@@ -906,14 +887,14 @@ _matrix_vector_mul_map[PETScLinearOperator] = [PETScVector]
 %feature("docstring") dolfin::PETScBaseMatrix::mat "Return petsc4py representation of PETSc Mat";
 %extend dolfin::PETScBaseMatrix
 {
-  void mat(Mat &A)
+  void mat(Mat& A)
   { A = self->mat(); }
 }
 
 %feature("docstring") dolfin::PETScVector::vec "Return petsc4py representation of PETSc Vec";
 %extend dolfin::PETScVector
 {
-  void vec(Vec&v)
+  void vec(Vec& v)
   { v = self->vec(); }
 }
 

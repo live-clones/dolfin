@@ -4,26 +4,19 @@ import ufl
 import numpy
 import sys
 import pytest
-from dolfin_utils.test import set_parameters_fixture, skip_in_parallel
+from dolfin_utils.test import set_parameters_fixture, skip_in_parallel, fixture
 
 from ufl.classes import CellOrientation, CellNormal, CellCoordinate, \
 CellOrigin, Jacobian, JacobianInverse, JacobianDeterminant
 
 # This was for debugging, don't enable this permanently here in tests
 # parameters["reorder_dofs_serial"] = False
-
-# Hack to skip uflacs parameter if not installed. There's probably a
-# cleaner way to do this with pytest.
-try:
-    import uflacs
-    _uflacs = ["uflacs"]
-except:
-    _uflacs = []
-any_representation = set_parameters_fixture("form_compiler.representation",
-                                            ["quadrature"] + _uflacs)
+any_representation = \
+  set_parameters_fixture("form_compiler.representation",
+                             ["quadrature", "uflacs"])
 uflacs_representation_only \
     = set_parameters_fixture("form_compiler.representation",
-                             _uflacs)
+                             ["uflacs"])
 
 
 def create_mesh(vertices, cells, cellname="simplex"):
@@ -116,7 +109,7 @@ intervals.
 line_resolution = 8
 
 
-@pytest.fixture
+@fixture
 def line1d(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
@@ -124,7 +117,7 @@ def line1d(request):
     return create_line_mesh(vertices)
 
 
-@pytest.fixture
+@fixture
 def rline1d(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
@@ -133,7 +126,7 @@ def rline1d(request):
     return create_line_mesh(vertices)
 
 
-@pytest.fixture
+@fixture
 def line2d(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
@@ -143,7 +136,7 @@ def line2d(request):
     return mesh
 
 
-@pytest.fixture
+@fixture
 def rline2d(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
@@ -154,7 +147,7 @@ def rline2d(request):
     return mesh
 
 
-@pytest.fixture
+@fixture
 def line3d(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
@@ -165,7 +158,7 @@ def line3d(request):
     return mesh
 
 
-@pytest.fixture
+@fixture
 def rline3d(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
@@ -177,7 +170,7 @@ def rline3d(request):
     return mesh
 
 
-@pytest.fixture
+@fixture
 def square2d(request):
     cellname = "triangle"
     side = sqrt(sqrt(3.0))
@@ -195,7 +188,7 @@ def square2d(request):
     return mesh
 
 
-@pytest.fixture
+@fixture
 def square3d(request):
     cellname = "triangle"
     vertices = [

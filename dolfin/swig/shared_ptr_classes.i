@@ -85,6 +85,7 @@
 %shared_ptr(dolfin::LinearVariationalSolver)
 %shared_ptr(dolfin::NonlinearVariationalSolver)
 %shared_ptr(dolfin::PointIntegralSolver)
+%shared_ptr(dolfin::PETScDMCollection)
 
 %shared_ptr(dolfin::Hierarchical<dolfin::DirichletBC>)
 %shared_ptr(dolfin::DirichletBC)
@@ -103,6 +104,7 @@
 %shared_ptr(dolfin::MeshCoordinates)
 %shared_ptr(dolfin::MultiMeshFunctionSpace)
 %shared_ptr(dolfin::MultiMeshSubSpace)
+%shared_ptr(dolfin::MultiMeshFunction)
 
 // geometry
 %shared_ptr(dolfin::BoundingBoxTree)
@@ -193,16 +195,8 @@
 %shared_ptr(dolfin::SLEPcEigenSolver)
 #endif
 
-#ifdef HAS_PASTIX
-%shared_ptr(dolfin::PaStiXLUSolver)
-#endif
-
-%shared_ptr(dolfin::UmfpackLUSolver)
-%shared_ptr(dolfin::CholmodCholeskySolver)
-
 %shared_ptr(dolfin::LinearSolver)
 %shared_ptr(dolfin::GenericLinearSolver)
-%shared_ptr(dolfin::GenericLUSolver)
 %shared_ptr(dolfin::KrylovSolver)
 %shared_ptr(dolfin::LUSolver)
 
