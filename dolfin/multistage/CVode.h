@@ -31,10 +31,10 @@ namespace dolfin
   public:
 
     /// Constructor
-  CVode() : t(0.0)
+  CVode(int cv_lmm = CV_BDF, int cv_iter = CV_ADAMS) : t(0.0)
     {
       // Create CVode memory block
-      cvode_mem = CVodeCreate(CV_BDF, CV_ADAMS);
+      cvode_mem = CVodeCreate(cv_lmm, cv_iter);
       dolfin_assert(cvode_mem);
 
       // Point user_data back to this object
@@ -67,6 +67,12 @@ namespace dolfin
     /// Given the vector u, at time t, provide the time derivative udot.
     virtual void derivs(double t, std::shared_ptr<GenericVector> u,
                         std::shared_ptr<GenericVector> udot);
+
+    /// Overloaded Jabocian function
+//    virtual void Jacobian(long int N, long int mu, long int ml,
+//		          double t, std::shared_ptr<GenericVector> u,
+  //                        std::shared_ptr<GenericVector> fu);
+
 
     std::map<std::string,double> statistics();
 
