@@ -172,6 +172,12 @@ namespace dolfin
       std::pair<std::vector<std::size_t>,
       std::vector<std::vector<std::size_t>>>> coloring;
 
+    /// Access MeshViewMapping to another mesh (NULL if none)
+    MeshViewMapping& meshview()
+    {
+      return *_mapping;
+    }
+
   private:
 
     // Number of mesh entities for each topological dimension
@@ -200,7 +206,7 @@ namespace dolfin
     std::vector<std::vector<MeshConnectivity> > connectivity;
 
     // Mapping to another Mesh
-    std::shared_ptr<MeshViewMapping> _mapping;
+    std::unique_ptr<MeshViewMapping> _mapping;
   };
 
 }

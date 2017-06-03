@@ -23,6 +23,7 @@
 #include <dolfin/log/log.h>
 #include <dolfin/common/utils.h>
 #include "MeshConnectivity.h"
+#include "MeshViewMapping.h"
 #include "MeshTopology.h"
 
 using namespace dolfin;

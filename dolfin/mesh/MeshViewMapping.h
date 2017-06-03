@@ -21,6 +21,9 @@
 
 namespace dolfin
 {
+  // Forward declarations
+  class Mesh;
+  template <typename T> class MeshFunction;
 
   class MeshViewMapping
   {
@@ -30,8 +33,24 @@ namespace dolfin
     MeshViewMapping() : _mesh(0)
     {}
 
+    /// Initialise a MeshViewMapping from a parent_mesh
+    void init(std::shared_ptr<const Mesh> parent_mesh,
+              std::vector<std::size_t>& vertex_map,
+              std::vector<std::size_t>& cell_map)
+    {
+      if(_mesh)
+      {
+        dolfin_error("MeshViewMapping.cpp", "initialise",
+                     "MeshView cannot be reinitialised");
+      }
+      _mesh = parent_mesh;
+      _vertex_map = vertex_map;
+      _cell_map = cell_map;
+    }
+
     /// Create a new Mesh based on the Meshfunction marker, where it has a value equal
-    /// to tag.
+    /// to tag, setting the MeshViewMapping in MeshTopology accordingly.
+    /// FIXME: this could be a free function
     static Mesh create_from_marker(const MeshFunction<std::size_t>& marker, std::size_t tag);
 
   private:
@@ -39,8 +58,11 @@ namespace dolfin
     // The mesh which this mapping points to
     std::shared_ptr<const Mesh> _mesh;
 
+    // Map to vertices in _mesh
+    std::vector<std::size_t> _vertex_map;
+
     // Map to cells in _mesh
-    std::vector<std::size_t> cell_map;
+    std::vector<std::size_t> _cell_map;
 
   };
 
