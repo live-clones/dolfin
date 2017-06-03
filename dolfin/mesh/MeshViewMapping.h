@@ -48,6 +48,24 @@ namespace dolfin
       _cell_map = cell_map;
     }
 
+    /// Access mesh
+    std::shared_ptr<const Mesh> mesh() const
+    {
+      return _mesh;
+    }
+
+    /// map to vertices of main mesh
+    const std::vector<std::size_t>& vertex_map() const
+    {
+      return _vertex_map;
+    }
+
+    /// map to cells of main mesh
+    const std::vector<std::size_t>& cell_map() const
+    {
+      return _cell_map;
+    }
+
     /// Create a new Mesh based on the Meshfunction marker, where it has a value equal
     /// to tag, setting the MeshViewMapping in MeshTopology accordingly.
     /// FIXME: this could be a free function
