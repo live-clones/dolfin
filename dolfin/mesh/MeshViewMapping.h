@@ -27,40 +27,33 @@ namespace dolfin
 
   class MeshViewMapping
   {
+    /// Mapping from a child Mesh to a parent Mesh for vertices
+    /// and cells, using local indexing
+
   public:
 
-    /// Default Constructor
-    MeshViewMapping() : _mesh(0)
-    {}
-
-    /// Initialise a MeshViewMapping from a parent_mesh
-    void init(std::shared_ptr<const Mesh> parent_mesh,
-              std::vector<std::size_t>& vertex_map,
-              std::vector<std::size_t>& cell_map)
+    /// Constructor
+    MeshViewMapping(std::shared_ptr<const Mesh> parent_mesh,
+                    std::vector<std::size_t>& vertex_map,
+                    std::vector<std::size_t>& cell_map)
+      : _mesh(parent_mesh), _vertex_map(vertex_map), _cell_map(cell_map)
     {
-      if(_mesh)
-      {
-        dolfin_error("MeshViewMapping.cpp", "initialise",
-                     "MeshView cannot be reinitialised");
-      }
-      _mesh = parent_mesh;
-      _vertex_map = vertex_map;
-      _cell_map = cell_map;
+      // Do nothing
     }
 
-    /// Access mesh
+    /// Access parent mesh
     std::shared_ptr<const Mesh> mesh() const
     {
       return _mesh;
     }
 
-    /// map to vertices of main mesh
+    /// Map to vertices of parent mesh
     const std::vector<std::size_t>& vertex_map() const
     {
       return _vertex_map;
     }
 
-    /// map to cells of main mesh
+    /// map to cells of parent mesh
     const std::vector<std::size_t>& cell_map() const
     {
       return _cell_map;
@@ -73,7 +66,7 @@ namespace dolfin
 
   private:
 
-    // The mesh which this mapping points to
+    // The parent mesh which this mapping points to
     std::shared_ptr<const Mesh> _mesh;
 
     // Map to vertices in _mesh

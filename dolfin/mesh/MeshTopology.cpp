@@ -35,7 +35,8 @@ MeshTopology::MeshTopology()
 }
 //-----------------------------------------------------------------------------
 MeshTopology::MeshTopology(const MeshTopology& topology)
-  : coloring(topology.coloring), num_entities(topology.num_entities),
+  : coloring(topology.coloring), mapping(topology.mapping),
+    num_entities(topology.num_entities),
     ghost_offset_index(topology.ghost_offset_index),
     global_num_entities(topology.global_num_entities),
     _global_indices(topology._global_indices),
@@ -54,6 +55,7 @@ MeshTopology& MeshTopology::operator= (const MeshTopology& topology)
 {
   // Public data
   coloring = topology.coloring;
+  mapping = topology.mapping;
 
   // Private data
   num_entities = topology.num_entities;
