@@ -33,6 +33,7 @@ typedef int hid_t;
 
 #include <dolfin/common/MPI.h>
 #include <dolfin/common/Variable.h>
+#include "PugiXDMFXMLDocument.h"
 
 namespace boost
 {
@@ -136,9 +137,6 @@ private:
   static const Encoding _default_encoding = Encoding::ASCII;
 #endif
 
-  // ID handle to HDF file
-  hid_t _h5_id = -1;
-
   // Cached filename
   const std::string _filename;
 
@@ -147,22 +145,10 @@ private:
 
   // The XML document currently representing the XDMF
   // which needs to be kept open for time series etc.
-  std::unique_ptr<pugi::xml_document> _xml_doc;
+  std::unique_ptr<PugiXDMFXMLDocument> _xdmf_xml_doc;
 
-  // Returns the main Xdmf nodes of XML document
-  pugi::xml_node xdmf_node();
-  pugi::xml_node domain_node();
-
-  // Restarts XDMF document, i.e. reset the XML file and build empty header
-  void restart_xdmf();
   // Register default XDMF parameters into global dolfin pool
   void add_dolfin_parameters();
-
-  // Appends a given XML node with grid/topology/geometry node
-  // Attributes of appended nodes are taken from Mesh
-  pugi::xml_node append_grid_node(pugi::xml_node &xml_node, const Mesh &mesh);
-  pugi::xml_node append_topology_node(pugi::xml_node &xml_node, const Mesh &mesh);
-  pugi::xml_node append_geometry_node(pugi::xml_node &xml_node, const Mesh &mesh);
 
   // Dolfin to VTK cell type conversion
   // FIXME: probably should be in CellType
@@ -174,8 +160,7 @@ private:
   // Checks the mesh
   void check_mesh(const Mesh &mesh) const;
 
-  // Returns HDF5 filename from member's _filename
-  std::string get_hdf5_filename() const;
+  std::set<unsigned int> compute_nonlocal_entities(const Mesh &mesh, int cell_dim);
 
 };
 

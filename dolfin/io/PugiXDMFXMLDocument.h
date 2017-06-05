@@ -46,7 +46,7 @@ class PugiXDMFXMLDocument
 {
 public:
 
-  explicit PugiXDMFXMLDocument(MPI_Comm comm);
+  PugiXDMFXMLDocument(MPI_Comm comm);
 
   /// Resets underlying Pugi XML document
   void reset_xml();
@@ -107,7 +107,7 @@ public:
                                       std::string name,
                                       std::string topology_type,
                                       std::int64_t number_of_elements,
-                                      std::int8_t nodes_per_element = "",
+                                      std::int8_t nodes_per_element = 0,
                                       std::string dimensions = "",
                                       std::string order = "");
 
@@ -153,7 +153,8 @@ public:
                                   std::string time_type,
                                   std::string value);
 
-
+  void set_data(pugi::xml_node node,
+                std::string data);
 
   /// Saves XDMF XML to a file of given filename.
   /// Uses internal Pugi's xml_doc->save_file() method.
@@ -163,7 +164,7 @@ public:
 
 private:
 
-  pugi::xml_document _xml_doc;
+  std::unique_ptr<pugi::xml_document> _xml_doc;
 
   std::set<std::string> _grid_types = {"Uniform", "Collection", "Tree", "Subset"};
   std::set<std::string> _collection_types = {"Spatial", "Temporal", ""};

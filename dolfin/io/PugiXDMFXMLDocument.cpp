@@ -18,6 +18,7 @@
 
 #include "PugiXDMFXMLDocument.h"
 
+
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
@@ -106,7 +107,7 @@ pugi::xml_node PugiXDMFXMLDocument::add_grid_to_node(pugi::xml_node node,
 pugi::xml_node PugiXDMFXMLDocument::add_topology_to_node(pugi::xml_node node,
                                                          std::string name,
                                                          std::string topology_type,
-                                                         std::int8_t number_of_elements,
+                                                         std::int64_t number_of_elements,
                                                          std::int8_t nodes_per_element,
                                                          std::string dimensions,
                                                          std::string order)
@@ -127,12 +128,14 @@ pugi::xml_node PugiXDMFXMLDocument::add_topology_to_node(pugi::xml_node node,
   topology_node.append_attribute("TopologyType") = topology_type.c_str();
   topology_node.append_attribute("NumberOfElements") = std::to_string(number_of_elements).c_str();
 
-  if(!nodes_per_element.empty())
+  if(nodes_per_element == 0)
     topology_node.append_attribute("NodesPerElement") = std::to_string(nodes_per_element).c_str();
   if(!dimensions.empty())
     topology_node.append_attribute("Dimensions") = dimensions.c_str();
   if(!order.empty())
     topology_node.append_attribute("Order") = order.c_str();
+
+  return topology_node;
 }
 //-----------------------------------------------------------------------------
 pugi::xml_node PugiXDMFXMLDocument::add_geometry_to_node(pugi::xml_node node,
@@ -151,6 +154,8 @@ pugi::xml_node PugiXDMFXMLDocument::add_geometry_to_node(pugi::xml_node node,
   }
 
   geom_node.append_attribute("GeometryType") = geometry_type.c_str();
+
+  return geom_node;
 }
 //-----------------------------------------------------------------------------
 pugi::xml_node PugiXDMFXMLDocument::add_data_item_to_node(pugi::xml_node node, std::string name,
@@ -164,7 +169,6 @@ pugi::xml_node PugiXDMFXMLDocument::add_data_item_to_node(pugi::xml_node node, s
                                                           std::string seek)
 {
   pugi::xml_node data_item_node = node.append_child("DataItem");
-
   std::string task = "append data item to XML document";
 
   if (_item_types.find(item_type) == _item_types.end()) {
@@ -250,8 +254,12 @@ pugi::xml_node PugiXDMFXMLDocument::add_time_to_node(pugi::xml_node node,
   return time_node;
 }
 //-----------------------------------------------------------------------------
-void PugiXDMFXMLParser::save_file(std::string xml_filename)
+void PugiXDMFXMLDocument::save_file(std::string xml_filename)
 {
   _xml_doc->save_file(xml_filename.c_str(), "  ");
 }
 //-----------------------------------------------------------------------------
+void PugiXDMFXMLDocument::set_data(pugi::xml_node node, std::string data)
+{
+  node.append_child(pugi::node_pcdata).set_value(data.c_str());
+}
