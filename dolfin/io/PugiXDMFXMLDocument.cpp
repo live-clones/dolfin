@@ -18,7 +18,6 @@
 
 #include "PugiXDMFXMLDocument.h"
 
-
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
@@ -95,10 +94,10 @@ pugi::xml_node PugiXDMFXMLDocument::add_grid_to_node(pugi::xml_node node,
 
   grid_node.append_attribute("GridType") = grid_type.c_str();
 
-  if(grid_type == "Collection")
+  if (grid_type == "Collection")
     grid_node.append_attribute("CollectionType") = collection_type.c_str();
 
-  if(grid_type == "Subset")
+  if (grid_type == "Subset")
     grid_node.append_attribute("Section") = section.c_str();
 
   return grid_node;
@@ -128,11 +127,11 @@ pugi::xml_node PugiXDMFXMLDocument::add_topology_to_node(pugi::xml_node node,
   topology_node.append_attribute("TopologyType") = topology_type.c_str();
   topology_node.append_attribute("NumberOfElements") = std::to_string(number_of_elements).c_str();
 
-  if(nodes_per_element == 0)
+  if (nodes_per_element == 0)
     topology_node.append_attribute("NodesPerElement") = std::to_string(nodes_per_element).c_str();
-  if(!dimensions.empty())
+  if (!dimensions.empty())
     topology_node.append_attribute("Dimensions") = dimensions.c_str();
-  if(!order.empty())
+  if (!order.empty())
     topology_node.append_attribute("Order") = order.c_str();
 
   return topology_node;
@@ -219,13 +218,13 @@ pugi::xml_node PugiXDMFXMLDocument::add_data_item_to_node(pugi::xml_node node, s
   data_item_node.append_attribute("Precision") = precision.c_str();
 
   // Endian and Compression valid only for Binary Format
-  if(format == "Binary") {
+  if (format == "Binary") {
     data_item_node.append_attribute("Endian") = endian.c_str();
     data_item_node.append_attribute("Compression") = compression.c_str();
   }
 
   // Seek valid only for Binary Format and Raw Compression
-  if(format == "Binary" and compression == "Raw")
+  if (format == "Binary" and compression == "Raw")
     data_item_node.append_attribute("Seek") = seek.c_str();
 
   return data_item_node;
@@ -248,7 +247,7 @@ pugi::xml_node PugiXDMFXMLDocument::add_time_to_node(pugi::xml_node node,
   time_node.append_attribute("TimeType") = time_type.c_str();
 
   // Value valid only for Single TimeType
-  if(time_type == "Single")
+  if (time_type == "Single")
     time_node.append_attribute("Value") = value.c_str();
 
   return time_node;

@@ -30,7 +30,7 @@
 namespace dolfin
 {
 
-/// Prepares and saves XDMF XML skelet document
+/// Prepares and saves XDMF XML skeleton document
 ///
 /// This class wraps the functionality of Pugi XML library
 /// http://pugixml.org/ and defines standards for XDMF3 document.
@@ -166,24 +166,24 @@ private:
 
   std::unique_ptr<pugi::xml_document> _xml_doc;
 
-  std::set<std::string> _grid_types = {"Uniform", "Collection", "Tree", "Subset"};
-  std::set<std::string> _collection_types = {"Spatial", "Temporal", ""};
-  std::set<std::string> _sections = {"DataItem", "All", ""};
+  const std::set<std::string> _grid_types = {"Uniform", "Collection", "Tree", "Subset"};
+  const std::set<std::string> _collection_types = {"Spatial", "Temporal", ""};
+  const std::set<std::string> _sections = {"DataItem", "All", ""};
 
-  std::set<std::string> _topology_types =
+  const std::set<std::string> _topology_types =
       {"Polyvertex", "Polyline", "Polygon", "Triangle", "Quadrilateral", "Tetrahedron", "Pyramid", "Wedge",
        "Hexahedron", "Edge_3", "Triangle_6", "Quadrilateral_8", "Tetrahedron_10", "Pyramid_13", "Wedge_15",
        "Hexahedron_20", "Mixed", "2DSMesh", "2DRectMesh", "2DCoRectMesh", "3DSMesh", "3DRectMesh", "3DCoRectMesh"};
 
-  std::set<std::string> _item_types = {"Uniform", "Collection", "tree", "HyperSlab", "coordinates", "Function"};
-  std::set<std::string> _number_types = {"Float", "Int", "UInt", "Char", "UChar"};
-  std::set<std::string> _formats = {"XML", "HDF", "Binary"};
-  std::set<std::string> _endians = {"Native", "Big", "Little", ""};
-  std::set<std::string> _compressions = {"Raw", "Zlib", "BZip2", ""};
+  const std::set<std::string> _item_types = {"Uniform", "Collection", "tree", "HyperSlab", "coordinates", "Function"};
+  const std::set<std::string> _number_types = {"Float", "Int", "UInt", "Char", "UChar"};
+  const std::set<std::string> _formats = {"XML", "HDF", "Binary"};
+  const std::set<std::string> _endians = {"Native", "Big", "Little", ""};
+  const std::set<std::string> _compressions = {"Raw", "Zlib", "BZip2", ""};
 
-  std::set<std::string> _geometry_types = {"XYZ", "XY", "X_Y_Z", "VxVyVz", "Origin_DxDyDz", "Origin_DxDy"};
+  const std::set<std::string> _geometry_types = {"XYZ", "XY", "X_Y_Z", "VxVyVz", "Origin_DxDyDz", "Origin_DxDy"};
 
-  std::set<std::string> _time_types = {"Single", "HyperSlab", "List", "Range"};
+  const std::set<std::string> _time_types = {"Single", "HyperSlab", "List", "Range"};
 
 };
 
