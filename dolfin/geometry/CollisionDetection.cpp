@@ -457,6 +457,34 @@ CollisionDetection::collides_tetrahedron_tetrahedron
 (const MeshEntity& tetrahedron_0,
  const MeshEntity& tetrahedron_1)
 {
+  dolfin_assert(tetrahedron_0.mesh().topology().dim() == 3);
+  dolfin_assert(tetrahedron_1.mesh().topology().dim() == 3);
+
+  // Get the vertices as points
+  const MeshGeometry& geometry = tetrahedron_0.mesh().geometry();
+  const unsigned int *vertices = tetrahedron_0.entities(0);
+  const MeshGeometry& geometry_q = tetrahedron_1.mesh().geometry();
+  const unsigned int *vertices_q = tetrahedron_1.entities(0);
+  std::vector<Point> V1(4), V2(4);
+  for (std::size_t i = 0; i < 4; ++i)
+  {
+    V1[i] = geometry.point(vertices[i]);
+    V2[i] = geometry_q.point(vertices_q[i]);
+  }
+
+  collides_tetrahedron_tetrahedron(V1[0], V1[1], V1[2], V1[3],
+                                   V2[0], V2[1], V2[2], V2[3]);
+}
+//-----------------------------------------------------------------------------
+bool CollisionDetection::collides_tetrahedron_tetrahedron(const Point& p0,
+                                             const Point& p1,
+                                             const Point& p2,
+                                             const Point& p3,
+                                             const Point& q0,
+                                             const Point& q1,
+                                             const Point& q2,
+                                             const Point& q3)
+{
   // This algorithm checks whether two tetrahedra intersect.
 
   // Algorithm and source code from Fabio Ganovelli, Federico Ponchio
@@ -464,21 +492,8 @@ CollisionDetection::collides_tetrahedron_tetrahedron
   // Algorithm, Journal of Graphics Tools, 7(2), 2002. DOI:
   // 10.1080/10867651.2002.10487557. Source code available at
   // http://web.archive.org/web/20031130075955/http://www.acm.org/jgt/papers/GanovelliPonchioRocchini02/tet_a_tet.html
-
-  dolfin_assert(tetrahedron_0.mesh().topology().dim() == 3);
-  dolfin_assert(tetrahedron_1.mesh().topology().dim() == 3);
-
-  // Get the vertices as points
-  const MeshGeometry& geometry = tetrahedron_0.mesh().geometry();
-  const unsigned int* vertices = tetrahedron_0.entities(0);
-  const MeshGeometry& geometry_q = tetrahedron_1.mesh().geometry();
-  const unsigned int* vertices_q = tetrahedron_1.entities(0);
-  std::vector<Point> V1(4), V2(4);
-  for (std::size_t i = 0; i < 4; ++i)
-  {
-    V1[i] = geometry.point(vertices[i]);
-    V2[i] = geometry_q.point(vertices_q[i]);
-  }
+  std::vector<Point> V1 = {p0, p1, p2, p3};
+  std::vector<Point> V2 = {q0, q1, q2, q3};
 
   // Get the vectors between V2 and V1[0]
   std::vector<Point> P_V1(4);
