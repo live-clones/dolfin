@@ -326,8 +326,8 @@ CollisionDetection::collides_interval_interval(
 
     // FIXME: correctly implement numerical precision checks
     bool isected = min_isect[0] <= max_isect[0] + DOLFIN_EPS &&
-                   (!descending && min_isect[1] <= max_isect[1] + DOLFIN_EPS ||
-                    descending && min_isect[1] >= max_isect[1] - DOLFIN_EPS);
+      ((!descending && min_isect[1] <= max_isect[1] + DOLFIN_EPS) ||
+       (descending && min_isect[1] >= max_isect[1] - DOLFIN_EPS));
 
     intersect[0] = max_isect[0];
     intersect[1] = max_isect[1];
@@ -472,8 +472,9 @@ CollisionDetection::collides_tetrahedron_tetrahedron
     V2[i] = geometry_q.point(vertices_q[i]);
   }
 
-  collides_tetrahedron_tetrahedron(V1[0], V1[1], V1[2], V1[3],
-                                   V2[0], V2[1], V2[2], V2[3]);
+  return collides_tetrahedron_tetrahedron(V1[0], V1[1], V1[2], V1[3],
+                                          V2[0], V2[1], V2[2], V2[3]);
+
 }
 //-----------------------------------------------------------------------------
 bool CollisionDetection::collides_tetrahedron_tetrahedron(const Point& p0,
