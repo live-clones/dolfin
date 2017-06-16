@@ -871,6 +871,74 @@ void XDMFFile::add_points(MPI_Comm comm, pugi::xml_node& xdmf_node,
 }
 //----------------------------------------------------------------------------
 void XDMFFile::write(const std::vector<Point>& points,
+                     const std::vector<Point>& values,
+                     Encoding encoding)
+{
+  // Write clouds of points to XDMF/HDF5 with vector values
+  dolfin_assert(points.size() == values.size());
+
+  // Check that encoding is supported
+  check_encoding(encoding);
+
+  // Create pugi doc
+  _xml_doc->reset();
+
+  // Open a HDF5 file if using HDF5 encoding (truncate)
+  hid_t h5_id = -1;
+#ifdef HAS_HDF5
+  std::unique_ptr<HDF5File> h5_file;
+  if (encoding == Encoding::HDF5)
+  {
+    // Open file
+    h5_file.reset(new HDF5File(_mpi_comm, get_hdf5_filename(_filename), "w"));
+    dolfin_assert(h5_file);
+
+    // Get file handle
+    h5_id = h5_file->h5_id();
+  }
+#endif
+
+  // Add XDMF node and version attribute
+  _xml_doc->append_child(pugi::node_doctype)
+    .set_value("Xdmf SYSTEM \"Xdmf.dtd\" []");
+  pugi::xml_node xdmf_node = _xml_doc->append_child("Xdmf");
+  dolfin_assert(xdmf_node);
+
+  add_points(_mpi_comm, xdmf_node, h5_id, points);
+
+  // Add attribute node
+  pugi::xml_node domain_node = xdmf_node.child("Domain");
+  dolfin_assert(domain_node);
+  pugi::xml_node grid_node = domain_node.child("Grid");
+  dolfin_assert(grid_node);
+  pugi::xml_node attribute_node = grid_node.append_child("Attribute");
+  dolfin_assert(attribute_node);
+  attribute_node.append_attribute("Name") = "Vector values";
+  attribute_node.append_attribute("AttributeType") = "Vector";
+  attribute_node.append_attribute("Center") = "Node";
+
+  // Add attribute DataItem node and write data
+  std::int64_t num_values =  MPI::sum(_mpi_comm, values.size());
+
+  // Copy vector values to vector
+  std::vector<double> value_data;
+  value_data.reserve(values.size()*3);
+  for (auto &p : values)
+  {
+    value_data.push_back(p.x());
+    value_data.push_back(p.y());
+    value_data.push_back(p.z());
+  }
+
+  add_data_item(_mpi_comm, attribute_node, h5_id,
+                "/Points/values", value_data, {num_values, 3});
+
+  // Save XML file (on process 0 only)
+  if (MPI::rank(_mpi_comm) == 0)
+    _xml_doc->save_file(_filename.c_str(), "  ");
+}
+//-----------------------------------------------------------------------------
+void XDMFFile::write(const std::vector<Point>& points,
                      const std::vector<double>& values,
                      Encoding encoding)
 {
