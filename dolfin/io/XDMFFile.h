@@ -299,6 +299,20 @@ namespace dolfin
                const std::vector<double>& values,
                Encoding encoding=default_encoding);
 
+    /// Save a cloud of points, with vector values using an associated
+    /// HDF5 file, or storing the data inline as XML.
+    ///
+    /// @param   points (_std::vector<Point>_)
+    ///         A list of points to save.
+    /// @param    values (_std::vector<Point>_)
+    ///         A list of values at each point.
+    /// @param    encoding (_Encoding_)
+    ///         Encoding to use: HDF5 or ASCII
+    ///
+    void write(const std::vector<Point>& points,
+               const std::vector<Point>& values,
+               Encoding encoding=Encoding::HDF5);
+
     /// Read in the first Mesh in XDMF file
     ///
     /// @param mesh (_Mesh_)
