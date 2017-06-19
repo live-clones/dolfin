@@ -28,8 +28,9 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mesh, const Facet& facet, const Function& u)
+std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mesh, std::size_t facet_index, const Function& u)
 {
+  Facet facet(mesh, facet_index);
   Point X1 = Vertex(mesh, facet.entities(0)[0]).point();
   Point X2 = Vertex(mesh, facet.entities(0)[1]).point();
   Point X3 = Vertex(mesh, facet.entities(0)[2]).point();
@@ -69,7 +70,7 @@ bool GeometricContact::check_tet_set_collision(const std::vector<Point>& tet_set
 //-----------------------------------------------------------------------------
 std::map<std::size_t, std::vector<std::size_t>>
   GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function& u,
-  const std::vector<std::size_t>& master_ff, const std::vector<std::size_t>& slave_ff)
+  const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& slave_facets)
 {
   // Construct a dictionary mapping master facets to their collided slave counterparts.
 
@@ -78,24 +79,22 @@ std::map<std::size_t, std::vector<std::size_t>>
 
   // :param mesh: The mesh
   // :param u: The (3D) solution vector field
-  // :param master_ff: FacetFunctoin<bool> defined True if master facet
-  // :param slave_ff: FacetFunctoin<bool> defined True if slave
-  // :return: Dictionary mapping master facet index to slave facet index
+  // :param master_facets: list of master facet indices
+  // :param slave_facets: list of slave facet indices
+  // :return: mapping master facet index to slave facet indices
 
   std::map<std::size_t, std::vector<std::size_t>> master_to_slave;
 
   for (auto &mf : master_facets)
   {
-    master_tet_set = create_deformed_segment_volume_3d(mesh, mf, u);
-
+    std::vector<Point> master_tet_set = create_deformed_segment_volume_3d(mesh, mf, u);
     for (auto &sf : slave_facets)
     {
-      slave_tet_set = create_deformed_segment_volume_3d(mesh, sf, u);
-
+      std::vector<Point> slave_tet_set = create_deformed_segment_volume_3d(mesh, sf, u);
       if (check_tet_set_collision(master_tet_set, slave_tet_set))
         master_to_slave[mf].push_back(sf);
     }
+  }
 
   return master_to_slave;
-
 }
