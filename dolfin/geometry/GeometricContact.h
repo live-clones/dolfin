@@ -36,13 +36,28 @@ namespace dolfin
   class GeometricContact
   {
   public:
+    GeometricContact()
+    {
+      // Constructor
+    }
 
-    /// Return map from master facets to possible colliding slave facets
+    ~GeometricContact()
+    {
+      // Destructor
+    }
+
+    /// Calculate map from master facets to possible colliding slave facets
     /// (in serial)
-    static std::map<std::size_t, std::vector<std::size_t>>
+    void
       contact_surface_map_volume_sweep_3d(Mesh& mesh, Function& u,
                                           const std::vector<std::size_t>& master_facets,
                                           const std::vector<std::size_t>& slave_facets);
+
+    /// Get mapping
+    const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave()
+    {
+      return _master_to_slave;
+    }
 
   private:
 
@@ -52,6 +67,8 @@ namespace dolfin
 
     // Project surface forward from a facet using 'u', creating a prismoidal volume
     static std::vector<Point> create_deformed_segment_volume_3d(Mesh& mesh, std::size_t facet_index, const Function& u);
+
+    std::map<std::size_t, std::vector<std::size_t>> _master_to_slave;
 
   };
 

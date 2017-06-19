@@ -22,12 +22,16 @@
 #include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/Facet.h>
 #include <dolfin/mesh/Vertex.h>
-#include "Point.h"
+
+#include "BoundingBoxTree.h"
 #include "CollisionDetection.h"
+#include "Point.h"
 
 #include "GeometricContact.h"
 
 using namespace dolfin;
+
+//-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
 std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mesh, std::size_t facet_index, const Function& u)
@@ -69,8 +73,7 @@ bool GeometricContact::check_tet_set_collision(const Mesh& master_mesh, std::siz
   return false;
 }
 //-----------------------------------------------------------------------------
-std::map<std::size_t, std::vector<std::size_t>>
-  GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function& u,
+void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function& u,
                                                         const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& slave_facets)
 {
   // Construct a dictionary mapping master facets to their collided slave counterparts.
@@ -84,14 +87,14 @@ std::map<std::size_t, std::vector<std::size_t>>
   // :param slave_facets: list of slave facet indices
   // :return: mapping master facet index to slave facet indices
 
-  std::map<std::size_t, std::vector<std::size_t>> master_to_slave;
-
   // Local mesh of master 'prisms', three tetrahedra created per facet
-  Mesh master_mesh(MPI_COMM_SELF);
+  Mesh master_mesh(mesh.mpi_comm());
   MeshEditor master_ed;
   master_ed.open(master_mesh, mesh.topology().dim(), mesh.geometry().dim());
-  master_ed.init_vertices(master_facets.size()*6);
-  master_ed.init_cells(master_facets.size()*3);
+  std::size_t nc_local = master_facets.size()*3;
+  std::size_t nc_global = MPI::sum(mesh.mpi_comm(), nc_local);
+  master_ed.init_cells_global(nc_local, nc_global);
+  master_ed.init_vertices_global(nc_local*2, nc_global*2);
   int c = 0;
   int v = 0;
 
@@ -111,12 +114,16 @@ std::map<std::size_t, std::vector<std::size_t>>
   }
   master_ed.close();
 
+  auto master_bb = master_mesh.bounding_box_tree();
+
   // Local mesh of slave 'prisms', three tetrahedra created per facet
-  Mesh slave_mesh(MPI_COMM_SELF);
+  Mesh slave_mesh(mesh.mpi_comm());
   MeshEditor slave_ed;
   slave_ed.open(slave_mesh, mesh.topology().dim(), mesh.geometry().dim());
-  slave_ed.init_vertices(slave_facets.size()*6);
-  slave_ed.init_cells(slave_facets.size()*3);
+  nc_local = slave_facets.size()*3;
+  nc_global = MPI::sum(mesh.mpi_comm(), nc_local);
+  slave_ed.init_cells_global(nc_local, nc_global);
+  slave_ed.init_vertices_global(nc_local*2, nc_global*2);
   c = 0;
   v = 0;
   for (auto &sf : slave_facets)
@@ -131,7 +138,13 @@ std::map<std::size_t, std::vector<std::size_t>>
   }
   slave_ed.close();
 
-  // Check each master 'prism' against each slave 'prism'
+  auto slave_bb = slave_mesh.bounding_box_tree();
+
+  auto q = slave_bb->compute_collisions(*master_bb);
+
+  _master_to_slave.clear();
+
+  // Check each master 'prism' against each slave 'prism' in local meshes
   for (unsigned int i = 0; i < master_facets.size(); ++i)
     for (unsigned int j = 0; j < slave_facets.size(); ++j)
     {
@@ -139,11 +152,13 @@ std::map<std::size_t, std::vector<std::size_t>>
       std::size_t sf = slave_facets[j];
 
       if (check_tet_set_collision(master_mesh, i*3, slave_mesh, j*3))
-        master_to_slave[mf].push_back(sf);
+        _master_to_slave[mf].push_back(sf);
     }
 
+  // Find which master/slave BBs overlap
 
-  for (auto m : master_to_slave)
+  // debug output
+  for (auto m : _master_to_slave)
   {
     std::cout << m.first << ":";
     for (auto q : m.second)
@@ -151,5 +166,4 @@ std::map<std::size_t, std::vector<std::size_t>>
     std::cout << "\n";
   }
 
-   return master_to_slave;
 }
