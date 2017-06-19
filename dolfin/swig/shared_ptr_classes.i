@@ -108,6 +108,7 @@
 
 // geometry
 %shared_ptr(dolfin::BoundingBoxTree)
+%shared_ptr(dolfin::GeometricContact)
 
 // mesh
 %shared_ptr(dolfin::Hierarchical<dolfin::Mesh>)

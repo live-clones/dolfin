@@ -39,18 +39,19 @@ namespace dolfin
 
     /// Return map from master facets to possible colliding slave facets
     /// (in serial)
-    std::map<std::size_t, std::vector<std::size_t>>
+    static std::map<std::size_t, std::vector<std::size_t>>
       contact_surface_map_volume_sweep_3d(Mesh& mesh, Function& u,
-      const std::vector<std::size_t>& master_facets,
-      const std::vector<std::size_t>& slave_facets);
+                                          const std::vector<std::size_t>& master_facets,
+                                          const std::vector<std::size_t>& slave_facets);
 
   private:
 
     // Check whether two sets of tetrahedra collide
-    bool check_tet_set_collision(const std::vector<Point>& tet_set1, const std::vector<Point>& tet_set2);
+    static bool check_tet_set_collision(const Mesh& mmesh, std::size_t mi,
+                                 const Mesh& smesh, std::size_t si);
 
     // Project surface forward from a facet using 'u', creating a prismoidal volume
-    std::vector<Point> create_deformed_segment_volume_3d(Mesh& mesh, std::size_t facet_index, const Function& u);
+    static std::vector<Point> create_deformed_segment_volume_3d(Mesh& mesh, std::size_t facet_index, const Function& u);
 
   };
 

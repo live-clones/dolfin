@@ -9,5 +9,6 @@
 #include <dolfin/geometry/BoundingBoxTree3D.h>
 #include <dolfin/geometry/MeshPointIntersection.h>
 #include <dolfin/geometry/intersect.h>
+#include <dolfin/geometry/GeometricContact.h>
 
 #endif
