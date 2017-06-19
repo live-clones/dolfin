@@ -11,6 +11,7 @@ set(HEADERS
   MeshPointIntersection.h
   Point.h
   SimplexQuadrature.h
+  GeometricContact.h
   PARENT_SCOPE)
 
 set(SOURCES
@@ -22,4 +23,5 @@ set(SOURCES
   MeshPointIntersection.cpp
   Point.cpp
   SimplexQuadrature.cpp
+  GeometricContact.cpp
   PARENT_SCOPE)

@@ -1,5 +1,31 @@
+// Copyright (C) 2017 Nate Sime and Chris Richardson
+//
+// This file is part of DOLFIN.
+//
+// DOLFIN is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// DOLFIN is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
+//
+
+#include <dolfin/function/Function.h>
+#include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/Facet.h>
+#include <dolfin/mesh/Vertex.h>
+#include "Point.h"
+#include "CollisionDetection.h"
 
 #include "GeometricContact.h"
+
+using namespace dolfin;
 
 //-----------------------------------------------------------------------------
 std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mesh, const Facet& facet, const Function& u)
@@ -13,9 +39,9 @@ std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mes
 
 
   // Cast out prism defined by three tetrahedra from the master facet to its displaced configuration
-  return {{X1, X2, X3, x1},
-          {X2, X3, x1, x2},
-          {X3, x1, x2, x3}};
+  return {X1, X2, X3, x1,
+          X2, X3, x1, x2,
+          X3, x1, x2, x3};
 }
 //-----------------------------------------------------------------------------
 bool GeometricContact::check_tet_set_collision(const std::vector<Point>& tet_set1, const std::vector<Point>& tet_set2)
@@ -27,14 +53,14 @@ bool GeometricContact::check_tet_set_collision(const std::vector<Point>& tet_set
   for (unsigned int i = 0; i < ntets; ++i)
     for (unsigned int j = 0; i < ntets; ++i)
     {
-      if (CollisionDetection.collides_tetrahedron_tetrahedron(tet_set_1[i*4],
-                                                              tet_set_1[i*4+1],
-                                                              tet_set_1[i*4+2],
-                                                              tet_set_1[i*4+3],
-                                                              tet_set_2[j*4],
-                                                              tet_set_2[j*4+1],
-                                                              tet_set_2[j*4+2],
-                                                              tet_set_2[j*4+3]))
+      if (CollisionDetection::collides_tetrahedron_tetrahedron(tet_set1[i*4],
+                                                               tet_set1[i*4+1],
+                                                               tet_set1[i*4+2],
+                                                               tet_set1[i*4+3],
+                                                               tet_set2[j*4],
+                                                               tet_set2[j*4+1],
+                                                               tet_set2[j*4+2],
+                                                               tet_set2[j*4+3]))
         return true;
     }
 
