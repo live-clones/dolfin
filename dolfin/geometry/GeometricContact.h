@@ -41,7 +41,8 @@ namespace dolfin
     /// (in serial)
     std::map<std::size_t, std::vector<std::size_t>>
       contact_surface_map_volume_sweep_3d(Mesh& mesh, Function& u,
-      const std::vector<std::size_t>& master_ff, const std::vector<std::size_t>& slave_ff);
+      const std::vector<std::size_t>& master_facets,
+      const std::vector<std::size_t>& slave_facets);
 
   private:
 
@@ -49,7 +50,7 @@ namespace dolfin
     bool check_tet_set_collision(const std::vector<Point>& tet_set1, const std::vector<Point>& tet_set2);
 
     // Project surface forward from a facet using 'u', creating a prismoidal volume
-    std::vector<Point> create_deformed_segment_volume_3d(Mesh& mesh, const Facet& facet, const Function& u);
+    std::vector<Point> create_deformed_segment_volume_3d(Mesh& mesh, std::size_t facet_index, const Function& u);
 
   };
 

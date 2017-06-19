@@ -145,6 +145,18 @@ namespace dolfin
     static bool collides_tetrahedron_tetrahedron(const MeshEntity& tetrahedron_0,
                                                  const MeshEntity& tetrahedron_1);
 
+    /// Check whether tetrahedra defined by points (p0,p1,p2,p3) and (q0,q1,q2,q3)
+    /// intersect
+    ///
+    static bool collides_tetrahedron_tetrahedron(const Point& p0,
+                                                 const Point& p1,
+                                                 const Point& p2,
+                                                 const Point& p3,
+                                                 const Point& q0,
+                                                 const Point& q1,
+                                                 const Point& q2,
+                                                 const Point& q3);
+
     /// Check whether edge a-b collides with edge c-d.
     static bool collides_edge_edge(const Point& a, const Point& b,
 				   const Point& c, const Point& d);
