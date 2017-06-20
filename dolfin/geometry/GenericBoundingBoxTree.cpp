@@ -241,6 +241,19 @@ GenericBoundingBoxTree::compute_process_collisions(const Point& point) const
 }
 //-----------------------------------------------------------------------------
 std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
+GenericBoundingBoxTree::compute_process_collisions(const GenericBoundingBoxTree& tree) const
+{
+  if (!_global_tree)
+  {
+    dolfin_error("GenericBoundingBoxTree.cpp",
+                 "calculate interprocess collisions in serial",
+                 "This function only works in parallel");
+  }
+
+  return _global_tree->compute_collisions(*(tree._global_tree));
+}
+//-----------------------------------------------------------------------------
+std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
 GenericBoundingBoxTree::compute_entity_collisions(
   const GenericBoundingBoxTree& tree,
   const Mesh& mesh_A,

@@ -164,7 +164,15 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
         _master_to_slave[mf].push_back(sf);
     }
 
-  // Find which master/slave BBs overlap
+  // Find which master/slave BBs overlap in parallel
+  if (MPI::size(mesh.mpi_comm()) > 1)
+  {
+    auto overlap = master_bb->compute_process_collisions(*slave_bb);
+
+    // TODO: send any potential 'slave' entities to possible 'masters' for checking.
+
+
+  }
 
   // debug output
   for (auto m : _master_to_slave)
