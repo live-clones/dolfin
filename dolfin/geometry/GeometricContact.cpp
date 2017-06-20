@@ -146,6 +146,18 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   }
   slave_ed.close();
 
+  if (slave_mesh.num_cells() > 0)
+  {
+    double ymin=1000.0, ymax = -1000.0;
+    for (VertexIterator v(slave_mesh); !v.end(); ++v)
+    {
+      ymin = std::min(v->point().y(), ymin);
+      ymax = std::max(v->point().y(), ymax);
+    }
+
+    std::cout << "ymin(slave) = " << ymin << "ymax(slave) = " << ymax << " " << MPI::rank(mesh.mpi_comm()) << "\n";
+  }
+
   std::cout << "sm.num_cells() = " << slave_mesh.num_cells() << "\n";
 
   auto slave_bb = slave_mesh.bounding_box_tree();
@@ -170,7 +182,6 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
     auto overlap = master_bb->compute_process_collisions(*slave_bb);
 
     // TODO: send any potential 'slave' entities to possible 'masters' for checking.
-
 
   }
 

@@ -125,29 +125,19 @@ void GenericBoundingBoxTree::build(const Mesh& mesh, std::size_t tdim)
     MPI::all_gather(mesh.mpi_comm(), send_bbox, recv_bbox);
 
     std::vector<unsigned int> global_leaves;
-    std::vector<double> leaf_coordinates;
     for (std::size_t i = 0; i != mpi_size; ++i)
     {
-      bool valid = false;
       // Check if we received all zeros (no bbox on process)
       for (std::size_t j = i*_gdim*2; j < (i+1)*_gdim*2; ++j)
         if (recv_bbox[j] != 0.0)
         {
-          valid = true;
+          global_leaves.push_back(i);
           break;
         }
-
-      if (valid)
-      {
-        global_leaves.push_back(i);
-        leaf_coordinates.insert(leaf_coordinates.end(),
-                                recv_bbox.begin() + i*_gdim*2,
-                                recv_bbox.begin() + (i+1)*_gdim*2);
-      }
     }
 
     _global_tree = create(_gdim);
-    _global_tree->_build(leaf_coordinates,
+    _global_tree->_build(recv_bbox,
                          global_leaves.begin(), global_leaves.end(), _gdim);
 
     info("Computed global bounding box tree with %d boxes.",
