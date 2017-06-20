@@ -135,15 +135,7 @@ BoundingBoxTree::compute_process_collisions(const BoundingBoxTree& tree) const
 {
   _check_built();
 
-  auto result = _tree->compute_process_collisions(*(tree._tree));
-
-  // Debug output
-  auto a = result.first;
-  auto b = result.second;
-  for (unsigned int i = 0; i < a.size(); ++i)
-    std::cout << a[i] << " -> " << b[i] << "\n";
-
-  return result;
+  return _tree->compute_process_collisions(*(tree._tree));
 }
 //-----------------------------------------------------------------------------
 std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
