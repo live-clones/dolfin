@@ -84,16 +84,19 @@ void GenericBoundingBoxTree::build(const Mesh& mesh, std::size_t tdim)
   // Store topological dimension (only used for checking that entity
   // collisions can only be computed with cells)
   _tdim = tdim;
+  const std::size_t _gdim = gdim();
 
   // Initialize entities of given dimension if they don't exist
   mesh.init(tdim);
 
   // Create bounding boxes for all entities (leaves)
-  const std::size_t _gdim = gdim();
   const unsigned int num_leaves = mesh.num_entities(tdim);
   std::vector<double> leaf_bboxes(2*_gdim*num_leaves);
-  for (MeshEntityIterator it(mesh, tdim); !it.end(); ++it)
-    compute_bbox_of_entity(leaf_bboxes.data() + 2*_gdim*it->index(), *it, _gdim);
+  for (unsigned int i = 0; i < num_leaves; ++i)
+  {
+    MeshEntity e(mesh, tdim, i);
+    compute_bbox_of_entity(leaf_bboxes.data() + 2*_gdim*i, e, _gdim);
+  }
 
   // Create leaf partition (to be sorted)
   std::vector<unsigned int> leaf_partition(num_leaves);
@@ -110,24 +113,49 @@ void GenericBoundingBoxTree::build(const Mesh& mesh, std::size_t tdim)
   const std::size_t mpi_size = MPI::size(mesh.mpi_comm());
   if (mpi_size > 1)
   {
+    // Copy the root box of this process (if any)
+    std::vector<double> send_bbox(_gdim*2, 0.0);
+    if (num_leaves > 0)
+      std::copy(_bbox_coordinates.end() - _gdim*2,
+                _bbox_coordinates.end(),
+                send_bbox.begin());
+
     // Send root node coordinates to all processes
-    std::vector<double> send_bbox(_bbox_coordinates.end() - _gdim*2,
-                                  _bbox_coordinates.end());
     std::vector<double> recv_bbox;
     MPI::all_gather(mesh.mpi_comm(), send_bbox, recv_bbox);
-    std::vector<unsigned int> global_leaves(mpi_size);
+
+    std::vector<unsigned int> global_leaves;
+    std::vector<double> leaf_coordinates;
     for (std::size_t i = 0; i != mpi_size; ++i)
-      global_leaves[i] = i;
+    {
+      bool valid = false;
+      // Check if we received all zeros (no bbox on process)
+      for (std::size_t j = i*_gdim*2; j < (i+1)*_gdim*2; ++j)
+        if (recv_bbox[j] != 0.0)
+        {
+          valid = true;
+          break;
+        }
+
+      if (valid)
+      {
+        global_leaves.push_back(i);
+        leaf_coordinates.insert(leaf_coordinates.end(),
+                                recv_bbox.begin() + i*_gdim*2,
+                                recv_bbox.begin() + (i+1)*_gdim*2);
+      }
+    }
 
     _global_tree = create(_gdim);
-    _global_tree->_build(recv_bbox,
+    _global_tree->_build(leaf_coordinates,
                          global_leaves.begin(), global_leaves.end(), _gdim);
 
     info("Computed global bounding box tree with %d boxes.",
          _global_tree->num_bboxes());
+
     // Print on rank 0
-    //    if(MPI::rank(mesh.mpi_comm()) == 0)
-    //      std::cout << _global_tree->str() << "\n";
+    if(MPI::rank(mesh.mpi_comm()) == 0)
+      std::cout << _global_tree->str() << "\n";
 
   }
 }
@@ -333,6 +361,9 @@ GenericBoundingBoxTree::_build(const std::vector<double>& leaf_bboxes,
                                const std::vector<unsigned int>::iterator& end,
                                std::size_t gdim)
 {
+  if (begin == end)
+    return 0;
+
   dolfin_assert(begin < end);
 
   // Create empty bounding box data
