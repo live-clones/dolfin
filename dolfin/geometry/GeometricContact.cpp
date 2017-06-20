@@ -87,6 +87,12 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   // :param slave_facets: list of slave facet indices
   // :return: mapping master facet index to slave facet indices
 
+  // Ensure bbt built
+  auto mesh_bb = mesh.bounding_box_tree();
+  // fixme
+  u.set_allow_extrapolation(true);
+
+
   // Local mesh of master 'prisms', three tetrahedra created per facet
   Mesh master_mesh(mesh.mpi_comm());
   MeshEditor master_ed;
@@ -102,8 +108,6 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
 
   for (auto &mf : master_facets)
   {
-    std::cout << "c = " << c << "\n";
-
     std::vector<Point> master_tet_set = create_deformed_segment_volume_3d(mesh, mf, u);
     for (int i = 0; i < 3; ++i)
       master_ed.add_cell(c+i, v+i, v+i+1, v+i+2, v+i+3);
@@ -114,7 +118,11 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   }
   master_ed.close();
 
+  std::cout << "mm.num_cells() = " << master_mesh.num_cells() << "\n";
+
   auto master_bb = master_mesh.bounding_box_tree();
+
+  std::cout << "master bb = " << master_bb << "\n";
 
   // Local mesh of slave 'prisms', three tetrahedra created per facet
   Mesh slave_mesh(mesh.mpi_comm());
@@ -138,9 +146,10 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   }
   slave_ed.close();
 
-  auto slave_bb = slave_mesh.bounding_box_tree();
+  std::cout << "sm.num_cells() = " << slave_mesh.num_cells() << "\n";
 
-  auto q = slave_bb->compute_collisions(*master_bb);
+  auto slave_bb = slave_mesh.bounding_box_tree();
+  std::cout << "slave bb = " << slave_bb << "\n";
 
   _master_to_slave.clear();
 
