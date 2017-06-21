@@ -135,7 +135,16 @@ BoundingBoxTree::compute_process_collisions(const BoundingBoxTree& tree) const
 {
   _check_built();
 
-  return _tree->compute_process_collisions(*(tree._tree));
+  return _tree->global_tree()->compute_collisions(*(tree._tree->global_tree()));
+}
+//-----------------------------------------------------------------------------
+std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
+BoundingBoxTree::compute_process_entity_collisions(const BoundingBoxTree& tree) const
+{
+  _check_built();
+
+  // Get collisions of entities in tree with processes in this->_tree
+  return _tree->global_tree()->compute_collisions(*(tree._tree));
 }
 //-----------------------------------------------------------------------------
 std::pair<std::vector<unsigned int>, std::vector<unsigned int>>

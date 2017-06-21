@@ -97,6 +97,10 @@ namespace dolfin
     /// Compute closest point and distance to _Point_
     std::pair<unsigned int, double> compute_closest_point(const Point& point) const;
 
+    /// Global tree for mesh ownership of each process (same on all processes)
+    std::shared_ptr<const GenericBoundingBoxTree> global_tree()
+    { return _global_tree; }
+
     /// Print out for debugging
     std::string str(bool verbose=false);
 

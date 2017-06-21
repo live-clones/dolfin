@@ -231,19 +231,6 @@ GenericBoundingBoxTree::compute_process_collisions(const Point& point) const
 }
 //-----------------------------------------------------------------------------
 std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
-GenericBoundingBoxTree::compute_process_collisions(const GenericBoundingBoxTree& tree) const
-{
-  if (!_global_tree)
-  {
-    dolfin_error("GenericBoundingBoxTree.cpp",
-                 "calculate interprocess collisions in serial",
-                 "This function only works in parallel");
-  }
-
-  return _global_tree->compute_collisions(*(tree._global_tree));
-}
-//-----------------------------------------------------------------------------
-std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
 GenericBoundingBoxTree::compute_entity_collisions(
   const GenericBoundingBoxTree& tree,
   const Mesh& mesh_A,
@@ -442,13 +429,13 @@ GenericBoundingBoxTree::_build(const std::vector<Point>& points,
 //-----------------------------------------------------------------------------
 void
 GenericBoundingBoxTree::_compute_collisions(const GenericBoundingBoxTree& tree,
-                                            const Point& point,
-                                            unsigned int node,
-                                            std::vector<unsigned int>& entities,
-                                            const Mesh* mesh)
+                                           const Point& point,
+                                           unsigned int node,
+                                           std::vector<unsigned int>& entities,
+                                           const Mesh* mesh)
 {
   // Get bounding box for current node
-  const BBox& bbox = tree.get_bbox(node);
+  const BBox& bbox = tree._bboxes[node];
 
   // If point is not in bounding box, then don't search further
   if (!tree.point_in_bbox(point.coordinates(), node))
@@ -493,8 +480,8 @@ GenericBoundingBoxTree::_compute_collisions(const GenericBoundingBoxTree& A,
                                             const Mesh* mesh_B)
 {
   // Get bounding boxes for current nodes
-  const BBox& bbox_A = A.get_bbox(node_A);
-  const BBox& bbox_B = B.get_bbox(node_B);
+  const BBox& bbox_A = A._bboxes[node_A];
+  const BBox& bbox_B = B._bboxes[node_B];
 
   // If bounding boxes don't collide, then don't search further
   if (!B.bbox_in_bbox(A.get_bbox_coordinates(node_A), node_B))
@@ -582,7 +569,7 @@ GenericBoundingBoxTree::_compute_first_collision(const GenericBoundingBoxTree& t
   unsigned int not_found = std::numeric_limits<unsigned int>::max();
 
   // Get bounding box for current node
-  const BBox& bbox = tree.get_bbox(node);
+  const BBox& bbox = tree._bboxes[node];
 
   // If point is not in bounding box, then don't search further
   if (!tree.point_in_bbox(point.coordinates(), node))
@@ -619,7 +606,7 @@ GenericBoundingBoxTree::_compute_first_entity_collision(const GenericBoundingBox
   unsigned int not_found = std::numeric_limits<unsigned int>::max();
 
   // Get bounding box for current node
-  const BBox& bbox = tree.get_bbox(node);
+  const BBox& bbox = tree._bboxes[node];
 
   // If point is not in bounding box, then don't search further
   if (!tree.point_in_bbox(point.coordinates(), node))
@@ -669,7 +656,7 @@ GenericBoundingBoxTree::_compute_closest_entity(const GenericBoundingBoxTree& tr
                                                 double& R2)
 {
   // Get bounding box for current node
-  const BBox& bbox = tree.get_bbox(node);
+  const BBox& bbox = tree._bboxes[node];
 
   // If bounding box is outside radius, then don't search further
   const double r2 = tree.compute_squared_distance_bbox(point.coordinates(), node);
@@ -709,7 +696,7 @@ GenericBoundingBoxTree::_compute_closest_point(const GenericBoundingBoxTree& tre
                                                double& R2)
 {
   // Get bounding box for current node
-  const BBox& bbox = tree.get_bbox(node);
+  const BBox& bbox = tree._bboxes[node];
 
   // If box is leaf, then compute distance and shrink radius
   if (tree.is_leaf(bbox, node))
