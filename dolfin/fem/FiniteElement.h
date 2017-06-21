@@ -18,6 +18,7 @@
 #ifndef __FINITE_ELEMENT_H
 #define __FINITE_ELEMENT_H
 
+#include <cmath>
 #include <memory>
 #include <vector>
 #include <ufc.h>
@@ -100,6 +101,163 @@ namespace dolfin
       return _ufc_element->value_dimension(i);
     }
 
+    /// Evaluate basis functions on reference element
+    ///
+    /// @param[in,out] values (boost::multi_array<double, 3>)
+    ///         The basis function values at the points. Shape is
+    ///         [num_points][num_dofs][reference_value_size]. Will be
+    ///         resized, if required.
+    /// @param[in]    X (boost::multi_array<double, 2>&)
+    ///         Points on the reference cell at which basis functions are
+    ///         evaluated. Shape is [num_points][topological dim]
+    void evaluate_reference_basis(boost::multi_array<double, 3>& values,
+                                  const boost::multi_array<double, 2>& X) const
+    {
+      dolfin_assert(_ufc_element);
+
+      // Check element topological dimension is consistent with point
+      // type
+      assert(X.shape()[1] == _ufc_element->topological_dimension());
+
+      // Get number of points
+      const std::size_t num_points = X.shape()[0];
+
+      // Resize values
+      std::size_t space_dim = _ufc_element->space_dimension();
+      std::size_t reference_value_size = _ufc_element->reference_value_size();
+      values.resize(boost::extents[num_points][space_dim][reference_value_size]);
+
+      // Tabulate
+      _ufc_element->evaluate_reference_basis(values.data(), num_points, X.data());
+    }
+
+    /// Evaluate basis functions on reference element
+    ///
+    /// @param[in,out] values (boost::multi_array<double, 4>&)
+    ///         The basis function values at the points. Shape is
+    ///         [num_points][num_dofs][num_derivs][reference_value_size]. Will
+    ///         be resized, if required.
+    /// @param[in]    order (std::size_t)
+    ///         Derivative order
+    /// @param[in]    X (boost::multi_array<double, 2>&)
+    ///         Points on the reference cell at which basis functions are
+    ///         evaluated. Shape is [num_points][topological dim]
+    void evaluate_reference_basis_derivatives(boost::multi_array<double, 4>& values,
+                                              std::size_t order,
+                                              const boost::multi_array<double, 2>& X) const
+    {
+      dolfin_assert(_ufc_element);
+
+      // Check element topological dimension is consistent with point
+      // type
+      std::size_t tdim = _ufc_element->topological_dimension();
+      assert(X.shape()[1] == tdim);
+
+      // Get number of points
+      const std::size_t num_points = X.shape()[0];
+
+      // Number of derivatives
+      const std::size_t num_derivs = std::pow(tdim, order);
+
+      // Resize values
+      std::size_t space_dim = _ufc_element->space_dimension();
+      std::size_t reference_value_size = _ufc_element->reference_value_size();
+      values.resize(boost::extents[num_points][space_dim][num_derivs][reference_value_size]);
+
+      // Tabulate
+      _ufc_element->evaluate_reference_basis_derivatives(values.data(), order,
+                                                         num_points, X.data());
+    }
+
+
+    /// Transform basis functions (derivatives) on reference element
+    /// to physical space (push forward). Use degree 0 for Piola
+    /// transformations for bases.
+    ///
+    /// @param[in,out] values (boost::multi_array<double, 4>)
+    ///         The transformed values. Shape is
+    ///         [num_points][num_dofs][num_derivs][value_size]. Will
+    ///         be resized, if required.
+    /// @param[in]    order (std::size_t)
+    ///         Derivative order
+    /// @param[in] reference_values (boost::multi_array<double, 4>)
+    ///         Values on the reference element. Shape is
+    ///         [num_points][num_dofs][num_derivs][reference_value_size]. Will
+    /// @param[in]    X (boost::multi_array<double, 2>&)
+    ///         Points on the reference cell at which basis functions are
+    ///         evaluated. Shape is [num_points][topological dim]
+    /// @param[in]    J (boost::multi_array<double, 3>&)
+    ///         Jacobian of the transformation, dx/dX.
+    ///         Shape is [num_points][geometric dim][topological dim]
+    /// @param[in]    detJ (boost::multi_array<double, 1>&)
+    ///         Determinant of the Jacobian. Shape is [num_points].
+    /// @param[in]    K (boost::multi_array<double, 3>&)
+    ///         (Pseudo)-Inverse of the Jacobian
+    ///         Shape is [num_points][topological dim][geometric dim]
+    /// @param[in]    cell_orientation (unsigned int)
+    ///         Orientation of the cell, 1 means flipped w.r.t. reference cell.
+    ///         Only relevant on manifolds (tdim < gdim).
+    void transform_reference_basis_derivatives(boost::multi_array<double, 4>& values,
+                                               std::size_t order,
+                                               const boost::multi_array<double, 4>& reference_values,
+                                               const boost::multi_array<double, 2>& X,
+                                               const boost::multi_array<double, 3>& J,
+                                               const boost::multi_array<double, 1>& detJ,
+                                               const boost::multi_array<double, 3>& K,
+                                               int cell_orientation)
+    {
+      dolfin_assert(_ufc_element);
+
+      const std::size_t tdim = _ufc_element->topological_dimension();
+      const std::size_t gdim = _ufc_element->geometric_dimension();
+      const std::size_t space_dim = _ufc_element->space_dimension();
+      const std::size_t value_size = _ufc_element->value_size();
+      const std::size_t ref_value_size = _ufc_element->reference_value_size();
+
+      // Number of derivatives
+      const std::size_t num_derivs = std::pow(tdim, order);
+
+      // Number of points
+      const std::size_t num_points = X.shape()[0];
+
+      // Check dimesions
+      dolfin_assert(values.shape()[0] == num_points);
+      dolfin_assert(values.shape()[1] == space_dim);
+      dolfin_assert(values.shape()[2] == num_derivs);  // FIXME: check if to should be gdim**order or tdim**order
+      dolfin_assert(values.shape()[3] == value_size);
+
+      dolfin_assert(reference_values.shape()[0] == num_points);
+      dolfin_assert(reference_values.shape()[1] == space_dim);
+      dolfin_assert(reference_values.shape()[2] == num_derivs);
+      dolfin_assert(reference_values.shape()[3] == ref_value_size);
+
+      dolfin_assert(X.shape()[1] == tdim);
+
+      dolfin_assert(J.shape()[0] == num_points);
+      dolfin_assert(J.shape()[1] == gdim);
+      dolfin_assert(J.shape()[2] == tdim);
+
+      dolfin_assert(detJ.shape()[0] == num_points);
+
+      dolfin_assert(K.shape()[0] == num_points);
+      dolfin_assert(K.shape()[1] == tdim);
+      dolfin_assert(K.shape()[2] == gdim);
+
+      // Resize values array
+      values.resize(boost::extents[num_points][space_dim][num_derivs][value_size]);
+
+      // Transform data
+      _ufc_element->transform_reference_basis_derivatives(values.data(),
+                                                          order,
+                                                          num_points,
+                                                          reference_values.data(),
+                                                          X.data(),
+                                                          J.data(),
+                                                          detJ.data(),
+                                                          K.data(),
+                                                          cell_orientation);
+    }
+
     /// Evaluate basis function i at given point in cell
     void evaluate_basis(std::size_t i, double* values, const double* x,
                         const double* coordinate_dofs,
@@ -121,7 +279,9 @@ namespace dolfin
                                        cell_orientation);
     }
 
-    /// Evaluate order n derivatives of basis function i at given point in cell
+    // DEPRECATED
+    /// Evaluate order n derivatives of basis function i at given
+    /// point in cell
     void evaluate_basis_derivatives(unsigned int i,
                                     unsigned int n,
                                     double* values,
@@ -135,6 +295,7 @@ namespace dolfin
                                                cell_orientation);
     }
 
+    // DEPRECATED
     /// Evaluate order n derivatives of all basis functions at given
     /// point in cell
     void evaluate_basis_derivatives_all(unsigned int n,
