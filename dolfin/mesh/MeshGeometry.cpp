@@ -51,8 +51,8 @@ const MeshGeometry& MeshGeometry::operator= (const MeshGeometry& geometry)
   init(geometry._dim, geometry._degree);
 
   // Copy remaining data
-  coordinates = geometry.coordinates;
-  entity_offsets = geometry.entity_offsets;
+  _coordinates = geometry._coordinates;
+  _entity_offsets = geometry._entity_offsets;
 
   return *this;
 }
@@ -99,30 +99,29 @@ void MeshGeometry::init_entities(const std::vector<std::size_t>& num_entities)
 
   // Calculate offset into coordinates for each block of points
   std::size_t offset = 0;
-  entity_offsets.resize(num_entities.size());
+  _entity_offsets.resize(num_entities.size());
   for (std::size_t i = 0; i != num_entities.size(); ++i)
   {
-    entity_offsets[i].clear();
+    _entity_offsets[i].clear();
     for (std::size_t j = 0; j != num_entity_coordinates(i); ++j)
     {
-      entity_offsets[i].push_back(offset);
+      _entity_offsets[i].push_back(offset);
       offset += num_entities[i];
     }
   }
-  coordinates.resize(_dim*offset);
+  _coordinates.resize(_dim*offset);
 }
 //-----------------------------------------------------------------------------
-void MeshGeometry::set(std::size_t local_index,
-                       const double* x)
+void MeshGeometry::set(std::size_t local_index, const double* x)
 {
-  std::copy(x, x +_dim, coordinates.begin() + local_index*_dim);
+  std::copy(x, x +_dim, _coordinates.begin() + local_index*_dim);
 }
 //-----------------------------------------------------------------------------
 std::size_t MeshGeometry::hash() const
 {
   // Compute local hash
   boost::hash<std::vector<double>> dhash;
-  const std::size_t local_hash = dhash(coordinates);
+  const std::size_t local_hash = dhash(_coordinates);
   return local_hash;
 }
 //-----------------------------------------------------------------------------

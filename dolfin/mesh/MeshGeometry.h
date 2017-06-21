@@ -28,14 +28,20 @@
 #include <dolfin/geometry/Point.h>
 #include <dolfin/log/log.h>
 
+namespace ufc
+{
+  class coordinate_mapping;
+}
+
 namespace dolfin
 {
   class Function;
 
   /// MeshGeometry stores the geometry imposed on a mesh.
 
-  /// Currently, the geometry is represented by the set of coordinates for the
-  /// vertices of a mesh, but other representations are possible.
+  /// Currently, the geometry is represented by the set of coordinates
+  /// for the vertices of a mesh, but other representations are
+  /// possible.
   class MeshGeometry
   {
   public:
@@ -63,60 +69,60 @@ namespace dolfin
     /// Return the number of vertex coordinates
     std::size_t num_vertices() const
     {
-      dolfin_assert(coordinates.size() % _dim == 0);
+      dolfin_assert(_coordinates.size() % _dim == 0);
       if (_degree > 1)
       {
-        dolfin_assert(entity_offsets.size() > 1);
-        dolfin_assert(entity_offsets[1].size() > 0);
-        return entity_offsets[1][0];
+        dolfin_assert(_entity_offsets.size() > 1);
+        dolfin_assert(_entity_offsets[1].size() > 0);
+        return _entity_offsets[1][0];
       }
-      return coordinates.size()/_dim;
+      return _coordinates.size()/_dim;
     }
 
     /// Return the total number of points in the geometry, located on
     /// any entity
     std::size_t num_points() const
     {
-      dolfin_assert(coordinates.size() % _dim == 0);
-      return coordinates.size()/_dim;
+      dolfin_assert(_coordinates.size() % _dim == 0);
+      return _coordinates.size()/_dim;
     }
 
     /// Get vertex coordinates
     const double* vertex_coordinates(std::size_t point_index)
     {
       dolfin_assert(point_index < num_vertices());
-      return &coordinates[point_index*_dim];
+      return &_coordinates[point_index*_dim];
     }
 
     /// Get vertex coordinates
     const double* point_coordinates(std::size_t point_index)
     {
-      dolfin_assert(point_index*_dim < coordinates.size());
-      return &coordinates[point_index*_dim];
+      dolfin_assert(point_index*_dim < _coordinates.size());
+      return &_coordinates[point_index*_dim];
     }
 
     /// Return value of coordinate with local index n in direction i
     double x(std::size_t n, std::size_t i) const
     {
-      dolfin_assert((n*_dim + i) < coordinates.size());
+      dolfin_assert((n*_dim + i) < _coordinates.size());
       dolfin_assert(i < _dim);
-      return coordinates[n*_dim + i];
+      return _coordinates[n*_dim + i];
     }
 
     /// Return array of values for coordinate with local index n
     const double* x(std::size_t n) const
     {
-      dolfin_assert(n*_dim < coordinates.size());
-      return &coordinates[n*_dim];
+      dolfin_assert(n*_dim < _coordinates.size());
+      return &_coordinates[n*_dim];
     }
 
     /// Return array of values for all coordinates
     std::vector<double>& x()
-    { return coordinates; }
+    { return _coordinates; }
 
     /// Return array of values for all coordinates
     const std::vector<double>& x() const
-    { return coordinates; }
+    { return _coordinates; }
 
     /// Return coordinate with local index n as a 3D point value
     Point point(std::size_t n) const;
@@ -153,10 +159,10 @@ namespace dolfin
     std::size_t get_entity_index(std::size_t entity_dim, std::size_t order,
                                  std::size_t index) const
     {
-      dolfin_assert(entity_dim < entity_offsets.size());
-      dolfin_assert(order < entity_offsets[entity_dim].size());
-      const std::size_t idx = (entity_offsets[entity_dim][order] + index);
-      dolfin_assert(idx*_dim < coordinates.size());
+      dolfin_assert(entity_dim < _entity_offsets.size());
+      dolfin_assert(order < _entity_offsets[entity_dim].size());
+      const std::size_t idx = (_entity_offsets[entity_dim][order] + index);
+      dolfin_assert(idx*_dim < _coordinates.size());
       return idx;
     }
 
@@ -174,6 +180,22 @@ namespace dolfin
     /// Return informal string representation (pretty-print)
     std::string str(bool verbose) const;
 
+    // NOTE: experimental and likely to change
+    /// Set coordinate mapping for mesh
+    void
+      set_coordinate_mapping(std::shared_ptr<const ufc::coordinate_mapping> map)
+    {
+      _coordinate_mapping = map;
+    }
+
+    // NOTE: experimental and likely to change
+    /// Return coordinate mapping (may be null)
+    std::shared_ptr<const ufc::coordinate_mapping>
+      get_coordinate_mapping() const
+    {
+      return _coordinate_mapping;
+    }
+
   private:
 
     // Euclidean dimension
@@ -183,10 +205,13 @@ namespace dolfin
     std::size_t _degree;
 
     // Offsets to storage for coordinate points for each entity type
-    std::vector<std::vector<std::size_t>> entity_offsets;
+    std::vector<std::vector<std::size_t>> _entity_offsets;
 
     // Coordinates for all points stored as a contiguous array
-    std::vector<double> coordinates;
+    std::vector<double> _coordinates;
+
+    // Coordinate mapping
+    std::shared_ptr<const ufc::coordinate_mapping> _coordinate_mapping;
 
   };
 
