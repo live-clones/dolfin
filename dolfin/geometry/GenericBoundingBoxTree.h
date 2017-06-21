@@ -73,11 +73,6 @@ namespace dolfin
     std::vector<unsigned int>
     compute_process_collisions(const Point& point) const;
 
-    /// Interprocess box collision
-    std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
-    compute_process_collisions(const GenericBoundingBoxTree& tree) const;
-
-
     /// Compute all collisions between entities and _BoundingBoxTree_
     std::pair<std::vector<unsigned int>, std::vector<unsigned int> >
     compute_entity_collisions(const GenericBoundingBoxTree& tree,
