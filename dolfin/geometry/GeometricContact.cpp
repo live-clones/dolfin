@@ -167,23 +167,26 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   // Find which master/slave BBs overlap in parallel
   if (MPI::size(mesh.mpi_comm()) > 1)
   {
-    std::size_t mpi_rank = MPI::rank(mesh.mpi_comm());
+    // std::size_t mpi_rank = MPI::rank(mesh.mpi_comm());
 
-    auto overlap = master_bb->compute_process_collisions(*slave_bb);
+    // Find which master processes collide with which local slave cells
+    auto overlap = master_bb->compute_process_entity_collisions(*slave_bb);
 
     // TODO: send any potential 'slave' entities to possible 'masters' for checking.
     auto master_procs = overlap.first;
-    auto slave_procs = overlap.second;
+    auto slave_cells = overlap.second;
 
-    for (unsigned i = 0; i != master_procs.size(); ++i)
+    for (unsigned int i = 0; i < master_procs.size(); ++i)
     {
-      if (slave_procs[i] == mpi_rank)
-      {
-        // Get BB of master_procs[i] and compare against all local prisms
-      }
+      std::cout << slave_cells[i] << " -> [" << master_procs[i] << "]\n";
     }
+    std::cout << "\n";
 
 
+    // slave facet indices to send
+    //    std::vector<std::vector<std::size_t>> send_facets;
+    // send coordinates of prism (18 doubles in 3D)
+    //    std::vector<std::vector<std::size_t>> send_coordinates;
 
   }
 

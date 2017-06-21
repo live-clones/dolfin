@@ -148,6 +148,10 @@ namespace dolfin
     std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
     compute_process_collisions(const BoundingBoxTree& tree) const;
 
+    /// Compute collisions of entities in tree with processes in this tree
+    std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
+    compute_process_entity_collisions(const BoundingBoxTree& tree) const;
+
     /// Compute all collisions between entities and _BoundingBoxTree_.
     ///
     /// *Returns*
