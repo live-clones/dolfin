@@ -153,7 +153,12 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
 
   _master_to_slave.clear();
 
-  // Check each master 'prism' against each slave 'prism' in local meshes
+  std::size_t mpi_rank = MPI::rank(mesh.mpi_comm());
+  std::size_t mpi_size = MPI::size(mesh.mpi_comm());
+
+  // Check each master 'prism' against each slave 'prism'
+  // Map is stored as local_master_facet -> [mpi_rank, local_index, mpi_rank, local_index ...]
+  // First check locally
   for (unsigned int i = 0; i < master_facets.size(); ++i)
     for (unsigned int j = 0; j < slave_facets.size(); ++j)
     {
@@ -161,32 +166,79 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
       std::size_t sf = slave_facets[j];
 
       if (check_tet_set_collision(master_mesh, i*3, slave_mesh, j*3))
+      {
+        _master_to_slave[mf].push_back(mpi_rank);
         _master_to_slave[mf].push_back(sf);
+      }
     }
 
-  // Find which master/slave BBs overlap in parallel
-  if (MPI::size(mesh.mpi_comm()) > 1)
+  // Find which [master global/slave entity] BBs overlap in parallel
+  if (mpi_size > 1)
   {
-    // std::size_t mpi_rank = MPI::rank(mesh.mpi_comm());
 
     // Find which master processes collide with which local slave cells
     auto overlap = master_bb->compute_process_entity_collisions(*slave_bb);
-
-    // TODO: send any potential 'slave' entities to possible 'masters' for checking.
     auto master_procs = overlap.first;
     auto slave_cells = overlap.second;
 
+    // Get slave facet indices to send
+    // The slave mesh consists of repeated units of three tetrahedra,
+    // making the prisms which are projected forward. The "prism index"
+    // can be obtained by integer division of the cell index.
+    // Each prism corresponds to a slave facet of the original mesh
+    std::vector<std::vector<std::size_t>> send_facets(mpi_size);
     for (unsigned int i = 0; i < master_procs.size(); ++i)
     {
-      std::cout << slave_cells[i] << " -> [" << master_procs[i] << "]\n";
+      const unsigned int master_rank = master_procs[i];
+      // Ignore local (already done)
+      if (master_rank != mpi_rank)
+      {
+        // Get facet from cell index (three tets per prism)
+        unsigned int facet = slave_cells[i]/3;
+        std::cout << facet << " -> [" << master_procs[i] << "]\n";
+        send_facets[master_rank].push_back(facet);
+      }
     }
-    std::cout << "\n";
+
+    // Get unique set of facets
+    for (unsigned int p = 0; p != mpi_size; ++p)
+    {
+      std::vector<std::size_t>& v = send_facets[p];
+      std::sort(v.begin(), v.end());
+      auto last = std::unique(v.begin(), v.end());
+      v.erase(last, v.end());
+    }
+
+    // Get coordinates of prism (18 doubles in 3D)
+    // and convert index of slave mesh back to index of main mesh
+    std::vector<std::vector<double>> send_coordinates(mpi_size);
+    for (unsigned int p = 0; p != mpi_size; ++p)
+    {
+      std::vector<double>& coords_p = send_coordinates[p];
+      for (auto& q : send_facets[p])
+      {
+        const double *coord_vals = slave_mesh.geometry().vertex_coordinates(q*6);
+        coords_p.insert(coords_p.end(), coord_vals, coord_vals + 18);
+        // Convert back to main mesh indexing
+        q = slave_facets[q];
+      }
+    }
+
+    std::vector<std::vector<std::size_t>> recv_facets(mpi_size);
+    MPI::all_to_all(mesh.mpi_comm(), send_facets, recv_facets);
+
+    for (unsigned int i = 0; i != mpi_size; ++i)
+    {
+      auto& v = recv_facets[i];
+      std::cout << "P[" << i << "] = ";
+      for (auto &q : v)
+        std::cout << q << " ";
+      std::cout << "\n";
+    }
 
 
-    // slave facet indices to send
-    //    std::vector<std::vector<std::size_t>> send_facets;
-    // send coordinates of prism (18 doubles in 3D)
-    //    std::vector<std::vector<std::size_t>> send_coordinates;
+    std::vector<std::vector<double>> recv_coordinates(mpi_size);
+    MPI::all_to_all(mesh.mpi_comm(), send_coordinates, recv_coordinates);
 
   }
 
