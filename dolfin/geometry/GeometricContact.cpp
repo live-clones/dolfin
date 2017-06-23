@@ -65,6 +65,7 @@ bool GeometricContact::check_tet_set_collision(const Mesh& master_mesh, std::siz
   for (unsigned int i = mindex; i < mindex + 3; ++i)
     for (unsigned int j = sindex; j < sindex + 3; ++j)
     {
+      // FIXME: needs to work with zero-volume tetrahedra
       if (CollisionDetection::collides_tetrahedron_tetrahedron(Cell(master_mesh, i),
                                                                Cell(slave_mesh, j)))
         return true;
@@ -162,11 +163,10 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   for (unsigned int i = 0; i < master_facets.size(); ++i)
     for (unsigned int j = 0; j < slave_facets.size(); ++j)
     {
-      std::size_t mf = master_facets[i];
-      std::size_t sf = slave_facets[j];
-
       if (check_tet_set_collision(master_mesh, i*3, slave_mesh, j*3))
       {
+        const std::size_t mf = master_facets[i];
+        const std::size_t sf = slave_facets[j];
         _master_to_slave[mf].push_back(mpi_rank);
         _master_to_slave[mf].push_back(sf);
       }
@@ -200,7 +200,7 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
       }
     }
 
-    // Get unique set of facets
+    // Get unique set of facets to send to each process
     for (unsigned int p = 0; p != mpi_size; ++p)
     {
       std::vector<std::size_t>& v = send_facets[p];
@@ -236,9 +236,43 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
       std::cout << "\n";
     }
 
-
     std::vector<std::vector<double>> recv_coordinates(mpi_size);
     MPI::all_to_all(mesh.mpi_comm(), send_coordinates, recv_coordinates);
+
+    for (unsigned int proc = 0; proc != mpi_size; ++proc)
+    {
+      auto& rfacet = recv_facets[proc];
+      auto& coord = recv_coordinates[proc];
+      dolfin_assert(coord.size() == 18*rfacet.size());
+
+      for (unsigned int j = 0; j < rfacet.size(); ++j)
+      {
+        // FIXME: inefficient? but difficult to use BBT with primitives
+        // so create a small Mesh for each received prism
+        Mesh prism_mesh(MPI_COMM_SELF);
+        MeshEditor m_ed;
+        m_ed.open(prism_mesh, mesh.topology().dim(), mesh.geometry().dim());
+        m_ed.init_cells(3);
+        m_ed.add_cell(0, 0,1,2,3);
+        m_ed.add_cell(0, 1,2,3,4);
+        m_ed.add_cell(0, 2,3,4,5);
+        m_ed.init_vertices(6);
+        for (unsigned int v = 0; v < 6; ++v)
+          m_ed.add_vertex(v, Point(3, coord.data() + j*18 + v*3));
+        m_ed.close();
+
+        // Check all local master facets against received slave data
+        for (unsigned int i = 0; i < master_facets.size(); ++i)
+        {
+          if (check_tet_set_collision(master_mesh, i*3, prism_mesh, 0))
+          {
+            const std::size_t mf = master_facets[i];
+            _master_to_slave[mf].push_back(proc);
+            _master_to_slave[mf].push_back(rfacet[j]);
+          }
+        }
+      }
+    }
 
   }
 
