@@ -121,8 +121,6 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
 
   auto master_bb = master_mesh.bounding_box_tree();
 
-  std::cout << "master bb = " << master_bb << "\n";
-
   // Local mesh of slave 'prisms', three tetrahedra created per facet
   Mesh slave_mesh(mesh.mpi_comm());
   MeshEditor slave_ed;
@@ -148,7 +146,6 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   std::cout << "sm.num_cells() = " << slave_mesh.num_cells() << "\n";
 
   auto slave_bb = slave_mesh.bounding_box_tree();
-  std::cout << "slave bb = " << slave_bb << "\n";
 
   _master_to_slave.clear();
 
@@ -173,15 +170,10 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   // Find which [master global/slave entity] BBs overlap in parallel
   if (mpi_size > 1)
   {
-
-    std::cout << "A rank = " << mpi_rank << "\n";
-
     // Find which master processes collide with which local slave cells
     auto overlap = master_bb->compute_process_entity_collisions(*slave_bb);
     auto master_procs = overlap.first;
     auto slave_cells = overlap.second;
-
-    std::cout << "B rank = " << mpi_rank << "\n";
 
     // Get slave facet indices to send
     // The slave mesh consists of repeated units of three tetrahedra,
@@ -216,22 +208,19 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
     for (unsigned int p = 0; p != mpi_size; ++p)
     {
       std::vector<double>& coords_p = send_coordinates[p];
-      std::cout << mpi_rank << "->" << p << "]";
-
       for (auto& q : send_facets[p])
       {
         const double *coord_vals = slave_mesh.geometry().vertex_coordinates(q*6);
         coords_p.insert(coords_p.end(), coord_vals, coord_vals + 18);
         // Convert back to main mesh indexing
         q = slave_facets[q];
-        std::cout << q << " ";
       }
-      std::cout << "\n";
     }
 
     std::vector<std::vector<std::size_t>> recv_facets(mpi_size);
     MPI::all_to_all(mesh.mpi_comm(), send_facets, recv_facets);
 
+    // debug output
     for (unsigned int i = 0; i != mpi_size; ++i)
     {
       auto& v = recv_facets[i];
