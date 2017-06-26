@@ -267,6 +267,8 @@ namespace dolfin
     ///         True iff the point is inside the tree.
     bool collides_entity(const Point& point) const;
 
+    std::string str(bool verbose) const;
+
   private:
 
     // Check that tree has been built

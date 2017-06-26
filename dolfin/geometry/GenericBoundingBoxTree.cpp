@@ -146,10 +146,10 @@ void GenericBoundingBoxTree::build(const Mesh& mesh, std::size_t tdim)
     // Print on rank 0
     if(MPI::rank(mesh.mpi_comm()) == 0)
     {
+      std::cout << "rank = " << MPI::rank(mesh.mpi_comm()) << "\n";
       std::cout << "Global tree: --------------------------\n";
       std::cout << _global_tree->str() << "\n--------------------\n";
     }
-
 
   }
 }
@@ -194,10 +194,15 @@ std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
   std::vector<unsigned int> entities_A;
   std::vector<unsigned int> entities_B;
 
+  const std::size_t numA = A.num_bboxes();
+  const std::size_t numB = B.num_bboxes();
+
   // Call recursive find function
-  _compute_collisions(A, B,
-                      A.num_bboxes() - 1, B.num_bboxes() - 1,
-                      entities_A, entities_B, 0, 0);
+  if (numA > 0 and numB > 0)
+  {
+    _compute_collisions(A, B, numA - 1, numB - 1,
+                        entities_A, entities_B, 0, 0);
+  }
 
   return std::make_pair(entities_A, entities_B);
 }

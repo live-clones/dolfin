@@ -144,6 +144,7 @@ BoundingBoxTree::compute_process_entity_collisions(const BoundingBoxTree& tree) 
   _check_built();
 
   dolfin_assert(_tree->global_tree());
+  dolfin_assert(tree._tree);
 
   // Get collisions of entities in tree with processes in this->_tree
   return _tree->global_tree()->compute_collisions(*(tree._tree));
@@ -229,3 +230,7 @@ void BoundingBoxTree::_check_built() const
   }
 }
 //-----------------------------------------------------------------------------
+std::string BoundingBoxTree::str(bool verbose) const
+{
+  return _tree->str(verbose);
+}
