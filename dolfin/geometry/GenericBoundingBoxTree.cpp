@@ -145,7 +145,11 @@ void GenericBoundingBoxTree::build(const Mesh& mesh, std::size_t tdim)
 
     // Print on rank 0
     if(MPI::rank(mesh.mpi_comm()) == 0)
-      std::cout << _global_tree->str() << "\n";
+    {
+      std::cout << "Global tree: --------------------------\n";
+      std::cout << _global_tree->str() << "\n--------------------\n";
+    }
+
 
   }
 }

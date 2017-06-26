@@ -32,8 +32,6 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
 std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mesh, std::size_t facet_index, const Function& u)
 {
   Facet facet(mesh, facet_index);
@@ -176,10 +174,14 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   if (mpi_size > 1)
   {
 
+    std::cout << "A rank = " << mpi_rank << "\n";
+
     // Find which master processes collide with which local slave cells
     auto overlap = master_bb->compute_process_entity_collisions(*slave_bb);
     auto master_procs = overlap.first;
     auto slave_cells = overlap.second;
+
+    std::cout << "B rank = " << mpi_rank << "\n";
 
     // Get slave facet indices to send
     // The slave mesh consists of repeated units of three tetrahedra,
@@ -195,7 +197,6 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
       {
         // Get facet from cell index (three tets per prism)
         unsigned int facet = slave_cells[i]/3;
-        std::cout << facet << " -> [" << master_procs[i] << "]\n";
         send_facets[master_rank].push_back(facet);
       }
     }
@@ -215,13 +216,17 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
     for (unsigned int p = 0; p != mpi_size; ++p)
     {
       std::vector<double>& coords_p = send_coordinates[p];
+      std::cout << mpi_rank << "->" << p << "]";
+
       for (auto& q : send_facets[p])
       {
         const double *coord_vals = slave_mesh.geometry().vertex_coordinates(q*6);
         coords_p.insert(coords_p.end(), coord_vals, coord_vals + 18);
         // Convert back to main mesh indexing
         q = slave_facets[q];
+        std::cout << q << " ";
       }
+      std::cout << "\n";
     }
 
     std::vector<std::vector<std::size_t>> recv_facets(mpi_size);
