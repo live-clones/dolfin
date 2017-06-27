@@ -145,10 +145,16 @@ namespace dolfin
     compute_process_collisions(const Point& point) const;
 
     /// Compute collisions of two global bounding boxes
+    /// Returns two lists pairing up the processes on each tree.
+    /// See also compute_entity_collisions.
+    ///
     std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
     compute_process_collisions(const BoundingBoxTree& tree) const;
 
-    /// Compute collisions of entities in tree with processes in this tree
+    /// Compute collisions of entities in tree with global process BBT
+    /// Returns two associated lists, the first listing process rank,
+    /// the second the local entity index. See also compute_entity_collisions.
+    ///
     std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
     compute_process_entity_collisions(const BoundingBoxTree& tree) const;
 
