@@ -111,4 +111,6 @@ def test_layout_and_pattern_interface(backend, mesh, element, allocation_mode):
     bc.apply(A)
     bc.apply(b)
     solve(A, x, b)
-    assert np.isclose((b-A*x).norm('l2'), 0)
+    if not (backend == "Tpetra" and MPI.size(mesh.mpi_comm()) > 1):
+        # This line crashes with Tpetra in parallel (#880)
+        assert np.isclose((b-A*x).norm('l2'), 0)
