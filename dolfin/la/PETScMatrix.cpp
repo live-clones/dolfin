@@ -782,6 +782,9 @@ void PETScMatrix::_alloc_num_nonzeros(const SparsityPattern& sparsity_pattern,
       = dolfin_ceil_div(num_nonzeros_off_diagonal[block_size*i], block_size);
   }
 
+  num_nonzeros_diagonal.clear(); num_nonzeros_diagonal.shrink_to_fit();
+  num_nonzeros_off_diagonal.clear(); num_nonzeros_off_diagonal.shrink_to_fit();
+
   // Allocate space (using data from sparsity pattern)
   ierr = MatXAIJSetPreallocation(_matA, block_size,
                                  _num_nonzeros_diagonal.data(),
@@ -802,81 +805,57 @@ void PETScMatrix::_alloc_nonzeros_location(
   log(TRACE, "Allocating PETSc matrix sparsity using nonzeros location");
   PetscErrorCode ierr;
 
-  if (dolfin::MPI::size(sparsity_pattern.mpi_comm()) == 1)
+  const auto m = sparsity_pattern.local_range(0).second
+                 - sparsity_pattern.local_range(1).first;
+  const auto col_end = sparsity_pattern.local_range(1).second;
 
-  // Sequential mode
+  // Tabulate nonzero pattern
+  auto diagonal =
+    sparsity_pattern.diagonal_pattern(SparsityPattern::Type::sorted);
+  auto off_diagonal =
+    sparsity_pattern.off_diagonal_pattern(SparsityPattern::Type::sorted);
+  const bool has_off_diag = off_diagonal.size() > 0;
+  dolfin_assert(diagonal.size() == m);
+  dolfin_assert(off_diagonal.size() == m || !has_off_diag);
+
+  // Build CSR data
+  std::vector<PetscInt> rows(m + 1);
+  std::vector<PetscInt> cols(sparsity_pattern.num_nonzeros());
+
+  auto it = cols.begin();
+  decltype (off_diagonal)::value_type::iterator diag_end;
+  for (std::size_t i = 0; i < m; ++i)
   {
-    // Tabulate numbers of nonzeros in rows
-    std::vector<std::size_t> num_nonzeros;
-    sparsity_pattern.num_nonzeros_diagonal(num_nonzeros);
-    std::vector<PetscInt> _num_nonzeros(num_nonzeros.begin(),
-                                        num_nonzeros.end());
-    num_nonzeros.clear(); num_nonzeros.shrink_to_fit();
+    rows[i] = std::distance(cols.begin(), it);
 
-    // Allocate rows with given numbers of nonzeros
-    ierr = MatSeqAIJSetPreallocation(_matA, 0, _num_nonzeros.data());
-    if (ierr != 0) petsc_error(ierr, __FILE__, "MatSeqAIJSetPreallocation");
-    _num_nonzeros.clear(); _num_nonzeros.shrink_to_fit();
-
-    // Tabulate nonzeros locations
-    auto pattern =
-      sparsity_pattern.diagonal_pattern(SparsityPattern::Type::sorted);
-    std::vector<PetscInt> petsc_pattern(sparsity_pattern.num_nonzeros());
-    auto it = petsc_pattern.begin();
-    for (const auto& row : pattern)
-      it = std::copy(row.begin(), row.end(), it);
-    dolfin_assert(it == petsc_pattern.cend());
-    pattern.clear(); pattern.shrink_to_fit();
-
-    // Allocate nonzeros locations
-    ierr = MatSeqAIJSetColumnIndices(_matA, petsc_pattern.data());
-    if (ierr != 0) petsc_error(ierr, __FILE__, "MatSeqAIJSetColumnIndices");
-  }
-
-  else
-
-  // Parallel mode
-  {
-    const auto m = sparsity_pattern.local_range(0).second
-                   - sparsity_pattern.local_range(1).first;
-    const auto col_end = sparsity_pattern.local_range(1).second;
-
-    // Tabulate nonzero pattern
-    auto diagonal =
-      sparsity_pattern.diagonal_pattern(SparsityPattern::Type::sorted);
-    auto off_diagonal =
-      sparsity_pattern.off_diagonal_pattern(SparsityPattern::Type::sorted);
-    const bool has_off_diag = off_diagonal.size() > 0;
-    dolfin_assert(diagonal.size() == m);
-    dolfin_assert(off_diagonal.size() == m || !has_off_diag);
-
-    // Build CSR data
-    std::vector<PetscInt> rows(m + 1);
-    std::vector<PetscInt> cols(sparsity_pattern.num_nonzeros());
-    auto it = cols.begin();
-    decltype (off_diagonal)::value_type::iterator diag_end;
-    for (std::size_t i = 0; i < m; ++i)
+    // Copy part of the row to the left of the diagonal
+    if (has_off_diag)
     {
-      rows[i] = std::distance(cols.begin(), it);
-      if (has_off_diag)
-      {
-        diag_end = std::find_if(off_diagonal[i].begin(), off_diagonal[i].end(),
-          [col_end](std::size_t J){return J>=col_end;});
-        it = std::copy(off_diagonal[i].begin(), diag_end, it);
-      }
-      it = std::copy(diagonal[i].begin(), diagonal[i].end(), it);
-      if (has_off_diag)
-        it = std::copy(diag_end, off_diagonal[i].end(), it);
+      diag_end = std::find_if(off_diagonal[i].begin(), off_diagonal[i].end(),
+        [col_end](std::size_t J){return J>=col_end;});
+      it = std::copy(off_diagonal[i].begin(), diag_end, it);
     }
-    rows[m] = std::distance(cols.begin(), it);
-    dolfin_assert(it == cols.end());
-    diagonal.clear(); diagonal.shrink_to_fit();
-    off_diagonal.clear(); off_diagonal.shrink_to_fit();
 
-    // Allocate matrix
-    ierr = MatMPIAIJSetPreallocationCSR(_matA, rows.data(), cols.data(), NULL);
-    if (ierr != 0) petsc_error(ierr, __FILE__, "MatMPIAIJSetPreallocationCSR");
+    // Copy diagonal part of the row
+    it = std::copy(diagonal[i].begin(), diagonal[i].end(), it);
+
+    // Copy part of the row to the right of the diagonal
+    if (has_off_diag)
+      it = std::copy(diag_end, off_diagonal[i].end(), it);
   }
+  rows[m] = std::distance(cols.begin(), it);
+  dolfin_assert(it == cols.end());
+
+  diagonal.clear(); diagonal.shrink_to_fit();
+  off_diagonal.clear(); off_diagonal.shrink_to_fit();
+
+  // Allocate matrix
+  ierr = MatSetBlockSize(_matA, block_size);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetBlockSize");
+  ierr = MatSeqAIJSetPreallocationCSR(_matA, rows.data(), cols.data(), NULL);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatSeqAIJSetPreallocationCSR");
+  ierr = MatMPIAIJSetPreallocationCSR(_matA, rows.data(), cols.data(), NULL);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatMPIAIJSetPreallocationCSR");
 }
 //-----------------------------------------------------------------------------
 #endif

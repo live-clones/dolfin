@@ -629,16 +629,23 @@ SparsityPattern::diagonal_pattern(Type type) const
 std::vector<std::vector<std::size_t>>
   SparsityPattern::off_diagonal_pattern(Type type) const
 {
+  // Copy data
   std::vector<std::vector<std::size_t>> v(off_diagonal.size());
   for (std::size_t i = 0; i < off_diagonal.size(); ++i)
     v[i].insert(v[i].begin(), off_diagonal[i].begin(), off_diagonal[i].end());
 
+  // Sort if requested
   if (type == Type::sorted)
   {
     for (std::size_t i = 0; i < v.size(); ++i)
       std::sort(v[i].begin(), v[i].end());
   }
 
+  // Return if there is no off-diagonal (even when there are full rows)
+  if (off_diagonal.size() == 0)
+    return v;
+
+  // Build full rows data
   if (full_rows.size() > 0)
   {
     const std::size_t local_size0 =
