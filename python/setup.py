@@ -27,6 +27,7 @@ ext_modules = [
     Extension('dolfin_test',
               ['dolfin/dolfin.cpp',
                'dolfin/mesh/mesh.cpp',
+               'dolfin/generation/generation.cpp',
               ],
               include_dirs=[
                   # Path to pybind11 headers
@@ -37,7 +38,8 @@ ext_modules = [
               ],
               libraries = ['dolfin'],
               library_dirs = [os.environ['LD_LIBRARY_PATH'].split(":")[1]],
-              language='c++'),
+              #language='c++'
+    ),
 ]
 
 

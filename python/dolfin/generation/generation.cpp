@@ -15,30 +15,30 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with FFC. If not, see <http://www.gnu.org/licenses/>.
 
-
+#include <iostream>
+#include <memory>
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+
+#include <dolfin/generation/UnitCubeMesh.h>
+#include <dolfin/generation/UnitSquareMesh.h>
 
 namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
-  void mesh(py::module& m);
-  void generation(py::module& m);
-}
 
+  void generation(py::module& m)
+  {
+    // Wrap dolfin::UnitSquareMesh
+    py::class_<dolfin::UnitSquareMesh, std::shared_ptr<dolfin::UnitSquareMesh>>(m, "UnitSquareMesh")
+      .def(py::init<std::size_t, std::size_t, std::string>())
+      .def(py::init<MPI_Comm, std::size_t, std::size_t, std::string>());
 
-PYBIND11_PLUGIN(dolfin_test)
-{
-  // Create module
-  py::module m("dolfin_test", "DOLFIN Python interface");
+    // Wrap dolfin::UnitCubeMesh
+    py::class_<dolfin::UnitCubeMesh, std::shared_ptr<dolfin::UnitCubeMesh>>(m, "UnitCubeMesh")
+      .def(py::init<std::size_t, std::size_t, std::size_t>());
+      //.def(py::init<MPI_Comm, std::size_t, std::size_t, std::size_t>());
+  }
 
-  // Create mesh submodule
-  py::module mesh = m.def_submodule("mesh", "DOLFIN mesh library");
-  dolfin_wrappers::mesh(mesh);
-
-  // Create generation submodule
-  py::module generation = m.def_submodule("generation", "DOLFIN mesh generation module");
-  dolfin_wrappers::generation(generation);
-
-  return m.ptr();
 }
