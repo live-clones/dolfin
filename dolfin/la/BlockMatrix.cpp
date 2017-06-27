@@ -40,7 +40,7 @@ BlockMatrix::BlockMatrix(std::size_t m, std::size_t n)
 {
   for (std::size_t i = 0; i < m; i++)
     for (std::size_t j = 0; j < n; j++)
-      matrices[i][j].reset(new Matrix());
+      matrices[i][j] = std::make_shared<Matrix>();
 }
 //-----------------------------------------------------------------------------
 BlockMatrix::~BlockMatrix()

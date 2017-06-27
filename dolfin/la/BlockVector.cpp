@@ -37,7 +37,7 @@ using namespace dolfin;
 BlockVector::BlockVector(std::size_t n) : vectors(n)
 {
   for (std::size_t i = 0; i < n; i++)
-    vectors[i].reset(new Vector());
+    vectors[i] = std::make_shared<Vector>();
 }
 //-----------------------------------------------------------------------------
 BlockVector::~BlockVector()
@@ -45,11 +45,11 @@ BlockVector::~BlockVector()
   // Do nothing
 }
 //-----------------------------------------------------------------------------
-BlockVector* BlockVector::copy() const
+std::shared_ptr<BlockVector> BlockVector::copy() const
 {
-  BlockVector* x = new BlockVector(vectors.size());
+  auto x = std::make_shared<BlockVector>(vectors.size());
   for (std::size_t i = 0; i < vectors.size(); i++)
-    x->set_block(i, std::shared_ptr<GenericVector>(vectors[i]->copy()));
+    x->set_block(i, vectors[i]->copy());
   return x;
 }
 //-----------------------------------------------------------------------------

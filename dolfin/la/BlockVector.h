@@ -49,7 +49,7 @@ namespace dolfin
     virtual ~BlockVector();
 
     /// Return copy of tensor
-    virtual BlockVector* copy() const;
+    virtual std::shared_ptr<BlockVector> copy() const;
 
     /// Set function
     void set_block(std::size_t i, std::shared_ptr<GenericVector> v);

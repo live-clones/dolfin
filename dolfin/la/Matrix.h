@@ -103,8 +103,7 @@ namespace dolfin
     /// Return copy of matrix
     virtual std::shared_ptr<GenericMatrix> copy() const
     {
-      std::shared_ptr<Matrix> A(new Matrix(*this));
-      return A;
+      return std::shared_ptr<Matrix>(new Matrix(*this));
     }
 
     /// Resize vector y such that is it compatible with matrix for

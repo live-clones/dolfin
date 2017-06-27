@@ -22,6 +22,7 @@
 #ifndef __SCALAR_H
 #define __SCALAR_H
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <dolfin/common/MPI.h>
@@ -190,7 +191,7 @@ namespace dolfin
     /// Return copy of scalar
     virtual std::shared_ptr<Scalar> copy() const
     {
-      std::shared_ptr<Scalar> s(new Scalar);
+      auto s = std::make_shared<Scalar>();
       s->_value = _value;
       s->_local_increment = _local_increment;
       s->_mpi_comm = _mpi_comm;

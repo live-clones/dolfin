@@ -61,8 +61,7 @@ namespace dolfin
       TensorLayout::Sparsity sparsity = TensorLayout::Sparsity::DENSE;
       if (rank > 1)
         sparsity = TensorLayout::Sparsity::SPARSE;
-      std::shared_ptr<TensorLayout> pattern(new TensorLayout(0, sparsity));
-      return pattern;
+      return std::make_shared<TensorLayout>(0, sparsity);
     }
 
     /// Create empty linear operator
@@ -86,9 +85,7 @@ namespace dolfin
                          std::string method,
                          std::string preconditioner) const
     {
-      std::shared_ptr<GenericLinearSolver>
-        solver(new EigenKrylovSolver(method, preconditioner));
-      return solver;
+      return std::make_shared<EigenKrylovSolver>(method, preconditioner);
     }
 
     /// Return a list of available LU solver methods

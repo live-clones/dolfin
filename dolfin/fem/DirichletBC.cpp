@@ -408,16 +408,12 @@ void DirichletBC::homogenize()
 {
   const std::size_t value_rank = _g->value_rank();
   if (!value_rank)
-  {
-    std::shared_ptr<Constant> zero(new Constant(0.0));
-    set_value(zero);
-  }
+    set_value(std::make_shared<Constant>(0.0));
   else if (value_rank == 1)
   {
     const std::size_t value_dim = _g->value_dimension(0);
     std::vector<double> values(value_dim, 0.0);
-    std::shared_ptr<Constant> zero(new Constant(values));
-    set_value(zero);
+    set_value(std::make_shared<Constant>(values));
   }
   else
   {
@@ -425,8 +421,7 @@ void DirichletBC::homogenize()
     for (std::size_t i = 0; i < value_rank; i++)
       value_shape.push_back(_g->value_dimension(i));
     std::vector<double> values(_g->value_size(), 0.0);
-    std::shared_ptr<Constant> zero(new Constant(value_shape, values));
-    set_value(zero);
+    set_value(std::make_shared<Constant>(value_shape, values));
   }
 }
 //-----------------------------------------------------------------------------
