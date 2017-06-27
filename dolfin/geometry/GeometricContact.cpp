@@ -39,18 +39,25 @@ std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mes
   Point X2 = Vertex(mesh, facet.entities(0)[1]).point();
   Point X3 = Vertex(mesh, facet.entities(0)[2]).point();
 
+  // Get id of attached cell
+  std::size_t id = facet.entities(mesh.topology().dim())[0];
+
   Array<double> uval(3);
 
+  const Cell cell(mesh, id);
+  ufc::cell ufc_cell;
+  cell.get_cell_data(ufc_cell);
+
   const Array<double> _x1(3, X1.coordinates());
-  u.eval(uval, _x1);
+  u.eval(uval, _x1, cell, ufc_cell);
   Point x1 = X1 + Point(uval);
 
   const Array<double> _x2(3, X2.coordinates());
-  u.eval(uval, _x2);
+  u.eval(uval, _x2, cell, ufc_cell);
   Point x2 = X2 + Point(uval);
 
   const Array<double> _x3(3, X3.coordinates());
-  u.eval(uval, _x3);
+  u.eval(uval, _x3, cell, ufc_cell);
   Point x3 = X3 + Point(uval);
 
   return {X1, X2, X3, x1, x2, x3};
@@ -73,7 +80,7 @@ bool GeometricContact::check_tet_set_collision(const Mesh& master_mesh, std::siz
 }
 //-----------------------------------------------------------------------------
 void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function& u,
-                                                        const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& slave_facets)
+const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& slave_facets)
 {
   // Construct a dictionary mapping master facets to their collided slave counterparts.
 
@@ -86,11 +93,18 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   // :param slave_facets: list of slave facet indices
   // :return: mapping master facet index to slave facet indices
 
-  // Ensure bbt built
-  auto mesh_bb = mesh.bounding_box_tree();
-  // fixme
-  u.set_allow_extrapolation(true);
+  if (mesh.topology().dim() != 3)
+  {
+    dolfin_error("GeometricContact.cpp",
+                 "find contact surface",
+                 "Only implemented in 3D");
+  }
 
+  // Ensure BBT built
+  auto mesh_bb = mesh.bounding_box_tree();
+
+  // Make sure facet->cell connections are made
+  mesh.init(mesh.topology().dim() - 1, mesh.topology().dim());
 
   // Local mesh of master 'prisms', three tetrahedra created per facet
   Mesh master_mesh(mesh.mpi_comm());
@@ -103,22 +117,20 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
   int c = 0;
   int v = 0;
 
-  std::cout << "mf.size() = " << master_facets.size() << "\n";
-
   for (auto &mf : master_facets)
   {
+    // Get six points defining prism
     std::vector<Point> master_tet_set = create_deformed_segment_volume_3d(mesh, mf, u);
+    // Add three tetrahedra
     for (int i = 0; i < 3; ++i)
       master_ed.add_cell(c+i, v+i, v+i+1, v+i+2, v+i+3);
     c += 3;
+    // Add six points
     for (int i = 0; i < 6; ++i)
       master_ed.add_vertex(v+i, master_tet_set[i]);
     v += 6;
   }
   master_ed.close();
-
-  std::cout << "mm.num_cells() = " << master_mesh.num_cells() << "\n";
-
   auto master_bb = master_mesh.bounding_box_tree();
 
   // Local mesh of slave 'prisms', three tetrahedra created per facet
@@ -142,9 +154,6 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
     v += 6;
   }
   slave_ed.close();
-
-  std::cout << "sm.num_cells() = " << slave_mesh.num_cells() << "\n";
-
   auto slave_bb = slave_mesh.bounding_box_tree();
 
   _master_to_slave.clear();
@@ -220,16 +229,6 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
     std::vector<std::vector<std::size_t>> recv_facets(mpi_size);
     MPI::all_to_all(mesh.mpi_comm(), send_facets, recv_facets);
 
-    // debug output
-    for (unsigned int i = 0; i != mpi_size; ++i)
-    {
-      auto& v = recv_facets[i];
-      std::cout << "P[" << i << "] = ";
-      for (auto &q : v)
-        std::cout << q << " ";
-      std::cout << "\n";
-    }
-
     std::vector<std::vector<double>> recv_coordinates(mpi_size);
     MPI::all_to_all(mesh.mpi_comm(), send_coordinates, recv_coordinates);
 
@@ -269,14 +268,4 @@ void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function&
     }
 
   }
-
-  // debug output
-  for (auto m : _master_to_slave)
-  {
-    std::cout << m.first << ":";
-    for (auto q : m.second)
-      std::cout << q << " ";
-    std::cout << "\n";
-  }
-
 }
