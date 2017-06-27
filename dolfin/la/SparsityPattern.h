@@ -54,6 +54,9 @@ namespace dolfin
     /// Whether SparsityPattern is sorted
     enum class Type {sorted, unsorted};
 
+    /// Count number of nonzeros or remember nonzeros location
+    enum class Mode {NUM_NONZEROS, NONZEROS_LOCATION};
+
     /// Create empty sparsity pattern
     SparsityPattern(std::size_t primary_dim);
 
@@ -132,6 +135,12 @@ namespace dolfin
     /// 'sorted' and 'unsorted'. Empty vector is returned if there is no
     /// off-diagonal contribution.
     std::vector<std::vector<std::size_t>> off_diagonal_pattern(Type type) const;
+
+    /// Indicates to tensor allocation routines whether to account for
+    /// nonzeros location or just number of nonzeros (default). This
+    /// class can optimize for this and drop the locations during a
+    /// finalization.
+    Mode mode;
 
   private:
 

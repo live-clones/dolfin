@@ -245,6 +245,14 @@ namespace dolfin
     // PETSc norm types
     static const std::map<std::string, NormType> norm_types;
 
+    // Call PETSc allocation routines based on number nonzeros
+    void _alloc_num_nonzeros(const SparsityPattern& sparsity_pattern,
+                             int block_size);
+
+    // Call PETSc allocation routines based on nonzeros location
+    void _alloc_nonzeros_location(const SparsityPattern& sparsity_pattern,
+                                  int block_size);
+
   };
 
 }

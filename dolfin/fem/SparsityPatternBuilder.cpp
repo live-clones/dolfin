@@ -84,7 +84,15 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
   //       insertion below
   std::vector<std::size_t> global_dofs0;
   dofmaps[sparsity_pattern.primary_dim()]->tabulate_global_dofs(global_dofs0);
-  sparsity_pattern.insert_full_rows_local(global_dofs0);
+  if (global_dofs0.size() > 0)
+  {
+    sparsity_pattern.mode = SparsityPattern::Mode::NONZEROS_LOCATION;
+    sparsity_pattern.insert_full_rows_local(global_dofs0);
+  }
+  else
+  {
+    sparsity_pattern.mode = SparsityPattern::Mode::NUM_NONZEROS;
+  }
 
   // FIXME: We iterate over the entire mesh even if the function space
   // is restricted. This works out fine since the local dofmap

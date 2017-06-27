@@ -38,13 +38,17 @@ def mesh():
     return UnitSquareMesh(10, 10)
 
 
+@pytest.mark.parametrize("allocation_mode", [
+    SparsityPattern.Mode_NUM_NONZEROS,
+    SparsityPattern.Mode_NONZEROS_LOCATION,
+])
 @pytest.mark.parametrize("element", [
     FiniteElement("P", triangle, 1),
     VectorElement("P", triangle, 1),
     VectorElement("P", triangle, 2)*FiniteElement("P", triangle, 1),
     VectorElement("P", triangle, 1)*FiniteElement("R", triangle, 0),
 ])
-def test_layout_and_pattern_interface(backend, mesh, element):
+def test_layout_and_pattern_interface(backend, mesh, element, allocation_mode):
     # Strange Tpetra segfault with Reals in sequential
     if (backend == "Tpetra"
         and MPI.size(mesh.mpi_comm()) == 1
@@ -87,6 +91,7 @@ def test_layout_and_pattern_interface(backend, mesh, element):
     SparsityPatternBuilder.build(s2, m, [d, d],
                                  True, False, False, False,
                                  False, init=False)
+    s2.mode = allocation_mode  # override mode set by SparsityPatternBuilder
     A = Matrix()
     A.init(t2)
     assemble(a, tensor=A)
@@ -106,3 +111,4 @@ def test_layout_and_pattern_interface(backend, mesh, element):
     bc.apply(A)
     bc.apply(b)
     solve(A, x, b)
+    assert np.isclose((b-A*x).norm('l2'), 0)

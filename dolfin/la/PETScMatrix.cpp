@@ -120,18 +120,10 @@ void PETScMatrix::init(const TensorLayout& tensor_layout)
   const std::size_t m = row_range.second - row_range.first;
   const std::size_t n = col_range.second - col_range.first;
 
-  // Get sparsity pattern
-  auto sparsity_pattern = tensor_layout.sparsity_pattern();
-
   // Get block size
   int block_size = tensor_layout.index_map(0)->block_size();
   if (block_size != tensor_layout.index_map(1)->block_size())
     block_size = 1;
-
-  // Get number of nonzeros for each row from sparsity pattern
-  std::vector<std::size_t> num_nonzeros_diagonal, num_nonzeros_off_diagonal;
-  sparsity_pattern->num_nonzeros_diagonal(num_nonzeros_diagonal);
-  sparsity_pattern->num_nonzeros_off_diagonal(num_nonzeros_off_diagonal);
 
   // Set matrix size
   ierr = MatSetSizes(_matA, m, n, M, N);
@@ -141,28 +133,6 @@ void PETScMatrix::init(const TensorLayout& tensor_layout)
   // includes changing the matrix type to one specified by the user)
   ierr = MatSetFromOptions(_matA);
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetFromOptions");
-
-  // Build data to initialixe sparsity pattern (modify for block size)
-  std::vector<PetscInt> _num_nonzeros_diagonal(num_nonzeros_diagonal.size()/block_size),
-    _num_nonzeros_off_diagonal(num_nonzeros_off_diagonal.size()/block_size);
-
-  for (std::size_t i = 0; i < _num_nonzeros_diagonal.size(); ++i)
-  {
-    _num_nonzeros_diagonal[i]
-      = dolfin_ceil_div(num_nonzeros_diagonal[block_size*i], block_size);
-  }
-  for (std::size_t i = 0; i < _num_nonzeros_off_diagonal.size(); ++i)
-  {
-    _num_nonzeros_off_diagonal[i]
-      = dolfin_ceil_div(num_nonzeros_off_diagonal[block_size*i], block_size);
-  }
-
-  // Allocate space (using data from sparsity pattern)
-  ierr = MatXAIJSetPreallocation(_matA, block_size,
-                                 _num_nonzeros_diagonal.data(),
-                                 _num_nonzeros_off_diagonal.data(), NULL, NULL);
-  if (ierr != 0) petsc_error(ierr, __FILE__, "MatXIJSetPreallocation");
-
 
   // Create pointers to PETSc IndexSet for local-to-globa map
   ISLocalToGlobalMapping petsc_local_to_global0, petsc_local_to_global1;
@@ -177,7 +147,7 @@ void PETScMatrix::init(const TensorLayout& tensor_layout)
   for (std::size_t i = 0; i < _map1.size(); ++i)
     _map1[i] = tensor_layout.index_map(1)->local_to_global(i*block_size)/block_size;
 
-  // FIXME: In many cases the rows and columns could shared a commin
+  // FIXME: In many cases the rows and columns could shared a common
   // local-to-global map
 
   // Create PETSc local-to-global map/index set
@@ -193,18 +163,27 @@ void PETScMatrix::init(const TensorLayout& tensor_layout)
                              petsc_local_to_global1);
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetLocalToGlobalMapping");
 
-  // Note: This should be called after having set the local-to-global
-  // map for MATIS (this is a dummy call if _matA is not of type
-  // MATIS)
-  ierr = MatISSetPreallocation(_matA, 0, _num_nonzeros_diagonal.data(),
-                               0, _num_nonzeros_off_diagonal.data());
-  if (ierr != 0) petsc_error(ierr, __FILE__, "MatISSetPreallocation");
-
   // Clean up local-to-global maps
   ISLocalToGlobalMappingDestroy(&petsc_local_to_global0);
   if (ierr != 0) petsc_error(ierr, __FILE__, "ISLocalToGlobalMappingDestroy");
   ISLocalToGlobalMappingDestroy(&petsc_local_to_global1);
   if (ierr != 0) petsc_error(ierr, __FILE__, "ISLocalToGlobalMappingDestroy");
+
+  // Call required allocation method
+  const SparsityPattern& sparsity_pattern = *tensor_layout.sparsity_pattern();
+  switch (sparsity_pattern.mode)
+  {
+    case SparsityPattern::Mode::NUM_NONZEROS :
+    {
+      _alloc_num_nonzeros(sparsity_pattern, block_size);
+      break;
+    }
+    case SparsityPattern::Mode::NONZEROS_LOCATION :
+    {
+      _alloc_nonzeros_location(sparsity_pattern, block_size);
+      break;
+    }
+  }
 
   // Set some options on _matA object
 
@@ -777,6 +756,127 @@ MatNullSpace PETScMatrix::create_petsc_nullspace(const VectorSpaceBasis& nullspa
   return petsc_nullspace;
 }
 //-----------------------------------------------------------------------------
+void PETScMatrix::_alloc_num_nonzeros(const SparsityPattern& sparsity_pattern,
+                                      int block_size)
+{
+  log(TRACE, "Allocating PETSc matrix sparsity using number nonzeros");
+  PetscErrorCode ierr;
 
+  // Get number of nonzeros for each row from sparsity pattern
+  std::vector<std::size_t> num_nonzeros_diagonal, num_nonzeros_off_diagonal;
+  sparsity_pattern.num_nonzeros_diagonal(num_nonzeros_diagonal);
+  sparsity_pattern.num_nonzeros_off_diagonal(num_nonzeros_off_diagonal);
 
+  // Build data to initialixe sparsity pattern (modify for block size)
+  std::vector<PetscInt> _num_nonzeros_diagonal(num_nonzeros_diagonal.size()/block_size),
+    _num_nonzeros_off_diagonal(num_nonzeros_off_diagonal.size()/block_size);
+
+  for (std::size_t i = 0; i < _num_nonzeros_diagonal.size(); ++i)
+  {
+    _num_nonzeros_diagonal[i]
+      = dolfin_ceil_div(num_nonzeros_diagonal[block_size*i], block_size);
+  }
+  for (std::size_t i = 0; i < _num_nonzeros_off_diagonal.size(); ++i)
+  {
+    _num_nonzeros_off_diagonal[i]
+      = dolfin_ceil_div(num_nonzeros_off_diagonal[block_size*i], block_size);
+  }
+
+  // Allocate space (using data from sparsity pattern)
+  ierr = MatXAIJSetPreallocation(_matA, block_size,
+                                 _num_nonzeros_diagonal.data(),
+                                 _num_nonzeros_off_diagonal.data(), NULL, NULL);
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatXIJSetPreallocation");
+
+  // Note: This should be called after having set the local-to-global
+  // map for MATIS (this is a dummy call if _matA is not of type
+  // MATIS)
+  ierr = MatISSetPreallocation(_matA, 0, _num_nonzeros_diagonal.data(),
+                               0, _num_nonzeros_off_diagonal.data());
+  if (ierr != 0) petsc_error(ierr, __FILE__, "MatISSetPreallocation");
+}
+//-----------------------------------------------------------------------------
+void PETScMatrix::_alloc_nonzeros_location(
+  const SparsityPattern& sparsity_pattern, int block_size)
+{
+  log(TRACE, "Allocating PETSc matrix sparsity using nonzeros location");
+  PetscErrorCode ierr;
+
+  if (dolfin::MPI::size(sparsity_pattern.mpi_comm()) == 1)
+
+  // Sequential mode
+  {
+    // Tabulate numbers of nonzeros in rows
+    std::vector<std::size_t> num_nonzeros;
+    sparsity_pattern.num_nonzeros_diagonal(num_nonzeros);
+    std::vector<PetscInt> _num_nonzeros(num_nonzeros.begin(),
+                                        num_nonzeros.end());
+    num_nonzeros.clear(); num_nonzeros.shrink_to_fit();
+
+    // Allocate rows with given numbers of nonzeros
+    ierr = MatSeqAIJSetPreallocation(_matA, 0, _num_nonzeros.data());
+    if (ierr != 0) petsc_error(ierr, __FILE__, "MatSeqAIJSetPreallocation");
+    _num_nonzeros.clear(); _num_nonzeros.shrink_to_fit();
+
+    // Tabulate nonzeros locations
+    auto pattern =
+      sparsity_pattern.diagonal_pattern(SparsityPattern::Type::sorted);
+    std::vector<PetscInt> petsc_pattern(sparsity_pattern.num_nonzeros());
+    auto it = petsc_pattern.begin();
+    for (const auto& row : pattern)
+      it = std::copy(row.begin(), row.end(), it);
+    dolfin_assert(it == petsc_pattern.cend());
+    pattern.clear(); pattern.shrink_to_fit();
+
+    // Allocate nonzeros locations
+    ierr = MatSeqAIJSetColumnIndices(_matA, petsc_pattern.data());
+    if (ierr != 0) petsc_error(ierr, __FILE__, "MatSeqAIJSetColumnIndices");
+  }
+
+  else
+
+  // Parallel mode
+  {
+    const auto m = sparsity_pattern.local_range(0).second
+                   - sparsity_pattern.local_range(1).first;
+    const auto col_end = sparsity_pattern.local_range(1).second;
+
+    // Tabulate nonzero pattern
+    auto diagonal =
+      sparsity_pattern.diagonal_pattern(SparsityPattern::Type::sorted);
+    auto off_diagonal =
+      sparsity_pattern.off_diagonal_pattern(SparsityPattern::Type::sorted);
+    const bool has_off_diag = off_diagonal.size() > 0;
+    dolfin_assert(diagonal.size() == m);
+    dolfin_assert(off_diagonal.size() == m || !has_off_diag);
+
+    // Build CSR data
+    std::vector<PetscInt> rows(m + 1);
+    std::vector<PetscInt> cols(sparsity_pattern.num_nonzeros());
+    auto it = cols.begin();
+    decltype (off_diagonal)::value_type::iterator diag_end;
+    for (std::size_t i = 0; i < m; ++i)
+    {
+      rows[i] = std::distance(cols.begin(), it);
+      if (has_off_diag)
+      {
+        diag_end = std::find_if(off_diagonal[i].begin(), off_diagonal[i].end(),
+          [col_end](std::size_t J){return J>=col_end;});
+        it = std::copy(off_diagonal[i].begin(), diag_end, it);
+      }
+      it = std::copy(diagonal[i].begin(), diagonal[i].end(), it);
+      if (has_off_diag)
+        it = std::copy(diag_end, off_diagonal[i].end(), it);
+    }
+    rows[m] = std::distance(cols.begin(), it);
+    dolfin_assert(it == cols.end());
+    diagonal.clear(); diagonal.shrink_to_fit();
+    off_diagonal.clear(); off_diagonal.shrink_to_fit();
+
+    // Allocate matrix
+    ierr = MatMPIAIJSetPreallocationCSR(_matA, rows.data(), cols.data(), NULL);
+    if (ierr != 0) petsc_error(ierr, __FILE__, "MatMPIAIJSetPreallocationCSR");
+  }
+}
+//-----------------------------------------------------------------------------
 #endif
