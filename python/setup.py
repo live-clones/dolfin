@@ -22,6 +22,11 @@ class get_pybind_include(object):
         import pybind11
         return pybind11.get_include(self.user)
 
+lib_dirs = []
+variables = ('LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH')
+for e in variables:
+    if e in os.environ:
+        lib_dirs += os.environ[e].split(":")
 
 ext_modules = [
     Extension('dolfin_test',
@@ -39,8 +44,8 @@ ext_modules = [
                   get_pybind_include(user=True)
               ],
               libraries = ['dolfin'],
-              library_dirs = [os.environ['LD_LIBRARY_PATH'].split(":")[1]],
-              #language='c++'
+              library_dirs = lib_dirs,
+              language='c++'
     ),
 ]
 

@@ -17,7 +17,6 @@
 
 #include <memory>
 #include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
 
 #include <dolfin/io/VTKFile.h>
 #include <dolfin/mesh/Mesh.h>
@@ -32,9 +31,8 @@ namespace dolfin_wrappers
     // Wrap dolfin::VTKFile
     py::class_<dolfin::VTKFile, std::shared_ptr<dolfin::VTKFile>>(m, "VTKFile")
       .def(py::init<std::string, std::string>())
-      .def(py::self << dolfin::Mesh());
-//      .def("write", &dolfin::VTKFile::operator<<(const dolfin::Mesh&));
-
+      .def("__lshift__",  [](py::object& obj, const dolfin::Mesh& mesh) { dolfin::VTKFile *cls = obj.cast<dolfin::VTKFile*>(); *cls << mesh; })
+      .def("write", [](py::object& obj, const dolfin::Mesh& mesh) { dolfin::VTKFile *cls = obj.cast<dolfin::VTKFile*>(); *cls << mesh; });
   }
 
 }
