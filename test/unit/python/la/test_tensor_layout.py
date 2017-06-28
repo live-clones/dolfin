@@ -91,7 +91,13 @@ def test_layout_and_pattern_interface(backend, mesh, element, allocation_mode):
     SparsityPatternBuilder.build(s2, m, [d, d],
                                  True, False, False, False,
                                  False, init=False)
-    s2.mode = allocation_mode  # override mode set by SparsityPatternBuilder
+    # Check default mode set by SparsityPatternBuilder
+    if len(d.tabulate_global_dofs()) > 0:
+        assert s2.mode == SparsityPattern.Mode_NONZEROS_LOCATION
+    else:
+        assert s2.mode == SparsityPattern.Mode_NUM_NONZEROS
+    # Override default mode
+    s2.mode = allocation_mode
     A = Matrix()
     A.init(t2)
     assemble(a, tensor=A)
