@@ -20,32 +20,18 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
-#include <dolfin/mesh/Mesh.h>
-
-//#include <dolfin/geometry/Point.h>
-//#include <dolfin/generation/BoxMesh.h>
-
+#include <dolfin/geometry/Point.h>
 
 namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
 
-  void mesh(py::module& m)
+  void geometry(py::module& m)
   {
-    // Wrap dolfin::Mesh class
-    py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>
-      mesh(m, "Mesh", "DOLFIN Mesh object");
-
-    // Constructors
-    //Mesh.def(py::init<>());
-
-    // Mesh member functions
-    mesh.def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities");
-
-    // Wrap dolfin::BoxMesh
-    //py::class_<dolfin::BoxMesh, std::shared_ptr<dolfin::BoxMesh>, dolfin::Mesh>(m, "BoxMesh")
-    //  .def(py::init<const dolfin::Point&, const dolfin::Point&, std::size_t, std::size_t, std::size_t>());
+    // Wrap dolfin::Point
+    py::class_<dolfin::Point>(m, "Point")
+      .def(py::init<double, double, double>());
   }
 
 }
