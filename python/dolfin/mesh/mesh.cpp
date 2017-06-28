@@ -30,7 +30,8 @@ namespace dolfin_wrappers
   void mesh(py::module& m)
   {
     // Wrap dolfin::Mesh class
-    py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>> Mesh(m, "Mesh", "DOLFIN Mesh object");
+    py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>
+      Mesh(m, "Mesh", "DOLFIN Mesh object");
 
     // Constructors
     Mesh.def(py::init<>());

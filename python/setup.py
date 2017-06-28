@@ -26,6 +26,7 @@ class get_pybind_include(object):
 ext_modules = [
     Extension('dolfin_test',
               ['dolfin/dolfin.cpp',
+               'dolfin/geometry/geometry.cpp',
                'dolfin/mesh/mesh.cpp',
                'dolfin/generation/generation.cpp',
               ],

@@ -24,6 +24,7 @@ namespace dolfin_wrappers
 {
   void mesh(py::module& m);
   void generation(py::module& m);
+  void geometry(py::module& m);
 }
 
 
@@ -39,6 +40,10 @@ PYBIND11_PLUGIN(dolfin_test)
   // Create generation submodule
   py::module generation = m.def_submodule("generation", "DOLFIN mesh generation module");
   dolfin_wrappers::generation(generation);
+
+  // Create geometry submodule
+  py::module geometry = m.def_submodule("geometry", "DOLFIN geometry module");
+  dolfin_wrappers::geometry(geometry);
 
   return m.ptr();
 }

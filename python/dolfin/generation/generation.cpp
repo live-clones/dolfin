@@ -20,6 +20,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
+#include <dolfin/geometry/Point.h>
+#include <dolfin/generation/BoxMesh.h>
 #include <dolfin/generation/UnitCubeMesh.h>
 #include <dolfin/generation/UnitSquareMesh.h>
 
@@ -31,14 +33,19 @@ namespace dolfin_wrappers
   void generation(py::module& m)
   {
     // Wrap dolfin::UnitSquareMesh
-    py::class_<dolfin::UnitSquareMesh, std::shared_ptr<dolfin::UnitSquareMesh>>(m, "UnitSquareMesh")
-      .def(py::init<std::size_t, std::size_t, std::string>())
-      .def(py::init<MPI_Comm, std::size_t, std::size_t, std::string>());
+    //py::class_<dolfin::UnitSquareMesh, dolfin::Mesh>(m, "UnitSquareMesh")
+      // / .def(py::init<std::size_t, std::size_t, std::string>())
+    //  .def(py::init<MPI_Comm, std::size_t, std::size_t, std::string>());
 
     // Wrap dolfin::UnitCubeMesh
-    py::class_<dolfin::UnitCubeMesh, std::shared_ptr<dolfin::UnitCubeMesh>>(m, "UnitCubeMesh")
-      .def(py::init<std::size_t, std::size_t, std::size_t>());
+    //py::class_<dolfin::UnitCubeMesh, dolfin::dolfin::Mesh>(m, "UnitCubeMesh")
+    //  .def(py::init_alias<std::size_t, std::size_t, std::size_t>());
       //.def(py::init<MPI_Comm, std::size_t, std::size_t, std::size_t>());
+
+    // Wrap dolfin::BoxMesh
+    //py::class_<dolfin::BoxMesh, dolfin::dolfin::Mesh>(m, "BoxMesh")
+    //  .def(py::init<const dolfin::Point&, const::Point&, std::size_t, std::size_t, std::size_t>());
+
   }
 
 }
