@@ -28,6 +28,7 @@ ext_modules = [
               ['dolfin/dolfin.cpp',
                'dolfin/geometry/geometry.cpp',
                'dolfin/mesh/mesh.cpp',
+               'dolfin/io/io.cpp',
                'dolfin/generation/generation.cpp',
               ],
               include_dirs=[
