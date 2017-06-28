@@ -39,7 +39,8 @@ namespace dolfin_wrappers
 
     // Wrap dolfin::UnitCubeMesh
     py::class_<dolfin::UnitCubeMesh, std::shared_ptr<dolfin::UnitCubeMesh>, dolfin::Mesh>(m, "UnitCubeMesh")
-      .def(py::init<std::size_t, std::size_t, std::size_t>());
+      .def(py::init<std::size_t, std::size_t, std::size_t>())
+      .def(py::init<MPI_Comm, std::size_t, std::size_t, std::size_t>());
 
     // Wrap dolfin::BoxMesh
     py::class_<dolfin::BoxMesh, std::shared_ptr<dolfin::BoxMesh>, dolfin::Mesh>(m, "BoxMesh")

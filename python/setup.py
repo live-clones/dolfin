@@ -27,6 +27,7 @@ variables = ('LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH')
 for e in variables:
     if e in os.environ:
         lib_dirs += os.environ[e].split(":")
+lib_dirs = [x for x in lib_dirs if x != ""]
 
 ext_modules = [
     Extension('dolfin_test',
@@ -37,7 +38,6 @@ ext_modules = [
                'dolfin/generation/generation.cpp',
               ],
               include_dirs=[
-                  # Path to pybind11 headers
                   "../",
                   ffc.get_include_path(),
                   get_pybind_include(),
@@ -45,6 +45,7 @@ ext_modules = [
               ],
               libraries = ['dolfin'],
               library_dirs = lib_dirs,
+              define_macros= [('HAS_MPI', None)],
               language='c++'
     ),
 ]
