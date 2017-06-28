@@ -32,7 +32,8 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mesh, std::size_t facet_index, const Function& u)
+std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mesh,
+                                       std::size_t facet_index, const Function& u)
 {
   Facet facet(mesh, facet_index);
   Point X1 = Vertex(mesh, facet.entities(0)[0]).point();
@@ -42,6 +43,7 @@ std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mes
   // Get id of attached cell
   std::size_t id = facet.entities(mesh.topology().dim())[0];
 
+  // Vector value of Function
   Array<double> uval(3);
 
   const Cell cell(mesh, id);
