@@ -23,6 +23,7 @@ namespace py = pybind11;
 namespace dolfin_wrappers
 {
   void mesh(py::module& m);
+  void function(py::module& m);
   void generation(py::module& m);
   void geometry(py::module& m);
   void io(py::module& m);
@@ -32,13 +33,16 @@ namespace dolfin_wrappers
 PYBIND11_MODULE(cpp, m)
 {
   // Create module
-  //py::module m("dolfin_test", "DOLFIN Python interface");
   m.doc() ="DOLFIN Python interface";
-
 
   // Create mesh submodule
   py::module mesh = m.def_submodule("mesh", "DOLFIN mesh library");
   dolfin_wrappers::mesh(mesh);
+
+  // Create function submodule
+  py::module function = m.def_submodule("functon",
+                                        "DOLFIN mesh generation module");
+  dolfin_wrappers::function(function);
 
   // Create generation submodule
   py::module generation = m.def_submodule("generation",

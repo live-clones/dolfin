@@ -9,6 +9,7 @@ add_subdirectory(pybind11)
 # Create the binding library
 pybind11_add_module(cpp SHARED
   src/dolfin.cpp
+  src/function/function.cpp
   src/generation/generation.cpp
   src/geometry/geometry.cpp
   src/mesh/mesh.cpp
