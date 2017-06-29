@@ -33,7 +33,7 @@ PYBIND11_MODULE(dolfin_test, m)
 {
   // Create module
   //py::module m("dolfin_test", "DOLFIN Python interface");
-  m.doc() = "dolfin_test", "DOLFIN Python interface";
+  m.doc() ="DOLFIN Python interface";
 
 
   // Create mesh submodule
