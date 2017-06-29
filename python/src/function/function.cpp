@@ -25,6 +25,27 @@
 
 namespace py = pybind11;
 
+namespace expression_wrappers
+{
+  py::array_t<double> expression_eval(dolfin::Expression &instance,
+                                      py::array_t<double> x)
+  {
+    // Create coordinate array
+    const py::buffer_info x_info = x.request();
+    const dolfin::Array<double> _x(x_info.shape[0], x.mutable_data());
+
+    // Create object to hold data to be computed and returned
+    py::array_t<double, py::array::c_style> values(instance.value_size());
+    dolfin::Array<double> _values(instance.value_size(), values.mutable_data());
+
+    // Evaluate basis
+    instance.eval(_values, _x);
+    return values;
+  }
+
+}
+
+
 namespace dolfin_wrappers
 {
 
@@ -34,8 +55,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::Expression, std::shared_ptr<dolfin::Expression>>(m, "Exprssion")
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
-      .def("eval", (void (dolfin::Expression::*)(dolfin::Array<double>&, const dolfin::Array<double>&) const) &dolfin::Expression::eval,
-           "Evaluate Expression")
+      .def("eval", &expression_wrappers::expression_eval, "Evaluate Expression")
       .def("eval", (void (dolfin::Expression::*)(dolfin::Array<double>&, const dolfin::Array<double>&, const ufc::cell&) const) &dolfin::Expression::eval,
            "Evaluate Expression (cell version)");
 
