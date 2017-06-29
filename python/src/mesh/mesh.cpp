@@ -22,6 +22,7 @@
 
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MeshTopology.h>
+#include <dolfin/mesh/MeshGeometry.h>
 
 //#include <dolfin/geometry/Point.h>
 //#include <dolfin/generation/BoxMesh.h>
@@ -34,22 +35,34 @@ namespace dolfin_wrappers
 
   void mesh(py::module& m)
   {
-    // Wrap dolfin::Mesh class
+    //-----------------------------------------------------------------------------
+    // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>
       mesh(m, "Mesh", "DOLFIN Mesh object");
 
     // Constructors
-    //Mesh.def(py::init<>());
+    // mesh.def(py::init<>());
 
-    // Mesh member functions
     mesh.def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities");
-    mesh.def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const) &dolfin::Mesh::topology, "Mesh topology");
+    mesh.def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
+	                                   &dolfin::Mesh::topology, "Mesh topology");
+    mesh.def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
+	                                   &dolfin::Mesh::geometry, "Mesh geometry");
 
-    // Wrap dolfin::MeshTopology class
+    //-----------------------------------------------------------------------------
+    // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
       mesh_topology(m, "MeshTopology", "DOLFIN MeshTopology object");
 
     mesh_topology.def("dim", &dolfin::MeshTopology::dim, "Topological dimension");
+
+    //-----------------------------------------------------------------------------
+    // dolfin::MeshGeometry class
+    py::class_<dolfin::MeshGeometry, std::shared_ptr<dolfin::MeshGeometry>>
+      mesh_geometry(m, "MeshGeometry", "DOLFIN MeshGeometry object");
+
+    mesh_geometry.def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension");
+    
     
   }
 
