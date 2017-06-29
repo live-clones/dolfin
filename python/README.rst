@@ -1,6 +1,20 @@
 Experimental Python wrapping with pybind11
 ==========================================
 
+Using CMake
+-----------
+
+1. cmake .
+2. make
+
+To set the Python version::
+
+  cmake -DPYTHON_EXECUTABLE:FILEPATH=<path-to-python-executable> .
+
+
+Using setup.py
+--------------
+
 1. Build using::
 
      python3 setup.py build
