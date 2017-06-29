@@ -29,7 +29,7 @@ namespace dolfin_wrappers
 }
 
 
-PYBIND11_MODULE(dolfin_test, m)
+PYBIND11_MODULE(cpp, m)
 {
   // Create module
   //py::module m("dolfin_test", "DOLFIN Python interface");
