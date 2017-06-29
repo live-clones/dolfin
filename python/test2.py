@@ -81,3 +81,70 @@ mycode2 = cppimport.imp("testcode2")
 my_exp = mycode2.MyExpression(6)
 g = my_exp.get()
 print(g)
+
+
+
+cpp_code3="""
+/*
+<%
+import os
+import ffc
+setup_pybind11(cfg)
+cfg['include_dirs'] = ['../', ffc.get_include_path()]
+cfg['libraries'] = ['dolfin']
+lib_dirs = []
+variables = ('LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH')
+for e in variables:
+    if e in os.environ:
+        lib_dirs += os.environ[e].split(":")
+lib_dirs = [x for x in lib_dirs if x != ""]
+cfg['library_dirs'] = lib_dirs
+%>
+*/
+#include <pybind11/pybind11.h>
+#include <string>
+#include <dolfin/function/Expression.h>
+
+namespace py = pybind11;
+
+class TestExpression : public dolfin::Expression
+{
+public:
+
+  TestExpression(std::string name) : _name(name) {}
+
+  std::string get() {return _name; }
+
+private:
+
+  std::string _name;
+
+};
+
+PYBIND11_PLUGIN(testcode3)
+{
+  pybind11::module m("testcode3", "auto-compiled c++ extension");
+
+  py::class_<dolfin::Expression>(m, "DOLFINExpression")
+    .def(py::init<std::size_t>());
+    //.def("get", &TestExpression::get);
+
+  py::class_<TestExpression, dolfin::Expression>(m, "TestExpression")
+    .def(py::init<std::string>())
+    .def("get", &TestExpression::get);
+
+  return m.ptr();
+}
+"""
+cppimport.set_quiet(False)
+
+f = open('testcode3.cpp', 'w')
+f.write(cpp_code3)
+f.close()
+
+mycode3 = cppimport.imp("testcode3")
+
+print(dir(mycode3))
+my_exp = mycode3.TestExpression("testing")
+g = my_exp.get()
+print(g)
