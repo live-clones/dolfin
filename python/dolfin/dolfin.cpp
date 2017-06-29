@@ -29,10 +29,12 @@ namespace dolfin_wrappers
 }
 
 
-PYBIND11_PLUGIN(dolfin_test)
+PYBIND11_MODULE(dolfin_test, m)
 {
   // Create module
-  py::module m("dolfin_test", "DOLFIN Python interface");
+  //py::module m("dolfin_test", "DOLFIN Python interface");
+  m.doc() = "dolfin_test", "DOLFIN Python interface";
+
 
   // Create mesh submodule
   py::module mesh = m.def_submodule("mesh", "DOLFIN mesh library");
@@ -52,5 +54,5 @@ PYBIND11_PLUGIN(dolfin_test)
   py::module io = m.def_submodule("io", "DOLFIN I/O module");
   dolfin_wrappers::io(io);
 
-  return m.ptr();
+  //return m.ptr();
 }
