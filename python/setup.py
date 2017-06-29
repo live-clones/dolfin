@@ -65,6 +65,8 @@ setup(
     author='FEniCS Project',
     description='Experimental DOLFIN pybind11 interface',
     long_description='',
+    packages=["dolfin_test"],
+    package_dir={'dolfin_test' : 'dolfin'},
     ext_modules=[CMakeExtension('dolfin_test.cpp')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
