@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-set(NAME example)
-PROJECT(${NAME})
+PROJECT(dolfin_test)
 
 find_package(DOLFIN REQUIRED)
 include(${DOLFIN_USE_FILE})
@@ -14,11 +13,11 @@ add_subdirectory(pybind11)
 
 # Create the binding library
 pybind11_add_module(dolfin_test SHARED
-  dolfin/dolfin.cpp
-  dolfin/generation/generation.cpp
-  dolfin/geometry/geometry.cpp
-  dolfin/mesh/mesh.cpp
-  dolfin/io/io.cpp
+  src/dolfin.cpp
+  src/generation/generation.cpp
+  src/geometry/geometry.cpp
+  src/mesh/mesh.cpp
+  src/io/io.cpp
   )
 
 target_link_libraries(dolfin_test PRIVATE pybind11::module dolfin)
