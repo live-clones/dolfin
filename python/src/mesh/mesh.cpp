@@ -21,6 +21,7 @@
 #include <pybind11/numpy.h>
 
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshTopology.h>
 
 //#include <dolfin/geometry/Point.h>
 //#include <dolfin/generation/BoxMesh.h>
@@ -42,7 +43,14 @@ namespace dolfin_wrappers
 
     // Mesh member functions
     mesh.def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities");
+    mesh.def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const) &dolfin::Mesh::topology, "Mesh topology");
 
+    // Wrap dolfin::MeshTopology class
+    py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
+      mesh_topology(m, "MeshTopology", "DOLFIN MeshTopology object");
+
+    mesh_topology.def("dim", &dolfin::MeshTopology::dim, "Topological dimension");
+    
   }
 
 }
