@@ -66,6 +66,12 @@ namespace dolfin_wrappers
            "Evaluate Expression (cell version)")
       .def("test", []() { return "Expression test function"; });
 
+    //-----------------------------------------------------------------------------
+    // dolfin::Function
+    py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>>(m, "Function")
+      .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>());
+
+    //-----------------------------------------------------------------------------
     // dolfin::FunctionSpace
     py::class_<dolfin::FunctionSpace, std::shared_ptr<dolfin::FunctionSpace>>(m, "FunctionSpace")
       .def(py::init<std::shared_ptr<dolfin::Mesh>, std::shared_ptr<dolfin::FiniteElement>,
