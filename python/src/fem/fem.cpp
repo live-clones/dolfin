@@ -23,7 +23,7 @@
 
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
-#include <ufc/ufc.h>
+#include <ufc.h>
 
 namespace py = pybind11;
 
