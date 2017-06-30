@@ -47,7 +47,7 @@ PYBIND11_MODULE(cpp, m)
 
   // Create function submodule
   py::module function = m.def_submodule("function",
-                                        "DOLFIN mesh generation module");
+                                        "DOLFIN function module");
   dolfin_wrappers::function(function);
 
   // Create generation submodule
