@@ -19,6 +19,8 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
+
 
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/CellType.h>
@@ -54,16 +56,17 @@ namespace dolfin_wrappers
 	     [](dolfin::Mesh& self)
 	     { return py::array({self.geometry().num_points(), self.geometry().dim()},
                                 self.geometry().x().data()); });
+    mesh.def("coordinates_vec",
+	     [](dolfin::Mesh& self){ return self.geometry().x(); },
+             py::return_value_policy::reference);
+
     mesh.def("cells",
 	     [](const dolfin::Mesh& self)
 	     {
 	       const unsigned int tdim = self.topology().dim();
-	       const unsigned int num_cells = self.topology().size(tdim);
-	       const unsigned int num_points_per_cell = self.type().num_vertices(tdim);
-	       py::array_t<unsigned int, py::array::c_style>
-		 cells({num_cells, num_points_per_cell},
-		       self.topology()(tdim, 0)().data());
-	       return cells;
+	       return py::array({self.topology().size(tdim),
+                     self.type().num_vertices(tdim)},
+                 self.topology()(tdim, 0)().data());
 	     });
 
     mesh.def("cell_type",
