@@ -67,7 +67,7 @@ setup(
     long_description='',
     packages=["dolfin_test",
               "dolfin_test.function"],
-    package_dir={'dolfin_test' : 'dolfin'},
+    package_dir={'dolfin_test' : 'dolfin_test'},
     ext_modules=[CMakeExtension('dolfin_test.cpp')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,

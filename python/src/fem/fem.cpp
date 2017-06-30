@@ -23,10 +23,9 @@
 
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
-// #include <ufc/ufc.h>
 
-class ufc::finite_element;
-class ufc::dofmap;
+#include <ufc.h>
+
 
 namespace py = pybind11;
 
