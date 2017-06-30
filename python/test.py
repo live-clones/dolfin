@@ -25,8 +25,10 @@ print(mesh.num_entities(2))
 mesh = dolfin_test.cpp.generation.UnitSquareMesh(6, 9, "crossed")
 print(mesh.num_entities(2))
 
+# Create a small mesh to check topology and geometry
+mesh = dolfin_test.cpp.generation.UnitSquareMesh(2, 2)
 print(mesh.topology().dim(), mesh.geometry().dim())
-print(mesh.coordinates())
+print(mesh.coordinates(), mesh.cells())
 
 # Write mesh to file (using two different interfaces)
 file = dolfin_test.cpp.io.VTKFile("test.pvd", "ascii")

@@ -21,6 +21,7 @@
 #include <pybind11/numpy.h>
 
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/CellType.h>
 #include <dolfin/mesh/MeshTopology.h>
 #include <dolfin/mesh/MeshGeometry.h>
 
@@ -44,6 +45,7 @@ namespace dolfin_wrappers
     // mesh.def(py::init<>());
 
     mesh.def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities");
+
     mesh.def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
 	                                   &dolfin::Mesh::topology, "Mesh topology");
     mesh.def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
@@ -52,7 +54,19 @@ namespace dolfin_wrappers
 	     [](dolfin::Mesh& self)
 	     { return py::array({self.geometry().num_points(), self.geometry().dim()},
                                 self.geometry().x().data()); });
+    mesh.def("cells",
+	     [](const dolfin::Mesh& self)
+	     {
+	       const unsigned int tdim = self.topology().dim();
+	       const unsigned int num_cells = self.topology().size(tdim);
+	       const unsigned int num_points_per_cell = self.type().num_vertices(tdim);
+	       py::array_t<unsigned int, py::array::c_style>
+		 cells({num_cells, num_points_per_cell},
+		       self.topology()(tdim, 0)().data());
+	       return cells;
+	     });
 
+>>>>>>> 90aa0af9fdf798e0f6f48c5bab10f351a67d629d
     //-----------------------------------------------------------------------------
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
