@@ -123,13 +123,17 @@ private:
 
 PYBIND11_PLUGIN(testcode3)
 {
-  pybind11::module m("testcode3", "auto-compiled c++ extension");
+  //py::module::import("dolfin_test");
+  //py::module::import("cpp");
+  py::module::import("cpp.function");
+  //expy::module::import("cpp.function.Expression");
 
-  py::class_<dolfin::Expression>(m, "DOLFINExpression")
-    .def(py::init<std::size_t>());
-    //.def("get", &TestExpression::get);
+    py::module m("example", "pybind11 example plugin");
 
-  py::class_<TestExpression, dolfin::Expression>(m, "TestExpression")
+
+  py::class_<dolfin::Expression> dolfin_expression(m, "cpp.function.Expression");
+
+  py::class_<TestExpression>(m, "TestExpression", dolfin_expression)
     .def(py::init<std::string>())
     .def("get", &TestExpression::get);
 
@@ -142,9 +146,22 @@ f = open('testcode3.cpp', 'w')
 f.write(cpp_code3)
 f.close()
 
+
+import cpp.function
+
 mycode3 = cppimport.imp("testcode3")
 
+
+print(type(mycode3))
 print(dir(mycode3))
+
+
 my_exp = mycode3.TestExpression("testing")
-g = my_exp.get()
-print(g)
+print(type(my_exp))
+print(dir(my_exp))
+
+#c =  my_exp.cpp.function.Expression()
+
+help(my_exp)
+#g = my_exp.get()
+#print(g)

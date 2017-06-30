@@ -52,12 +52,13 @@ namespace dolfin_wrappers
   void function(py::module& m)
   {
     // Wrap dolfin::Expression
-    py::class_<dolfin::Expression, std::shared_ptr<dolfin::Expression>>(m, "Exprssion")
+    py::class_<dolfin::Expression, std::shared_ptr<dolfin::Expression>>(m, "Expression")
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
       .def("eval", &expression_wrappers::expression_eval, "Evaluate Expression")
       .def("eval", (void (dolfin::Expression::*)(dolfin::Array<double>&, const dolfin::Array<double>&, const ufc::cell&) const) &dolfin::Expression::eval,
-           "Evaluate Expression (cell version)");
+           "Evaluate Expression (cell version)")
+      .def("test", []() { return "Expression test function"; });
 
   }
 
