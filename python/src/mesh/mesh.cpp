@@ -66,26 +66,20 @@ namespace dolfin_wrappers
            }
         );
 
-    mesh.def("cell_type",
-             [](dolfin::Mesh& self)
-             {
-               return dolfin::CellType::type2string(self.type().cell_type());
-             });
 
-    //-----------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
       mesh_topology(m, "MeshTopology", "DOLFIN MeshTopology object");
 
     mesh_topology.def("dim", &dolfin::MeshTopology::dim, "Topological dimension");
 
-    //-----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // dolfin::MeshGeometry class
     py::class_<dolfin::MeshGeometry, std::shared_ptr<dolfin::MeshGeometry>>
       (m, "MeshGeometry", "DOLFIN MeshGeometry object")
       .def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension")
       .def("degree", &dolfin::MeshGeometry::degree, "Degree");
-
 
   }
 

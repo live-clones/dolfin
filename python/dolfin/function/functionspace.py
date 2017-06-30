@@ -22,14 +22,29 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
             domain."""
             cell = self.ufl_cell()
             degree = self.geometry().degree()
-            return ufl.VectorElement("Lagrange", cell, degree, dim=cell.geometric_dimension())
+            return ufl.VectorElement("Lagrange", cell, degree,
+                                     dim=cell.geometric_dimension())
         mesh.ufl_coordinate_element = types.MethodType(ufl_coordinate_element, mesh)
 
         def ufl_domain(self):
             """Returns the ufl domain corresponding to the mesh."""
             # Cache object to avoid recreating it a lot
             if not hasattr(self, "_ufl_domain"):
-                self._ufl_domain = ufl.Mesh(self.ufl_coordinate_element(), ufl_id=self.ufl_id(),
+                self._ufl_domain = ufl.Mesh(self.ufl_coordinate_element(),
+                                            ufl_id=self.ufl_id(),
                                             cargo=self)
             return self._ufl_domain
         mesh.ufl_domain = types.MethodType(ufl_domain, mesh)
+
+        # Create UFL element
+        element = ufl.FiniteElement(family, mesh.ufl_cell(), degree,
+                                    form_degree=None)
+
+        # Initialize the ufl.FunctionSpace first to check for good
+        # meaning
+        ufl.FunctionSpace.__init__(self, mesh.ufl_domain(), element)
+        #dolfin_element, dolfin_dofmap = _compile_dolfin_element(element, mesh,
+        #                                                        constrained_domain=None)
+
+        # Initialize the cpp.FunctionSpace
+        #cpp.function.FunctionSpace.__init__(self, mesh, dolfin_element, dolfin_dofmap)
