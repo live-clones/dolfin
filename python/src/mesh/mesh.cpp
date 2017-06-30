@@ -66,6 +66,12 @@ namespace dolfin_wrappers
            }
         );
 
+    mesh.def("cell_type",
+             [](dolfin::Mesh& self)
+             {
+               return dolfin::CellType::type2string(self.type().cell_type());
+             });
+
     //-----------------------------------------------------------------------------
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
