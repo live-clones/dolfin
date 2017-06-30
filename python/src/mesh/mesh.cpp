@@ -21,15 +21,10 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
-
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/CellType.h>
 #include <dolfin/mesh/MeshTopology.h>
 #include <dolfin/mesh/MeshGeometry.h>
-
-//#include <dolfin/geometry/Point.h>
-//#include <dolfin/generation/BoxMesh.h>
-
 
 namespace py = pybind11;
 
@@ -40,34 +35,36 @@ namespace dolfin_wrappers
   {
     //-----------------------------------------------------------------------------
     // dolfin::Mesh class
-    py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>
-      mesh(m, "Mesh", "DOLFIN Mesh object");
-
-    // Constructors
-    // mesh.def(py::init<>());
-
-    mesh.def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities");
-
-    mesh.def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
-	                                   &dolfin::Mesh::topology, "Mesh topology");
-    mesh.def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
-	                                   &dolfin::Mesh::geometry, "Mesh geometry");
-    mesh.def("coordinates",
-	     [](dolfin::Mesh& self)
-	     { return py::array({self.geometry().num_points(), self.geometry().dim()},
-                                self.geometry().x().data()); });
-    mesh.def("coordinates_vec",
-	     [](dolfin::Mesh& self){ return self.geometry().x(); },
-             py::return_value_policy::reference);
-
-    mesh.def("cells",
-	     [](const dolfin::Mesh& self)
-	     {
-	       const unsigned int tdim = self.topology().dim();
-	       return py::array({self.topology().size(tdim),
-                     self.type().num_vertices(tdim)},
-                 self.topology()(tdim, 0)().data());
-	     });
+    py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
+      .def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities")
+      .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
+           &dolfin::Mesh::topology, "Mesh topology")
+      .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
+           &dolfin::Mesh::geometry, "Mesh geometry")
+      .def("coordinates",
+           [](dolfin::Mesh& self)
+           { return py::array({self.geometry().num_points(), self.geometry().dim()},
+                              self.geometry().x().data()); })
+      .def("coordinates_vec",
+           [](dolfin::Mesh& self){ return self.geometry().x(); },
+           py::return_value_policy::reference)
+      .def("cells",
+           [](const dolfin::Mesh& self)
+           {
+             const unsigned int tdim = self.topology().dim();
+             return py::array({self.topology().size(tdim),
+                   self.type().num_vertices(tdim)},
+               self.topology()(tdim, 0)().data());
+           })
+      // UFL related
+      .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
+      .def("cell_name", [](const dolfin::Mesh& self)
+           {
+             auto gdim = self.geometry().dim();
+             auto cellname = self.type().description(false);
+             return cellname;
+           }
+        );
 
     //-----------------------------------------------------------------------------
     // dolfin::MeshTopology class
@@ -79,9 +76,9 @@ namespace dolfin_wrappers
     //-----------------------------------------------------------------------------
     // dolfin::MeshGeometry class
     py::class_<dolfin::MeshGeometry, std::shared_ptr<dolfin::MeshGeometry>>
-      mesh_geometry(m, "MeshGeometry", "DOLFIN MeshGeometry object");
-
-    mesh_geometry.def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension");
+      (m, "MeshGeometry", "DOLFIN MeshGeometry object")
+      .def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension")
+      .def("degree", &dolfin::MeshGeometry::degree, "Degree");
 
 
   }
