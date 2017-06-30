@@ -23,7 +23,10 @@
 
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
-#include <ufc/ufc.h>
+// #include <ufc/ufc.h>
+
+class ufc::finite_element;
+class ufc::dofmap;
 
 namespace py = pybind11;
 
@@ -39,6 +42,8 @@ namespace dolfin_wrappers
 
     //-----------------------------------------------------------------------------
     // dolfin::DofMap class
+    py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>>(m, "DofMap", "DOLFIN DofMap object")
+      .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&>());
 
   }
 
