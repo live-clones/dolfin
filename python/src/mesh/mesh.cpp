@@ -49,15 +49,10 @@ namespace dolfin_wrappers
     mesh.def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
 	                                   &dolfin::Mesh::geometry, "Mesh geometry");
     mesh.def("coordinates",
-	     [](const dolfin::Mesh& self)
-	     {
-	       const std::size_t num_points = self.geometry().num_points();
-	       const std::size_t gdim = self.geometry().dim();
-	       py::array_t<double, py::array::c_style>
-		 f({num_points, gdim}, self.geometry().x().data());
-	       return f;
-	     });
-    
+	     [](dolfin::Mesh& self)
+	     { return py::array({self.geometry().num_points(), self.geometry().dim()},
+                                self.geometry().x().data()); });
+
     //-----------------------------------------------------------------------------
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
@@ -71,8 +66,8 @@ namespace dolfin_wrappers
       mesh_geometry(m, "MeshGeometry", "DOLFIN MeshGeometry object");
 
     mesh_geometry.def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension");
-    
-    
+
+
   }
 
 }
