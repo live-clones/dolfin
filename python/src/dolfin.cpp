@@ -43,7 +43,7 @@ PYBIND11_MODULE(cpp, m)
 
   // Create fem submodule
   py::module fem = m.def_submodule("fem", "DOLFIN FEM module");
-  dolfin_wrappers:fem(fem);
+  dolfin_wrappers::fem(fem);
 
   // Create function submodule
   py::module function = m.def_submodule("function",
