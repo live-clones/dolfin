@@ -52,7 +52,8 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         dolfin_element = cpp.fem.FiniteElement(ufc_element)
         print("Element signature:", dolfin_element.signature())
 
-        # dolfin_dofmap  = cpp.DofMap(ufc_dofmap, mesh)
+        ufc_dofmap = cpp.fem.make_ufc_dofmap(ufc_dofmap)
+        dolfin_dofmap  = cpp.fem.DofMap(ufc_dofmap, mesh)
 
         # Initialize the cpp.FunctionSpace
         #cpp.function.FunctionSpace.__init__(self, mesh, dolfin_element, dolfin_dofmap)

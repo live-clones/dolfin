@@ -33,23 +33,32 @@ namespace dolfin_wrappers
 {
   void fem(py::module& m)
   {
-    // ufc::finite_element
+    // ufc::foo wrappers
     py::class_<ufc::finite_element, std::shared_ptr<ufc::finite_element>>
       (m, "ufc_finite_element", "UFC finite element object");
+    py::class_<ufc::dofmap, std::shared_ptr<ufc::dofmap>>
+      (m, "ufc_dofmap", "UFC dofmap object");
 
-     m.def("make_ufc_finite_element", [](std::uintptr_t e)
-           {
+    m.def("make_ufc_finite_element",
+          [](std::uintptr_t e)
+          {
             ufc::finite_element * p = reinterpret_cast<ufc::finite_element *>(e);
             return std::shared_ptr<const ufc::finite_element>(p);
           });
-    //-----------------------------------------------------------------------------
+
+    m.def("make_ufc_dofmap",
+          [](std::uintptr_t e)
+          {
+            ufc::dofmap * p = reinterpret_cast<ufc::dofmap *>(e);
+            return std::shared_ptr<const ufc::dofmap>(p);
+          });
+
     // dolfin::FiniteElement class
     py::class_<dolfin::FiniteElement, std::shared_ptr<dolfin::FiniteElement>>
       (m, "FiniteElement", "DOLFIN FiniteElement object")
       .def(py::init<std::shared_ptr<const ufc::finite_element>>())
       .def("signature", &dolfin::FiniteElement::signature);
 
-    //-----------------------------------------------------------------------------
     // dolfin::DofMap class
     py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>>(m, "DofMap", "DOLFIN DofMap object")
       .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&>());
