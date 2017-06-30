@@ -23,6 +23,12 @@
 #include <dolfin/common/Array.h>
 #include <dolfin/function/Expression.h>
 
+#include <dolfin/function/FunctionSpace.h>
+#include <dolfin/fem/FiniteElement.h>
+#include <dolfin/fem/GenericDofMap.h>
+#include <dolfin/mesh/Mesh.h>
+
+
 namespace py = pybind11;
 
 namespace expression_wrappers
@@ -59,6 +65,17 @@ namespace dolfin_wrappers
       .def("eval", (void (dolfin::Expression::*)(dolfin::Array<double>&, const dolfin::Array<double>&, const ufc::cell&) const) &dolfin::Expression::eval,
            "Evaluate Expression (cell version)")
       .def("test", []() { return "Expression test function"; });
+
+  }
+
+  void functionspace(py::module& m)
+  {
+    // dolfin::FunctionSpace
+    py::class_<dolfin::FunctionSpace, std::shared_ptr<dolfin::FunctionSpace>> functionspace(m, "FunctionSpace");
+
+    functionspace.def(py::init<std::shared_ptr<dolfin::Mesh>,
+                               std::shared_ptr<dolfin::FiniteElement>,
+                               std::shared_ptr<dolfin::GenericDofMap>>());
 
   }
 
