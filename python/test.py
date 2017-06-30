@@ -2,6 +2,7 @@ import dolfin_test.cpp.geometry
 import dolfin_test.cpp.generation
 import dolfin_test.cpp.mesh
 import dolfin_test.cpp.io
+from dolfin_test.function.functionspace import FunctionSpace
 
 # Create some points
 p0 = dolfin_test.cpp.geometry.Point(0.0, 0.0, 0.0)
@@ -29,6 +30,9 @@ print(mesh.num_entities(2))
 mesh = dolfin_test.cpp.generation.UnitSquareMesh(2, 2)
 print(mesh.topology().dim(), mesh.geometry().dim())
 print(mesh.coordinates(), mesh.cells())
+
+Q = FunctionSpace(mesh, "CG", 1)
+
 
 # Write mesh to file (using two different interfaces)
 file = dolfin_test.cpp.io.VTKFile("test.pvd", "ascii")
