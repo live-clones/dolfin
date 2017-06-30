@@ -24,6 +24,7 @@ namespace dolfin_wrappers
 {
   void mesh(py::module& m);
   void experimental(py::module& m);
+  void fem(py::module& m);
   void function(py::module& m);
   void generation(py::module& m);
   void geometry(py::module& m);
@@ -39,6 +40,10 @@ PYBIND11_MODULE(cpp, m)
   // Create mesh submodule
   py::module mesh = m.def_submodule("mesh", "DOLFIN mesh library");
   dolfin_wrappers::mesh(mesh);
+
+  // Create fem submodule
+  py::module fem = m.def_submodule("fem", "DOLFIN FEM module");
+  dolfin_wrappers:fem(fem);
 
   // Create function submodule
   py::module function = m.def_submodule("function",
