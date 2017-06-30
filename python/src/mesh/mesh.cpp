@@ -66,7 +66,6 @@ namespace dolfin_wrappers
 	       return cells;
 	     });
 
->>>>>>> 90aa0af9fdf798e0f6f48c5bab10f351a67d629d
     //-----------------------------------------------------------------------------
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
