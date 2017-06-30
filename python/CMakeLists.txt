@@ -10,6 +10,7 @@ add_subdirectory(pybind11)
 pybind11_add_module(cpp SHARED
   src/dolfin.cpp
   src/experimental/experimental.cpp
+  src/fem/fem.cpp
   src/function/function.cpp
   src/generation/generation.cpp
   src/geometry/geometry.cpp
