@@ -1,8 +1,14 @@
 Change log
 ==========
 
-dev
----
+2017.2.0 (unreleased)
+---------------------
+
+- Updates for `ufc::finite_element::evaluate_vertex_values` interface
+  change
+
+2017.1.0 (2017-05-09)
+---------------------
 
 - Refactor PETScLUSolver to use functionality from
   PETScKrylovSolver. Simplify interface for solving transposed

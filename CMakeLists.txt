@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.5)
 project(DOLFIN)
 set(DOLFIN_VERSION_RELEASE 0)
 set(DOLFIN_VERSION_MAJOR "2017")
-set(DOLFIN_VERSION_MINOR "1")
+set(DOLFIN_VERSION_MINOR "2")
 set(DOLFIN_VERSION_MICRO "0")
 set(DOLFIN_VERSION "${DOLFIN_VERSION_MAJOR}.${DOLFIN_VERSION_MINOR}.${DOLFIN_VERSION_MICRO}")
 if (NOT DOLFIN_VERSION_RELEASE)
@@ -334,8 +334,7 @@ set_package_properties(Boost PROPERTIES TYPE REQUIRED
   URL "http://www.boost.org")
 
 # Check for required package Eigen3
-# NOTE: Check issue #468 when changing required Eigen version
-find_package(Eigen3 3.2.0 REQUIRED)
+find_package(Eigen3 3.2.8 REQUIRED)
 set_package_properties(Eigen3 PROPERTIES TYPE REQUIRED
   DESCRIPTION "Lightweight C++ template library for linear algebra"
   URL "http://eigen.tuxfamily.org")
@@ -434,7 +433,7 @@ if (DOLFIN_ENABLE_PYTHON)
 endif()
 
 # Check for required package UFC
-find_package(UFC MODULE 2017.1)
+find_package(UFC MODULE 2017.2)
 set_package_properties(UFC PROPERTIES TYPE REQUIRED
   DESCRIPTION "Unified language for form-compilers (part of FFC)"
   URL "https://bitbucket.org/fenics-project/ffc")
