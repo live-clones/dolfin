@@ -1,4 +1,5 @@
 
+import ffc
 import ufl
 import types
 import dolfin_test.cpp as cpp
@@ -43,6 +44,9 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         # Initialize the ufl.FunctionSpace first to check for good
         # meaning
         ufl.FunctionSpace.__init__(self, mesh.ufl_domain(), element)
+
+        ufc_element, ufc_dofmap = ffc.jit(element, parameters=None)
+
         #dolfin_element, dolfin_dofmap = _compile_dolfin_element(element, mesh,
         #                                                        constrained_domain=None)
 
