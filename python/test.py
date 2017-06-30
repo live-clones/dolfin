@@ -15,6 +15,7 @@ print(mesh.num_entities(0))
 # Create a mesh
 mesh = dolfin_test.cpp.generation.UnitCubeMesh(7, 6, 9)
 #print(mesh.num_entities(0))
+print(mesh.topology().dim(), mesh.geometry().dim())
 
 # Create a mesh
 mesh = dolfin_test.cpp.generation.UnitSquareMesh(6, 9)
@@ -24,7 +25,8 @@ print(mesh.num_entities(2))
 mesh = dolfin_test.cpp.generation.UnitSquareMesh(6, 9, "crossed")
 print(mesh.num_entities(2))
 
-print(mesh.topology().dim())
+print(mesh.topology().dim(), mesh.geometry().dim())
+print(mesh.coordinates())
 
 # Write mesh to file (using two different interfaces)
 file = dolfin_test.cpp.io.VTKFile("test.pvd", "ascii")
