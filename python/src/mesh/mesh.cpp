@@ -60,17 +60,9 @@ namespace dolfin_wrappers
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
            {
-             auto gdim = self.geometry().dim();
-             auto cellname = self.type().description(false);
-             return cellname;
+             return dolfin::CellType::type2string(self.type().cell_type());
            }
         );
-
-    mesh.def("cell_type",
-             [](dolfin::Mesh& self)
-             {
-               return dolfin::CellType::type2string(self.type().cell_type());
-             });
 
     //-----------------------------------------------------------------------------
     // dolfin::MeshTopology class
