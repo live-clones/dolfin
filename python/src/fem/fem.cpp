@@ -36,7 +36,8 @@ namespace dolfin_wrappers
   {
     //-----------------------------------------------------------------------------
     // dolfin::FiniteElement class
-    py::class_<dolfin::FiniteElement, std::shared_ptr<dolfin::FiniteElement>>(m, "FiniteElement", "DOLFIN FiniteElement object")
+    py::class_<dolfin::FiniteElement, std::shared_ptr<dolfin::FiniteElement>>
+      (m, "FiniteElement", "DOLFIN FiniteElement object")
       .def(py::init<std::shared_ptr<const ufc::finite_element>>());
 
     //-----------------------------------------------------------------------------
