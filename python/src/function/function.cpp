@@ -27,7 +27,7 @@
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/mesh/Mesh.h>
-
+#include <dolfin/la/GenericVector.h>
 
 namespace py = pybind11;
 
@@ -69,7 +69,9 @@ namespace dolfin_wrappers
     //-----------------------------------------------------------------------------
     // dolfin::Function
     py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>>(m, "Function")
-      .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>());
+      .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>())
+      .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
+           &dolfin::Function::vector);
 
     //-----------------------------------------------------------------------------
     // dolfin::FunctionSpace

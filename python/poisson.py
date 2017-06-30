@@ -6,7 +6,7 @@ from dolfin_test.cpp.function import Function
 mesh = UnitSquareMesh(32, 32)
 V = FunctionSpace(mesh, "Lagrange", 1)
 w = Function(V)
-print(w)
+print(w.vector())
 quit()
 
 DOLFIN_EPS = 1e-14
