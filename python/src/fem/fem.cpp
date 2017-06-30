@@ -31,14 +31,23 @@ namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
-
   void fem(py::module& m)
   {
+    // ufc::finite_element
+    py::class_<ufc::finite_element, std::shared_ptr<ufc::finite_element>>
+      (m, "ufc_finite_element", "UFC finite element object");
+
+     m.def("make_ufc_finite_element", [](std::uintptr_t e)
+           {
+            ufc::finite_element * p = reinterpret_cast<ufc::finite_element *>(e);
+            return std::shared_ptr<const ufc::finite_element>(p);
+          });
     //-----------------------------------------------------------------------------
     // dolfin::FiniteElement class
     py::class_<dolfin::FiniteElement, std::shared_ptr<dolfin::FiniteElement>>
       (m, "FiniteElement", "DOLFIN FiniteElement object")
-      .def(py::init<std::shared_ptr<const ufc::finite_element>>());
+      .def(py::init<std::shared_ptr<const ufc::finite_element>>())
+      .def("signature", &dolfin::FiniteElement::signature);
 
     //-----------------------------------------------------------------------------
     // dolfin::DofMap class

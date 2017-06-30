@@ -46,10 +46,13 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         ufl.FunctionSpace.__init__(self, mesh.ufl_domain(), element)
 
         ufc_element, ufc_dofmap = ffc.jit(element, parameters=None)
+        print("JIT type:", type(ufc_element), ufc_element)
+        ufc_element = cpp.fem.make_ufc_finite_element(ufc_element)
+
         dolfin_element = cpp.fem.FiniteElement(ufc_element)
-#        dolfin_dofmap  = cpp.DofMap(ufc_dofmap, mesh)
+        print("Element signature:", dolfin_element.signature())
 
-
+        # dolfin_dofmap  = cpp.DofMap(ufc_dofmap, mesh)
 
         # Initialize the cpp.FunctionSpace
         #cpp.function.FunctionSpace.__init__(self, mesh, dolfin_element, dolfin_dofmap)
