@@ -67,11 +67,9 @@ namespace dolfin_wrappers
       .def("test", []() { return "Expression test function"; });
 
     // dolfin::FunctionSpace
-    py::class_<dolfin::FunctionSpace, std::shared_ptr<dolfin::FunctionSpace>> functionspace(m, "FunctionSpace");
-
-    functionspace.def(py::init<std::shared_ptr<dolfin::Mesh>,
-                               std::shared_ptr<dolfin::FiniteElement>,
-                               std::shared_ptr<dolfin::GenericDofMap>>());
+    py::class_<dolfin::FunctionSpace, std::shared_ptr<dolfin::FunctionSpace>>(m, "FunctionSpace")
+      .def(py::init<std::shared_ptr<dolfin::Mesh>, std::shared_ptr<dolfin::FiniteElement>,
+           std::shared_ptr<dolfin::GenericDofMap>>());
 
   }
 

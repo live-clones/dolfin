@@ -56,4 +56,5 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         dolfin_dofmap  = cpp.fem.DofMap(ufc_dofmap, mesh)
 
         # Initialize the cpp.FunctionSpace
-        #cpp.function.FunctionSpace.__init__(self, mesh, dolfin_element, dolfin_dofmap)
+        cpp.function.FunctionSpace.__init__(self, mesh, dolfin_element,
+                                            dolfin_dofmap)

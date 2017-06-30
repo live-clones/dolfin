@@ -59,8 +59,10 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const ufc::finite_element>>())
       .def("signature", &dolfin::FiniteElement::signature);
 
+    py::class_<dolfin::GenericDofMap, std::shared_ptr<dolfin::GenericDofMap>>(m, "GenericDofMap", "DOLFIN DofMap object");
+
     // dolfin::DofMap class
-    py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>>(m, "DofMap", "DOLFIN DofMap object")
+    py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>(m, "DofMap", "DOLFIN DofMap object")
       .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&>());
 
   }
