@@ -29,6 +29,7 @@
 #include <dolfin/la/Vector.h>
 #include <dolfin/la/EigenMatrix.h>
 #include <dolfin/la/EigenVector.h>
+#include <dolfin/la/LUSolver.h>
 
 namespace py = pybind11;
 
@@ -54,18 +55,24 @@ namespace dolfin_wrappers
       (m, "GenericTensor", "DOLFIN GenericTensor object");
 
     //-----------------------------------------------------------------------------
+    // dolfin::GenericLinearOperator class
+    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
+      (m, "GenericLinearOperator", "DOLFIN GenericLinearOperator object");
+
+    //-----------------------------------------------------------------------------
     // dolfin::GenericVector class
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>>
       (m, "GenericVector", "DOLFIN GenericVector object");
 
     //----------------------------------------------------------------------------
-    // dolfin::GenericTensor class
+    // dolfin::GenericMatrix class
     py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object");
 
     //----------------------------------------------------------------------------
     // dolfin::EigenVector class
-    py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>, dolfin::GenericVector, dolfin::GenericTensor>
+    py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>,
+               dolfin::GenericVector, dolfin::GenericTensor>
       (m, "EigenVector", "DOLFIN EigenVector object")
       .def(py::init<MPI_Comm, std::size_t>())
       .def("array", (Eigen::VectorXd& (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec,
@@ -73,13 +80,21 @@ namespace dolfin_wrappers
 
     //----------------------------------------------------------------------------
     // dolfin::EigenMatrix class
-    py::class_<dolfin::EigenMatrix, std::shared_ptr<dolfin::EigenMatrix>, dolfin::GenericMatrix, dolfin::GenericTensor>
+    py::class_<dolfin::EigenMatrix, std::shared_ptr<dolfin::EigenMatrix>,
+               dolfin::GenericMatrix, dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "EigenMatrix", "DOLFIN EigenMatrix object")
       .def(py::init<>())
       .def(py::init<std::size_t, std::size_t>())
       .def("array", (dolfin::EigenMatrix::eigen_matrix_type& (dolfin::EigenMatrix::*)()) &dolfin::EigenMatrix::mat,
            py::return_value_policy::reference_internal);
 
+    //-----------------------------------------------------------------------------
+    // dolfin::LUSolver class
+    py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>>
+      (m, "LUSolver", "DOLFIN LUSolver object")
+      .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>, std::string>())
+      .def("solve", (std::size_t (dolfin::LUSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
+           &dolfin::LUSolver::solve);
 
   }
 
