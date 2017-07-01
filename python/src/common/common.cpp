@@ -34,6 +34,9 @@ namespace dolfin_wrappers
 
     m.def("rank", &dolfin::MPI::rank);
     m.def("size", &dolfin::MPI::size);
+    m.def("max", &dolfin::MPI::max<double>);
+    m.def("min", &dolfin::MPI::min<double>);
+    m.def("sum", &dolfin::MPI::sum<double>);
 
   }
 

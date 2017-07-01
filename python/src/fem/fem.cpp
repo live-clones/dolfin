@@ -21,12 +21,16 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/fem/Assembler.h>
 #include <dolfin/fem/DirichletBC.h>
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
+#include <dolfin/fem/Form.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/GenericFunction.h>
 #include <dolfin/mesh/SubDomain.h>
+#include <dolfin/la/GenericTensor.h>
+
 
 #include <ufc.h>
 
@@ -63,6 +67,7 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const ufc::finite_element>>())
       .def("signature", &dolfin::FiniteElement::signature);
 
+    // dolfin::GenericDofMap class
     py::class_<dolfin::GenericDofMap, std::shared_ptr<dolfin::GenericDofMap>>
       (m, "GenericDofMap", "DOLFIN DofMap object");
 
@@ -77,6 +82,12 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
                     std::shared_ptr<const dolfin::GenericFunction>,
                     std::shared_ptr<const dolfin::SubDomain>>());
+
+    // dolfin::Assembler class
+    py::class_<dolfin::Assembler, std::shared_ptr<dolfin::Assembler>>
+      (m, "Assembler", "DOLFIN Assembler object")
+      .def(py::init<>())
+      .def("assemble", &dolfin::Assembler::assemble);
 
   }
 

@@ -49,15 +49,16 @@ namespace dolfin_wrappers
     //-----------------------------------------------------------------------------
     // dolfin::GenericVector class
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>>
-      (m, "GenericVector", "DOLFIN GenericVector object")
-      .def("array", [](dolfin::GenericVector& self)
-           {
-             return 0;
-           });
+      (m, "GenericVector", "DOLFIN GenericVector object");
+
+    //----------------------------------------------------------------------------
+    // dolfin::GenericMatrix class
+    py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>>
+      (m, "GenericMatrix", "DOLFIN GenericMatrix object");
 
     //----------------------------------------------------------------------------
     // dolfin::EigenVector class
-    py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>>
+    py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>, dolfin::GenericVector>
       (m, "EigenVector", "DOLFIN EigenVector object")
       .def(py::init<MPI_Comm, std::size_t>())
       .def("array", (Eigen::VectorXd& (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec,
@@ -65,7 +66,7 @@ namespace dolfin_wrappers
 
     //----------------------------------------------------------------------------
     // dolfin::EigenMatrix class
-    py::class_<dolfin::EigenMatrix, std::shared_ptr<dolfin::EigenMatrix>>
+    py::class_<dolfin::EigenMatrix, std::shared_ptr<dolfin::EigenMatrix>, dolfin::GenericMatrix>
       (m, "EigenMatrix", "DOLFIN EigenMatrix object")
       .def(py::init<std::size_t, std::size_t>())
       .def("array", (dolfin::EigenMatrix::eigen_matrix_type& (dolfin::EigenMatrix::*)()) &dolfin::EigenMatrix::mat,
