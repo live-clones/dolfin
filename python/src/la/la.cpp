@@ -19,11 +19,13 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 
 #include <dolfin/la/Matrix.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/Vector.h>
+#include <dolfin/la/EigenVector.h>
 
 namespace py = pybind11;
 
@@ -44,10 +46,21 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm>());
 
     //-----------------------------------------------------------------------------
-    // dolfin::Vector class
+    // dolfin::GenericVector class
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>>
-      (m, "GenericVector", "DOLFIN GenericVector object");
+      (m, "GenericVector", "DOLFIN GenericVector object")
+      .def("array", [](dolfin::GenericVector& self)
+           {
+             return 0;
+           });
 
+    //----------------------------------------------------------------------------
+    // dolfin::EigenVector class
+    py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>>
+      (m, "EigenVector", "DOLFIN EigenVector object")
+      .def(py::init<MPI_Comm, std::size_t>())
+      .def("array", [](dolfin::EigenVector& self)
+             { return self.vec(); });
 
   }
 
