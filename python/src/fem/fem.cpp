@@ -61,6 +61,13 @@ namespace dolfin_wrappers
             return std::shared_ptr<const ufc::dofmap>(p);
           });
 
+    m.def("make_ufc_form",
+          [](std::uintptr_t e)
+          {
+            ufc::form * p = reinterpret_cast<ufc::form *>(e);
+            return std::shared_ptr<const ufc::form>(p);
+          });
+
     // dolfin::FiniteElement class
     py::class_<dolfin::FiniteElement, std::shared_ptr<dolfin::FiniteElement>>
       (m, "FiniteElement", "DOLFIN FiniteElement object")
