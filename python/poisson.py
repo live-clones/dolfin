@@ -1,20 +1,27 @@
 
 from dolfin_test.cpp.generation import UnitSquareMesh
 from dolfin_test.function.functionspace import FunctionSpace
-from dolfin_test.cpp.function import Function
+from dolfin_test.cpp.function import Function, Constant
+from dolfin_test.cpp.fem import DirichletBC
+from dolfin_test.cpp.mesh import SubDomain
 
 mesh = UnitSquareMesh(32, 32)
 V = FunctionSpace(mesh, "Lagrange", 1)
 w = Function(V)
 print(w.vector())
-quit()
 
 DOLFIN_EPS = 1e-14
-def boundary(x):
-    return x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS
+
+class Boundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS
+
+boundary = Boundary()
+print(boundary)
 
 u0 = Constant(0.0)
 bc = DirichletBC(V, u0, boundary)
+quit()
 
 u = TrialFunction(V)
 v = TestFunction(V)
