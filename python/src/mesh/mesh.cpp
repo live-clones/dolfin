@@ -95,6 +95,7 @@ namespace dolfin_wrappers
       (m, "SubDomain", "DOLFIN SubDomain object")
       .def(py::init<>())
       .def("inside", &dolfin::SubDomain::inside);
+
   }
 
 }

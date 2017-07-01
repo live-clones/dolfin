@@ -58,31 +58,42 @@ namespace dolfin_wrappers
 
   void function(py::module& m)
   {
-    // Wrap dolfin::Expression
-    py::class_<dolfin::Expression, std::shared_ptr<dolfin::Expression>>(m, "Expression")
+    //-----------------------------------------------------------------------------
+    // dolfin::GenericFunction
+    py::class_<dolfin::GenericFunction, std::shared_ptr<dolfin::GenericFunction>>
+      (m, "GenericFunction");
+
+    //-----------------------------------------------------------------------------
+    // dolfin::Expression
+    py::class_<dolfin::Expression, std::shared_ptr<dolfin::Expression>>
+      (m, "Expression")
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
       .def("eval", &expression_wrappers::expression_eval, "Evaluate Expression")
-      .def("eval", (void (dolfin::Expression::*)(dolfin::Array<double>&, const dolfin::Array<double>&, const ufc::cell&) const) &dolfin::Expression::eval,
+      .def("eval", (void (dolfin::Expression::*)(dolfin::Array<double>&, const dolfin::Array<double>&, const ufc::cell&) const)
+           &dolfin::Expression::eval,
            "Evaluate Expression (cell version)")
       .def("test", []() { return "Expression test function"; });
 
     //-----------------------------------------------------------------------------
     // dolfin::Constant
-    py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>>(m, "Constant")
+    py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>, dolfin::GenericFunction>
+      (m, "Constant")
       .def(py::init<double>())
       .def(py::init<std::vector<double>>());
 
     //-----------------------------------------------------------------------------
     // dolfin::Function
-    py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>>(m, "Function")
+    py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>>
+      (m, "Function")
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>())
       .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
            &dolfin::Function::vector);
 
     //-----------------------------------------------------------------------------
     // dolfin::FunctionSpace
-    py::class_<dolfin::FunctionSpace, std::shared_ptr<dolfin::FunctionSpace>>(m, "FunctionSpace")
+    py::class_<dolfin::FunctionSpace, std::shared_ptr<dolfin::FunctionSpace>>
+      (m, "FunctionSpace")
       .def(py::init<std::shared_ptr<dolfin::Mesh>, std::shared_ptr<dolfin::FiniteElement>,
            std::shared_ptr<dolfin::GenericDofMap>>());
 
