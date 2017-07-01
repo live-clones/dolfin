@@ -8,8 +8,9 @@ class Form(cpp.fem.Form):
 
         form_compiler_parameters = None
         ufc_form = ffc.jit(form, form_compiler_parameters)
-        ufc_form = cpp.fem.make_form(ufc_form)
         print("jit returns: ", ufc_form)
+        ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
+
 
 #        function_spaces = [func.function_space() for func
 #                           in form.arguments()]
@@ -17,5 +18,5 @@ class Form(cpp.fem.Form):
         print(function_spaces)
 
         # Initialize base class
-        cpp.fem.Form.__init__(self, ufc_form[0],
+        cpp.fem.Form.__init__(self, ufc_form,
                               function_spaces)

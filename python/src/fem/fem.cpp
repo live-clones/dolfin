@@ -46,6 +46,8 @@ namespace dolfin_wrappers
       (m, "ufc_finite_element", "UFC finite element object");
     py::class_<ufc::dofmap, std::shared_ptr<ufc::dofmap>>
       (m, "ufc_dofmap", "UFC dofmap object");
+    py::class_<ufc::form, std::shared_ptr<ufc::form>>
+      (m, "ufc_form", "UFC form object");
 
     m.def("make_ufc_finite_element",
           [](std::uintptr_t e)

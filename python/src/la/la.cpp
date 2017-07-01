@@ -65,7 +65,7 @@ namespace dolfin_wrappers
 
     //----------------------------------------------------------------------------
     // dolfin::EigenVector class
-    py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>, dolfin::GenericVector>
+    py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>, dolfin::GenericVector, dolfin::GenericTensor>
       (m, "EigenVector", "DOLFIN EigenVector object")
       .def(py::init<MPI_Comm, std::size_t>())
       .def("array", (Eigen::VectorXd& (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec,
