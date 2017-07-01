@@ -89,6 +89,13 @@ namespace dolfin_wrappers
       .def(py::init<>())
       .def("assemble", &dolfin::Assembler::assemble);
 
+    // dolfin::Form class
+    py::class_<dolfin::Form, std::shared_ptr<dolfin::Form>>
+      (m, "Form", "DOLFIN Form object")
+      .def(py::init<std::shared_ptr<const ufc::form>,
+                    std::vector<std::shared_ptr<const dolfin::FunctionSpace>>>());
+
+
   }
 
 }

@@ -22,8 +22,10 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 
-#include <dolfin/la/Matrix.h>
+#include <dolfin/la/GenericTensor.h>
+#include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
+#include <dolfin/la/Matrix.h>
 #include <dolfin/la/Vector.h>
 #include <dolfin/la/EigenMatrix.h>
 #include <dolfin/la/EigenVector.h>
@@ -47,12 +49,17 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm>());
 
     //-----------------------------------------------------------------------------
+    // dolfin::GenericTensor class
+    py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>>
+      (m, "GenericTensor", "DOLFIN GenericTensor object");
+
+    //-----------------------------------------------------------------------------
     // dolfin::GenericVector class
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>>
       (m, "GenericVector", "DOLFIN GenericVector object");
 
     //----------------------------------------------------------------------------
-    // dolfin::GenericMatrix class
+    // dolfin::GenericTensor class
     py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object");
 
@@ -66,8 +73,9 @@ namespace dolfin_wrappers
 
     //----------------------------------------------------------------------------
     // dolfin::EigenMatrix class
-    py::class_<dolfin::EigenMatrix, std::shared_ptr<dolfin::EigenMatrix>, dolfin::GenericMatrix>
+    py::class_<dolfin::EigenMatrix, std::shared_ptr<dolfin::EigenMatrix>, dolfin::GenericMatrix, dolfin::GenericTensor>
       (m, "EigenMatrix", "DOLFIN EigenMatrix object")
+      .def(py::init<>())
       .def(py::init<std::size_t, std::size_t>())
       .def("array", (dolfin::EigenMatrix::eigen_matrix_type& (dolfin::EigenMatrix::*)()) &dolfin::EigenMatrix::mat,
            py::return_value_policy::reference_internal);
