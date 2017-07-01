@@ -25,6 +25,7 @@
 #include <dolfin/mesh/CellType.h>
 #include <dolfin/mesh/MeshTopology.h>
 #include <dolfin/mesh/MeshGeometry.h>
+#include <dolfin/mesh/SubDomain.h>
 
 namespace py = pybind11;
 
@@ -77,6 +78,23 @@ namespace dolfin_wrappers
       .def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension")
       .def("degree", &dolfin::MeshGeometry::degree, "Degree");
 
+    //--------------------------------------------------------------------------
+    // dolfin::SubDomain class
+
+    class PySubDomain : public dolfin::SubDomain
+    {
+      using dolfin::SubDomain::SubDomain;
+
+      bool inside(const dolfin::Array<double>& x, bool on_boundary) const override
+      {
+        PYBIND11_OVERLOAD(bool, dolfin::SubDomain, inside, x, on_boundary);
+      }
+    };
+
+    py::class_<dolfin::SubDomain, std::shared_ptr<dolfin::SubDomain>, PySubDomain>
+      (m, "SubDomain", "DOLFIN SubDomain object")
+      .def(py::init<>())
+      .def("inside", &dolfin::SubDomain::inside);
   }
 
 }

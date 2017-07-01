@@ -21,8 +21,12 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/fem/DirichletBC.h>
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
+#include <dolfin/function/FunctionSpace.h>
+#include <dolfin/function/GenericFunction.h>
+#include <dolfin/mesh/SubDomain.h>
 
 #include <ufc.h>
 
@@ -59,11 +63,20 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const ufc::finite_element>>())
       .def("signature", &dolfin::FiniteElement::signature);
 
-    py::class_<dolfin::GenericDofMap, std::shared_ptr<dolfin::GenericDofMap>>(m, "GenericDofMap", "DOLFIN DofMap object");
+    py::class_<dolfin::GenericDofMap, std::shared_ptr<dolfin::GenericDofMap>>
+      (m, "GenericDofMap", "DOLFIN DofMap object");
 
     // dolfin::DofMap class
-    py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>(m, "DofMap", "DOLFIN DofMap object")
+    py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>
+      (m, "DofMap", "DOLFIN DofMap object")
       .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&>());
+
+    // dolfin::DirichletBC class
+    py::class_<dolfin::DirichletBC, std::shared_ptr<dolfin::DirichletBC>>
+      (m, "DirichletBC", "DOLFIN DirichletBC object")
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
+                    std::shared_ptr<const dolfin::GenericFunction>,
+                    std::shared_ptr<const dolfin::SubDomain>>());
 
   }
 
