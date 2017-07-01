@@ -5,7 +5,7 @@ from dolfin_test.fem.form import Form
 from dolfin_test.cpp.function import Function, Constant
 from dolfin_test.cpp.fem import DirichletBC, Assembler
 from dolfin_test.cpp.mesh import SubDomain
-from dolfin_test.cpp.la import EigenVector, EigenMatrix
+from dolfin_test.cpp.la import EigenVector, EigenMatrix, LUSolver
 from dolfin_test.cpp import MPI
 from ufl import TestFunction, TrialFunction, inner, grad, dx, ds
 
@@ -42,6 +42,11 @@ b = EigenVector(MPI.comm_world, 0)
 assembler.assemble(b, Form(L, [V]))
 print(b.array())
 
+solver = LUSolver(MPI.comm_world, A, "default")
+
+solver.solve(w.vector(), b)
+
+print(w.vector().array())
 # solve(a == L, w, bc)
 
 # file = File("poisson.pvd")
