@@ -25,6 +25,7 @@
 #include <dolfin/la/Matrix.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/Vector.h>
+#include <dolfin/la/EigenMatrix.h>
 #include <dolfin/la/EigenVector.h>
 
 namespace py = pybind11;
@@ -61,6 +62,15 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm, std::size_t>())
       .def("array", (Eigen::VectorXd& (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec,
            py::return_value_policy::reference_internal);
+
+    //----------------------------------------------------------------------------
+    // dolfin::EigenMatrix class
+    py::class_<dolfin::EigenMatrix, std::shared_ptr<dolfin::EigenMatrix>>
+      (m, "EigenMatrix", "DOLFIN EigenMatrix object")
+      .def(py::init<std::size_t, std::size_t>())
+      .def("array", (dolfin::EigenMatrix::eigen_matrix_type& (dolfin::EigenMatrix::*)()) &dolfin::EigenMatrix::mat,
+           py::return_value_policy::reference_internal);
+
 
   }
 
