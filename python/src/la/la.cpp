@@ -22,6 +22,8 @@
 #include <pybind11/stl.h>
 
 #include <dolfin/la/Matrix.h>
+#include <dolfin/la/GenericVector.h>
+#include <dolfin/la/Vector.h>
 
 namespace py = pybind11;
 
@@ -33,7 +35,19 @@ namespace dolfin_wrappers
     // dolfin::Matrix class
     py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>>
       (m, "Matrix", "DOLFIN Matrix object")
-      .def(py::init<>());
+      .def(py::init<MPI_Comm>());
+
+    //-----------------------------------------------------------------------------
+    // dolfin::Vector class
+    py::class_<dolfin::Vector, std::shared_ptr<dolfin::Vector>>
+      (m, "Vector", "DOLFIN Vector object")
+      .def(py::init<MPI_Comm>());
+
+    //-----------------------------------------------------------------------------
+    // dolfin::Vector class
+    py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>>
+      (m, "GenericVector", "DOLFIN GenericVector object");
+
 
   }
 

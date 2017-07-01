@@ -19,10 +19,11 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 
 #include <dolfin/common/Array.h>
+#include <dolfin/function/Constant.h>
 #include <dolfin/function/Expression.h>
-
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/GenericDofMap.h>
@@ -65,6 +66,12 @@ namespace dolfin_wrappers
       .def("eval", (void (dolfin::Expression::*)(dolfin::Array<double>&, const dolfin::Array<double>&, const ufc::cell&) const) &dolfin::Expression::eval,
            "Evaluate Expression (cell version)")
       .def("test", []() { return "Expression test function"; });
+
+    //-----------------------------------------------------------------------------
+    // dolfin::Constant
+    py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>>(m, "Constant")
+      .def(py::init<double>())
+      .def(py::init<std::vector<double>>());
 
     //-----------------------------------------------------------------------------
     // dolfin::Function
