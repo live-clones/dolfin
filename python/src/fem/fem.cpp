@@ -30,6 +30,8 @@
 #include <dolfin/function/GenericFunction.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <dolfin/la/GenericTensor.h>
+#include <dolfin/la/GenericMatrix.h>
+#include <dolfin/la/GenericVector.h>
 
 
 #include <ufc.h>
@@ -90,7 +92,9 @@ namespace dolfin_wrappers
       (m, "DirichletBC", "DOLFIN DirichletBC object")
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
                     std::shared_ptr<const dolfin::GenericFunction>,
-                    std::shared_ptr<const dolfin::SubDomain>>());
+                    std::shared_ptr<const dolfin::SubDomain>>())
+      .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericVector&) const)
+           &dolfin::DirichletBC::apply);
 
     // dolfin::Assembler class
     py::class_<dolfin::Assembler, std::shared_ptr<dolfin::Assembler>>

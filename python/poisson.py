@@ -17,13 +17,15 @@ DOLFIN_EPS = 1e-14
 
 class Boundary(SubDomain):
     def inside(self, x, on_boundary):
+        print("inside", x)
         return x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS
 
 boundary = Boundary()
+
 print(boundary.inside([-2,2], False))
 
 u0 = Constant(0.0)
-# bc = DirichletBC(V, u0, boundary)
+bc = DirichletBC(V, u0, boundary)
 
 u = TrialFunction(V)
 v = TestFunction(V)
@@ -41,6 +43,8 @@ print(A.array())
 b = EigenVector(MPI.comm_world, 0)
 assembler.assemble(b, Form(L, [V]))
 print(b.array())
+
+bc.apply(b)
 
 solver = LUSolver(MPI.comm_world, A, "default")
 

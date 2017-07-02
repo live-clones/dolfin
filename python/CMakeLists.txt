@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5.0)
 
 PROJECT(dolfin_testYYY)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 find_package(DOLFIN REQUIRED)
 include(${DOLFIN_USE_FILE})
 add_subdirectory(pybind11)

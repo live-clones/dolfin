@@ -81,6 +81,9 @@ namespace dolfin_wrappers
     //--------------------------------------------------------------------------
     // dolfin::SubDomain class
 
+    // FIXME: move somewhere else
+    py::class_<dolfin::Array<double>, std::shared_ptr<dolfin::Array<double>>> (m, "Array");
+
     class PySubDomain : public dolfin::SubDomain
     {
       using dolfin::SubDomain::SubDomain;
