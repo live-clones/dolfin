@@ -19,6 +19,7 @@
 #include <pybind11/pybind11.h>
 
 #include <dolfin/io/VTKFile.h>
+#include <dolfin/io/XDMFFile.h>
 #include <dolfin/mesh/Mesh.h>
 
 namespace py = pybind11;
@@ -28,11 +29,25 @@ namespace dolfin_wrappers
 
   void io(py::module& m)
   {
-    // Wrap dolfin::VTKFile
+    // dolfin::VTKFile
     py::class_<dolfin::VTKFile, std::shared_ptr<dolfin::VTKFile>>(m, "VTKFile")
       .def(py::init<std::string, std::string>())
       .def("__lshift__",  [](py::object& obj, const dolfin::Mesh& mesh) { dolfin::VTKFile *cls = obj.cast<dolfin::VTKFile*>(); *cls << mesh; })
       .def("write", [](py::object& obj, const dolfin::Mesh& mesh) { dolfin::VTKFile *cls = obj.cast<dolfin::VTKFile*>(); *cls << mesh; });
+
+    // dolfin::XDMFFile
+    py::class_<dolfin::XDMFFile, std::shared_ptr<dolfin::XDMFFile>> xdmffile(m, "XDMFFile");
+    py::enum_<dolfin::XDMFFile::Encoding>(xdmffile, "Encoding")
+      .value("HDF5", dolfin::XDMFFile::Encoding::HDF5)
+      .value("ASCII", dolfin::XDMFFile::Encoding::ASCII);
+
+    xdmffile
+      .def(py::init<std::string>())
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::Function&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write)
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::Mesh&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write);
+
   }
 
 }

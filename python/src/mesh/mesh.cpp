@@ -18,6 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
@@ -42,10 +43,12 @@ namespace dolfin_wrappers
            &dolfin::Mesh::topology, "Mesh topology")
       .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
            &dolfin::Mesh::geometry, "Mesh geometry")
-      .def("coordinates",
-           [](dolfin::Mesh& self)
-           { return py::array({self.geometry().num_points(), self.geometry().dim()},
-                              self.geometry().x().data()); })
+      .def("coordinates", [](dolfin::Mesh& self)
+           {
+             return Eigen::Map<Eigen::MatrixXd>(self.geometry().x().data(),
+                                                self.geometry().num_points(),
+                                                self.geometry().dim());
+           })
       .def("coordinates_vec",
            [](dolfin::Mesh& self){ return self.geometry().x(); },
            py::return_value_policy::reference)
