@@ -31,8 +31,11 @@ namespace dolfin
   public:
 
     /// Constructor
-  CVode(int cv_lmm = CV_BDF, int cv_iter = CV_ADAMS) : t(0.0)
+    CVode(int cv_lmm = CV_BDF, int cv_iter = CV_ADAMS) : t(0.0)
     {
+      
+      this->cv_lmm = cv_lmm;
+      this->cv_iter = cv_iter;
       // Create CVode memory block
       cvode_mem = CVodeCreate(cv_lmm, cv_iter);
       dolfin_assert(cvode_mem);
@@ -69,9 +72,10 @@ namespace dolfin
                         std::shared_ptr<GenericVector> udot);
 
     /// Overloaded Jabocian function
-//    virtual void Jacobian(long int N, long int mu, long int ml,
-//		          double t, std::shared_ptr<GenericVector> u,
-  //                        std::shared_ptr<GenericVector> fu);
+    virtual int Jacobian(std::shared_ptr<GenericVector> v,
+                          std::shared_ptr<GenericVector> Jv,
+   		          double t, std::shared_ptr<GenericVector> y,
+                          std::shared_ptr<GenericVector> fy);
 
 
     std::map<std::string,double> statistics();
@@ -80,11 +84,14 @@ namespace dolfin
     // Internal callback from CVode to get time derivatives - passed on to derivs (above)
     static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 
+    static int fJac(N_Vector u, N_Vector fu, double t, N_Vector x, N_Vector y, void* , N_Vector z);
+
     // Vector of values - wrapper around dolfin::GenericVector
     std::shared_ptr<SUNDIALSNVector> _u;
 
     // Current time
     double t;
+    int cv_lmm, cv_iter;
 
     // Pointer to CVode memory struct
     void *cvode_mem;

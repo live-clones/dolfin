@@ -31,9 +31,10 @@
 
 #include <cvode/cvode.h>
 #include <cvode/cvode_impl.h>
-#include <cvode/cvode_dense.h>
+#include <cvode/cvode_spgmr.h>
 #include <sundials/sundials_dense.h>
 #include <sundials/sundials_types.h>
+#include <sundials/sundials_iterative.h>
 
 #include "CVode.h"
 
@@ -43,6 +44,9 @@ using namespace dolfin;
 void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol)
 {
   dolfin_assert(cvode_mem);
+
+  long int N, mu, ml;
+  auto fu = std::shared_ptr<GenericVector>();
 
   // Make a sundials n_vector sharing data with u0
   _u = std::make_shared<SUNDIALSNVector>(u0);
@@ -55,6 +59,15 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol)
 
   flag = CVodeSStolerances(cvode_mem, rtol, atol);
   dolfin_assert(flag == CV_SUCCESS);
+
+  if(cv_iter == CV_NEWTON)
+  {
+    flag = CVSpgmr(cvode_mem, PREC_LEFT,0);
+    dolfin_assert(flag == CV_SUCCESS);
+//    flag = CVSpilsSetJacTimesVecFn(cvode_mem, fJac());
+    dolfin_assert(flag == CV_SUCCESS);
+  }
+
 }
 //-----------------------------------------------------------------------------
 double CVode::step(double dt)
@@ -68,6 +81,21 @@ double CVode::step(double dt)
   //  std::cout << "t_out = " << t;
 
   return t;
+}
+int CVode::fJac(N_Vector v, N_Vector Jv, double t, N_Vector y, N_Vector fy, void* user_data, N_Vector tmp)
+{
+
+  CVode* cv = static_cast<CVode*>(user_data);
+
+  auto vvec = static_cast<SUNDIALSNVector*>(v->content)->vec();
+  auto Jvvec = static_cast<SUNDIALSNVector*>(Jv->content)->vec();
+
+  auto yvec = static_cast<SUNDIALSNVector*>(y->content)->vec();
+  auto fyvec = static_cast<SUNDIALSNVector*>(fy->content)->vec();
+  auto tmpvec = static_cast<SUNDIALSNVector*>(tmp->content)->vec();
+
+  cv->Jacobian(vvec,Jvvec,t,yvec,fyvec);
+  return 0;
 }
 //-----------------------------------------------------------------------------
 int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
@@ -92,6 +120,17 @@ void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                "form time derivative",
                "This function should be overloaded");
 }
+
+int CVode::Jacobian(std::shared_ptr<GenericVector> v,
+                          std::shared_ptr<GenericVector> Jv,
+                          double t, std::shared_ptr<GenericVector> y,
+                          std::shared_ptr<GenericVector> fy)
+{
+  dolfin_error("CVode.cpp",
+	       "Jacobian function",
+	       "This function should be overloaded");
+}
+
 //-----------------------------------------------------------------------------
 std::map<std::string, double> CVode::statistics()
 {
