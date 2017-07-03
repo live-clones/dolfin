@@ -77,7 +77,8 @@ namespace dolfin_wrappers
 
     //-----------------------------------------------------------------------------
     // dolfin::Constant
-    py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>, dolfin::GenericFunction>
+    py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>, dolfin::Expression,
+               dolfin::GenericFunction, dolfin::Variable>
       (m, "Constant")
       .def(py::init<double>())
       .def(py::init<std::vector<double>>());

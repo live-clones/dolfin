@@ -22,7 +22,7 @@ namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
-  void common_mpi(py::module& m);
+  void common(py::module& m);
   void experimental(py::module& m);
   void fem(py::module& m);
   void function(py::module& m);
@@ -39,9 +39,9 @@ PYBIND11_MODULE(cpp, m)
   // Create module
   m.doc() ="DOLFIN Python interface";
 
-  // Create MPI submodule
-  py::module common_mpi = m.def_submodule("MPI", "DOLFIN MPI module");
-  dolfin_wrappers::common_mpi(common_mpi);
+  // Create common submodule
+  py::module common = m.def_submodule("MPI", "DOLFIN common module");
+  dolfin_wrappers::common(common);
 
   // Create mesh submodule
   py::module mesh = m.def_submodule("mesh", "DOLFIN mesh library");

@@ -15,20 +15,27 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
 #include <dolfin/common/MPI.h>
+#include <dolfin/common/Variable.h>
 
 namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
-  void common_mpi(py::module& m)
+  void common(py::module& m)
   {
+    // Variable
+    py::class_<dolfin::Variable, std::shared_ptr<dolfin::Variable>>
+      (m, "Variable", "Variable base class")
+      .def("id", &dolfin::Variable::id)
+      .def("rename", &dolfin::Variable::rename);
+
+    // MPI
     m.attr("comm_world") = MPI_COMM_WORLD;
     m.attr("comm_self") = MPI_COMM_SELF;
 
