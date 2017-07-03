@@ -33,6 +33,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::Variable, std::shared_ptr<dolfin::Variable>>
       (m, "Variable", "Variable base class")
       .def("id", &dolfin::Variable::id)
+      .def("name", &dolfin::Variable::name)
       .def("rename", &dolfin::Variable::rename);
 
     // MPI
