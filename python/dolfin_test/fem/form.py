@@ -18,5 +18,36 @@ class Form(cpp.fem.Form):
         print(function_spaces)
 
         # Initialize base class
-        cpp.fem.Form.__init__(self, ufc_form,
-                              function_spaces)
+        print("--init--")
+        cpp.fem.Form.__init__(self, ufc_form, function_spaces)
+        print("--end init--", type(form))
+
+        if isinstance(form, ufl.Form):
+            print("* Have a UFL form")
+        else:
+            print("* Do not have a UFL form")
+
+        print("Handle coefficients")
+        original_coefficients = form.coefficients()
+        self.coefficients = []
+        for i in range(self.num_coefficients()):
+            j = self.original_coefficient_position(i)
+            print("**** Apend")
+            self.coefficients.append(original_coefficients[j])
+
+        # Type checking coefficients
+        if not all(isinstance(c, (cpp.function.GenericFunction, cpp.function.MultiMeshFunction))
+                   for c in self.coefficients):
+            # Developer note:
+            # The form accepts a MultiMeshFunction but does not set the
+            # correct coefficients. This is done in assemble_multimesh
+            # at the moment
+            coefficient_error = "Error while extracting coefficients. "
+            raise TypeError(coefficient_error +
+                            "Either provide a dict of cpp.function.GenericFunctions, " +
+                            "or use Function to define your form.")
+
+        for i in range(self.num_coefficients()):
+            if isinstance(self.coefficients[i], cpp.function.GenericFunction):
+                print("XXXboo")
+                self.set_coefficient(i, self.coefficients[i])
