@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5.0)
 
 PROJECT(dolfin_testYYY)
 
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 find_package(DOLFIN REQUIRED)
 include(${DOLFIN_USE_FILE})

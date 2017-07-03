@@ -17,7 +17,7 @@ u0 = Constant(1.0)
 bc = DirichletBC(V, u0, boundary)
 """
 
-t=timeit.timeit('bc.apply(f.vector())', setup=setup, number=400)
+t=timeit.timeit('bc.apply(f.vector())', setup=setup, number=100000)
 print(t)
 
 setup="""
@@ -42,5 +42,5 @@ u0 = Constant(1.0)
 bc = DirichletBC(V, u0, boundary)
 """
 
-t=timeit.timeit('bc.apply(f.vector())', setup=setup, number=400)
+t=timeit.timeit('bc.apply(f.vector())', setup=setup, number=100000)
 print(t)

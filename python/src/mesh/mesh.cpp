@@ -108,11 +108,24 @@ namespace dolfin_wrappers
       .def(py::init<>())
       .def("inside", (bool (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>&, bool) const)
            &dolfin::SubDomain::inside)
-      .def("test", [](dolfin::SubDomain& self)
+      .def("test", [](dolfin::SubDomain& self, bool sw, int n)
            {
-             Eigen::VectorXd x(3);
-             x << 0.1, 0.2, 0.3;
-             return self.inside(x, false);
+             std::vector<double> data(n*3);
+             if(sw)
+             {
+               for (unsigned int i = 0; i < n; ++i)
+               {
+                 Eigen::Map<Eigen::Vector3d> x(&data[i*3]);
+               }
+             }
+             else
+             {
+               for (unsigned int i = 0; i < n; ++i)
+               {
+                 dolfin::Array<double> x(3, &data[i*3]);
+               }
+             }
+             return 0;
            });
 
   }
