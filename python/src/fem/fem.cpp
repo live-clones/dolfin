@@ -91,9 +91,11 @@ namespace dolfin_wrappers
     py::class_<dolfin::DirichletBC, std::shared_ptr<dolfin::DirichletBC>>
       (m, "DirichletBC", "DOLFIN DirichletBC object")
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
-                    std::shared_ptr<const dolfin::GenericFunction>,
-                    std::shared_ptr<const dolfin::SubDomain>>())
+           std::shared_ptr<const dolfin::GenericFunction>,
+           std::shared_ptr<const dolfin::SubDomain>>())
       .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericVector&) const)
+           &dolfin::DirichletBC::apply)
+      .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericMatrix&) const)
            &dolfin::DirichletBC::apply);
 
     // dolfin::Assembler class
