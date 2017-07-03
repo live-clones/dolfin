@@ -115,7 +115,7 @@ namespace dolfin_wrappers
              {
                for (unsigned int i = 0; i < n; ++i)
                {
-                 Eigen::Map<Eigen::Vector3d> x(&data[i*3]);
+                 Eigen::Map<Eigen::VectorXd> x(&data[i*3], 3);
                }
              }
              else
