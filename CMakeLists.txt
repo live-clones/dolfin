@@ -90,7 +90,6 @@ option(DOLFIN_ENABLE_TESTING "Enable testing." OFF)
 option(DOLFIN_IGNORE_PETSC4PY_VERSION "Ignore version of PETSc4py." OFF)
 option(DOLFIN_SKIP_BUILD_TESTS "Skip build tests for testing usability of dependency packages." OFF)
 option(DOLFIN_WITH_LIBRARY_VERSION "Build with library version information." ON)
-option(DOLFIN_ENABLE_PYBIND11 "Enable changes needed for pybind11" OFF)
 
 add_feature_info(BUILD_SHARED_LIBS BUILD_SHARED_LIBS "Build DOLFIN with shared libraries.")
 add_feature_info(CMAKE_USE_RELATIVE_PATHS CMAKE_USE_RELATIVE_PATHS "Use relative paths in makefiles and projects.")
@@ -176,10 +175,6 @@ endif()
 
 #------------------------------------------------------------------------------
 # Compiler flags
-
-if (DOLFIN_ENABLE_PYBIND11)
-  list(APPEND DOLFIN_CXX_DEFINITIONS "-DDOLFIN_PYBIND11")
-endif()
 
 # Default build type (can be overridden by user)
 if (NOT CMAKE_BUILD_TYPE)

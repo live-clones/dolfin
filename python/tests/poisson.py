@@ -23,7 +23,7 @@ DOLFIN_EPS = 1e-14
 
 class Boundary(SubDomain):
     def inside(self, x, on_boundary):
-        result = x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS
+        result = (x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS)
         return bool(result)
 
 boundary = Boundary()
@@ -31,7 +31,7 @@ boundary = Boundary()
 print(boundary.test())
 
 u0 = Constant(0.0)
-# bc = DirichletBC(V, u0, boundary)
+#bc = DirichletBC(V, u0, boundary)
 bc = DirichletBC(V, u0, "x[0] < DOLFIN_EPS or x[0]> 1.0 - DOLFIN_EPS")
 
 u = TrialFunction(V)
