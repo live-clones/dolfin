@@ -111,7 +111,7 @@ namespace dolfin_wrappers
       .def("test", [](dolfin::SubDomain& self)
            {
              Eigen::VectorXd x(3);
-             x << 1, 2, 3;
+             x << 0.1, 0.2, 0.3;
              return self.inside(x, false);
            });
 
