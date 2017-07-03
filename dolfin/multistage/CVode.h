@@ -72,8 +72,8 @@ namespace dolfin
                         std::shared_ptr<GenericVector> udot);
 
     /// Overloaded Jabocian function
-    virtual int Jacobian(std::shared_ptr<GenericVector> v,
-                          std::shared_ptr<GenericVector> Jv,
+    virtual int Jacobian(std::shared_ptr<GenericVector> u,
+                          std::shared_ptr<GenericVector> Ju,
    		          double t, std::shared_ptr<GenericVector> y,
                           std::shared_ptr<GenericVector> fy);
 
@@ -84,7 +84,7 @@ namespace dolfin
     // Internal callback from CVode to get time derivatives - passed on to derivs (above)
     static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 
-    static int fJac(N_Vector u, N_Vector fu, double t, N_Vector x, N_Vector y, void* , N_Vector z);
+    static int fJac(N_Vector u, N_Vector fu, double t, N_Vector y, N_Vector fy, void* , N_Vector tmp);
 
     // Vector of values - wrapper around dolfin::GenericVector
     std::shared_ptr<SUNDIALSNVector> _u;
