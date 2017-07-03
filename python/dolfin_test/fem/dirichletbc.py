@@ -6,17 +6,15 @@ import dolfin_test.cpp as cpp
 import dijitso
 
 
-
 class CompiledSubdomain(cpp.mesh.SubDomain):
     def inside(self, x, on_boundary):
         pass
 
 
-
-def jit_generate(compile_string, module_name, signature, paramaters):
+def jit_generate(compile_string, module_name, signature, parameters):
 
     code_c = compile_string
-    code_h = "#include<Eigen/Dense>\n"
+    code_h = ""
     depends = []
 
     return code_h, code_c, depends
