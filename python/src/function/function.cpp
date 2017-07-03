@@ -27,6 +27,7 @@
 #include <dolfin/function/Constant.h>
 #include <dolfin/function/Expression.h>
 #include <dolfin/function/FunctionSpace.h>
+#include <dolfin/function/MultiMeshFunction.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/mesh/Mesh.h>
@@ -60,14 +61,17 @@ namespace dolfin_wrappers
 
   void function(py::module& m)
   {
-    //-----------------------------------------------------------------------------
     // dolfin::GenericFunction
     py::class_<dolfin::GenericFunction, std::shared_ptr<dolfin::GenericFunction>>
       (m, "GenericFunction");
 
+    // dolfin::MultiMeshFunction
+    py::class_<dolfin::MultiMeshFunction, std::shared_ptr<dolfin::MultiMeshFunction>>
+      (m, "MultiMeshFunction");
+
     //-----------------------------------------------------------------------------
     // dolfin::Expression
-    py::class_<dolfin::Expression, std::shared_ptr<dolfin::Expression>>
+    py::class_<dolfin::Expression, std::shared_ptr<dolfin::Expression>, dolfin::GenericFunction>
       (m, "Expression")
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
@@ -108,7 +112,7 @@ namespace dolfin_wrappers
 
     //-----------------------------------------------------------------------------
     // dolfin::Function
-    py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>>
+    py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>, dolfin::GenericFunction>
       (m, "Function")
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>())
       .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
