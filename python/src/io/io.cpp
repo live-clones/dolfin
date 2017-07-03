@@ -38,8 +38,8 @@ namespace dolfin_wrappers
     // dolfin::XDMFFile
     py::class_<dolfin::XDMFFile, std::shared_ptr<dolfin::XDMFFile>> xdmffile(m, "XDMFFile");
     py::enum_<dolfin::XDMFFile::Encoding>(xdmffile, "Encoding")
-      .value("HDF5", dolfin::XDMFFile::Encoding::HDF5)
-      .value("ASCII", dolfin::XDMFFile::Encoding::ASCII);
+    .value("HDF5", dolfin::XDMFFile::Encoding::HDF5)
+    .value("ASCII", dolfin::XDMFFile::Encoding::ASCII);
 
     xdmffile
       .def(py::init<std::string>())

@@ -1007,7 +1007,8 @@ void DirichletBC::compute_bc_pointwise(Map& boundary_values,
 
         // Check if the coordinates are part of the sub domain (calls
         // user-defined 'inside' function)
-        Array<double> x(gdim, &data.coordinates[i][0]);
+        // Array<double> x(gdim, &data.coordinates[i][0]);
+        Eigen::Map<Eigen::VectorXd> x(&data.coordinates[i][0], gdim);
         if (!_user_sub_domain->inside(x, false))
           continue;
 

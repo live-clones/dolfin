@@ -85,13 +85,19 @@ namespace dolfin_wrappers
     // dolfin::SubDomain class
 
     // FIXME: move somewhere else
-    py::class_<dolfin::Array<double>, std::shared_ptr<dolfin::Array<double>>> (m, "Array");
+    py::class_<dolfin::Array<double>, std::shared_ptr<dolfin::Array<double>>> (m, "Array")
+      .def("__init__", [](dolfin::Array<double>& instance, std::vector<double>& x)
+           {
+             new (&instance) dolfin::Array<double>(x.size(), x.data());
+           })
+      .def("__getitem__", [](dolfin::Array<double>& self, int i)
+           { return self[i]; });
 
     class PySubDomain : public dolfin::SubDomain
     {
       using dolfin::SubDomain::SubDomain;
 
-      bool inside(const dolfin::Array<double>& x, bool on_boundary) const override
+      bool inside(const Eigen::Ref<Eigen::VectorXd>& x, bool on_boundary) const override
       {
         PYBIND11_OVERLOAD(bool, dolfin::SubDomain, inside, x, on_boundary);
       }
@@ -100,7 +106,14 @@ namespace dolfin_wrappers
     py::class_<dolfin::SubDomain, std::shared_ptr<dolfin::SubDomain>, PySubDomain>
       (m, "SubDomain", "DOLFIN SubDomain object")
       .def(py::init<>())
-      .def("inside", &dolfin::SubDomain::inside);
+      .def("inside", (bool (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>&, bool) const)
+           &dolfin::SubDomain::inside)
+      .def("test", [](dolfin::SubDomain& self)
+           {
+             Eigen::VectorXd x(3);
+             x << 1, 2, 3;
+             return self.inside(x, false);
+           });
 
   }
 

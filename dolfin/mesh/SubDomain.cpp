@@ -55,6 +55,14 @@ bool SubDomain::inside(const Array<double>& x, bool on_boundary) const
   return false;
 }
 //-----------------------------------------------------------------------------
+bool SubDomain::inside(const Eigen::Ref<Eigen::VectorXd>& x, bool on_boundary) const
+{
+  dolfin_error("SubDomain.cpp",
+               "check whether point is inside subdomain",
+               "Function inside() not implemented by user");
+  return false;
+}
+//-----------------------------------------------------------------------------
 void SubDomain::map(const Array<double>& x, Array<double>& y) const
 {
   dolfin_error("SubDomain.cpp",
