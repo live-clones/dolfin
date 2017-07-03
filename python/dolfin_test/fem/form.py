@@ -6,6 +6,7 @@ import ffc
 class Form(cpp.fem.Form):
     def __init__(self, form, function_spaces):
 
+        print("Compiler form")
         form_compiler_parameters = None
         ufc_form = ffc.jit(form, form_compiler_parameters)
         print("jit returns: ", ufc_form)
@@ -49,5 +50,7 @@ class Form(cpp.fem.Form):
 
         for i in range(self.num_coefficients()):
             if isinstance(self.coefficients[i], cpp.function.GenericFunction):
-                print("XXXboo")
+                print("Set coeff")
                 self.set_coefficient(i, self.coefficients[i])
+
+        print("done")

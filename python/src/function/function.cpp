@@ -71,7 +71,25 @@ namespace dolfin_wrappers
 
     //-----------------------------------------------------------------------------
     // dolfin::Expression
-    py::class_<dolfin::Expression, std::shared_ptr<dolfin::Expression>, dolfin::GenericFunction>
+    class PyExpression : public dolfin::Expression
+    {
+      using dolfin::Expression::Expression;
+
+      void eval(Eigen::Ref<Eigen::VectorXd> values,
+                const Eigen::Ref<Eigen::VectorXd> x) const override
+      { PYBIND11_OVERLOAD(void, dolfin::Expression, eval, values, x); }
+
+      void eval(Eigen::Ref<Eigen::VectorXd> values,
+                const Eigen::Ref<Eigen::VectorXd> x,
+                const ufc::cell& cell) const override
+      { PYBIND11_OVERLOAD_NAME(void, dolfin::Expression, "eval_cell", eval, values, x, cell); }
+
+    };
+
+
+    py::class_<dolfin::Expression, PyExpression,
+               std::shared_ptr<dolfin::Expression>, dolfin::GenericFunction,
+               dolfin::Variable>
       (m, "Expression")
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
@@ -82,24 +100,6 @@ namespace dolfin_wrappers
            "Evaluate Expression (cell version)")
       .def("value_rank", &dolfin::Expression::value_rank)
       .def("value_dimension", &dolfin::Expression::value_dimension);
-
-    class PyExpression : public dolfin::Expression
-    {
-      using dolfin::Expression::Expression;
-
-      void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x) const override
-      { PYBIND11_OVERLOAD(void, dolfin::Expression, eval, values, x); }
-
-      //void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell& cell) const override
-      //{ PYBIND11_OVERLOAD_NAME(void, dolfin::Expression, "eval_cell", eval, values, x, cell); }
-
-      //void eval(Eigen::Ref<Eigen::VectorXd>& values, const Eigen::Ref<Eigen::VectorXd>& x) const override
-      //{ PYBIND11_OVERLOAD(bool, dolfin::Expression, eval, values, x); }
-
-      //void eval(Eigen::Ref<Eigen::VectorXd>& values, const Eigen::Ref<Eigen::VectorXd>& x, const ufc::cell& cell) const override
-      //{ PYBIND11_OVERLOAD(bool, dolfin::Expression, eval, values, x, cell); }
-
-    };
 
 
     //-----------------------------------------------------------------------------

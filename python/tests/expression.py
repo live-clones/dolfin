@@ -13,8 +13,7 @@ from dolfin_test.function.constant import Constant
 
 class MyExpression(dolfin_test.function.expression.UserExpression):
     def eval(self, values, x):
-        print("Inside my expression")
-
+        values[0] = 20.0
 
 mesh0 = dolfin_test.cpp.generation.UnitSquareMesh(6, 9)
 V0 = dolfin_test.function.functionspace.FunctionSpace(mesh0, "Lagrange", 1)
@@ -28,10 +27,15 @@ e = MyExpression(V)
 print(e.value_rank())
 print(e.value_dimension(0))
 
-
-e0 = Constant(1.0)
+#e0 = Constant(1.0)
+e0 = MyExpression(V0)
 v = TestFunction(V0)
 L = e0*v*dx
 assembler = Assembler()
 b = EigenVector(MPI.comm_world, 0)
-assembler.assemble(b, Form(L, [V0]))
+
+form = Form(L, [V0])
+#print(type(b), type(form))
+assembler.assemble(b, form)
+
+#print(b.array())

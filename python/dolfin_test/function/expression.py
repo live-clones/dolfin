@@ -98,3 +98,22 @@ class UserExpression(ufl.Coefficient, cpp.function.Expression):
         print(self.ufl_shape)
         #cpp.function.Expression.__init__(self, 1)
         cpp.function.Expression.__init__(self, self.ufl_shape)
+
+        value_shape = tuple(self.value_dimension(i)
+                            for i in range(self.value_rank()))
+
+        #element = _auto_select_element_from_shape(value_shape, degree, cell)
+        # Check if scalar, vector or tensor valued
+        family = "Lagrange"
+        degree = 2
+        cell = None
+        if len(value_shape) == 0:
+            element = ufl.FiniteElement(family, cell, degree)
+        elif len(value_shape) == 1:
+            element = ufl.VectorElement(family, cell, degree, dim=value_shape[0])
+        else:
+            element = ufl.TensorElement(family, cell, degree, shape=value_shape)
+
+        # Initialize UFL base class
+        ufl_function_space = ufl.FunctionSpace(None, element)
+        ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
