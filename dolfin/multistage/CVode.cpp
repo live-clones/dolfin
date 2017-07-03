@@ -64,7 +64,7 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol)
   {
     flag = CVSpgmr(cvode_mem, PREC_LEFT,0);
     dolfin_assert(flag == CV_SUCCESS);
-//    flag = CVSpilsSetJacTimesVecFn(cvode_mem, fJac());
+    flag = CVSpilsSetJacTimesVecFn(cvode_mem, fJac);
     dolfin_assert(flag == CV_SUCCESS);
   }
 
@@ -82,6 +82,7 @@ double CVode::step(double dt)
 
   return t;
 }
+//-----------------------------------------------------------------------------
 int CVode::fJac(N_Vector v, N_Vector Jv, double t, N_Vector y, N_Vector fy, void* user_data, N_Vector tmp)
 {
 
@@ -120,7 +121,7 @@ void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                "form time derivative",
                "This function should be overloaded");
 }
-
+//-----------------------------------------------------------------------------
 int CVode::Jacobian(std::shared_ptr<GenericVector> v,
                           std::shared_ptr<GenericVector> Jv,
                           double t, std::shared_ptr<GenericVector> y,
