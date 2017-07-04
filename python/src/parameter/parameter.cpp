@@ -19,6 +19,8 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 
+#include <dolfin/parameter/GlobalParameters.h>
+
 namespace py = pybind11;
 
 namespace dolfin_wrappers

@@ -29,6 +29,8 @@
 #include <dolfin/la/Vector.h>
 #include <dolfin/la/EigenMatrix.h>
 #include <dolfin/la/EigenVector.h>
+#include <dolfin/la/PETScMatrix.h>
+#include <dolfin/la/PETScVector.h>
 #include <dolfin/la/LUSolver.h>
 
 namespace py = pybind11;
@@ -87,6 +89,22 @@ namespace dolfin_wrappers
       .def(py::init<std::size_t, std::size_t>())
       .def("array", (dolfin::EigenMatrix::eigen_matrix_type& (dolfin::EigenMatrix::*)()) &dolfin::EigenMatrix::mat,
            py::return_value_policy::reference_internal);
+
+    //----------------------------------------------------------------------------
+    // dolfin::PETScVector class
+    py::class_<dolfin::PETScVector, std::shared_ptr<dolfin::PETScVector>,
+               dolfin::GenericVector, dolfin::GenericTensor>
+      (m, "PETScVector", "DOLFIN PETScVector object")
+      .def(py::init<MPI_Comm>())
+      .def(py::init<MPI_Comm, std::size_t>());
+
+    //----------------------------------------------------------------------------
+    // dolfin::PETScMatrix class
+    py::class_<dolfin::PETScMatrix, std::shared_ptr<dolfin::PETScMatrix>,
+               dolfin::GenericMatrix, dolfin::GenericTensor, dolfin::GenericLinearOperator>
+      (m, "PETScMatrix", "DOLFIN PETScMatrix object")
+      .def(py::init<>())
+      .def(py::init<MPI_Comm>());
 
     //-----------------------------------------------------------------------------
     // dolfin::LUSolver class
