@@ -10,6 +10,16 @@ import ffc
 def jit_generate(inside_code, module_name, signature, parameters):
 
     template_code = """
+// Based on https://gcc.gnu.org/wiki/Visibility
+#if defined _WIN32 || defined __CYGWIN__
+    #ifdef __GNUC__
+        #define DLL_EXPORT __attribute__ ((dllexport))
+    #else
+        #define DLL_EXPORT __declspec(dllexport)
+    #endif
+#else
+    #define DLL_EXPORT __attribute__ ((visibility ("default")))
+#endif
 
 #include <dolfin/mesh/SubDomain.h>
 #include <Eigen/Dense>
@@ -34,7 +44,7 @@ namespace dolfin
   }};
 }}
 
-extern "C" __attribute__ ((visibility ("default"))) dolfin::SubDomain * create_{classname}()
+extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
 {{
   return new dolfin::{classname};
 }}
@@ -100,8 +110,11 @@ class DirichletBC(cpp.fem.DirichletBC):
             raise(RuntimeError, "Second argument must be of type GenericFunction")
         function = args[1]
 
-        if not isinstance(args[2], cpp.mesh.SubDomain):
-            raise(RuntimeError, "Third argument must be of type SubDomain")
-        subdomain = args[2]
+        if isinstance(args[2], cpp.mesh.SubDomain):
+            subdomain = args[2]
+        elif isinstance(args[2], string_types):
+            subdomain = CompiledSubDomain(args[2])
+        else:
+            raise(RuntimeError, "Third argument must be of type SubDomain or string")
 
         super().__init__(function_space, function, subdomain)

@@ -39,7 +39,8 @@ for i in range(12):
     print(x, boundary.inside(np.array([x,0.0]), False))
 
 u0 = Constant(0.0)
-bc = DirichletBC(V, u0, boundary)
+# bc = DirichletBC(V, u0, boundary)
+bc = DirichletBC(V, u0, "x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
 
 u = TrialFunction(V)
 v = TestFunction(V)
