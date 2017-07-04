@@ -6,13 +6,13 @@ from dolfin_test.fem.form import Form
 from dolfin_test.fem.dirichletbc import DirichletBC, CompiledSubDomain
 from dolfin_test.cpp.function import Function, Constant
 from dolfin_test.cpp.mesh import SubDomain
-from dolfin_test.cpp.la import EigenVector, EigenMatrix, LUSolver
+from dolfin_test.cpp.la import EigenVector, EigenMatrix, LUSolver, PETScMatrix, PETScVector
 from dolfin_test.cpp import MPI
 from dolfin_test.cpp.io import XDMFFile
 from dolfin_test.cpp import parameter
 from ufl import TestFunction, TrialFunction, inner, grad, dx, ds
 
-parameter.set('linear_algebra_backend', 'Eigen')
+parameter.set('linear_algebra_backend', 'PETSc')
 
 mesh = UnitSquareMesh(12, 12)
 V = FunctionSpace(mesh, "Lagrange", 1)
@@ -50,11 +50,11 @@ a = inner(grad(u), grad(v))*dx
 L = v*dx
 
 assembler = Assembler()
-A = EigenMatrix()
+A = PETScMatrix()
 assembler.assemble(A, Form(a, [V, V]))
-print(A.array())
+# print(A.array())
 
-b = EigenVector(MPI.comm_world, 0)
+b = PETScVector(MPI.comm_world)
 assembler.assemble(b, Form(L, [V]))
 bc.apply(b)
 bc.apply(A)
