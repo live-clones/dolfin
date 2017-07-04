@@ -9,7 +9,10 @@ from dolfin_test.cpp.mesh import SubDomain
 from dolfin_test.cpp.la import EigenVector, EigenMatrix, LUSolver
 from dolfin_test.cpp import MPI
 from dolfin_test.cpp.io import XDMFFile
+from dolfin_test.cpp import parameter
 from ufl import TestFunction, TrialFunction, inner, grad, dx, ds
+
+parameter.set('linear_algebra_backend', 'Eigen')
 
 mesh = UnitSquareMesh(12, 12)
 V = FunctionSpace(mesh, "Lagrange", 1)

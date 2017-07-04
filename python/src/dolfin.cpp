@@ -31,6 +31,7 @@ namespace dolfin_wrappers
   void io(py::module& m);
   void la(py::module& m);
   void mesh(py::module& m);
+  void parameter(py::module& m);
 }
 
 
@@ -73,6 +74,10 @@ PYBIND11_MODULE(cpp, m)
   // Create la submodule
   py::module la = m.def_submodule("la", "DOLFIN linear algebra module");
   dolfin_wrappers::la(la);
+
+  // Create parameter submodule
+  py::module parameter = m.def_submodule("parameter", "DOLFIN parameter module");
+  dolfin_wrappers::parameter(parameter);
 
   // Create experimental submodule
   py::module experimental = m.def_submodule("experimental",

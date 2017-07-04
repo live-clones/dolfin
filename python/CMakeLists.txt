@@ -20,6 +20,7 @@ pybind11_add_module(cpp SHARED
   src/mesh/mesh.cpp
   src/io/io.cpp
   src/la/la.cpp
+  src/parameter/parameter.cpp
   )
 
 # Add DOLFIN libraries and other config
