@@ -6,7 +6,7 @@ from dolfin_test.fem.form import Form
 from dolfin_test.fem.dirichletbc import DirichletBC, CompiledSubDomain
 from dolfin_test.cpp.function import Function, Constant
 from dolfin_test.cpp.mesh import SubDomain
-from dolfin_test.cpp.la import EigenVector, EigenMatrix, LUSolver, PETScMatrix, PETScVector
+from dolfin_test.cpp.la import EigenVector, EigenMatrix, LUSolver, PETScMatrix, PETScVector, KrylovSolver
 from dolfin_test.cpp import MPI
 from dolfin_test.cpp.io import XDMFFile
 from dolfin_test.cpp import parameter
@@ -61,7 +61,7 @@ bc.apply(A)
 # print(b.array())
 # print(A.array())
 
-solver = LUSolver(MPI.comm_world, A, "default")
+solver = KrylovSolver(MPI.comm_world, A)
 
 solver.solve(w.vector(), b)
 

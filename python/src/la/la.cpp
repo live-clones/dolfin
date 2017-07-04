@@ -32,6 +32,7 @@
 #include <dolfin/la/PETScMatrix.h>
 #include <dolfin/la/PETScVector.h>
 #include <dolfin/la/LUSolver.h>
+#include <dolfin/la/KrylovSolver.h>
 
 namespace py = pybind11;
 
@@ -110,9 +111,19 @@ namespace dolfin_wrappers
     // dolfin::LUSolver class
     py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>>
       (m, "LUSolver", "DOLFIN LUSolver object")
-      .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>, std::string>())
+      .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>, std::string>(),
+           py::arg("comm"), py::arg("A"), py::arg("method") = "default")
       .def("solve", (std::size_t (dolfin::LUSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
            &dolfin::LUSolver::solve);
+
+    //-----------------------------------------------------------------------------
+    // dolfin::KrylovSolver class
+    py::class_<dolfin::KrylovSolver, std::shared_ptr<dolfin::KrylovSolver>>
+      (m, "KrylovSolver", "DOLFIN KrylovSolver object")
+      .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>, std::string, std::string>(),
+           py::arg("comm"), py::arg("A"), py::arg("method") = "default", py::arg("preconditioner") = "default")
+      .def("solve", (std::size_t (dolfin::KrylovSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
+           &dolfin::KrylovSolver::solve);
 
   }
 

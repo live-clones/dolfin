@@ -44,9 +44,9 @@ namespace dolfin_wrappers
     xdmffile
       .def(py::init<std::string>())
       .def("write", (void (dolfin::XDMFFile::*)(const dolfin::Function&, dolfin::XDMFFile::Encoding))
-           &dolfin::XDMFFile::write, py::arg("u"), py::arg("encoding") = dolfin::XDMFFile::Encoding::ASCII)
+           &dolfin::XDMFFile::write, py::arg("u"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
       .def("write", (void (dolfin::XDMFFile::*)(const dolfin::Mesh&, dolfin::XDMFFile::Encoding))
-           &dolfin::XDMFFile::write, py::arg("mesh"), py::arg("encoding") = dolfin::XDMFFile::Encoding::ASCII);
+           &dolfin::XDMFFile::write, py::arg("mesh"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5);
 
   }
 
