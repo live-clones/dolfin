@@ -11,14 +11,12 @@ from distutils.version import LooseVersion
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
-        print("**** Ext name", name)
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
 
 
 class CMakeBuild(build_ext):
     def run(self):
-        print("XXXXXX:", self.extensions)
         try:
             out = subprocess.check_output(['cmake', '--version'])
         except OSError:
@@ -35,7 +33,6 @@ class CMakeBuild(build_ext):
 
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        print("**** Exdor", extdir)
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable]
 
@@ -71,5 +68,10 @@ setup(
     package_dir={'dolfin_test' : 'dolfin_test'},
     ext_modules=[CMakeExtension('dolfin_test.cpp')],
     cmdclass=dict(build_ext=CMakeBuild),
+    install_requires=["numpy",
+                      "ffc",
+                      "ufl"
+                      "pkgconfig"
+                      "dijitso"],
     zip_safe=False,
 )

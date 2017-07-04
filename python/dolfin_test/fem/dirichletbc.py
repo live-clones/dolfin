@@ -11,8 +11,8 @@ def jit_generate(inside_code, module_name, signature, parameters):
 
     template_code = """
 
-#include<dolfin.h>
-#include<Eigen/Dense>
+#include <dolfin/mesh/SubDomain.h>
+#include <Eigen/Dense>
 
 namespace dolfin
 {
@@ -57,16 +57,21 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::SubDomain * create_%
 
 def compile_subdomain(inside_code):
 
+    import pkgconfig
+    if not pkgconfig.exists('dolfin'):
+        raise RuntimeError("Could not find DOLFIN pkg-config file. Please make sure appropriate paths are set.")
+
+    # Get pkg-config data
+    d = pkgconfig.parse('dolfin')
+
+    # Set compiler/build options
+    params = dijitso.params.default_params()
+    params['build']['include_dirs'] = d["include_dirs"]
+    params['build']['libs'] = d["libraries"]
+    params['build']['lib_dirs'] = d["library_dirs"]
+
     module_hash = hashlib.md5(inside_code.encode('utf-8')).hexdigest()
     module_name = "subdomain_" + module_hash
-    params = dijitso.params.default_params()
-    params['build']['include_dirs'] = ['/usr/include/eigen3',
-                                       '/home/chris/src/FEniCS/dolfin/local.garth.feature-pybind11/include',
-                                       ffc.backends.ufc.get_include_path()]
-    params['build']['libs'] = ['dolfin']
-    params['build']['lib_dirs'] = ['/home/chris/src/FEniCS/dolfin/local.garth.feature-pybind11/lib']
-    print(params['build'])
-
     module, signature = dijitso.jit(inside_code, module_name, params,
                                     generate=jit_generate)
 
