@@ -26,13 +26,7 @@ namespace dolfin
             {constructor}
           }}
 
-       void hello() const
-       {{
-         int a;
-         a += 1;
-       }}
-
-       /// Return true for points inside the sub domain
+       // Return true for points inside the sub domain
        bool inside(const Eigen::Ref<Eigen::VectorXd>& x, bool on_boundary) const override
        {{
          return {inside};
