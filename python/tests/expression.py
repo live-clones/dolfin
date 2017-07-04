@@ -1,3 +1,5 @@
+import numpy as np
+
 from ufl import TestFunction, dx
 
 import dolfin_test.cpp.function
@@ -10,6 +12,7 @@ from dolfin_test.cpp import MPI
 from dolfin_test.cpp.fem import Assembler
 from dolfin_test.fem.form import Form
 from dolfin_test.function.constant import Constant
+from dolfin_test.function.expression import CompiledExpression
 
 class MyExpression(dolfin_test.function.expression.UserExpression):
     def eval(self, values, x):
@@ -39,3 +42,13 @@ form = Form(L, [V0])
 assembler.assemble(b, form)
 
 #print(b.array())
+
+
+f = CompiledExpression("2.0", degree=1);
+print(dir(f))
+
+
+v = np.zeros(1)
+x = np.array([0.0, 0.0])
+f.eval(v, x)
+print(v)

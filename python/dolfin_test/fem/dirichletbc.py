@@ -79,12 +79,11 @@ def compile_subdomain(inside_code):
 
 
 class CompiledSubDomain(cpp.mesh.SubDomain):
-    def __init__(self, inside_code):
-        self._sd = compile_subdomain(inside_code)
-        super().__init__()
+    def __new__(cls, inside_code):
+        return compile_subdomain(inside_code)
 
-    def inside(self, x, on_boundary):
-        return self._sd.inside(x, on_boundary)
+    #def __init__(self, inside_code):
+    #    pass
 
 
 class DirichletBC(cpp.fem.DirichletBC):

@@ -1,77 +1,18 @@
 # -*- coding: utf-8 -*-
-"""This module handles the Expression class in Python.
-
-The Expression class needs special handling and is not mapped directly
-by SWIG from the C++ interface. Instead, a new Expression class is
-created which inherits both from the DOLFIN C++ Expression class and
-the ufl Coefficient class.
-
-The resulting Expression class may thus act both as a variable in a
-UFL form expression and as a DOLFIN C++ Expression.
-
-This module make heavy use of creation of Expression classes and
-instantiation of these dynamically at runtime.
-
-The whole logic behind this somewhat magic behaviour is handle by:
-
-  1) function __new__ in the Expression class
-  2) meta class ExpressionMetaClass
-  3) function compile_expressions from the compiledmodule/expression
-     module
-  4) functions create_compiled_expression_class and
-     create_python_derived_expression_class
-
-The __new__ method in the Expression class take cares of the logic
-when the class Expression is used to create an instance of Expression,
-see use cases 1-4 in the docstring of Expression.
-
-The meta class ExpressionMetaClass take care of the logic when a user
-subclasses Expression to create a user-defined Expression, see use
-cases 3 in the docstring of Expression.
-
-The function compile_expression is a JIT compiler. It compiles and
-returns different kinds of cpp.Expression classes, depending on the
-arguments. These classes are sent to the
-create_compiled_expression_class.
-
-"""
-
-# Copyright (C) 2008-2014 Johan Hake
-#
-# This file is part of DOLFIN.
-#
-# DOLFIN is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# DOLFIN is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# Modified by Anders Logg, 2008-2009.
-# Modified by Martin Sandve Alnæs 2013-2014
-
 from __future__ import print_function
 
 __all__ = ["Expression"]
 
-# FIXME: Make all error messages uniform according to the following template:
-#
-# if not isinstance(foo, Foo):
-#     raise TypeError("Illegal argument for creation of Bar, not a Foo: " + str(foo))
-
 # Python imports
 import types
-from six import add_metaclass # Requires newer six version than some buildbots have
+from six import add_metaclass
 from six import string_types
 from six.moves import xrange as range
 from functools import reduce
 import weakref
+import hashlib
+
+import dijitso
 
 # Import UFL and SWIG-generated extension module (DOLFIN C++)
 import ufl
@@ -115,5 +56,84 @@ class UserExpression(ufl.Coefficient, cpp.function.Expression):
             element = ufl.TensorElement(family, cell, degree, shape=value_shape)
 
         # Initialize UFL base class
+        ufl_function_space = ufl.FunctionSpace(None, element)
+        ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
+
+
+def jit_generate(statement, module_name, signature, parameters):
+
+    template_code = """
+
+#include <dolfin/function/Expression.h>
+#include <Eigen/Dense>
+
+namespace dolfin
+{{
+  class {classname} : public Expression
+  {{
+     public:
+       {members}
+
+       {classname}()
+          {{
+            {constructor}
+          }}
+
+       void eval(Eigen::Ref<Eigen::VectorXd> values, const Eigen::Ref<Eigen::VectorXd> x) const override
+       {{
+         values[0] = {statement};
+       }}
+  }};
+}}
+
+extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_{classname}()
+{{
+  return new dolfin::{classname};
+}}
+
+"""
+
+    classname = signature
+    code_c = template_code.format(statement=statement, classname=classname,
+                                  members= "", constructor="")
+    code_h = ""
+    depends = []
+
+    return code_h, code_c, depends
+
+
+def compile_expression(statement):
+
+    import pkgconfig
+    if not pkgconfig.exists('dolfin'):
+        raise RuntimeError("Could not find DOLFIN pkg-config file. Please make sure appropriate paths are set.")
+
+    # Get pkg-config data
+    d = pkgconfig.parse('dolfin')
+
+    # Set compiler/build options
+    params = dijitso.params.default_params()
+    params['build']['include_dirs'] = d["include_dirs"]
+    params['build']['libs'] = d["libraries"]
+    params['build']['lib_dirs'] = d["library_dirs"]
+
+    module_hash = hashlib.md5(statement.encode('utf-8')).hexdigest()
+    module_name = "expression_" + module_hash
+    module, signature = dijitso.jit(statement, module_name, params,
+                                    generate=jit_generate)
+
+    submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
+    print("JIT gives:", submodule, module, signature)
+
+    expression = cpp.function.make_dolfin_expression(submodule)
+    return expression
+
+
+class CompiledExpression(ufl.Coefficient, cpp.function.Expression):
+    def __new__(cls, statement, degree):
+        return compile_expression(statement)
+
+    def __init__(self, statement, degree):
+        element = ufl.FiniteElement("Lagrange", None, degree)
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())

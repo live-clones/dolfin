@@ -37,6 +37,7 @@ namespace py = pybind11;
 
 namespace expression_wrappers
 {
+  /*
   py::array_t<double> expression_eval(dolfin::Expression &instance,
                                       py::array_t<double> x)
   {
@@ -52,6 +53,7 @@ namespace expression_wrappers
     instance.eval(_values, _x);
     return values;
   }
+  */
 
 }
 
@@ -69,7 +71,16 @@ namespace dolfin_wrappers
     py::class_<dolfin::MultiMeshFunction, std::shared_ptr<dolfin::MultiMeshFunction>>
       (m, "MultiMeshFunction");
 
-    //-----------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+
+    m.def("make_dolfin_expression",
+          [](std::uintptr_t e)
+          {
+            dolfin::Expression *p = reinterpret_cast<dolfin::Expression *>(e);
+            return std::shared_ptr<const dolfin::Expression>(p);
+          });
+
+
     // dolfin::Expression
     class PyExpression : public dolfin::Expression
     {
@@ -91,11 +102,13 @@ namespace dolfin_wrappers
                std::shared_ptr<dolfin::Expression>, dolfin::GenericFunction,
                dolfin::Variable>
       (m, "Expression")
+      .def(py::init<>())
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
       .def(py::init<std::vector<std::size_t>>())
-      .def("eval", &expression_wrappers::expression_eval, "Evaluate Expression")
-      .def("eval", (void (dolfin::Expression::*)(dolfin::Array<double>&, const dolfin::Array<double>&, const ufc::cell&) const)
+      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>) const)
+           &dolfin::Expression::eval, "Evaluate Expression")
+      .def("eval_cell", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::Expression::eval,
            "Evaluate Expression (cell version)")
       .def("value_rank", &dolfin::Expression::value_rank)
