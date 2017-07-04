@@ -15,45 +15,48 @@ def jit_generate(inside_code, module_name, signature, parameters):
 #include <Eigen/Dense>
 
 namespace dolfin
-{
-  class %(classname)s : public SubDomain
-  {
+{{
+  class {classname} : public SubDomain
+  {{
      public:
-       %(members)s
+       {members}
 
-       %(classname)s()
-          {
-            %(constructor)s
-          }
+       {classname}()
+          {{
+            {constructor}
+          }}
 
        void hello() const
-       {
+       {{
          int a;
          a += 1;
-       }
+       }}
 
        /// Return true for points inside the sub domain
        bool inside(const Eigen::Ref<Eigen::VectorXd>& x, bool on_boundary) const override
-       {
-         return %(inside)s;
-       }
-  };
-}
+       {{
+         return {inside};
+       }}
+  }};
+}}
 
-extern "C" __attribute__ ((visibility ("default"))) dolfin::SubDomain * create_%(classname)s()
-{
-  return new dolfin::%(classname)s;
-}
+extern "C" __attribute__ ((visibility ("default"))) dolfin::SubDomain * create_{classname}()
+{{
+  return new dolfin::{classname};
+}}
 
 """
+
     classname = signature
-    code_c = template_code % {"inside": inside_code, "classname": classname, "members": "", "constructor": ""}
+    code_c = template_code.format(inside=inside_code, classname=classname, members= "", constructor="")
+    print(code_c)
     code_h = ""
     depends = []
 
     print(code_c)
 
     return code_h, code_c, depends
+
 
 def compile_subdomain(inside_code):
 
