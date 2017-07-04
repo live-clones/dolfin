@@ -35,6 +35,14 @@ namespace dolfin_wrappers
 
   void mesh(py::module& m)
   {
+    m.def("make_dolfin_subdomain",
+          [](std::uintptr_t e)
+          {
+            dolfin::SubDomain *p = reinterpret_cast<dolfin::SubDomain *>(e);
+            return std::shared_ptr<const dolfin::SubDomain>(p);
+          });
+
+
     //-----------------------------------------------------------------------------
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")

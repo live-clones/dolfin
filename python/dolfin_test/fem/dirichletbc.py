@@ -37,8 +37,14 @@ namespace dolfin
        {
          return %(inside)s;
        }
-  } %(classname)s;
+  };
 }
+
+extern "C" __attribute__ ((visibility ("default"))) dolfin::SubDomain * create_%(classname)s()
+{
+  return new dolfin::%(classname)s;
+}
+
 """
     classname = signature
     code_c = template_code % {"inside": inside_code, "classname": classname, "members": "", "constructor": ""}
@@ -64,9 +70,12 @@ def compile_subdomain(inside_code):
     module, signature = dijitso.jit(inside_code, module_name, params,
                                     generate=jit_generate)
 
-    print(dir(module), module.__dict__)
+    submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
+    print("JIT gives:", submodule, module, signature)
 
-    return None
+    sd = cpp.mesh.make_dolfin_subdomain(submodule)
+
+    return sd
 
 class CompiledSubDomain(cpp.mesh.SubDomain):
     def __init__(self, inside_code):
