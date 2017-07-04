@@ -1,34 +1,22 @@
 
 import types
 from six import string_types
+import hashlib
 
 import dolfin_test.cpp as cpp
 import dijitso
+import ffc
 
-
-class CompiledSubdomain(cpp.mesh.SubDomain):
-    def inside(self, x, on_boundary):
-        pass
-
-
-def jit_generate(compile_string, module_name, signature, parameters):
-
-    code_c = compile_string
-    code_h = ""
-    depends = []
-
-    return code_h, code_c, depends
-
-def compiled_subdomain(inside_code):
-
-    classname="subdomain"
+def jit_generate(inside_code, module_name, signature, parameters):
 
     template_code = """
+
+#include<dolfin.h>
 #include<Eigen/Dense>
 
 namespace dolfin
 {
-  class %(classname)s: public SubDomain
+  class %(classname)s : public SubDomain
   {
      public:
        %(members)s
@@ -38,26 +26,55 @@ namespace dolfin
             %(constructor)s
           }
 
+       void hello() const
+       {
+         int a;
+         a += 1;
+       }
+
        /// Return true for points inside the sub domain
        bool inside(const Eigen::VectorXd& x, bool on_boundary) const
        {
          return %(inside)s;
        }
-  };
+  } %(classname)s;
 }
-""" % {"classname": classname, "members": "", "constructor": "",
-       "inside": inside_code}
+"""
+    classname = signature
+    code_c = template_code % {"inside": inside_code, "classname": classname, "members": "", "constructor": ""}
+    code_h = ""
+    depends = []
 
-    module_name = "subdomain"
-    params = None
+    print(code_c)
 
-    module, signature = dijitso.jit(template_code, module_name, params,
+    return code_h, code_c, depends
+
+def compile_subdomain(inside_code):
+
+    module_hash = hashlib.md5(inside_code.encode('utf-8')).hexdigest()
+    module_name = "subdomain_" + module_hash
+    params = dijitso.params.default_params()
+    params['build']['include_dirs'] = ['/usr/include/eigen3',
+                                       '/home/chris/src/FEniCS/dolfin/local.garth.feature-pybind11/include',
+                                       ffc.backends.ufc.get_include_path()]
+    params['build']['libs'] = ['dolfin']
+    params['build']['lib_dirs'] = ['/home/chris/src/FEniCS/dolfin/local.garth.feature-pybind11/lib']
+    print(params['build'])
+
+    module, signature = dijitso.jit(inside_code, module_name, params,
                                     generate=jit_generate)
 
-    print(module, signature)
+    print(dir(module), module.__dict__)
 
     return None
 
+class CompiledSubDomain(cpp.mesh.SubDomain):
+    def __init__(self, inside_code):
+        compile_subdomain(inside_code)
+        super().__init__()
+
+    def inside(self, x, on_boundary):
+        return False
 
 class DirichletBC(cpp.fem.DirichletBC):
     def __init__(self, *args, **kwargs):
@@ -66,18 +83,15 @@ class DirichletBC(cpp.fem.DirichletBC):
             raise(RuntimeError, "Not yet supported")
 
         if not isinstance(args[0], cpp.function.FunctionSpace):
-            raise(RuntimeError)
+            raise(RuntimeError, "First argument must be of type FunctionSpace")
         function_space = args[0]
 
         if not isinstance(args[1], cpp.function.GenericFunction):
-            raise(RuntimeError)
+            raise(RuntimeError, "Second argument must be of type GenericFunction")
         function = args[1]
 
-        if isinstance(args[2], cpp.mesh.SubDomain):
-            subdomain = args[2]
-        elif isinstance(args[2], string_types):
-            subdomain = compiled_subdomain(args[2])
-        else:
-            raise(RuntimeError)
+        if not isinstance(args[2], cpp.mesh.SubDomain):
+            raise(RuntimeError, "Third argument must be of type SubDomain")
+        subdomain = args[2]
 
-        cpp.fem.DirichletBC.__init__(self, function_space, function, subdomain)
+        super().__init__(function_space, function, subdomain)

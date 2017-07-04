@@ -3,9 +3,9 @@ from dolfin_test.cpp.generation import UnitSquareMesh
 from dolfin_test.function.functionspace import FunctionSpace
 from dolfin_test.cpp.fem import Assembler
 from dolfin_test.fem.form import Form
-from dolfin_test.fem.dirichletbc import DirichletBC
+from dolfin_test.fem.dirichletbc import DirichletBC, CompiledSubDomain
 from dolfin_test.cpp.function import Function, Constant
-from dolfin_test.cpp.mesh import SubDomain, Array
+from dolfin_test.cpp.mesh import SubDomain
 from dolfin_test.cpp.la import EigenVector, EigenMatrix, LUSolver
 from dolfin_test.cpp import MPI
 from dolfin_test.cpp.io import XDMFFile
@@ -26,13 +26,12 @@ class Boundary(SubDomain):
         result = (x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS)
         return bool(result)
 
-boundary = Boundary()
+# boundary = Boundary()
 
-print(boundary.test())
+boundary = CompiledSubDomain("x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
 
 u0 = Constant(0.0)
-# bc = DirichletBC(V, u0, boundary)
-bc = DirichletBC(V, u0, "x[0] < DOLFIN_EPS or x[0]> 1.0 - DOLFIN_EPS")
+bc = DirichletBC(V, u0, boundary)
 
 u = TrialFunction(V)
 v = TestFunction(V)

@@ -96,7 +96,9 @@ namespace dolfin_wrappers
       .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericVector&) const)
            &dolfin::DirichletBC::apply)
       .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericMatrix&) const)
-           &dolfin::DirichletBC::apply);
+           &dolfin::DirichletBC::apply)
+      .def("user_subdomain", &dolfin::DirichletBC::user_sub_domain);
+
 
     // dolfin::Assembler class
     py::class_<dolfin::Assembler, std::shared_ptr<dolfin::Assembler>>
