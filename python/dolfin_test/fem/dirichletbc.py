@@ -1,4 +1,3 @@
-
 import types
 from six import string_types
 import hashlib
@@ -6,6 +5,7 @@ import hashlib
 import dolfin_test.cpp as cpp
 import dijitso
 import ffc
+
 
 def jit_generate(inside_code, module_name, signature, parameters):
 
@@ -48,12 +48,11 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::SubDomain * create_{
 """
 
     classname = signature
-    code_c = template_code.format(inside=inside_code, classname=classname, members= "", constructor="")
+    code_c = template_code.format(inside=inside_code, classname=classname,
+                                  members= "", constructor="")
     print(code_c)
     code_h = ""
     depends = []
-
-    print(code_c)
 
     return code_h, code_c, depends
 
@@ -81,8 +80,9 @@ def compile_subdomain(inside_code):
     submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
     print("JIT gives:", submodule, module, signature)
 
-    sd = cpp.mesh.make_dolfin_subdomain(submodule)
-    return sd
+    sub_domain = cpp.mesh.make_dolfin_subdomain(submodule)
+    return sub_domain
+
 
 class CompiledSubDomain(cpp.mesh.SubDomain):
     def __init__(self, inside_code):
@@ -91,6 +91,7 @@ class CompiledSubDomain(cpp.mesh.SubDomain):
 
     def inside(self, x, on_boundary):
         return self._sd.inside(x, on_boundary)
+
 
 class DirichletBC(cpp.fem.DirichletBC):
     def __init__(self, *args, **kwargs):
