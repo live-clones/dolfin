@@ -33,7 +33,7 @@ namespace dolfin
        }
 
        /// Return true for points inside the sub domain
-       bool inside(const Eigen::VectorXd& x, bool on_boundary) const
+       bool inside(const Eigen::Ref<Eigen::VectorXd>& x, bool on_boundary) const override
        {
          return %(inside)s;
        }
@@ -74,16 +74,15 @@ def compile_subdomain(inside_code):
     print("JIT gives:", submodule, module, signature)
 
     sd = cpp.mesh.make_dolfin_subdomain(submodule)
-
     return sd
 
 class CompiledSubDomain(cpp.mesh.SubDomain):
     def __init__(self, inside_code):
-        compile_subdomain(inside_code)
+        self._sd = compile_subdomain(inside_code)
         super().__init__()
 
     def inside(self, x, on_boundary):
-        return False
+        return self._sd.inside(x, on_boundary)
 
 class DirichletBC(cpp.fem.DirichletBC):
     def __init__(self, *args, **kwargs):

@@ -30,6 +30,11 @@ class Boundary(SubDomain):
 
 boundary = CompiledSubDomain("x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
 
+import numpy as np
+for i in range(12):
+    x = float(i)/10.0
+    print(x, boundary.inside(np.array([x,0.0]), False))
+
 u0 = Constant(0.0)
 bc = DirichletBC(V, u0, boundary)
 
