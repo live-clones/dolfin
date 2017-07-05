@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-__all__ = ["Expression"]
+__all__ = ["CompiledExpression", "UserExpression"]
 
 # Python imports
 import types
@@ -24,11 +24,11 @@ import numpy
 #from dolfin import warning, error
 
 class _InterfaceExpression(cpp.function.Expression):
-    def __init__(self, user_expression):
-        print("In constructore")
+    def __init__(self, user_expression, *args, **kwargs):
+        print("In constructor")
         self.user_expression = user_expression
 
-        cpp.function.Expression.__init__(self)
+        cpp.function.Expression.__init__(self, *args, **kwargs)
 
         def eval(self, values, x):
             self.user_expression.eval(values, x)
@@ -60,7 +60,7 @@ class UserExpression(ufl.Coefficient):
         #cpp.function.Expression.__init__(self, 1)
         #cpp.function.Expression.__init__(self, self.ufl_shape)
 
-        self.cpp_interface = _InterfaceExpression(self)
+        self._cpp_expression = _InterfaceExpression(self)
 
         value_shape = tuple(self.value_dimension(i)
                             for i in range(self.value_rank()))
@@ -82,16 +82,17 @@ class UserExpression(ufl.Coefficient):
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
     def value_rank(self):
-        return self.cpp_interface.value_rank()
+        return self.cpp_expression.value_rank()
 
     def value_dimension(self, i):
-        return self.cpp_interface.value_dimension(i)
+        return self.cpp_expression.value_dimension(i)
 
     def id(self):
-        return self.cpp_interface.id()
+        return self.cpp_expression.id()
 
     def cpp_object(self):
-        return self.cpp_interface
+        """Return the underling cpp.Expression object"""
+        return self.cpp_expression
 
 
 def jit_generate(statement, module_name, signature, parameters):
@@ -137,6 +138,7 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
 
 
 def compile_expression(statement):
+    """Compile a user C(++) string to a Python object"""
 
     import pkgconfig
     if not pkgconfig.exists('dolfin'):

@@ -35,7 +35,10 @@ namespace dolfin_wrappers
       .def("id", &dolfin::Variable::id)
       .def("name", &dolfin::Variable::name)
       .def("rename", &dolfin::Variable::rename);
+  }
 
+  void mpi(py::module& m)
+  {
     // MPI
     m.attr("comm_world") = MPI_COMM_WORLD;
     m.attr("comm_self") = MPI_COMM_SELF;
