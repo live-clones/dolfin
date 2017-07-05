@@ -30,7 +30,10 @@ namespace dolfin_wrappers
   {
     // Wrap dolfin::Point
     py::class_<dolfin::Point>(m, "Point")
-      .def(py::init<double, double, double>());
+      .def(py::init<double, double, double>())
+      .def(py::init<double, double>())
+      .def(py::init<double>())
+      .def("norm", &dolfin::Point::norm);
   }
 
 }

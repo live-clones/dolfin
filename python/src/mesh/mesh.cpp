@@ -23,6 +23,7 @@
 #include <pybind11/stl.h>
 
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/CellType.h>
 #include <dolfin/mesh/MeshTopology.h>
 #include <dolfin/mesh/MeshGeometry.h>
@@ -54,7 +55,16 @@ namespace dolfin_wrappers
     //-----------------------------------------------------------------------------
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
+      .def(py::init<>())
+      .def("mpi_comm", &dolfin::Mesh::mpi_comm)
       .def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities")
+      .def("init_global", &dolfin::Mesh::init_global)
+      .def("init", (void (dolfin::Mesh::*)() const) &dolfin::Mesh::init)
+      .def("init", (std::size_t (dolfin::Mesh::*)(std::size_t) const) &dolfin::Mesh::init)
+      .def("init", (void (dolfin::Mesh::*)(std::size_t, std::size_t) const) &dolfin::Mesh::init)
+      .def("init_cell_orientations", &dolfin::Mesh::init_cell_orientations)
+      .def("size_global", &dolfin::Mesh::size_global)
+      .def("cell_orientations", &dolfin::Mesh::cell_orientations)
       .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
            &dolfin::Mesh::topology, "Mesh topology")
       .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
@@ -129,13 +139,18 @@ namespace dolfin_wrappers
     // dolfin::Edge class
     py::class_<dolfin::Edge, std::shared_ptr<dolfin::Edge>, dolfin::MeshEntity>
       (m, "Edge", "DOLFIN Edge object")
-      .def(py::init<const dolfin::Mesh&, std::size_t>());
+      .def(py::init<const dolfin::Mesh&, std::size_t>())
+      .def("dot", &dolfin::Edge::dot)
+      .def("length", &dolfin::Edge::length);
 
     //--------------------------------------------------------------------------
     // dolfin::Face class
     py::class_<dolfin::Face, std::shared_ptr<dolfin::Face>, dolfin::MeshEntity>
       (m, "Face", "DOLFIN Face object")
-      .def(py::init<const dolfin::Mesh&, std::size_t>());
+      .def(py::init<const dolfin::Mesh&, std::size_t>())
+      .def("normal", (dolfin::Point (dolfin::Face::*)() const) &dolfin::Face::normal)
+      .def("normal", (double (dolfin::Face::*)(std::size_t) const) &dolfin::Face::normal)
+      .def("area", &dolfin::Face::area);
 
     //--------------------------------------------------------------------------
     // dolfin::Facet class
@@ -147,8 +162,17 @@ namespace dolfin_wrappers
     // dolfin::Cell class
     py::class_<dolfin::Cell, std::shared_ptr<dolfin::Cell>, dolfin::MeshEntity>
       (m, "Cell", "DOLFIN Cell object")
-      .def(py::init<const dolfin::Mesh&, std::size_t>());
+      .def(py::init<const dolfin::Mesh&, std::size_t>())
+      .def("distance", &dolfin::Cell::distance)
+      .def("facet_area", &dolfin::Cell::facet_area)
+      .def("h", &dolfin::Cell::h)
+      .def("inradius", &dolfin::Cell::inradius)
+      .def("circumradius", &dolfin::Cell::circumradius)
+      .def("radius_ratio", &dolfin::Cell::radius_ratio)
+      .def("volume", &dolfin::Cell::volume);
 
+    //--------------------------------------------------------------------------
+    // dolfin::MeshEntityIterator class
     py::class_<dolfin::MeshEntityIterator, std::shared_ptr<dolfin::MeshEntityIterator>>
       (m, "MeshEntityIterator", "DOLFIN MeshEntityIterator object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
@@ -160,11 +184,115 @@ namespace dolfin_wrappers
           return *self;
         });
 
+
+    // FIXME: avoid repeating code (macro?)
+
+    py::class_<dolfin::MeshEntityIteratorBase<dolfin::Cell>,
+               std::shared_ptr<dolfin::MeshEntityIteratorBase<dolfin::Cell>>>
+      (m, "CellIterator", "DOLFIN CellIterator object")
+      .def(py::init<const dolfin::Mesh&>())
+      .def("__iter__",[](dolfin::MeshEntityIteratorBase<dolfin::Cell>& self) { self.operator--(); return self; })
+      .def("__next__",[](dolfin::MeshEntityIteratorBase<dolfin::Cell>& self) {
+          self.operator++();
+          if (self.end())
+            throw py::stop_iteration("");
+          return *self;
+        });
+
+    m.def("cells", [](dolfin::Mesh& mesh)
+          { return dolfin::MeshEntityIteratorBase<dolfin::Cell>(mesh); });
+    m.def("cells", [](dolfin::MeshEntity& meshentity)
+          { return dolfin::MeshEntityIteratorBase<dolfin::Cell>(meshentity); });
+
+    py::class_<dolfin::MeshEntityIteratorBase<dolfin::Facet>,
+               std::shared_ptr<dolfin::MeshEntityIteratorBase<dolfin::Facet>>>
+      (m, "FacetIterator", "DOLFIN FacetIterator object")
+      .def(py::init<const dolfin::Mesh&>())
+      .def("__iter__",[](dolfin::MeshEntityIteratorBase<dolfin::Facet>& self) { self.operator--(); return self; })
+      .def("__next__",[](dolfin::MeshEntityIteratorBase<dolfin::Facet>& self) {
+          self.operator++();
+          if (self.end())
+            throw py::stop_iteration("");
+          return *self;
+        });
+
+    m.def("facets", [](dolfin::Mesh& mesh)
+          { return dolfin::MeshEntityIteratorBase<dolfin::Facet>(mesh); });
+    m.def("facets", [](dolfin::MeshEntity& meshentity)
+          { return dolfin::MeshEntityIteratorBase<dolfin::Facet>(meshentity); });
+
+    py::class_<dolfin::MeshEntityIteratorBase<dolfin::Face>,
+               std::shared_ptr<dolfin::MeshEntityIteratorBase<dolfin::Face>>>
+      (m, "FaceIterator", "DOLFIN FaceIterator object")
+      .def(py::init<const dolfin::Mesh&>())
+      .def("__iter__",[](dolfin::MeshEntityIteratorBase<dolfin::Face>& self) { self.operator--(); return self; })
+      .def("__next__",[](dolfin::MeshEntityIteratorBase<dolfin::Face>& self) {
+          self.operator++();
+          if (self.end())
+            throw py::stop_iteration("");
+          return *self;
+        });
+
+    m.def("faces", [](dolfin::Mesh& mesh)
+          { return dolfin::MeshEntityIteratorBase<dolfin::Face>(mesh); });
+    m.def("faces", [](dolfin::MeshEntity& meshentity)
+          { return dolfin::MeshEntityIteratorBase<dolfin::Face>(meshentity); });
+
+    py::class_<dolfin::MeshEntityIteratorBase<dolfin::Edge>,
+               std::shared_ptr<dolfin::MeshEntityIteratorBase<dolfin::Edge>>>
+      (m, "EdgeIterator", "DOLFIN EdgeIterator object")
+      .def(py::init<const dolfin::Mesh&>())
+      .def("__iter__",[](dolfin::MeshEntityIteratorBase<dolfin::Edge>& self) { self.operator--(); return self; })
+      .def("__next__",[](dolfin::MeshEntityIteratorBase<dolfin::Edge>& self) {
+          self.operator++();
+          if (self.end())
+            throw py::stop_iteration("");
+          return *self;
+        });
+
+    m.def("edges", [](dolfin::Mesh& mesh)
+          { return dolfin::MeshEntityIteratorBase<dolfin::Edge>(mesh); });
+    m.def("edges", [](dolfin::MeshEntity& meshentity)
+          { return dolfin::MeshEntityIteratorBase<dolfin::Edge>(meshentity); });
+
+    py::class_<dolfin::MeshEntityIteratorBase<dolfin::Vertex>,
+               std::shared_ptr<dolfin::MeshEntityIteratorBase<dolfin::Vertex>>>
+      (m, "VertexIterator", "DOLFIN VertexIterator object")
+      .def(py::init<const dolfin::Mesh&>())
+      .def("__iter__",[](dolfin::MeshEntityIteratorBase<dolfin::Vertex>& self) { self.operator--(); return self; })
+      .def("__next__",[](dolfin::MeshEntityIteratorBase<dolfin::Vertex>& self) {
+          self.operator++();
+          if (self.end())
+            throw py::stop_iteration("");
+          return *self;
+        });
+
+    m.def("vertices", [](dolfin::Mesh& mesh)
+          { return dolfin::MeshEntityIteratorBase<dolfin::Vertex>(mesh); });
+    m.def("vertices", [](dolfin::MeshEntity& meshentity)
+          { return dolfin::MeshEntityIteratorBase<dolfin::Vertex>(meshentity); });
+
     //--------------------------------------------------------------------------
     // dolfin::MeshFunction class
     py::class_<dolfin::MeshFunction<std::size_t>,
                std::shared_ptr<dolfin::MeshFunction<std::size_t>>>
       (m, "MeshFunction_sizet", "DOLFIN MeshFunction object");
+    //--------------------------------------------------------------------------
+    // dolfin::MeshEditor class
+    py::class_<dolfin::MeshEditor, std::shared_ptr<dolfin::MeshEditor>>
+      (m, "MeshEditor", "DOLFIN MeshEditor object")
+      .def(py::init<>())
+      .def("open", (void (dolfin::MeshEditor::*)(dolfin::Mesh& , std::string, std::size_t, std::size_t, std::size_t))
+           &dolfin::MeshEditor::open,
+           py::arg("mesh"), py::arg("type"), py::arg("tdim"), py::arg("gdim"), py::arg("degree") = 1)
+      .def("init_vertices", &dolfin::MeshEditor::init_vertices)
+      .def("init_cells", &dolfin::MeshEditor::init_cells)
+      .def("add_vertex", (void (dolfin::MeshEditor::*)(std::size_t, const dolfin::Point&))
+           &dolfin::MeshEditor::add_vertex)
+      .def("add_cell", (void (dolfin::MeshEditor::*)(std::size_t, const std::vector<std::size_t>&))
+           &dolfin::MeshEditor::add_cell)
+      .def("close", &dolfin::MeshEditor::close, py::arg("order") = true);
+
 
     //--------------------------------------------------------------------------
     // dolfin::SubDomain class
