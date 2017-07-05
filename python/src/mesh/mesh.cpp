@@ -32,6 +32,7 @@
 #include <dolfin/mesh/Face.h>
 #include <dolfin/mesh/Facet.h>
 #include <dolfin/mesh/Cell.h>
+#include <dolfin/mesh/MeshEntityIterator.h>
 #include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/SubDomain.h>
 
@@ -115,7 +116,8 @@ namespace dolfin_wrappers
           return Eigen::Map<const Eigen::Matrix<unsigned int, Eigen::Dynamic, 1>>
             (self.entities(dim), self.num_entities(dim));
         })
-      .def("midpoint", &dolfin::MeshEntity::midpoint, "Midpoint of Entity");
+      .def("midpoint", &dolfin::MeshEntity::midpoint, "Midpoint of Entity")
+      .def("__str__", [](dolfin::MeshEntity& self){return self.str(false);});
 
     //--------------------------------------------------------------------------
     // dolfin::Vertex class
@@ -146,6 +148,17 @@ namespace dolfin_wrappers
     py::class_<dolfin::Cell, std::shared_ptr<dolfin::Cell>, dolfin::MeshEntity>
       (m, "Cell", "DOLFIN Cell object")
       .def(py::init<const dolfin::Mesh&, std::size_t>());
+
+    py::class_<dolfin::MeshEntityIterator, std::shared_ptr<dolfin::MeshEntityIterator>>
+      (m, "MeshEntityIterator", "DOLFIN MeshEntityIterator object")
+      .def(py::init<const dolfin::Mesh&, std::size_t>())
+      .def("__iter__",[](dolfin::MeshEntityIterator& self) { self.operator--(); return self; })
+      .def("__next__",[](dolfin::MeshEntityIterator& self) {
+          self.operator++();
+          if (self.end())
+            throw py::stop_iteration("");
+          return *self;
+        });
 
     //--------------------------------------------------------------------------
     // dolfin::MeshFunction class

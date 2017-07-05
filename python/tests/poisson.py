@@ -17,6 +17,7 @@ parameter.set('linear_algebra_backend', 'PETSc')
 
 mesh = UnitSquareMesh(12, 12)
 mesh = refine(mesh)
+print (Cell(mesh, 0))
 
 V = FunctionSpace(mesh, "Lagrange", 1)
 w = Function(V)
