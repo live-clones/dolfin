@@ -56,10 +56,15 @@ namespace dolfin_wrappers
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
       .def(py::init<>())
+      .def("mpi_comm", &dolfin::Mesh::mpi_comm)
       .def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities")
+      .def("init_global", &dolfin::Mesh::init_global)
       .def("init", (void (dolfin::Mesh::*)() const) &dolfin::Mesh::init)
       .def("init", (std::size_t (dolfin::Mesh::*)(std::size_t) const) &dolfin::Mesh::init)
       .def("init", (void (dolfin::Mesh::*)(std::size_t, std::size_t) const) &dolfin::Mesh::init)
+      .def("init_cell_orientations", &dolfin::Mesh::init_cell_orientations)
+      .def("size_global", &dolfin::Mesh::size_global)
+      .def("cell_orientations", &dolfin::Mesh::cell_orientations)
       .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
            &dolfin::Mesh::topology, "Mesh topology")
       .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
@@ -160,6 +165,10 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::Mesh&, std::size_t>())
       .def("distance", &dolfin::Cell::distance)
       .def("facet_area", &dolfin::Cell::facet_area)
+      .def("h", &dolfin::Cell::h)
+      .def("inradius", &dolfin::Cell::inradius)
+      .def("circumradius", &dolfin::Cell::circumradius)
+      .def("radius_ratio", &dolfin::Cell::radius_ratio)
       .def("volume", &dolfin::Cell::volume);
 
     //--------------------------------------------------------------------------
