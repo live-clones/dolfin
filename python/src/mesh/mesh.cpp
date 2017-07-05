@@ -23,6 +23,7 @@
 #include <pybind11/stl.h>
 
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/CellType.h>
 #include <dolfin/mesh/MeshTopology.h>
 #include <dolfin/mesh/MeshGeometry.h>
@@ -54,7 +55,11 @@ namespace dolfin_wrappers
     //-----------------------------------------------------------------------------
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
+      .def(py::init<>())
       .def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities")
+      .def("init", (void (dolfin::Mesh::*)() const) &dolfin::Mesh::init)
+      .def("init", (std::size_t (dolfin::Mesh::*)(std::size_t) const) &dolfin::Mesh::init)
+      .def("init", (void (dolfin::Mesh::*)(std::size_t, std::size_t) const) &dolfin::Mesh::init)
       .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
            &dolfin::Mesh::topology, "Mesh topology")
       .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
@@ -152,7 +157,10 @@ namespace dolfin_wrappers
     // dolfin::Cell class
     py::class_<dolfin::Cell, std::shared_ptr<dolfin::Cell>, dolfin::MeshEntity>
       (m, "Cell", "DOLFIN Cell object")
-      .def(py::init<const dolfin::Mesh&, std::size_t>());
+      .def(py::init<const dolfin::Mesh&, std::size_t>())
+      .def("distance", &dolfin::Cell::distance)
+      .def("facet_area", &dolfin::Cell::facet_area)
+      .def("volume", &dolfin::Cell::volume);
 
     //--------------------------------------------------------------------------
     // dolfin::MeshEntityIterator class
@@ -260,6 +268,22 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshFunction<std::size_t>,
                std::shared_ptr<dolfin::MeshFunction<std::size_t>>>
       (m, "MeshFunction_sizet", "DOLFIN MeshFunction object");
+    //--------------------------------------------------------------------------
+    // dolfin::MeshEditor class
+    py::class_<dolfin::MeshEditor, std::shared_ptr<dolfin::MeshEditor>>
+      (m, "MeshEditor", "DOLFIN MeshEditor object")
+      .def(py::init<>())
+      .def("open", (void (dolfin::MeshEditor::*)(dolfin::Mesh& , std::string, std::size_t, std::size_t, std::size_t))
+           &dolfin::MeshEditor::open,
+           py::arg("mesh"), py::arg("type"), py::arg("tdim"), py::arg("gdim"), py::arg("degree") = 1)
+      .def("init_vertices", &dolfin::MeshEditor::init_vertices)
+      .def("init_cells", &dolfin::MeshEditor::init_cells)
+      .def("add_vertex", (void (dolfin::MeshEditor::*)(std::size_t, const dolfin::Point&))
+           &dolfin::MeshEditor::add_vertex)
+      .def("add_cell", (void (dolfin::MeshEditor::*)(std::size_t, const std::vector<std::size_t>&))
+           &dolfin::MeshEditor::add_cell)
+      .def("close", &dolfin::MeshEditor::close, py::arg("order") = true);
+
 
     //--------------------------------------------------------------------------
     // dolfin::SubDomain class
