@@ -23,7 +23,27 @@ import numpy
 
 #from dolfin import warning, error
 
-class UserExpression(ufl.Coefficient, cpp.function.Expression):
+class _InterfaceExpression(cpp.function.Expression):
+    def __init__(self, user_expression):
+        print("In constructore")
+        self.user_expression = user_expression
+
+        cpp.function.Expression.__init__(self)
+
+        def eval(self, values, x):
+            self.user_expression.eval(values, x)
+        def eval_cell(self, values, x, cell):
+            self.puser_expression.eval(values, x, cell)
+
+        # Attach eval functions of they exists in the user Expression
+        # class
+        if hasattr(user_expression, 'eval'):
+            self.eval = types.MethodType(eval, self)
+        if hasattr(user_expression, 'eval_cell'):
+            self.eval_cell = types.MethodType(eval_cell, self)
+
+
+class UserExpression(ufl.Coefficient):
     def __init__(self, function_space=None, element=None, degree=None):
         """Create an Expression."""
 
@@ -38,7 +58,9 @@ class UserExpression(ufl.Coefficient, cpp.function.Expression):
         ufl.Coefficient.__init__(self, function_space)
         print(self.ufl_shape)
         #cpp.function.Expression.__init__(self, 1)
-        cpp.function.Expression.__init__(self, self.ufl_shape)
+        #cpp.function.Expression.__init__(self, self.ufl_shape)
+
+        self.cpp_interface = _InterfaceExpression(self)
 
         value_shape = tuple(self.value_dimension(i)
                             for i in range(self.value_rank()))
@@ -58,6 +80,18 @@ class UserExpression(ufl.Coefficient, cpp.function.Expression):
         # Initialize UFL base class
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
+
+    def value_rank(self):
+        return self.cpp_interface.value_rank()
+
+    def value_dimension(self, i):
+        return self.cpp_interface.value_dimension(i)
+
+    def id(self):
+        return self.cpp_interface.id()
+
+    def cpp_object(self):
+        return self.cpp_interface
 
 
 def jit_generate(statement, module_name, signature, parameters):
@@ -129,11 +163,13 @@ def compile_expression(statement):
     return expression
 
 
-class CompiledExpression(ufl.Coefficient, cpp.function.Expression):
-    def __new__(cls, statement, degree):
-        return compile_expression(statement)
-
+class CompiledExpression(ufl.Coefficient):
     def __init__(self, statement, degree):
+        self._cpp_expression = compile_expression(statement)
+
         element = ufl.FiniteElement("Lagrange", None, degree)
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
+
+    def cpp_object(self):
+        return self._cpp_expression

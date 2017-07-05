@@ -34,7 +34,7 @@ class Form(cpp.fem.Form):
         for i in range(self.num_coefficients()):
             j = self.original_coefficient_position(i)
             print("**** Apend")
-            self.coefficients.append(original_coefficients[j])
+            self.coefficients.append(original_coefficients[j].cpp_object())
 
         # Type checking coefficients
         if not all(isinstance(c, (cpp.function.GenericFunction, cpp.function.MultiMeshFunction))
