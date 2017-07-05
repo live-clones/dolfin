@@ -5,16 +5,19 @@ from dolfin_test.cpp.fem import Assembler
 from dolfin_test.fem.form import Form
 from dolfin_test.fem.dirichletbc import DirichletBC, CompiledSubDomain
 from dolfin_test.cpp.function import Function, Constant
-from dolfin_test.cpp.mesh import SubDomain
+from dolfin_test.cpp.mesh import SubDomain, Vertex, Cell
 from dolfin_test.cpp.la import EigenVector, EigenMatrix, LUSolver, PETScMatrix, PETScVector, KrylovSolver
 from dolfin_test.cpp import MPI
 from dolfin_test.cpp.io import XDMFFile
 from dolfin_test.cpp import parameter
+from dolfin_test.cpp.refinement import refine
 from ufl import TestFunction, TrialFunction, inner, grad, dx, ds
 
 parameter.set('linear_algebra_backend', 'PETSc')
 
 mesh = UnitSquareMesh(12, 12)
+mesh = refine(mesh)
+
 V = FunctionSpace(mesh, "Lagrange", 1)
 w = Function(V)
 
@@ -31,12 +34,7 @@ class Boundary(SubDomain):
 
 # boundary = Boundary()
 
-boundary = CompiledSubDomain("x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
-
-import numpy as np
-for i in range(12):
-    x = float(i)/10.0
-    print(x, boundary.inside(np.array([x,0.0]), False))
+# boundary = CompiledSubDomain("x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
 
 u0 = Constant(0.0)
 # bc = DirichletBC(V, u0, boundary)

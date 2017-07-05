@@ -32,6 +32,7 @@ namespace dolfin_wrappers
   void la(py::module& m);
   void mesh(py::module& m);
   void parameter(py::module& m);
+  void refinement(py::module& m);
 }
 
 
@@ -78,6 +79,10 @@ PYBIND11_MODULE(cpp, m)
   // Create parameter submodule
   py::module parameter = m.def_submodule("parameter", "DOLFIN parameter module");
   dolfin_wrappers::parameter(parameter);
+
+  // Create refinement submodule
+  py::module refinement = m.def_submodule("refinement", "DOLFIN refinement module");
+  dolfin_wrappers::refinement(refinement);
 
   // Create experimental submodule
   py::module experimental = m.def_submodule("experimental",

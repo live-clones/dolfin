@@ -21,6 +21,7 @@ pybind11_add_module(cpp SHARED
   src/io/io.cpp
   src/la/la.cpp
   src/parameter/parameter.cpp
+  src/refinement/refinement.cpp
   )
 
 # Add DOLFIN libraries and other config

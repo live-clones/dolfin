@@ -26,6 +26,13 @@
 #include <dolfin/mesh/CellType.h>
 #include <dolfin/mesh/MeshTopology.h>
 #include <dolfin/mesh/MeshGeometry.h>
+#include <dolfin/mesh/MeshEntity.h>
+#include <dolfin/mesh/Vertex.h>
+#include <dolfin/mesh/Edge.h>
+#include <dolfin/mesh/Face.h>
+#include <dolfin/mesh/Facet.h>
+#include <dolfin/mesh/Cell.h>
+#include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/SubDomain.h>
 
 namespace py = pybind11;
@@ -89,17 +96,65 @@ namespace dolfin_wrappers
       .def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension")
       .def("degree", &dolfin::MeshGeometry::degree, "Degree");
 
+    //-------------------------------------------------------------------------
+    // dolfin::MeshEntity class
+    py::class_<dolfin::MeshEntity, std::shared_ptr<dolfin::MeshEntity>>
+      (m, "MeshEntity", "DOLFIN MeshEntity object")
+      .def(py::init<const dolfin::Mesh&, std::size_t, std::size_t>())
+      .def("mesh", &dolfin::MeshEntity::mesh, "Associated mesh")
+      .def("dim", &dolfin::MeshEntity::dim, "Topological dimension")
+      .def("index", (std::size_t (dolfin::MeshEntity::*)() const)
+           &dolfin::MeshEntity::index, "Index")
+      .def("global_index", &dolfin::MeshEntity::global_index, "Global index")
+      .def("num_entities", &dolfin::MeshEntity::num_entities,
+           "Number of incident entities of given dimension")
+      .def("num_global_entities", &dolfin::MeshEntity::num_global_entities,
+           "Global number of incident entities of given dimension")
+      .def("entities", [](dolfin::MeshEntity& self, std::size_t dim)
+        {
+          return Eigen::Map<const Eigen::Matrix<unsigned int, Eigen::Dynamic, 1>>
+            (self.entities(dim), self.num_entities(dim));
+        })
+      .def("midpoint", &dolfin::MeshEntity::midpoint, "Midpoint of Entity");
+
+    //--------------------------------------------------------------------------
+    // dolfin::Vertex class
+    py::class_<dolfin::Vertex, std::shared_ptr<dolfin::Vertex>, dolfin::MeshEntity>
+      (m, "Vertex", "DOLFIN Vertex object")
+      .def(py::init<const dolfin::Mesh&, std::size_t>());
+
+    //--------------------------------------------------------------------------
+    // dolfin::Edge class
+    py::class_<dolfin::Edge, std::shared_ptr<dolfin::Edge>, dolfin::MeshEntity>
+      (m, "Edge", "DOLFIN Edge object")
+      .def(py::init<const dolfin::Mesh&, std::size_t>());
+
+    //--------------------------------------------------------------------------
+    // dolfin::Face class
+    py::class_<dolfin::Face, std::shared_ptr<dolfin::Face>, dolfin::MeshEntity>
+      (m, "Face", "DOLFIN Face object")
+      .def(py::init<const dolfin::Mesh&, std::size_t>());
+
+    //--------------------------------------------------------------------------
+    // dolfin::Facet class
+    py::class_<dolfin::Facet, std::shared_ptr<dolfin::Facet>, dolfin::MeshEntity>
+      (m, "Facet", "DOLFIN Facet object")
+      .def(py::init<const dolfin::Mesh&, std::size_t>());
+
+    //--------------------------------------------------------------------------
+    // dolfin::Cell class
+    py::class_<dolfin::Cell, std::shared_ptr<dolfin::Cell>, dolfin::MeshEntity>
+      (m, "Cell", "DOLFIN Cell object")
+      .def(py::init<const dolfin::Mesh&, std::size_t>());
+
+    //--------------------------------------------------------------------------
+    // dolfin::MeshFunction class
+    py::class_<dolfin::MeshFunction<std::size_t>,
+               std::shared_ptr<dolfin::MeshFunction<std::size_t>>>
+      (m, "MeshFunction_sizet", "DOLFIN MeshFunction object");
+
     //--------------------------------------------------------------------------
     // dolfin::SubDomain class
-
-    // FIXME: move somewhere else
-    py::class_<dolfin::Array<double>, std::shared_ptr<dolfin::Array<double>>> (m, "Array")
-      .def("__init__", [](dolfin::Array<double>& instance, std::vector<double>& x)
-           {
-             new (&instance) dolfin::Array<double>(x.size(), x.data());
-           })
-      .def("__getitem__", [](dolfin::Array<double>& self, int i)
-           { return self[i]; });
 
     class PySubDomain : public dolfin::SubDomain
     {
