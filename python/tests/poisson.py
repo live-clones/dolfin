@@ -1,10 +1,13 @@
 import dolfin_test.cpp as cpp
-from dolfin_test.cpp.generation import UnitSquareMesh
+
 from dolfin_test.function.functionspace import FunctionSpace
-from dolfin_test.cpp.fem import Assembler
+from dolfin_test.function.constant import Constant
 from dolfin_test.fem.form import Form
 from dolfin_test.fem.dirichletbc import DirichletBC, CompiledSubDomain
-from dolfin_test.cpp.function import Function, Constant
+
+from dolfin_test.cpp.generation import UnitSquareMesh
+from dolfin_test.cpp.fem import Assembler
+from dolfin_test.cpp.function import Function
 from dolfin_test.cpp.mesh import SubDomain, Vertex, Cell
 from dolfin_test.cpp.la import EigenVector, EigenMatrix, LUSolver, PETScMatrix, PETScVector, KrylovSolver
 from dolfin_test.cpp import MPI
@@ -39,7 +42,7 @@ class Boundary(SubDomain):
 
 u0 = Constant(0.0)
 # bc = DirichletBC(V, u0, boundary)
-bc = DirichletBC(V, u0, "x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
+bc = DirichletBC(V, u0.cpp_object(), "x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
 
 u = TrialFunction(V)
 v = TestFunction(V)
@@ -47,7 +50,9 @@ v = TestFunction(V)
 # g = Expression("sin(5*x[0])", degree=2)
 a = inner(grad(u), grad(v))*dx
 #L = f*v*dx + g*v*ds
-L = v*dx
+
+c = Constant(1.0)
+L = c*v*dx
 
 assembler = Assembler()
 A = PETScMatrix()

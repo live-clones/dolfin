@@ -30,7 +30,7 @@ import ufl
 import dolfin_test.cpp as cpp
 import numpy
 
-class Constant(ufl.Coefficient, cpp.function.Constant):
+class Constant(ufl.Coefficient):
 
     def __init__(self, value, cell=None, name=None):
         """
@@ -77,13 +77,13 @@ class Constant(ufl.Coefficient, cpp.function.Constant):
         # Create UFL element and initialize constant
         if rank == 0:
             ufl_element = ufl.FiniteElement("Real", cell, 0)
-            cpp.function.Constant.__init__(self, floats[0])
+            self._cpp_constant = cpp.function.Constant(floats[0])
         elif rank == 1:
             ufl_element = ufl.VectorElement("Real", cell, 0, dim=len(floats))
-            cpp.function.Constant.__init__(self, floats)
+            self._cpp_constant = cpp.function.Constant(floats)
         else:
             ufl_element = ufl.TensorElement("Real", cell, 0, shape=array.shape)
-            cpp.function.Constant.__init__(self, list(array.shape), floats)
+            self._cpp_constant = cpp.function.Constant(list(array.shape), floats)
 
         # Initialize base classes
         ufl_function_space = ufl.FunctionSpace(ufl_domain, ufl_element)
@@ -96,6 +96,15 @@ class Constant(ufl.Coefficient, cpp.function.Constant):
     def cell(self):
         return self.ufl_element().cell()
 
+    def id(self):
+        return self._cpp_constant.id()
+
+    def name(self):
+        return self._cpp_constant.name()
+
+    def rename(self, name, s):
+        self._cpp_constant.rename(name, s)
+
     def __float__(self):
         # Overriding UFL operator in this particular case.
         if self.ufl_shape:
@@ -105,3 +114,6 @@ class Constant(ufl.Coefficient, cpp.function.Constant):
     def __str__(self):
         "x.__str__() <==> print(x)"
         return self.name()
+
+    def cpp_object(self):
+        return self._cpp_constant

@@ -82,17 +82,17 @@ class UserExpression(ufl.Coefficient):
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
     def value_rank(self):
-        return self.cpp_expression.value_rank()
+        return self._cpp_expression.value_rank()
 
     def value_dimension(self, i):
-        return self.cpp_expression.value_dimension(i)
+        return self._cpp_expression.value_dimension(i)
 
     def id(self):
-        return self.cpp_expression.id()
+        return self._cpp_expression.id()
 
     def cpp_object(self):
         """Return the underling cpp.Expression object"""
-        return self.cpp_expression
+        return self._cpp_expression
 
 
 def jit_generate(statement, module_name, signature, parameters):
