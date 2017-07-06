@@ -20,9 +20,9 @@ if "linux" in sys.platform:
     sys.setdlopenflags(RTLD_NOW | RTLD_GLOBAL)
 del sys
 
-import dolfin_test.cpp
+#import dolfin_test.cpp
 
 # Reset dl open flags
-import sys
-sys.setdlopenflags(stored_dlopen_flags)
-del sys
+#import sys
+#sys.setdlopenflags(stored_dlopen_flags)
+#del sys

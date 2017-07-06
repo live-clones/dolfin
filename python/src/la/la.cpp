@@ -27,6 +27,7 @@
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
+#include <dolfin/la/LinearAlgebraObject.h>
 #include <dolfin/la/Matrix.h>
 #include <dolfin/la/Vector.h>
 #include <dolfin/la/EigenMatrix.h>
@@ -44,6 +45,14 @@ namespace dolfin_wrappers
 {
   void la(py::module& m)
   {
+    // dolfin::GenericLinearOperator class
+    //py::class_<dolfin::LinearAlgerabObject, std::shared_ptr<dolfin::LinearAlgerabObject>>
+    //  (m, "LinearAlgerabObject", "DOLFIN LinearAlgerabObject object");
+
+    // dolfin::GenericLinearOperator class
+    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
+      (m, "GenericLinearOperator", "DOLFIN GenericLinearOperator object");
+
     // dolfin::GenericTensor class
     py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>>
       (m, "GenericTensor", "DOLFIN GenericTensor object");
@@ -52,11 +61,6 @@ namespace dolfin_wrappers
     py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>,
                dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object");
-
-    // dolfin::GenericLinearOperator class
-    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
-      (m, "GenericLinearOperator", "DOLFIN GenericLinearOperator object");
-
 
     // dolfin::GenericVector class
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>,

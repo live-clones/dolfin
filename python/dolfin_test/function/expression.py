@@ -173,5 +173,8 @@ class CompiledExpression(ufl.Coefficient):
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
+    def id(self):
+        return self._cpp_expression.id()
+
     def cpp_object(self):
         return self._cpp_expression
