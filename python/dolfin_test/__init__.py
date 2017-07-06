@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 """Main module for DOLFIN"""
 
-def hello_world():
-    print("Hello from the DOLFIN pybind11 test module")
+# Fix dlopen flags (may need reorganising)
+import sys
+if "linux" in sys.platform:
+    # FIXME: What with other platforms?
+    try:
+        from ctypes import RTLD_NOW, RTLD_GLOBAL
+    except ImportError:
+        RTLD_NOW = 2
+        RTLD_GLOBAL = 256
+    sys.setdlopenflags(RTLD_NOW | RTLD_GLOBAL)
