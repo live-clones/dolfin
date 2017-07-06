@@ -22,6 +22,7 @@
 
 #include <dolfin/common/MPI.h>
 #include <dolfin/common/Variable.h>
+#include <dolfin/common/SubSystemsManager.h>
 
 #include "../openmpi.h"
 
@@ -40,14 +41,27 @@ namespace dolfin_wrappers
   void mpi(py::module& m)
   {
     // MPI
-    m.attr("comm_world") = MPI_COMM_WORLD;
-    m.attr("comm_self") = MPI_COMM_SELF;
+    // m.attr("comm_world") = MPI_COMM_WORLD;
+    // m.attr("comm_self") = MPI_COMM_SELF;
+
+    m.def("init", [](){ dolfin::SubSystemsManager::init_mpi();});
+    m.def("my_init", [](){
+        int argc = 0;
+        std::string s("");
+        char* c = const_cast<char *>(s.c_str());
+        char **argv = &c;
+        MPI_Init(&argc, &argv);
+          });
+
+
+    m.def("comm_world", []() { return MPI_COMM_WORLD; });
+    m.def("comm_self", []() { return MPI_COMM_SELF; });
 
     m.def("rank", &dolfin::MPI::rank);
-    // m.def("size", &dolfin::MPI::size);
-    // m.def("max", &dolfin::MPI::max<double>);
-    // m.def("min", &dolfin::MPI::min<double>);
-    // m.def("sum", &dolfin::MPI::sum<double>);
+    m.def("size", &dolfin::MPI::size);
+    m.def("max", &dolfin::MPI::max<double>);
+    m.def("min", &dolfin::MPI::min<double>);
+    m.def("sum", &dolfin::MPI::sum<double>);
 
   }
 

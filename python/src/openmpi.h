@@ -2,6 +2,8 @@
 #ifndef _DOLFIN_PYBIND11_OPENMPI
 #define _DOLFIN_PYBIND11_OPENMPI
 
+// Custom type caster for OpenMPI MPI_Comm
+#ifdef OPEN_MPI
 #include <mpi.h>
 #include <pybind11/pybind11.h>
 
@@ -19,9 +21,9 @@ namespace pybind11 {
       bool load(handle src, bool)
       {
         std::uintptr_t v = PyLong_AsUnsignedLong(src.ptr());
+
         if (PyErr_Occurred()) return false;
         value = reinterpret_cast<ompi_communicator_t *>(v);
-        std::cout << "load value = " << value << "\n";
 
         return true;
       }
@@ -29,13 +31,11 @@ namespace pybind11 {
       // From C++ to Python
       static handle cast(const ompi_communicator_t * const &src, return_value_policy /*policy*/, handle /*parent*/)
       {
-        std::cout << "cast value = " << src << "\n";
         return py::cast(reinterpret_cast<std::uintptr_t>(src));
       }
 
       operator ompi_communicator_t*()
       {
-        std::cout << "operator value = " << value << "\n";
         return value;
       }
     };
@@ -43,5 +43,5 @@ namespace pybind11 {
 }
 // end namespace
 
-
+#endif
 #endif

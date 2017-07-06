@@ -1,3 +1,4 @@
+from mpi4py import MPI as mpi4py_MPI
 import dolfin_test.cpp as cpp
 
 from dolfin_test.function.functionspace import FunctionSpace
