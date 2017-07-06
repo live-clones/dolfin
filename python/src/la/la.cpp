@@ -42,36 +42,43 @@ namespace dolfin_wrappers
 {
   void la(py::module& m)
   {
-    // dolfin::Matrix class
-    py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>>
-      (m, "Matrix", "DOLFIN Matrix object")
-      .def(py::init<MPI_Comm>());
-
-    //-----------------------------------------------------------------------------
-    // dolfin::Vector class
-    py::class_<dolfin::Vector, std::shared_ptr<dolfin::Vector>>
-      (m, "Vector", "DOLFIN Vector object")
-      .def(py::init<MPI_Comm>());
-
     //-----------------------------------------------------------------------------
     // dolfin::GenericTensor class
     py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>>
       (m, "GenericTensor", "DOLFIN GenericTensor object");
+
+    //----------------------------------------------------------------------------
+    // dolfin::GenericMatrix class
+    py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>>
+      (m, "GenericMatrix", "DOLFIN GenericMatrix object");
+
+    //-----------------------------------------------------------------------------
+    // dolfin::GenericVector class
+    py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>,
+               dolfin::GenericTensor>
+      (m, "GenericVector", "DOLFIN GenericVector object");
+
+    // dolfin::Matrix class
+    py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>, dolfin::GenericMatrix,
+               dolfin::GenericTensor>
+      (m, "Matrix", "DOLFIN Matrix object")
+      .def(py::init<>())
+      .def(py::init<MPI_Comm>());
+
+    //-----------------------------------------------------------------------------
+    // dolfin::Vector class
+    py::class_<dolfin::Vector, std::shared_ptr<dolfin::Vector>,
+               dolfin::GenericVector, dolfin::GenericTensor>
+      (m, "Vector", "DOLFIN Vector object")
+      .def(py::init<>())
+      .def(py::init<MPI_Comm>());
+
 
     //-----------------------------------------------------------------------------
     // dolfin::GenericLinearOperator class
     py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
       (m, "GenericLinearOperator", "DOLFIN GenericLinearOperator object");
 
-    //-----------------------------------------------------------------------------
-    // dolfin::GenericVector class
-    py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>>
-      (m, "GenericVector", "DOLFIN GenericVector object");
-
-    //----------------------------------------------------------------------------
-    // dolfin::GenericMatrix class
-    py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>>
-      (m, "GenericMatrix", "DOLFIN GenericMatrix object");
 
     //----------------------------------------------------------------------------
     // dolfin::EigenVector class
