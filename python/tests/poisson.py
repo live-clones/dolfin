@@ -24,7 +24,7 @@ from dolfin_test.cpp.refinement import refine
 from ufl import TestFunction, TrialFunction, inner, grad, dx, ds
 
 if cpp.common.has_petsc():
-    parameter.set('linear_algebra_backend', 'Eigen')
+    parameter.set('linear_algebra_backend', 'PETSc')
 
 # Create mesh and refine
 mesh = UnitSquareMesh(12, 12)
@@ -73,7 +73,7 @@ bc.apply(A)
 solver = KrylovSolver(A)
 solver.solve(w.vector(), b)
 
-#file = XDMFFile("poisson.xdmf", XDMFFile.Encoding.ASCII)
-#file.write(w)
+file = XDMFFile("poisson.xdmf")
+file.write(w, XDMFFile.Encoding.HDF5)
 
 # plot(w, interactive=True)
