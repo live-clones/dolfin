@@ -10,14 +10,19 @@ from dolfin_test.cpp.generation import UnitSquareMesh
 from dolfin_test.cpp.fem import Assembler
 from dolfin_test.cpp.function import Function
 from dolfin_test.cpp.mesh import SubDomain, Vertex, Cell
-from dolfin_test.cpp.la import EigenVector, EigenMatrix, LUSolver, PETScMatrix, PETScVector, KrylovSolver
+
+from dolfin_test.cpp.la import LUSolver, KrylovSolver, Matrix, Vector
+#if cpp.common.has_petsc():
+#    from dolfin_test.cpp.la import PETScMatrix, PETScVector
+
 from dolfin_test.cpp import MPI
 from dolfin_test.cpp.io import XDMFFile
 from dolfin_test.cpp import parameter
 from dolfin_test.cpp.refinement import refine
 from ufl import TestFunction, TrialFunction, inner, grad, dx, ds
 
-parameter.set('linear_algebra_backend', 'PETSc')
+if cpp.common.has_petsc():
+    parameter.set('linear_algebra_backend', 'Eigen')
 
 mesh = UnitSquareMesh(12, 12)
 mesh = refine(mesh)
@@ -27,8 +32,8 @@ V = FunctionSpace(mesh, "Lagrange", 1)
 w = Function(V)
 
 xdmf = XDMFFile("a.xdmf")
-xdmf.write(mesh) #, XDMFFile.Encoding.ASCII)
-xdmf.write(w) #, XDMFFile.Encoding.ASCII)
+xdmf.write(mesh,  XDMFFile.Encoding.ASCII)
+xdmf.write(w, XDMFFile.Encoding.ASCII)
 
 DOLFIN_EPS = 1e-14
 
@@ -56,18 +61,18 @@ c = Constant(1.0)
 L = c*v*dx
 
 assembler = Assembler()
-A = PETScMatrix()
+A = Matrix()
 assembler.assemble(A, Form(a, [V, V]))
 # print(A.array())
 
-b = PETScVector(MPI.comm_world)
+b = Vector(MPI.comm_world())
 assembler.assemble(b, Form(L, [V]))
 bc.apply(b)
 bc.apply(A)
 # print(b.array())
 # print(A.array())
 
-solver = KrylovSolver(MPI.comm_world, A)
+solver = KrylovSolver(MPI.comm_world(), A)
 
 solver.solve(w.vector(), b)
 
@@ -76,7 +81,7 @@ solver.solve(w.vector(), b)
 # print(w.vector().array())
 # solve(a == L, w, bc)
 
-file = XDMFFile("poisson.xdmf")
+file = XDMFFile("poisson.xdmf", XDMFFile.Encoding.ASCII)
 file.write(w)
 
 # plot(w, interactive=True)
