@@ -2,7 +2,7 @@ import types
 from six import string_types
 import hashlib
 
-import dolfin_test.cpp as cpp
+import dolfin.cpp as cpp
 import dijitso
 import ffc
 

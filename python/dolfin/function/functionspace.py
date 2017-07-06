@@ -1,8 +1,8 @@
-
 import ffc
 import ufl
 import types
-import dolfin_test.cpp as cpp
+import dolfin.cpp as cpp
+
 
 class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
 

@@ -18,7 +18,7 @@ import dijitso
 import ufl
 from ufl import product
 from ufl.utils.indexflattening import flatten_multiindex, shape_to_strides
-import dolfin_test.cpp as cpp
+import dolfin.cpp as cpp
 import numpy
 
 #from dolfin import warning, error
