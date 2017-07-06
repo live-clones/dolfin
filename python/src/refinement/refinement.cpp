@@ -20,7 +20,9 @@
 #include <pybind11/pybind11.h>
 
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/refinement/refine.h>
+
 namespace py = pybind11;
 
 namespace dolfin_wrappers
@@ -30,6 +32,9 @@ namespace dolfin_wrappers
   {
     m.def("refine", (dolfin::Mesh (*)(const dolfin::Mesh&, bool)) &dolfin::refine,
           py::arg("mesh"), py::arg("redistribute") = true);
+
+    m.def("refine", (dolfin::Mesh (*)(const dolfin::Mesh&, const dolfin::MeshFunction<bool>&, bool))
+          &dolfin::refine, py::arg("mesh"), py::arg("marker"), py::arg("redistribute") = true);
 
   }
 

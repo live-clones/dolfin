@@ -276,13 +276,32 @@ namespace dolfin_wrappers
 
     //--------------------------------------------------------------------------
     // dolfin::MeshFunction class
+    py::class_<dolfin::MeshFunction<bool>,
+               std::shared_ptr<dolfin::MeshFunction<bool>>>
+      (m, "MeshFunction_bool", "DOLFIN MeshFunction object")
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, bool>())
+      .def("__getitem__", (const bool& (dolfin::MeshFunction<bool>::*)(std::size_t) const)
+           &dolfin::MeshFunction<bool>::operator[])
+      .def("__setitem__", [](dolfin::MeshFunction<bool>& self, std::size_t index, bool value)
+           { self.operator[](index) = value;})
+      .def("__getitem__", (const bool& (dolfin::MeshFunction<bool>::*)(const dolfin::MeshEntity&) const)
+           &dolfin::MeshFunction<bool>::operator[])
+      .def("__setitem__", [](dolfin::MeshFunction<bool>& self, const dolfin::MeshEntity& index, bool value)
+           { self.operator[](index) = value;});
+
     py::class_<dolfin::MeshFunction<std::size_t>,
                std::shared_ptr<dolfin::MeshFunction<std::size_t>>>
       (m, "MeshFunction_sizet", "DOLFIN MeshFunction object")
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, std::size_t>())
       .def("__getitem__", (const std::size_t& (dolfin::MeshFunction<std::size_t>::*)(std::size_t) const)
            &dolfin::MeshFunction<std::size_t>::operator[])
       .def("__setitem__", [](dolfin::MeshFunction<std::size_t>& self, std::size_t index, std::size_t value)
+           { self.operator[](index) = value;})
+      .def("__getitem__", (const std::size_t& (dolfin::MeshFunction<std::size_t>::*)(const dolfin::MeshEntity&) const)
+           &dolfin::MeshFunction<std::size_t>::operator[])
+      .def("__setitem__", [](dolfin::MeshFunction<std::size_t>& self, const dolfin::MeshEntity& index, std::size_t value)
            { self.operator[](index) = value;});
 
 
