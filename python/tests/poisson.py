@@ -58,21 +58,27 @@ a = inner(grad(u), grad(v))*dx
 #L = f*v*dx + g*v*ds
 
 c = Constant(1.0)
-L = c*v*dx
+L = v*dx
+
 
 assembler = Assembler()
 A = Matrix()
 assembler.assemble(A, Form(a, [V, V]))
 # print(A.array())
 
-b = Vector(MPI.comm_world())
-assembler.assemble(b, Form(L, [V]))
-bc.apply(b)
-bc.apply(A)
+
+b = Vector()
+
+myform = Form(L, [V])
+assembler.assemble(b, myform)
+
+#bc.apply(b)
+#bc.apply(A)
 # print(b.array())
 # print(A.array())
 
-solver = KrylovSolver(MPI.comm_world(), A)
+
+solver = KrylovSolver(A)
 
 solver.solve(w.vector(), b)
 

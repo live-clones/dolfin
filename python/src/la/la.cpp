@@ -22,6 +22,8 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/la/GenericLinearOperator.h>
+#include <dolfin/la/GenericLinearSolver.h>
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
@@ -42,25 +44,34 @@ namespace dolfin_wrappers
 {
   void la(py::module& m)
   {
-    //-----------------------------------------------------------------------------
     // dolfin::GenericTensor class
     py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>>
       (m, "GenericTensor", "DOLFIN GenericTensor object");
 
-    //----------------------------------------------------------------------------
     // dolfin::GenericMatrix class
-    py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>>
+    py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>,
+               dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object");
 
-    //-----------------------------------------------------------------------------
+    // dolfin::GenericLinearOperator class
+    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
+      (m, "GenericLinearOperator", "DOLFIN GenericLinearOperator object");
+
+
     // dolfin::GenericVector class
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>,
                dolfin::GenericTensor>
       (m, "GenericVector", "DOLFIN GenericVector object");
 
+    // dolfin::GenericLinearSolver class
+    py::class_<dolfin::GenericLinearSolver, std::shared_ptr<dolfin::GenericLinearSolver>>
+      (m, "GenericLinearSolver", "DOLFIN GenericLinearSolver object");
+
+    //-----------------------------------------------------------------------------
+
     // dolfin::Matrix class
     py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>, dolfin::GenericMatrix,
-               dolfin::GenericTensor>
+               dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "Matrix", "DOLFIN Matrix object")
       .def(py::init<>())
       .def(py::init<MPI_Comm>());
@@ -72,13 +83,6 @@ namespace dolfin_wrappers
       (m, "Vector", "DOLFIN Vector object")
       .def(py::init<>())
       .def(py::init<MPI_Comm>());
-
-
-    //-----------------------------------------------------------------------------
-    // dolfin::GenericLinearOperator class
-    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
-      (m, "GenericLinearOperator", "DOLFIN GenericLinearOperator object");
-
 
     //----------------------------------------------------------------------------
     // dolfin::EigenVector class
@@ -131,8 +135,12 @@ namespace dolfin_wrappers
 
     //-----------------------------------------------------------------------------
     // dolfin::KrylovSolver class
-    py::class_<dolfin::KrylovSolver, std::shared_ptr<dolfin::KrylovSolver>>
+    py::class_<dolfin::KrylovSolver, std::shared_ptr<dolfin::KrylovSolver>,
+               dolfin::GenericLinearSolver>
       (m, "KrylovSolver", "DOLFIN KrylovSolver object")
+      .def(py::init<std::shared_ptr<const dolfin::GenericLinearOperator>,
+           std::string, std::string>(), py::arg("A"),
+           py::arg("method")="default", py::arg("preconditioner")="default")
       .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>,
            std::string, std::string>(), py::arg("comm"), py::arg("A"),
            py::arg("method")="default", py::arg("preconditioner")="default")
