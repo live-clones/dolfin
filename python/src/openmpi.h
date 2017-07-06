@@ -15,26 +15,27 @@ namespace pybind11 {
     template <> class type_caster<ompi_communicator_t>
     {
     public:
-      PYBIND11_TYPE_CASTER(ompi_communicator_t *, _("ompi_communicator_t"));
+      PYBIND11_TYPE_CASTER(MPI_Comm, _("ompi_communicator_t"));
 
       // From Python to C++
       bool load(handle src, bool)
       {
-        std::uintptr_t v = PyLong_AsUnsignedLong(src.ptr());
+        void* v = PyLong_AsVoidPtr(src.ptr());
 
         if (PyErr_Occurred()) return false;
-        value = reinterpret_cast<ompi_communicator_t *>(v);
+        value = reinterpret_cast<MPI_Comm>(v);
 
         return true;
       }
 
       // From C++ to Python
-      static handle cast(const ompi_communicator_t * const &src, return_value_policy /*policy*/, handle /*parent*/)
+      static handle cast(const MPI_Comm &src,
+                         return_value_policy /*policy*/, handle /*parent*/)
       {
         return py::cast(reinterpret_cast<std::uintptr_t>(src));
       }
 
-      operator ompi_communicator_t*()
+      operator MPI_Comm()
       {
         return value;
       }
