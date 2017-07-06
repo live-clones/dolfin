@@ -27,7 +27,7 @@ from __future__ import print_function
 
 # Import UFL and SWIG-generated extension module (DOLFIN C++)
 import ufl
-import dolfin_test.cpp as cpp
+import dolfin.cpp as cpp
 import numpy
 
 class Constant(ufl.Coefficient):

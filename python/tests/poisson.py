@@ -1,26 +1,26 @@
-import dolfin_test.cpp as cpp
+import dolfin.cpp as cpp
 
-from dolfin_test.function.functionspace import FunctionSpace
-from dolfin_test.function.expression import CompiledExpression
-from dolfin_test.function.constant import Constant
-from dolfin_test.fem.form import Form
-from dolfin_test.fem.dirichletbc import DirichletBC, CompiledSubDomain
+from dolfin.function.functionspace import FunctionSpace
+from dolfin.function.expression import CompiledExpression
+from dolfin.function.constant import Constant
+from dolfin.fem.form import Form
+from dolfin.fem.dirichletbc import DirichletBC, CompiledSubDomain
 
-from dolfin_test.cpp.generation import UnitSquareMesh
-from dolfin_test.cpp.fem import Assembler
-from dolfin_test.cpp.function import Function
-from dolfin_test.cpp.mesh import SubDomain, Vertex, Cell
+from dolfin.cpp.generation import UnitSquareMesh
+from dolfin.cpp.fem import Assembler
+from dolfin.cpp.function import Function
+from dolfin.cpp.mesh import SubDomain, Vertex, Cell
 
-from dolfin_test.cpp.la import LUSolver, KrylovSolver, Matrix, Vector
+from dolfin.cpp.la import LUSolver, KrylovSolver, Matrix, Vector
 if cpp.common.has_petsc():
-    from dolfin_test.cpp.la import PETScMatrix, PETScVector
+    from dolfin.cpp.la import PETScMatrix, PETScVector
 
-from dolfin_test.cpp import MPI
+from dolfin.cpp import MPI
 
-from dolfin_test.cpp.io import XDMFFile
+from dolfin.cpp.io import XDMFFile
 
-from dolfin_test.cpp import parameter
-from dolfin_test.cpp.refinement import refine
+from dolfin.cpp import parameter
+from dolfin.cpp.refinement import refine
 from ufl import TestFunction, TrialFunction, inner, grad, dx, ds
 
 if cpp.common.has_petsc():
@@ -74,6 +74,10 @@ solver = KrylovSolver(A)
 solver.solve(w.vector(), b)
 
 file = XDMFFile("poisson.xdmf")
-file.write(w, XDMFFile.Encoding.HDF5)
+
+if cpp.common.has_hdf5():
+    file.write(w, XDMFFile.Encoding.HDF5)
+else:
+    file.write(w, XDMFFile.Encoding.ASCII)
 
 # plot(w, interactive=True)

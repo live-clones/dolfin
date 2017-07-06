@@ -1,5 +1,4 @@
-
-import dolfin_test.cpp as cpp
+import dolfin.cpp as cpp
 import ufl
 import ffc
 

@@ -57,16 +57,16 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 setup(
-    name='dolfin_test',
+    name='dolfin',
     version='0.0.1',
     author='FEniCS Project',
     description='Experimental DOLFIN pybind11 interface',
     long_description='',
-    packages=["dolfin_test",
-              "dolfin_test.function",
-              "dolfin_test.fem"],
-    package_dir={'dolfin_test' : 'dolfin_test'},
-    ext_modules=[CMakeExtension('dolfin_test.cpp')],
+    packages=["dolfin",
+              "dolfin.function",
+              "dolfin.fem"],
+    package_dir={'dolfin' : 'dolfin'},
+    ext_modules=[CMakeExtension('dolfin.cpp')],
     cmdclass=dict(build_ext=CMakeBuild),
     install_requires=["numpy",
                       "ffc",
