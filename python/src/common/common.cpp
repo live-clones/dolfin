@@ -26,6 +26,8 @@
 
 #include "../openmpi.h"
 
+namespace py = pybind11;
+
 namespace dolfin_wrappers
 {
   void common(py::module& m)
