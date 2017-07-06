@@ -282,7 +282,7 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
       .def("__getitem__", (const std::size_t& (dolfin::MeshFunction<std::size_t>::*)(std::size_t) const)
            &dolfin::MeshFunction<std::size_t>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<std::size_t> self, std::size_t index, std::size_t value)
+      .def("__setitem__", [](dolfin::MeshFunction<std::size_t>& self, std::size_t index, std::size_t value)
            { self.operator[](index) = value;});
 
 
