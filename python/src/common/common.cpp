@@ -23,7 +23,7 @@
 #include <dolfin/common/MPI.h>
 #include <dolfin/common/Variable.h>
 
-namespace py = pybind11;
+#include "../openmpi.h"
 
 namespace dolfin_wrappers
 {
@@ -44,10 +44,10 @@ namespace dolfin_wrappers
     m.attr("comm_self") = MPI_COMM_SELF;
 
     m.def("rank", &dolfin::MPI::rank);
-    m.def("size", &dolfin::MPI::size);
-    m.def("max", &dolfin::MPI::max<double>);
-    m.def("min", &dolfin::MPI::min<double>);
-    m.def("sum", &dolfin::MPI::sum<double>);
+    // m.def("size", &dolfin::MPI::size);
+    // m.def("max", &dolfin::MPI::max<double>);
+    // m.def("min", &dolfin::MPI::min<double>);
+    // m.def("sum", &dolfin::MPI::sum<double>);
 
   }
 

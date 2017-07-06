@@ -37,6 +37,8 @@
 #include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/SubDomain.h>
 
+#include "../openmpi.h"
+
 namespace py = pybind11;
 
 namespace dolfin_wrappers

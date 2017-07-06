@@ -34,6 +34,8 @@
 #include <dolfin/la/LUSolver.h>
 #include <dolfin/la/KrylovSolver.h>
 
+#include "../openmpi.h"
+
 namespace py = pybind11;
 
 namespace dolfin_wrappers

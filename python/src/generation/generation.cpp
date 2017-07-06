@@ -28,6 +28,8 @@
 #include <dolfin/generation/UnitQuadMesh.h>
 #include <dolfin/generation/IntervalMesh.h>
 
+#include "../openmpi.h"
+
 namespace py = pybind11;
 
 namespace dolfin_wrappers
