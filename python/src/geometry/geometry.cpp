@@ -19,9 +19,12 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
+#include <pybind11/stl.h>
 #include <Eigen/Dense>
 
+#include <dolfin/mesh/Mesh.h>
 #include <dolfin/geometry/Point.h>
+#include <dolfin/geometry/BoundingBoxTree.h>
 
 namespace py = pybind11;
 
@@ -30,7 +33,32 @@ namespace dolfin_wrappers
 
   void geometry(py::module& m)
   {
-    // Wrap dolfin::Point
+    // dolfin::BoundingBoxTree
+    py::class_<dolfin::BoundingBoxTree, std::shared_ptr<dolfin::BoundingBoxTree>>
+      (m, "BoundingBoxTree")
+      .def(py::init<>())
+      .def("build", (void (dolfin::BoundingBoxTree::*)(const dolfin::Mesh&))
+           &dolfin::BoundingBoxTree::build)
+      .def("build", (void (dolfin::BoundingBoxTree::*)(const dolfin::Mesh&, std::size_t))
+           &dolfin::BoundingBoxTree::build)
+      .def("compute_collisions", (std::vector<unsigned int> (dolfin::BoundingBoxTree::*)(const dolfin::Point&) const)
+           &dolfin::BoundingBoxTree::compute_collisions)
+      .def("compute_collisions",
+           (std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
+            (dolfin::BoundingBoxTree::*)(const dolfin::BoundingBoxTree&) const)
+           &dolfin::BoundingBoxTree::compute_collisions)
+      .def("compute_entity_collisions", (std::vector<unsigned int> (dolfin::BoundingBoxTree::*)(const dolfin::Point&) const)
+           &dolfin::BoundingBoxTree::compute_entity_collisions)
+      .def("compute_entity_collisions",
+           (std::pair<std::vector<unsigned int>, std::vector<unsigned int>>
+            (dolfin::BoundingBoxTree::*)(const dolfin::BoundingBoxTree&) const)
+            &dolfin::BoundingBoxTree::compute_entity_collisions)
+      .def("compute_first_collision", &dolfin::BoundingBoxTree::compute_first_collision)
+      .def("compute_first_entity_collision", &dolfin::BoundingBoxTree::compute_first_entity_collision)
+      .def("compute_closest_entity", &dolfin::BoundingBoxTree::compute_closest_entity);
+
+
+    // dolfin::Point
     py::class_<dolfin::Point>(m, "Point")
       .def(py::init<>())
       .def(py::init<double, double, double>())
@@ -41,12 +69,15 @@ namespace dolfin_wrappers
       .def("__setitem__", [](dolfin::Point& self, std::size_t index, double value)
            { self[index] = value; })
       .def("__add__", [](const dolfin::Point& self, const dolfin::Point& other)
-           { return self+other; })
+           { return self + other; })
       .def("__sub__", [](const dolfin::Point& self, const dolfin::Point& other)
-           { return self-other; })
+           { return self - other; })
       .def("array", [](dolfin::Point& self)
            { return Eigen::Map<Eigen::Vector3d>(self.coordinates()); })
-      .def("norm", &dolfin::Point::norm);
+      .def("norm", &dolfin::Point::norm)
+      .def("x", &dolfin::Point::x)
+      .def("y", &dolfin::Point::y)
+      .def("z", &dolfin::Point::z);
   }
 
 }

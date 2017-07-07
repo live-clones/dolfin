@@ -22,6 +22,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/geometry/BoundingBoxTree.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/CellType.h>
@@ -57,6 +58,7 @@ namespace dolfin_wrappers
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
       .def(py::init<>())
+      .def("bounding_box_tree", &dolfin::Mesh::bounding_box_tree)
       .def("cells",
            [](const dolfin::Mesh& self)
            {
@@ -89,6 +91,7 @@ namespace dolfin_wrappers
       .def("size_global", &dolfin::Mesh::size_global)
       .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
            &dolfin::Mesh::topology, "Mesh topology")
+      .def("translate", &dolfin::Mesh::translate)
       // UFL related
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
@@ -113,8 +116,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshEntity, std::shared_ptr<dolfin::MeshEntity>>
       (m, "MeshEntity", "DOLFIN MeshEntity object")
       .def(py::init<const dolfin::Mesh&, std::size_t, std::size_t>())
-      .def("mesh", &dolfin::MeshEntity::mesh, "Associated mesh")
       .def("dim", &dolfin::MeshEntity::dim, "Topological dimension")
+      .def("mesh", &dolfin::MeshEntity::mesh, "Associated mesh")
       .def("index", (std::size_t (dolfin::MeshEntity::*)() const)
            &dolfin::MeshEntity::index, "Index")
       .def("global_index", &dolfin::MeshEntity::global_index, "Global index")
@@ -164,6 +167,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::Cell, std::shared_ptr<dolfin::Cell>, dolfin::MeshEntity>
       (m, "Cell", "DOLFIN Cell object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
+      .def("collides", (bool (dolfin::Cell::*)(const dolfin::Point&) const) &dolfin::Cell::collides)
+      .def("collides", (bool (dolfin::Cell::*)(const dolfin::MeshEntity&) const) &dolfin::Cell::collides)
       .def("distance", &dolfin::Cell::distance)
       .def("facet_area", &dolfin::Cell::facet_area)
       .def("h", &dolfin::Cell::h)
@@ -358,6 +363,8 @@ namespace dolfin_wrappers
       .def("init_vertices", &dolfin::MeshEditor::init_vertices)
       .def("init_cells", &dolfin::MeshEditor::init_cells)
       .def("add_vertex", (void (dolfin::MeshEditor::*)(std::size_t, const dolfin::Point&))
+           &dolfin::MeshEditor::add_vertex)
+      .def("add_vertex", (void (dolfin::MeshEditor::*)(std::size_t, const std::vector<double>&))
            &dolfin::MeshEditor::add_vertex)
       .def("add_cell", (void (dolfin::MeshEditor::*)(std::size_t, const std::vector<std::size_t>&))
            &dolfin::MeshEditor::add_cell)
