@@ -80,7 +80,6 @@ namespace dolfin_wrappers
             return std::shared_ptr<const dolfin::Expression>(p);
           });
 
-
     // dolfin::Expression
     class PyExpression : public dolfin::Expression
     {
@@ -128,8 +127,23 @@ namespace dolfin_wrappers
     py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>, dolfin::GenericFunction>
       (m, "Function")
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>())
+//       .def("__call__", [](dolfin::Function& self, const dolfin::Point& p)
+//          {
+//            const dolfin::Array<double> x(3, p.coordinates());
+//            dolfin::Array<double> values;
+//            self.eval(values, x);
+//            return values;
+//          }
       .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
            &dolfin::Function::vector);
+
+    m.def("interpolate", [](const dolfin::GenericFunction& f,
+                          std::shared_ptr<const dolfin::FunctionSpace> V)
+          {
+            auto g = std::make_shared<dolfin::Function>(V);
+            g->interpolate(f);
+            return g;
+          });
 
     //-----------------------------------------------------------------------------
     // dolfin::FunctionSpace
