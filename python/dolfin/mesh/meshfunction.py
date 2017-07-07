@@ -3,6 +3,7 @@ import dolfin.cpp as cpp
 
 _meshfunction_types = {"bool": cpp.mesh.MeshFunction_bool,
                        "size_t": cpp.mesh.MeshFunction_sizet,
+                       "int": cpp.mesh.MeshFunction_int,
                        "double": cpp.mesh.MeshFunction_double}
 
 class MeshFunction(object):
@@ -10,7 +11,7 @@ class MeshFunction(object):
         if value_type not in _meshfunction_types.keys():
             raise KeyError("MeshFunction type not recognised")
         fn = _meshfunction_types[value_type]
-        if value:
+        if value is not None:
             return fn(mesh, dim, value)
         else:
             return fn(mesh, dim)
@@ -20,7 +21,7 @@ class VertexFunction(object):
         if value_type not in _meshfunction_types.keys():
             raise KeyError("MeshFunction type not recognised")
         fn = _meshfunction_types[value_type]
-        if value:
+        if value is not None:
             return fn(mesh, 0, value)
         else:
             return fn(mesh, 0)
@@ -30,7 +31,7 @@ class EdgeFunction(object):
         if value_type not in _meshfunction_types.keys():
             raise KeyError("MeshFunction type not recognised")
         fn = _meshfunction_types[value_type]
-        if value:
+        if value is not None:
             return fn(mesh, 1, value)
         else:
             return fn(mesh, 1)
@@ -40,7 +41,7 @@ class FaceFunction(object):
         if value_type not in _meshfunction_types.keys():
             raise KeyError("MeshFunction type not recognised")
         fn = _meshfunction_types[value_type]
-        if value:
+        if value is not None:
             return fn(mesh, 2, value)
         else:
             return fn(mesh, 2)
@@ -51,7 +52,7 @@ class FacetFunction(object):
             raise KeyError("MeshFunction type not recognised")
         fn = _meshfunction_types[value_type]
         tdim = mesh.topology().dim() - 1
-        if value:
+        if value is not None:
             return fn(mesh, tdim, value)
         else:
             return fn(mesh, tdim)
@@ -62,7 +63,7 @@ class CellFunction(object):
             raise KeyError("MeshFunction type not recognised")
         fn = _meshfunction_types[value_type]
         tdim = mesh.topology().dim()
-        if value:
+        if value is not None:
             return fn(mesh, tdim, value)
         else:
             return fn(mesh, tdim)

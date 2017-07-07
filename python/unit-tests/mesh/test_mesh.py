@@ -35,9 +35,9 @@ import dolfin.cpp as cpp
 from dolfin.cpp.generation import UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh, RectangleMesh
 from dolfin.cpp.refinement import refine
 from dolfin.cpp.geometry import Point
-from dolfin.cpp.mesh import Cell
+from dolfin.cpp.mesh import Cell, Vertex
 from dolfin.function.expression import CompiledExpression
-from dolfin.mesh.meshfunction import MeshFunction
+from dolfin.mesh.meshfunction import MeshFunction, CellFunction
 from math import sqrt
 from dolfin.cpp import MPI
 import os
@@ -216,7 +216,7 @@ def test_UnitHexMesh():
 def test_RefineUnitIntervalMesh():
     """Refine mesh of unit interval."""
     mesh = UnitIntervalMesh(20)
-    cell_markers = CellFunction("bool", mesh)
+    cell_markers = CellFunction("bool", mesh, False)
     cell_markers[0] = (MPI.rank(mesh.mpi_comm()) == 0)
     mesh2 = refine(mesh, cell_markers)
     assert mesh2.size_global(0) == 22

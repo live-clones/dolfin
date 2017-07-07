@@ -83,6 +83,7 @@ namespace dolfin_wrappers
       .def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities")
       .def("num_vertices", &dolfin::Mesh::num_vertices, "Number of vertices")
       .def("num_cells", &dolfin::Mesh::num_cells, "Number of cells")
+      .def("rmax", &dolfin::Mesh::rmax)
       .def("rmin", &dolfin::Mesh::rmin)
       .def("size_global", &dolfin::Mesh::size_global)
       .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
@@ -289,6 +290,24 @@ namespace dolfin_wrappers
            &dolfin::MeshFunction<bool>::operator[])
       .def("__setitem__", [](dolfin::MeshFunction<bool>& self,
                              const dolfin::MeshEntity& index, bool value)
+           { self.operator[](index) = value;});
+
+    py::class_<dolfin::MeshFunction<int>,
+               std::shared_ptr<dolfin::MeshFunction<int>>>
+      (m, "MeshFunction_int", "DOLFIN MeshFunction object")
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, int>())
+      .def("__getitem__", (const int& (dolfin::MeshFunction<int>::*)
+                           (std::size_t) const)
+           &dolfin::MeshFunction<int>::operator[])
+      .def("__setitem__", [](dolfin::MeshFunction<int>& self,
+                             std::size_t index, int value)
+           { self.operator[](index) = value;})
+      .def("__getitem__", (const int& (dolfin::MeshFunction<int>::*)
+                           (const dolfin::MeshEntity&) const)
+           &dolfin::MeshFunction<int>::operator[])
+      .def("__setitem__", [](dolfin::MeshFunction<int>& self,
+                             const dolfin::MeshEntity& index, int value)
            { self.operator[](index) = value;});
 
     py::class_<dolfin::MeshFunction<std::size_t>,
