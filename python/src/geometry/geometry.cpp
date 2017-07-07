@@ -18,6 +18,8 @@
 #include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+#include <Eigen/Dense>
 
 #include <dolfin/geometry/Point.h>
 
@@ -30,9 +32,20 @@ namespace dolfin_wrappers
   {
     // Wrap dolfin::Point
     py::class_<dolfin::Point>(m, "Point")
+      .def(py::init<>())
       .def(py::init<double, double, double>())
       .def(py::init<double, double>())
       .def(py::init<double>())
+      .def("__getitem__", [](const dolfin::Point& self, std::size_t index)
+           { return self[index]; })
+      .def("__setitem__", [](dolfin::Point& self, std::size_t index, double value)
+           { self[index] = value; })
+      .def("__add__", [](const dolfin::Point& self, const dolfin::Point& other)
+           { return self+other; })
+      .def("__sub__", [](const dolfin::Point& self, const dolfin::Point& other)
+           { return self-other; })
+      .def("array", [](dolfin::Point& self)
+           { return Eigen::Map<Eigen::Vector3d>(self.coordinates()); })
       .def("norm", &dolfin::Point::norm);
   }
 

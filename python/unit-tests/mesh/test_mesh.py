@@ -32,7 +32,7 @@ from __future__ import print_function
 import pytest
 import numpy
 import dolfin.cpp as cpp
-from dolfin.cpp.generation import UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh, RectangleMesh, UnitQuadMesh
+from dolfin.cpp.generation import UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh, RectangleMesh, UnitQuadMesh, BoxMesh
 from dolfin.cpp.refinement import refine
 from dolfin.cpp.geometry import Point
 from dolfin.cpp.mesh import Cell, Vertex, vertices
