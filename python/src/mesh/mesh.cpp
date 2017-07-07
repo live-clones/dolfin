@@ -68,9 +68,10 @@ namespace dolfin_wrappers
       .def("cell_orientations", &dolfin::Mesh::cell_orientations)
       .def("coordinates", [](dolfin::Mesh& self)
            {
-             return Eigen::Map<Eigen::MatrixXd>(self.geometry().x().data(),
-                                                self.geometry().num_points(),
-                                                self.geometry().dim());
+             return Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>
+               (self.geometry().x().data(),
+                self.geometry().num_points(),
+                self.geometry().dim());
            })
       .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
            &dolfin::Mesh::geometry, "Mesh geometry")

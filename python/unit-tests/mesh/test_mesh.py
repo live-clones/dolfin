@@ -32,10 +32,11 @@ from __future__ import print_function
 import pytest
 import numpy
 import dolfin.cpp as cpp
-from dolfin.cpp.generation import UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh, RectangleMesh
+from dolfin.cpp.generation import UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh, RectangleMesh, UnitQuadMesh
 from dolfin.cpp.refinement import refine
 from dolfin.cpp.geometry import Point
-from dolfin.cpp.mesh import Cell, Vertex
+from dolfin.cpp.mesh import Cell, Vertex, vertices
+from dolfin.cpp.function import Constant
 from dolfin.function.expression import CompiledExpression
 from dolfin.mesh.meshfunction import MeshFunction, CellFunction
 from math import sqrt
@@ -433,7 +434,7 @@ def test_basic_cell_orientations():
     print(len(orientations))
     assert len(orientations) == 0
 
-    mesh.init_cell_orientations(CompiledExpression(("0.0", "1.0", "0.0"), degree=0))
+    mesh.init_cell_orientations(Constant((0.0, 1.0, 0.0)))
     orientations = mesh.cell_orientations()
     assert len(orientations) == mesh.num_cells()
     for i in range(mesh.num_cells()):
@@ -444,12 +445,12 @@ def test_basic_cell_orientations():
 def test_cell_orientations():
     "Test that cell orientations update as expected."
     mesh = UnitIntervalMesh(12)
-    mesh.init_cell_orientations(CompiledExpression(("0.0", "1.0", "0.0"), degree=0))
+    mesh.init_cell_orientations(Constant((0.0, 1.0, 0.0)))
     for i in range(mesh.num_cells()):
         assert mesh.cell_orientations()[i] == 0
 
     mesh = UnitSquareMesh(2, 2)
-    mesh.init_cell_orientations(CompiledExpression(("0.0", "0.0", "1.0"), degree=0))
+    mesh.init_cell_orientations(Constant((0.0, 0.0, 1.0)))
     reference = numpy.array((0, 1, 0, 1, 0, 1, 0, 1))
     # Only compare against reference in serial (don't know how to
     # compare in parallel)
