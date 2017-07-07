@@ -48,6 +48,14 @@ namespace dolfin_wrappers
       .def(py::init<std::size_t>())
       .def(py::init<MPI_Comm, std::size_t>());
 
+    // dolfin::RectangleMesh
+    py::class_<dolfin::RectangleMesh, std::shared_ptr<dolfin::RectangleMesh>, dolfin::Mesh>(m, "RectangleMesh")
+      .def(py::init<dolfin::Point, dolfin::Point, std::size_t, std::size_t, std::string>(),
+           py::arg("p0"), py::arg("p1"), py::arg("nx"), py::arg("ny"), py::arg("diagonal")="right")
+      .def(py::init<MPI_Comm, dolfin::Point, dolfin::Point, std::size_t, std::size_t, std::string>(),
+           py::arg("comm"), py::arg("p0"), py::arg("p1"), py::arg("nx"), py::arg("ny"),
+           py::arg("diagonal")="right");
+
     // dolfin::UnitSquareMesh
     py::class_<dolfin::UnitSquareMesh, std::shared_ptr<dolfin::UnitSquareMesh>, dolfin::Mesh>(m, "UnitSquareMesh")
       .def(py::init<std::size_t, std::size_t>())

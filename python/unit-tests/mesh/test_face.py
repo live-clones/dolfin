@@ -25,8 +25,8 @@
 import pytest
 #from dolfin import *
 #from dolfin_utils.test import skip_in_parallel, fixture
-from dolfin_test.cpp.generation import UnitCubeMesh, UnitSquareMesh
-from dolfin_test.cpp.mesh import faces, Face
+from dolfin.cpp.generation import UnitCubeMesh, UnitSquareMesh
+from dolfin.cpp.mesh import faces, Face
 
 
 @pytest.fixture

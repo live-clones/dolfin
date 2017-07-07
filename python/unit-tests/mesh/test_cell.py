@@ -25,11 +25,11 @@
 import pytest
 import numpy
 #from dolfin import *
-from dolfin_test.cpp.generation import (UnitIntervalMesh, UnitSquareMesh,
+from dolfin.cpp.generation import (UnitIntervalMesh, UnitSquareMesh,
                                         UnitCubeMesh, UnitQuadMesh)
-from dolfin_test.cpp.mesh import (Mesh, Cell, MeshEditor)
-from dolfin_test.cpp.geometry import (Point)
-import dolfin_test.cpp.MPI as MPI
+from dolfin.cpp.mesh import (Mesh, Cell, MeshEditor)
+from dolfin.cpp.geometry import (Point)
+import dolfin.cpp.MPI as MPI
 
 #from dolfin_utils.test import skip_in_parallel, skip_in_release
 

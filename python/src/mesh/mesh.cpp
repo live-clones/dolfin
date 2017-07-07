@@ -53,33 +53,10 @@ namespace dolfin_wrappers
             return std::shared_ptr<const dolfin::SubDomain>(p);
           });
 
-
     //-----------------------------------------------------------------------------
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
       .def(py::init<>())
-      .def("mpi_comm", &dolfin::Mesh::mpi_comm)
-      .def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities")
-      .def("init_global", &dolfin::Mesh::init_global)
-      .def("init", (void (dolfin::Mesh::*)() const) &dolfin::Mesh::init)
-      .def("init", (std::size_t (dolfin::Mesh::*)(std::size_t) const) &dolfin::Mesh::init)
-      .def("init", (void (dolfin::Mesh::*)(std::size_t, std::size_t) const) &dolfin::Mesh::init)
-      .def("init_cell_orientations", &dolfin::Mesh::init_cell_orientations)
-      .def("size_global", &dolfin::Mesh::size_global)
-      .def("cell_orientations", &dolfin::Mesh::cell_orientations)
-      .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
-           &dolfin::Mesh::topology, "Mesh topology")
-      .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
-           &dolfin::Mesh::geometry, "Mesh geometry")
-      .def("coordinates", [](dolfin::Mesh& self)
-           {
-             return Eigen::Map<Eigen::MatrixXd>(self.geometry().x().data(),
-                                                self.geometry().num_points(),
-                                                self.geometry().dim());
-           })
-      .def("coordinates_vec",
-           [](dolfin::Mesh& self){ return self.geometry().x(); },
-           py::return_value_policy::reference)
       .def("cells",
            [](const dolfin::Mesh& self)
            {
@@ -88,12 +65,32 @@ namespace dolfin_wrappers
                    self.type().num_vertices(tdim)},
                self.topology()(tdim, 0)().data());
            })
+      .def("cell_orientations", &dolfin::Mesh::cell_orientations)
+      .def("coordinates", [](dolfin::Mesh& self)
+           {
+             return Eigen::Map<Eigen::MatrixXd>(self.geometry().x().data(),
+                                                self.geometry().num_points(),
+                                                self.geometry().dim());
+           })
+      .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
+           &dolfin::Mesh::geometry, "Mesh geometry")
+      .def("init_global", &dolfin::Mesh::init_global)
+      .def("init", (void (dolfin::Mesh::*)() const) &dolfin::Mesh::init)
+      .def("init", (std::size_t (dolfin::Mesh::*)(std::size_t) const) &dolfin::Mesh::init)
+      .def("init", (void (dolfin::Mesh::*)(std::size_t, std::size_t) const) &dolfin::Mesh::init)
+      .def("init_cell_orientations", &dolfin::Mesh::init_cell_orientations)
+      .def("mpi_comm", &dolfin::Mesh::mpi_comm)
+      .def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities")
+      .def("num_vertices", &dolfin::Mesh::num_vertices, "Number of vertices")
+      .def("num_cells", &dolfin::Mesh::num_cells, "Number of cells")
+      .def("rmin", &dolfin::Mesh::rmin)
+      .def("size_global", &dolfin::Mesh::size_global)
+      .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
+           &dolfin::Mesh::topology, "Mesh topology")
       // UFL related
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
-           {
-             return dolfin::CellType::type2string(self.type().cell_type());
-           }
+           { return dolfin::CellType::type2string(self.type().cell_type()); }
         );
 
     //-------------------------------------------------------------------------

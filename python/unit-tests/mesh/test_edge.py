@@ -26,8 +26,8 @@
 #from dolfin import *
 
 #from dolfin_utils.test import fixture, skip_in_parallel
-from dolfin_test.cpp.generation import UnitCubeMesh, UnitSquareMesh
-from dolfin_test.cpp.mesh import edges
+from dolfin.cpp.generation import UnitCubeMesh, UnitSquareMesh
+from dolfin.cpp.mesh import edges
 
 import pytest
 
