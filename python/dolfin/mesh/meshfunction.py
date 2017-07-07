@@ -1,0 +1,60 @@
+
+import dolfin.cpp as cpp
+
+_meshfunction_types = {"bool": cpp.mesh.MeshFunction_bool,
+                       "size_t": cpp.mesh.MeshFunction_sizet,
+                       "double": cpp.mesh.MeshFunction_double}
+
+class VertexFunction(object):
+    def __new__(cls, value_type, mesh, value=None):
+        if value_type not in _meshfunction_types.keys():
+            raise KeyError("MeshFunction type not recognised")
+        fn = _meshfunction_types[value_type]
+        if value:
+            return fn(mesh, 0, value)
+        else:
+            return fn(mesh, 0)
+
+class EdgeFunction(object):
+    def __new__(cls, value_type, mesh, value=None):
+        if value_type not in _meshfunction_types.keys():
+            raise KeyError("MeshFunction type not recognised")
+        fn = _meshfunction_types[value_type]
+        if value:
+            return fn(mesh, 1, value)
+        else:
+            return fn(mesh, 1)
+
+class FaceFunction(object):
+    def __new__(cls, value_type, mesh, value=None):
+        if value_type not in _meshfunction_types.keys():
+            raise KeyError("MeshFunction type not recognised")
+        fn = _meshfunction_types[value_type]
+        if value:
+            return fn(mesh, 2, value)
+        else:
+            return fn(mesh, 2)
+
+class FacetFunction(object):
+    def __new__(cls, value_type, mesh, value=None):
+        if value_type not in _meshfunction_types.keys():
+            raise KeyError("MeshFunction type not recognised")
+        fn = _meshfunction_types[value_type]
+        tdim = mesh.topology().dim() - 1
+        if value:
+            return fn(mesh, tdim, value)
+        else:
+            return fn(mesh, tdim)
+
+class CellFunction(object):
+    def __new__(cls, value_type, mesh, value=None):
+        if value_type not in _meshfunction_types.keys():
+            raise KeyError("MeshFunction type not recognised")
+        fn = _meshfunction_types[value_type]
+        tdim = mesh.topology().dim()
+        if value:
+            return fn(mesh, tdim, value)
+        else:
+            return fn(mesh, tdim)
+
+

@@ -281,13 +281,17 @@ namespace dolfin_wrappers
       (m, "MeshFunction_bool", "DOLFIN MeshFunction object")
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, bool>())
-      .def("__getitem__", (const bool& (dolfin::MeshFunction<bool>::*)(std::size_t) const)
+      .def("__getitem__", (const bool& (dolfin::MeshFunction<bool>::*)
+                           (std::size_t) const)
            &dolfin::MeshFunction<bool>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<bool>& self, std::size_t index, bool value)
+      .def("__setitem__", [](dolfin::MeshFunction<bool>& self,
+                             std::size_t index, bool value)
            { self.operator[](index) = value;})
-      .def("__getitem__", (const bool& (dolfin::MeshFunction<bool>::*)(const dolfin::MeshEntity&) const)
+      .def("__getitem__", (const bool& (dolfin::MeshFunction<bool>::*)
+                           (const dolfin::MeshEntity&) const)
            &dolfin::MeshFunction<bool>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<bool>& self, const dolfin::MeshEntity& index, bool value)
+      .def("__setitem__", [](dolfin::MeshFunction<bool>& self,
+                             const dolfin::MeshEntity& index, bool value)
            { self.operator[](index) = value;});
 
     py::class_<dolfin::MeshFunction<std::size_t>,
@@ -295,15 +299,36 @@ namespace dolfin_wrappers
       (m, "MeshFunction_sizet", "DOLFIN MeshFunction object")
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, std::size_t>())
-      .def("__getitem__", (const std::size_t& (dolfin::MeshFunction<std::size_t>::*)(std::size_t) const)
+      .def("__getitem__", (const std::size_t& (dolfin::MeshFunction<std::size_t>::*)
+                           (std::size_t) const)
            &dolfin::MeshFunction<std::size_t>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<std::size_t>& self, std::size_t index, std::size_t value)
+      .def("__setitem__", [](dolfin::MeshFunction<std::size_t>& self,
+                             std::size_t index, std::size_t value)
            { self.operator[](index) = value;})
-      .def("__getitem__", (const std::size_t& (dolfin::MeshFunction<std::size_t>::*)(const dolfin::MeshEntity&) const)
+      .def("__getitem__", (const std::size_t& (dolfin::MeshFunction<std::size_t>::*)
+                           (const dolfin::MeshEntity&) const)
            &dolfin::MeshFunction<std::size_t>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<std::size_t>& self, const dolfin::MeshEntity& index, std::size_t value)
+      .def("__setitem__", [](dolfin::MeshFunction<std::size_t>& self,
+                             const dolfin::MeshEntity& index, std::size_t value)
            { self.operator[](index) = value;});
 
+    py::class_<dolfin::MeshFunction<double>,
+               std::shared_ptr<dolfin::MeshFunction<double>>>
+      (m, "MeshFunction_double", "DOLFIN MeshFunction object")
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, double>())
+      .def("__getitem__", (const double& (dolfin::MeshFunction<double>::*)
+                           (std::size_t) const)
+           &dolfin::MeshFunction<double>::operator[])
+      .def("__setitem__", [](dolfin::MeshFunction<double>& self,
+                             std::size_t index, double value)
+           { self.operator[](index) = value;})
+      .def("__getitem__", (const double& (dolfin::MeshFunction<double>::*)
+                           (const dolfin::MeshEntity&) const)
+           &dolfin::MeshFunction<double>::operator[])
+      .def("__setitem__", [](dolfin::MeshFunction<double>& self,
+                             const dolfin::MeshEntity& index, double value)
+           { self.operator[](index) = value;});
 
     //--------------------------------------------------------------------------
     // dolfin::MeshEditor class
@@ -339,26 +364,7 @@ namespace dolfin_wrappers
       (m, "SubDomain", "DOLFIN SubDomain object")
       .def(py::init<>())
       .def("inside", (bool (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>&, bool) const)
-           &dolfin::SubDomain::inside)
-      .def("test", [](dolfin::SubDomain& self, bool sw, int n)
-           {
-             std::vector<double> data(n*3);
-             if(sw)
-             {
-               for (unsigned int i = 0; i < n; ++i)
-               {
-                 Eigen::Map<Eigen::VectorXd> x(&data[i*3], 3);
-               }
-             }
-             else
-             {
-               for (unsigned int i = 0; i < n; ++i)
-               {
-                 dolfin::Array<double> x(3, &data[i*3]);
-               }
-             }
-             return 0;
-           });
+           &dolfin::SubDomain::inside);
 
   }
 

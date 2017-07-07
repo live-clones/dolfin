@@ -54,7 +54,6 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
     classname = signature
     code_c = template_code.format(inside=inside_code, classname=classname,
                                   members= "", constructor="")
-    print(code_c)
     code_h = ""
     depends = []
 
