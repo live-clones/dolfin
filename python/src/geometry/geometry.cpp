@@ -22,9 +22,11 @@
 #include <pybind11/stl.h>
 #include <Eigen/Dense>
 
-#include <dolfin/mesh/Mesh.h>
-#include <dolfin/geometry/Point.h>
+#include <dolfin/geometry/intersect.h>
 #include <dolfin/geometry/BoundingBoxTree.h>
+#include <dolfin/geometry/MeshPointIntersection.h>
+#include <dolfin/geometry/Point.h>
+#include <dolfin/mesh/Mesh.h>
 
 namespace py = pybind11;
 
@@ -78,6 +80,13 @@ namespace dolfin_wrappers
       .def("x", &dolfin::Point::x)
       .def("y", &dolfin::Point::y)
       .def("z", &dolfin::Point::z);
-  }
 
+    // dolfin::MeshPointIntersection
+    py::class_<dolfin::MeshPointIntersection, std::shared_ptr<dolfin::MeshPointIntersection>>
+      (m, "MeshPointIntersection")
+      .def("intersected_cells", &dolfin::MeshPointIntersection::intersected_cells);
+
+    m.def("intersect", &dolfin::intersect);
+
+  }
 }

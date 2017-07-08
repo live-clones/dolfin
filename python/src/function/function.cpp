@@ -127,13 +127,15 @@ namespace dolfin_wrappers
     py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>, dolfin::GenericFunction>
       (m, "Function")
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>())
-//       .def("__call__", [](dolfin::Function& self, const dolfin::Point& p)
-//          {
-//            const dolfin::Array<double> x(3, p.coordinates());
-//            dolfin::Array<double> values;
-//            self.eval(values, x);
-//            return values;
-//          }
+      .def("__call__", [](dolfin::Function& self, std::vector<double>& p)
+          {
+            // FIXME - remove Array and replace with Eigen in DOLFIN
+            const dolfin::Array<double> x(p.size(), p.data());
+            Eigen::VectorXd values(self.value_size());
+            dolfin::Array<double> _values(self.value_size(), values.data());
+            self.eval(_values, x);
+            return values;
+          })
       .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
            &dolfin::Function::vector);
 
