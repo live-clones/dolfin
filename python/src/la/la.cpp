@@ -31,6 +31,7 @@
 #include <dolfin/la/LinearAlgebraObject.h>
 #include <dolfin/la/Matrix.h>
 #include <dolfin/la/Vector.h>
+#include <dolfin/la/EigenFactory.h>
 #include <dolfin/la/EigenMatrix.h>
 #include <dolfin/la/EigenVector.h>
 #include <dolfin/la/PETScMatrix.h>
@@ -88,6 +89,13 @@ namespace dolfin_wrappers
       (m, "Vector", "DOLFIN Vector object")
       .def(py::init<>())
       .def(py::init<MPI_Comm>());
+
+    //----------------------------------------------------------------------------
+    // dolfin::EigenFactory class
+    py::class_<dolfin::EigenFactory, std::shared_ptr<dolfin::EigenFactory>>
+      (m, "EigenFactory", "DOLFIN EigenFactory object")
+      .def("create_matrix", &dolfin::EigenFactory::create_matrix)
+      .def("create_vector", &dolfin::EigenFactory::create_vector);
 
     //----------------------------------------------------------------------------
     // dolfin::EigenVector class

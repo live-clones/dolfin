@@ -46,7 +46,7 @@ namespace dolfin_wrappers
     m.def("has_mpi", &dolfin::has_mpi);
     m.def("has_petsc", &dolfin::has_petsc);
     m.def("has_slepc", &dolfin::has_slepc);
-    m.def("git_commit_has", &dolfin::git_commit_hash);
+    m.def("git_commit_hash", &dolfin::git_commit_hash);
 
   }
 
@@ -57,13 +57,6 @@ namespace dolfin_wrappers
     // m.attr("comm_self") = MPI_COMM_SELF;
 
     m.def("init", [](){ dolfin::SubSystemsManager::init_mpi();});
-    m.def("my_init", [](){
-        int argc = 0;
-        std::string s("");
-        char* c = const_cast<char *>(s.c_str());
-        char **argv = &c;
-        MPI_Init(&argc, &argv);
-          });
 
     m.def("comm_world", []() { return MPI_COMM_WORLD; });
     m.def("comm_self", []() { return MPI_COMM_SELF; });

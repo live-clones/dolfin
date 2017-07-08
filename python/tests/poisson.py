@@ -1,26 +1,4 @@
-import dolfin.cpp as cpp
-
-from dolfin.function.functionspace import FunctionSpace
-from dolfin.function.expression import CompiledExpression
-from dolfin.function.constant import Constant
-from dolfin.fem.form import Form
-from dolfin.fem.dirichletbc import DirichletBC, CompiledSubDomain
-
-from dolfin.cpp.generation import UnitSquareMesh
-from dolfin.cpp.fem import Assembler
-from dolfin.cpp.function import Function
-from dolfin.cpp.mesh import SubDomain, Vertex, Cell
-
-from dolfin.cpp.la import LUSolver, KrylovSolver, Matrix, Vector
-if cpp.common.has_petsc():
-    from dolfin.cpp.la import PETScMatrix, PETScVector
-
-from dolfin.cpp import MPI
-
-from dolfin.cpp.io import XDMFFile
-
-from dolfin.cpp.parameter import parameters
-from dolfin.cpp.refinement import refine
+from dolfin import *
 from ufl import TestFunction, TrialFunction, inner, grad, dx, ds
 
 if cpp.common.has_petsc():
