@@ -22,6 +22,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/la/solve.h>
 #include <dolfin/la/GenericLinearOperator.h>
 #include <dolfin/la/GenericLinearSolver.h>
 #include <dolfin/la/GenericTensor.h>
@@ -152,5 +153,7 @@ namespace dolfin_wrappers
                                                            const dolfin::GenericVector&))
            &dolfin::KrylovSolver::solve);
 
+
+    m.def("has_linear_algebra_backend", &dolfin::has_linear_algebra_backend);
   }
 }

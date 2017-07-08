@@ -20,6 +20,8 @@
 #include <pybind11/pybind11.h>
 
 #include <dolfin/parameter/GlobalParameters.h>
+#include <dolfin/parameter/Parameter.h>
+#include <dolfin/parameter/Parameters.h>
 
 namespace py = pybind11;
 
@@ -28,6 +30,51 @@ namespace dolfin_wrappers
 
   void parameter(py::module& m)
   {
+    py::class_<dolfin::Parameters, std::shared_ptr<dolfin::Parameters>>
+      (m, "Parameters")
+      .def("__getitem__", [](dolfin::Parameters& self, std::string key)
+           {
+             std::cout << "Get key " << key << "\n";
+             auto result = std::shared_ptr<dolfin::Parameter>(self.find_parameter(key));
+             return result;
+           })
+      .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
+           {
+             auto param = self.find_parameter(key);
+             *param = value;
+           });
+
+    py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>
+      (m, "Parameter");
+
+    py::class_<dolfin::IntParameter, std::shared_ptr<dolfin::IntParameter>,
+      dolfin::Parameter>
+      (m, "IntParameter");
+
+    py::class_<dolfin::DoubleParameter, std::shared_ptr<dolfin::DoubleParameter>,
+      dolfin::Parameter>
+      (m, "DoubleParameter")
+      .def("__str__", &dolfin::DoubleParameter::value_str);
+
+    py::class_<dolfin::StringParameter, std::shared_ptr<dolfin::StringParameter>,
+      dolfin::Parameter>
+      (m, "StringParameter")
+      .def("__str__", &dolfin::StringParameter::value_str);
+
+    py::class_<dolfin::BoolParameter, std::shared_ptr<dolfin::BoolParameter>,
+      dolfin::Parameter>
+      (m, "BoolParameter");
+
+    py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,
+      dolfin::Parameters> (m, "GlobalParameters");
+
+    m.attr("global_params") = dolfin::parameters;
+
+    m.def("global_parameters", []()
+          {
+            return dolfin::parameters;
+          });
+
     // FIXME: not sure how to do this properly
     m.def("set", [](std::string key, std::string value)
            { dolfin::parameters[key] = value; });
