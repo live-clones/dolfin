@@ -28,7 +28,9 @@ import platform
 import decorator
 
 from instant import get_status_output
-from dolfin import MPI, mpi_comm_world, parameters
+#from dolfin import MPI, mpi_comm_world, parameters
+import dolfin.cpp.MPI as MPI
+from dolfin import  parameters
 from dolfin import *
 
 # --- Test fixtures (use as is or as examples): ---
@@ -47,7 +49,7 @@ def fixture(func):
         yield result_of_fixture
 
         gc.collect()
-        MPI.barrier(mpi_comm_world())
+        MPI.barrier(MPI.comm_world())
     """
 
     def wrapper(func, *args, **kwargs):
@@ -58,7 +60,7 @@ def fixture(func):
         # Collect garbage of temporaries of the function
         # and return collectivelly
         gc.collect()
-        MPI.barrier(mpi_comm_world())
+        MPI.barrier(MPI.comm_world())
 
         return rv
 
@@ -78,8 +80,8 @@ def gc_barrier():
     Helps make the tests deterministic when debugging.
     """
     gc.collect()
-    if MPI.size(mpi_comm_world()) > 1:
-        MPI.barrier(mpi_comm_world())
+    if MPI.size(MPI.comm_world()) > 1:
+        MPI.barrier(MPI.comm_world())
 
 
 @pytest.yield_fixture(scope="function")
@@ -152,16 +154,16 @@ def _create_tempdir(request):
     path = os.path.join(basepath, function)
 
     # Add a sequence number to avoid collisions when tests are otherwise parameterized
-    if MPI.rank(mpi_comm_world()) == 0:
+    if MPI.rank(MPI.comm_world()) == 0:
         _create_tempdir._sequencenumber[path] += 1
         sequencenumber = _create_tempdir._sequencenumber[path]
-        sequencenumber = MPI.sum(mpi_comm_world(), sequencenumber)
+        sequencenumber = MPI.sum(MPI.comm_world(), sequencenumber)
     else:
-        sequencenumber = MPI.sum(mpi_comm_world(), 0)
+        sequencenumber = MPI.sum(MPI.comm_world(), 0)
     path += "__" + str(sequencenumber)
 
     # Delete and re-create directory on root node
-    if MPI.rank(mpi_comm_world()) == 0:
+    if MPI.rank(MPI.comm_world()) == 0:
         # First time visiting this basepath, delete the old and create a new
         if basepath not in _create_tempdir._basepaths:
             _create_tempdir._basepaths.add(basepath)
@@ -177,7 +179,7 @@ def _create_tempdir(request):
         # Make sure we have the path for this test execution: e.g. test_foo_tempdir/test_something__3
         if not os.path.exists(path):
             os.mkdir(path)
-    MPI.barrier(mpi_comm_world())
+    MPI.barrier(MPI.comm_world())
 
     return path
 from collections import defaultdict
@@ -197,7 +199,7 @@ def tempdir(request):
 
     Does NOT change the current directory.
 
-    MPI safe (assuming mpi_comm_world() context).
+    MPI safe (assuming MPI.comm_world() context).
     """
     gc_barrier()
     return _create_tempdir(request)
@@ -215,7 +217,7 @@ def cd_tempdir(request):
 
     Changes the current directory to the tempdir and resets cwd afterwards.
 
-    MPI safe (assuming mpi_comm_world() context).
+    MPI safe (assuming MPI.comm_world() context).
     """
     gc_barrier()
     cwd = os.getcwd()
