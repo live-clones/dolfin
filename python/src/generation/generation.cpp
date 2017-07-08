@@ -69,9 +69,7 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm, std::size_t, std::size_t, std::size_t>());
 
     // dolfin::UnitQuadMesh
-    py::class_<dolfin::UnitQuadMesh, std::shared_ptr<dolfin::UnitQuadMesh>, dolfin::Mesh>(m, "UnitQuadMesh")
-      .def(py::init<std::size_t, std::size_t>())
-      .def(py::init<MPI_Comm, std::size_t, std::size_t>());
+    py::class_<dolfin::UnitQuadMesh, std::shared_ptr<dolfin::UnitQuadMesh>, dolfin::Mesh>(m, "UnitQuadMesh");
 
     // dolfin::BoxMesh
     py::class_<dolfin::BoxMesh, std::shared_ptr<dolfin::BoxMesh>, dolfin::Mesh>(m, "BoxMesh")

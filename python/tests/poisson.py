@@ -19,12 +19,12 @@ from dolfin.cpp import MPI
 
 from dolfin.cpp.io import XDMFFile
 
-from dolfin.cpp import parameter
+from dolfin.cpp.parameter import parameters
 from dolfin.cpp.refinement import refine
 from ufl import TestFunction, TrialFunction, inner, grad, dx, ds
 
 if cpp.common.has_petsc():
-    parameter.set('linear_algebra_backend', 'PETSc')
+    parameters['linear_algebra_backend'] = 'PETSc'
 
 # Create mesh and refine
 mesh = UnitSquareMesh(12, 12)

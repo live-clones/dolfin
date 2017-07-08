@@ -34,9 +34,8 @@ namespace dolfin_wrappers
       (m, "Parameters")
       .def("__getitem__", [](dolfin::Parameters& self, std::string key)
            {
-             std::cout << "Get key " << key << "\n";
-             auto result = std::shared_ptr<dolfin::Parameter>(self.find_parameter(key));
-             return result;
+             const dolfin::Parameter *param = self.find_parameter(key);
+             return param->value_str();
            })
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
@@ -68,16 +67,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,
       dolfin::Parameters> (m, "GlobalParameters");
 
-    m.attr("global_params") = dolfin::parameters;
+    m.attr("parameters") = dolfin::parameters;
 
-    m.def("global_parameters", []()
-          {
-            return dolfin::parameters;
-          });
-
-    // FIXME: not sure how to do this properly
-    m.def("set", [](std::string key, std::string value)
-           { dolfin::parameters[key] = value; });
   }
 
 }
