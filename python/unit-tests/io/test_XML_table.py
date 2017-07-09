@@ -25,9 +25,9 @@ from dolfin_utils.test import cd_tempdir
 
 def test_write_and_read_table(cd_tempdir):
     # Do something that takes time
-    x = PETScVector(mpi_comm_world(), 197)
+    x = PETScVector(MPI.comm_world, 197)
 
-    if MPI.rank(mpi_comm_world()) == 0:
+    if MPI.rank(MPI.comm_world) == 0:
         # Create table for timings
         t = timings(TimingClear_keep, [TimingType_wall, TimingType_system])
         t_str = t.str(True)
@@ -37,7 +37,7 @@ def test_write_and_read_table(cd_tempdir):
         file << t
         del t
         del file
-    
+
         # Read table from file
         file = File(mpi_comm_self(), "my_table.xml")
         t = Table("My Table")

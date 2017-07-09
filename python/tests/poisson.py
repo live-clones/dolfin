@@ -1,5 +1,4 @@
 from dolfin import *
-from ufl import TestFunction, TrialFunction, inner, grad, dx, ds
 
 if cpp.common.has_petsc():
     parameters['linear_algebra_backend'] = 'PETSc'
@@ -17,8 +16,6 @@ w = Function(V)
 #xdmf = XDMFFile("a.xdmf")
 #xdmf.write(mesh,  XDMFFile.Encoding.ASCII)
 #xdmf.write(w, XDMFFile.Encoding.ASCII)
-
-DOLFIN_EPS = 1e-9
 
 class Boundary(SubDomain):
     def inside(self, x, on_boundary):

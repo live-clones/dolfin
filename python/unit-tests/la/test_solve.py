@@ -25,18 +25,20 @@
 from dolfin import *
 
 def test_normalize_average():
+    MPI.init()
     size = 200
     value = 2.0
-    x = Vector(mpi_comm_world(), size)
+    x = Vector(MPI.comm_world, size)
     x[:] = value
     factor = normalize(x, "average")
     assert factor == value
     assert x.sum() == 0.0
 
 def test_normalize_l2():
+    MPI.init()
     size = 200
     value = 2.0
-    x = Vector(mpi_comm_world(), size)
+    x = Vector(MPI.comm_world, size)
     x[:] = value
     factor = normalize(x, "l2")
     assert round(factor - sqrt(size*value*value), 7) == 0

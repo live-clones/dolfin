@@ -163,5 +163,8 @@ namespace dolfin_wrappers
 
 
     m.def("has_linear_algebra_backend", &dolfin::has_linear_algebra_backend);
+    m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
+    m.def("has_krylov_solver_method", &dolfin::has_krylov_solver_method);
+    m.def("has_krylov_solver_preconditioner", &dolfin::has_krylov_solver_preconditioner);
   }
 }

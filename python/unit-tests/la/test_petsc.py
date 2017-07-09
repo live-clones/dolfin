@@ -34,7 +34,7 @@ def test_vector():
     "Test PETScVector interface"
 
     prefix = "my_vector_"
-    x = PETScVector(mpi_comm_world())
+    x = PETScVector(MPI.comm_world)
     x.set_options_prefix(prefix)
 
     assert x.get_options_prefix() == prefix
@@ -133,7 +133,7 @@ def test_options_prefix(pushpop_parameters):
     # Test vector
     def init_vector(x):
         x.init(100)
-    x = PETScVector(mpi_comm_world())
+    x = PETScVector(MPI.comm_world)
     run_test(x, init_vector)
 
     # Test matrix
@@ -172,7 +172,7 @@ def test_lu_cholesky():
 
     from petsc4py import PETSc
 
-    mesh = UnitSquareMesh(mpi_comm_world(), 12, 12)
+    mesh = UnitSquareMesh(MPI.comm_world, 12, 12)
     V = FunctionSpace(mesh, "Lagrange", 1)
     u, v = TrialFunction(V), TestFunction(V)
     A = PETScMatrix(mesh.mpi_comm())

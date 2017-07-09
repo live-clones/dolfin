@@ -21,7 +21,7 @@ from dolfin import *
 from dolfin_utils.test import skip_in_parallel, fixture, tempdir
 
 # Supported XDMF file encoding
-encodings = (XDMFFile.Encoding_HDF5, XDMFFile.Encoding_ASCII)
+encodings = (XDMFFile.Encoding.HDF5, XDMFFile.Encoding.ASCII)
 
 # Data types supported in templating
 data_types = (('int', int), ('size_t', int), ('double', float), ('bool', bool))
@@ -46,9 +46,9 @@ def mesh_factory(tdim, n):
 
 
 def invalid_config(encoding):
-    return (not has_hdf5() and encoding == XDMFFile.Encoding_HDF5) \
-        or (encoding == XDMFFile.Encoding_ASCII and MPI.size(mpi_comm_world()) > 1) \
-        or (not has_hdf5_parallel() and MPI.size(mpi_comm_world()) > 1)
+    return (not has_hdf5() and encoding == XDMFFile.Encoding.HDF5) \
+        or (encoding == XDMFFile.Encoding.ASCII and MPI.size(MPI.comm_world) > 1) \
+        or (not has_hdf5_parallel() and MPI.size(MPI.comm_world) > 1)
 
 
 def invalid_fe(fe_family, fe_degree):
@@ -65,7 +65,7 @@ def test_save_and_load_1d_mesh(tempdir, encoding):
         file.write(mesh, encoding)
 
     mesh2 = Mesh()
-    with XDMFFile(mpi_comm_world(), filename) as file:
+    with XDMFFile(MPI.comm_world, filename) as file:
         file.read(mesh2)
     assert mesh.size_global(0) == mesh2.size_global(0)
     dim = mesh.topology().dim()
@@ -83,7 +83,7 @@ def test_save_and_load_2d_mesh(tempdir, encoding):
         file.write(mesh, encoding)
 
     mesh2 = Mesh()
-    with XDMFFile(mpi_comm_world(), filename) as file:
+    with XDMFFile(MPI.comm_world, filename) as file:
         file.read(mesh2)
     assert mesh.size_global(0) == mesh2.size_global(0)
     dim = mesh.topology().dim()
@@ -101,7 +101,7 @@ def test_save_and_load_2d_quad_mesh(tempdir, encoding):
         file.write(mesh, encoding)
 
     mesh2 = Mesh()
-    with XDMFFile(mpi_comm_world(), filename) as file:
+    with XDMFFile(MPI.comm_world, filename) as file:
         file.read(mesh2)
     assert mesh.size_global(0) == mesh2.size_global(0)
     dim = mesh.topology().dim()
@@ -119,7 +119,7 @@ def test_save_and_load_3d_mesh(tempdir, encoding):
         file.write(mesh, encoding)
 
     mesh2 = Mesh()
-    with XDMFFile(mpi_comm_world(), filename) as file:
+    with XDMFFile(MPI.comm_world, filename) as file:
         file.read(mesh2)
     assert mesh.size_global(0) == mesh2.size_global(0)
     dim = mesh.topology().dim()
@@ -630,7 +630,7 @@ def test_save_mesh_value_collection(tempdir, encoding, data_type):
 def test_quadratic_mesh(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
-    mesh = UnitDiscMesh.create(mpi_comm_world(), 2, 2, 2)
+    mesh = UnitDiscMesh.create(MPI.comm_world, 2, 2, 2)
     Q = FunctionSpace(mesh, "CG", 1)
     u = Function(Q)
     u.interpolate(Constant(1.0))

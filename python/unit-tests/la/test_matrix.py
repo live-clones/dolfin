@@ -37,7 +37,7 @@ data_backends = []
 no_data_backends = [("PETSc", ""), ("Tpetra", "")]
 
 # Add serial only backends
-if MPI.size(mpi_comm_world()) == 1:
+if MPI.size(MPI.comm_world) == 1:
     # TODO: What about "Dense" and "Sparse"? The sub_backend wasn't
     # used in the old test.
     data_backends += [("Eigen", "")]
