@@ -20,6 +20,7 @@
 #include <pybind11/pybind11.h>
 
 #include <dolfin/common/MPI.h>
+#include <dolfin/common/constants.h>
 #include <dolfin/common/defines.h>
 #include <dolfin/common/SubSystemsManager.h>
 #include <dolfin/common/Variable.h>
@@ -47,7 +48,10 @@ namespace dolfin_wrappers
     m.def("has_petsc", &dolfin::has_petsc);
     m.def("has_slepc", &dolfin::has_slepc);
     m.def("git_commit_hash", &dolfin::git_commit_hash);
+    m.def("sizeof_la_index", &dolfin::sizeof_la_index);
 
+    m.attr("DOLFIN_EPS") = DOLFIN_EPS;
+    m.attr("DOLFIN_PI") = DOLFIN_PI;
   }
 
   void mpi(py::module& m)
@@ -71,6 +75,7 @@ namespace dolfin_wrappers
     //m.def("comm_self", []() { return MPI_COMM_SELF; });
     m.def("rank", &dolfin::MPI::rank);
     m.def("size", &dolfin::MPI::size);
+    m.def("barrier", &dolfin::MPI::barrier);
     m.def("max", &dolfin::MPI::max<double>);
     m.def("min", &dolfin::MPI::min<double>);
     m.def("sum", &dolfin::MPI::sum<double>);

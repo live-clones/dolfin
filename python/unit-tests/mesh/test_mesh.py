@@ -31,22 +31,13 @@
 from __future__ import print_function
 import pytest
 import numpy
-import dolfin.cpp as cpp
-from dolfin.cpp.generation import UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh, RectangleMesh, UnitQuadMesh, BoxMesh
-from dolfin.cpp.refinement import refine
-from dolfin.cpp.geometry import Point
-from dolfin.cpp.mesh import Cell, Vertex, vertices
-from dolfin.cpp.function import Constant
-from dolfin.function.expression import CompiledExpression
-from dolfin.mesh.meshfunction import MeshFunction, CellFunction
-from math import sqrt
-from dolfin.cpp import MPI
+from dolfin import *
 import os
 
-# from dolfin_utils.test import fixture, skip_in_parallel, xfail_in_parallel, cd_tempdir
+from dolfin_utils.test import fixture, skip_in_parallel, xfail_in_parallel, cd_tempdir
 
 
-@pytest.fixture
+@fixture
 def mesh1d():
     # Create 1D mesh with degenerate cell
     mesh1d = UnitIntervalMesh(4)
@@ -54,7 +45,7 @@ def mesh1d():
     return mesh1d
 
 
-@pytest.fixture
+@fixture
 def mesh2d():
     # Create 2D mesh with one equilateral triangle
     mesh2d = UnitSquareMesh(1, 1, 'left')
@@ -62,7 +53,7 @@ def mesh2d():
     return mesh2d
 
 
-@pytest.fixture
+@fixture
 def mesh3d():
     # Create 3D mesh with regular tetrahedron and degenerate cells
     mesh3d = UnitCubeMesh(1, 1, 1)
@@ -71,55 +62,55 @@ def mesh3d():
     return mesh3d
 
 
-@pytest.fixture
+@fixture
 def c0(mesh3d):
     # Original tetrahedron from UnitCubeMesh(1, 1, 1)
     return Cell(mesh3d, 0)
 
 
-@pytest.fixture
+@fixture
 def c1(mesh3d):
     # Degenerate cell
     return Cell(mesh3d, 1)
 
 
-@pytest.fixture
+@fixture
 def c5(mesh3d):
     # Regular tetrahedron with edge sqrt(2)
     return Cell(mesh3d, 5)
 
 
-@pytest.fixture
+@fixture
 def interval():
     return UnitIntervalMesh(10)
 
 
-@pytest.fixture
+@fixture
 def square():
     return UnitSquareMesh(5, 5)
 
 
-@pytest.fixture
+@fixture
 def rectangle():
     return RectangleMesh(Point(0, 0), Point(2, 2), 5, 5)
 
 
-@pytest.fixture
+@fixture
 def cube():
     return UnitCubeMesh(3, 3, 3)
 
 
-@pytest.fixture
+@fixture
 def box():
     return BoxMesh(Point(0, 0, 0), Point(2, 2, 2), 2, 2, 5)
 
 
-@pytest.fixture
+@fixture
 def mesh():
     return UnitSquareMesh(3, 3)
 
 
-@pytest.fixture
+@fixture
 def f(mesh):
     return MeshFunction('int', mesh, 0)
 
@@ -159,26 +150,26 @@ def test_UnitSquareMesh():
 
 def test_UnitSquareMeshDistributed():
     """Create mesh of unit square."""
-    mesh = UnitSquareMesh(MPI.comm_world(), 5, 7)
+    mesh = UnitSquareMesh(MPI.comm_world, 5, 7)
     assert mesh.size_global(0) == 48
     assert mesh.size_global(2) == 70
     if has_petsc4py():
         import petsc4py
-        assert isinstance(MPI.comm_world(), petsc4py.PETSc.Comm)
+        assert isinstance(MPI.comm_world, petsc4py.PETSc.Comm)
         assert isinstance(mesh.mpi_comm(), petsc4py.PETSc.Comm)
-        assert mesh.mpi_comm() == MPI.comm_world()
+        assert mesh.mpi_comm() == MPI.comm_world
 
 
 def test_UnitSquareMeshLocal():
     """Create mesh of unit square."""
-    mesh = UnitSquareMesh(MPI.comm_self(), 5, 7)
+    mesh = UnitSquareMesh(MPI.comm_self, 5, 7)
     assert mesh.num_vertices() == 48
     assert mesh.num_cells() == 70
     if has_petsc4py():
         import petsc4py
-        assert isinstance(MPI.comm_self(), petsc4py.PETSc.Comm)
+        assert isinstance(MPI.comm_self, petsc4py.PETSc.Comm)
         assert isinstance(mesh.mpi_comm(), petsc4py.PETSc.Comm)
-        assert mesh.mpi_comm() == MPI.comm_self()
+        assert mesh.mpi_comm() == MPI.comm_self
 
 
 def test_UnitCubeMesh():
@@ -190,26 +181,26 @@ def test_UnitCubeMesh():
 
 def test_UnitCubeMeshDistributed():
     """Create mesh of unit cube."""
-    mesh = UnitCubeMesh(MPI.comm_world(), 5, 7, 9)
+    mesh = UnitCubeMesh(MPI.comm_world, 5, 7, 9)
     assert mesh.size_global(0) == 480
     assert mesh.size_global(3) == 1890
 
 
 def test_UnitCubeMeshDistributedLocal():
     """Create mesh of unit cube."""
-    mesh = UnitCubeMesh(MPI.comm_self(), 5, 7, 9)
+    mesh = UnitCubeMesh(MPI.comm_self, 5, 7, 9)
     assert mesh.num_vertices() == 480
     assert mesh.num_cells() == 1890
 
 
 def test_UnitQuadMesh():
-    mesh = UnitQuadMesh(MPI.comm_world(), 5, 7)
+    mesh = UnitQuadMesh.create(MPI.comm_world, 5, 7)
     assert mesh.size_global(0) == 48
     assert mesh.size_global(2) == 35
 
 
 def test_UnitHexMesh():
-    mesh = UnitHexMesh(MPI.comm_world(), 5, 7, 9)
+    mesh = UnitHexMesh.create(MPI.comm_world, 5, 7, 9)
     assert mesh.size_global(0) == 480
     assert mesh.size_global(3) == 315
 
@@ -217,7 +208,7 @@ def test_UnitHexMesh():
 def test_RefineUnitIntervalMesh():
     """Refine mesh of unit interval."""
     mesh = UnitIntervalMesh(20)
-    cell_markers = CellFunction("bool", mesh, False)
+    cell_markers = CellFunction("bool", mesh)
     cell_markers[0] = (MPI.rank(mesh.mpi_comm()) == 0)
     mesh2 = refine(mesh, cell_markers)
     assert mesh2.size_global(0) == 22
@@ -248,7 +239,7 @@ def test_BoundaryComputation():
     assert boundary.size_global(2) == 48
 
 
-# @xfail_in_parallel
+@xfail_in_parallel
 def test_BoundaryBoundary():
     """Compute boundary of boundary."""
     mesh = UnitCubeMesh(2, 2, 2)
@@ -258,7 +249,7 @@ def test_BoundaryBoundary():
     assert b1.num_cells() == 0
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_Assign(mesh, f):
     """Assign value of mesh function."""
     f = f
@@ -267,7 +258,7 @@ def test_Assign(mesh, f):
     assert f[v] == 10
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_Write(cd_tempdir, f):
     """Construct and save a simple meshfunction."""
     f = f
@@ -277,7 +268,7 @@ def test_Write(cd_tempdir, f):
     file << f
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_Read(cd_tempdir):
     """Construct and save a simple meshfunction. Then read it back from
     file."""
@@ -294,7 +285,7 @@ def test_Read(cd_tempdir):
     # assert all(f.array() == f.array())
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_SubsetIterators(mesh):
     def inside1(x):
         return x[0] <= 0.5
@@ -316,7 +307,7 @@ def test_SubsetIterators(mesh):
 
 
 # FIXME: Mesh IO tests should be in io test directory
-# @skip_in_parallel
+@skip_in_parallel
 def test_MeshXML2D(cd_tempdir):
     """Write and read 2D mesh to/from file"""
     mesh_out = UnitSquareMesh(3, 3)
@@ -327,7 +318,7 @@ def test_MeshXML2D(cd_tempdir):
     assert mesh_in.num_vertices() == 16
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_MeshXML3D(cd_tempdir):
     """Write and read 3D mesh to/from file"""
     mesh_out = UnitCubeMesh(3, 3, 3)
@@ -338,7 +329,7 @@ def test_MeshXML3D(cd_tempdir):
     assert mesh_in.num_vertices() == 64
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def xtest_MeshFunction(cd_tempdir):
     """Write and read mesh function to/from file"""
     mesh = UnitSquareMesh(1, 1)
@@ -361,7 +352,7 @@ def test_GetGeometricalDimension():
     assert mesh.geometry().dim() == 2
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_GetCoordinates():
     """Get coordinates of vertices"""
     mesh = UnitSquareMesh(5, 5)
@@ -374,14 +365,14 @@ def test_GetCells():
     assert MPI.sum(mesh.mpi_comm(), len(mesh.cells())) == 50
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_cell_inradius(c0, c1, c5):
     assert round(c0.inradius() - (3.0-sqrt(3.0))/6.0, 7) == 0
     assert round(c1.inradius() - 0.0, 7) == 0
     assert round(c5.inradius() - sqrt(3.0)/6.0, 7) == 0
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_cell_circumradius(c0, c1, c5):
     from math import isnan
     assert round(c0.circumradius() - sqrt(3.0)/2.0, 7) == 0
@@ -391,7 +382,7 @@ def test_cell_circumradius(c0, c1, c5):
     assert round(c5.circumradius() - sqrt(3.0)/2.0, 7) == 0
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_cell_h(c0, c1, c5):
     from math import isnan
     assert round(c0.h() - sqrt(2.0), 7) == 0
@@ -399,14 +390,14 @@ def test_cell_h(c0, c1, c5):
     assert round(c5.h() - sqrt(2.0), 7) == 0
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_cell_radius_ratio(c0, c1, c5):
     assert round(c0.radius_ratio() - sqrt(3.0) + 1.0, 7) == 0
     assert round(c1.radius_ratio() - 0.0, 7) == 0
     assert round(c5.radius_ratio() - 1.0, 7) == 0
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def xtest_hmin_hmax(mesh1d, mesh2d, mesh3d):
     assert round(mesh1d.hmin() - 0.0, 7) == 0
     assert round(mesh1d.hmax() - 0.25, 7) == 0
@@ -417,7 +408,7 @@ def xtest_hmin_hmax(mesh1d, mesh2d, mesh3d):
     assert round(mesh3d.hmax() - sqrt(3.0), 7) == 0
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_rmin_rmax(mesh1d, mesh2d, mesh3d):
     assert round(mesh1d.rmin() - 0.0, 7) == 0
     assert round(mesh1d.rmax() - 0.125, 7) == 0
@@ -434,23 +425,23 @@ def test_basic_cell_orientations():
     print(len(orientations))
     assert len(orientations) == 0
 
-    mesh.init_cell_orientations(Constant((0.0, 1.0, 0.0)))
+    mesh.init_cell_orientations(Expression(("0.0", "1.0", "0.0"), degree=0))
     orientations = mesh.cell_orientations()
     assert len(orientations) == mesh.num_cells()
     for i in range(mesh.num_cells()):
         assert mesh.cell_orientations()[i] == 0
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_cell_orientations():
     "Test that cell orientations update as expected."
     mesh = UnitIntervalMesh(12)
-    mesh.init_cell_orientations(Constant((0.0, 1.0, 0.0)))
+    mesh.init_cell_orientations(Expression(("0.0", "1.0", "0.0"), degree=0))
     for i in range(mesh.num_cells()):
         assert mesh.cell_orientations()[i] == 0
 
     mesh = UnitSquareMesh(2, 2)
-    mesh.init_cell_orientations(Constant((0.0, 0.0, 1.0)))
+    mesh.init_cell_orientations(Expression(("0.0", "0.0", "1.0"), degree=0))
     reference = numpy.array((0, 1, 0, 1, 0, 1, 0, 1))
     # Only compare against reference in serial (don't know how to
     # compare in parallel)
@@ -458,7 +449,7 @@ def test_cell_orientations():
         assert mesh.cell_orientations()[i] == reference[i]
 
     mesh = BoundaryMesh(UnitSquareMesh(2, 2), "exterior")
-    mesh.init_cell_orientations(CompiledExpression(("x[0]", "x[1]", "x[2]"), degree=1))
+    mesh.init_cell_orientations(Expression(("x[0]", "x[1]", "x[2]"), degree=1))
     print(mesh.cell_orientations())
 
 

@@ -24,27 +24,22 @@
 
 import pytest
 import numpy
-#from dolfin import *
-from dolfin.cpp.generation import (UnitIntervalMesh, UnitSquareMesh,
-                                        UnitCubeMesh, UnitQuadMesh)
-from dolfin.cpp.mesh import (Mesh, Cell, MeshEditor)
-from dolfin.cpp.geometry import (Point)
-import dolfin.cpp.MPI as MPI
+from dolfin import *
 
-#from dolfin_utils.test import skip_in_parallel, skip_in_release
+from dolfin_utils.test import skip_in_parallel, skip_in_release
 
 
-#@skip_in_parallel
+@skip_in_parallel
 def test_distance_interval():
 
-    mesh = UnitIntervalMesh(1)
+    mesh = UnitIntervalMesh.create(1)
     cell = Cell(mesh, 0)
 
     assert round(cell.distance(Point(-1.0)) - 1.0, 7) == 0
     assert round(cell.distance(Point(0.5)) - 0.0, 7) == 0
 
 
-#@skip_in_parallel
+@skip_in_parallel
 def test_distance_triangle():
 
     mesh = UnitSquareMesh(1, 1)
@@ -55,7 +50,7 @@ def test_distance_triangle():
     assert round(cell.distance(Point(0.5, 0.5)) - 0.0, 7) == 0
 
 
-#@skip_in_parallel
+@skip_in_parallel
 def test_distance_tetrahedron():
 
     mesh = UnitCubeMesh(1, 1, 1)
@@ -66,8 +61,8 @@ def test_distance_tetrahedron():
     assert round(cell.distance(Point(0.5, 0.5, 0.5)) - 0.0, 7) == 0
 
 
-#@skip_in_release
-#@skip_in_parallel
+@skip_in_release
+@skip_in_parallel
 def test_issue_568():
     mesh = UnitSquareMesh(4, 4)
     cell = Cell(mesh, 0)
@@ -83,7 +78,7 @@ def test_issue_568():
 
 def test_volume_quadrilateralR2():
 
-    mesh = UnitQuadMesh(MPI.comm_self, 1, 1)
+    mesh = UnitQuadMesh.create(MPI.comm_self, 1, 1)
     cell = Cell(mesh, 0)
 
     assert cell.volume() == 1.0

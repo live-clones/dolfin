@@ -23,31 +23,29 @@
 # Last changed: 2014-05-30
 
 import pytest
-from dolfin.cpp.mesh import MeshEditor, Mesh, Cell
-from dolfin.cpp.geometry import Point
-from dolfin.cpp.generation import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh
-# from dolfin_utils.test import skip_in_parallel
+from dolfin import *
+from dolfin_utils.test import skip_in_parallel
 import numpy as np
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def create_triangular_mesh_3D():
     editor = MeshEditor()
     mesh = Mesh()
-    editor.open(mesh, "triangle", 2, 3)
+    editor.open(mesh,2,3)
     editor.init_cells(2)
     editor.init_vertices(4)
-    editor.add_cell(0, [0,1,2])
-    editor.add_cell(1, [1,2,3])
-    editor.add_vertex(0, [0, 0, 0.5])
-    editor.add_vertex(1, [1, 0, 0.5])
-    editor.add_vertex(2, [0, 1, 0.5])
-    editor.add_vertex(3, [1, 1, 0.5])
+    editor.add_cell(0, 0,1,2)
+    editor.add_cell(1, 1,2,3)
+    editor.add_vertex(0, 0,0,0.5)
+    editor.add_vertex(1, 1,0,0.5)
+    editor.add_vertex(2, 0,1,0.5)
+    editor.add_vertex(3, 1,1,0.5)
     editor.close()
     return mesh;
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_inteval_collides_point():
     """Test if point collide with interval"""
 
@@ -58,7 +56,7 @@ def test_inteval_collides_point():
     assert cell.collides(Point(1.5)) == False
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_triangle_collides_point():
     """Tests if point collide with triangle"""
 
@@ -69,7 +67,7 @@ def test_triangle_collides_point():
     assert cell.collides(Point(1.5)) == False
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_triangle_collides_triangle():
     """Test if triangle collide with triangle"""
 
@@ -92,7 +90,7 @@ def test_triangle_collides_triangle():
     assert c2.collides(c2) == True
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_tetrahedron_collides_point():
     """Test if point collide with tetrahedron"""
 
@@ -103,7 +101,7 @@ def test_tetrahedron_collides_point():
     assert cell.collides(Point(1.5)) == False
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_tetrahedron_collides_triangle():
     """Test if point collide with tetrahedron"""
 
@@ -133,7 +131,7 @@ def test_tetrahedron_collides_triangle():
     assert tri0.collides(tet1) == True
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_tetrahedron_collides_tetrahedron():
     """Test if point collide with tetrahedron"""
 
@@ -195,7 +193,7 @@ def _test_collision_robustness_3d(aspect, y, z, step):
         assert c < np.uintc(-1)
         x += step
 
-# @skip_in_parallel
+@skip_in_parallel
 @pytest.mark.slow
 def test_collision_robustness_slow():
     """Test cases from https://bitbucket.org/fenics-project/dolfin/issue/296"""
@@ -205,7 +203,7 @@ def test_collision_robustness_slow():
     _test_collision_robustness_2d(4.43, 0.5,      4.03e-6)
     _test_collision_robustness_3d( 100, 1e-14, 1e-14, 1e-5)
 
-# @skip_in_parallel
+@skip_in_parallel
 @pytest.mark.skipif(True, reason='Very slow test cases')
 def test_collision_robustness_very_slow():
     """Test cases from https://bitbucket.org/fenics-project/dolfin/issue/296"""

@@ -40,8 +40,9 @@ from .cpp.la import has_linear_algebra_backend
 if has_linear_algebra_backend('PETSc'):
     from .cpp.la import PETScVector, PETScMatrix
 from .cpp.la import Matrix, Vector, EigenMatrix, EigenVector, LUSolver, KrylovSolver
-from .cpp.mesh import Mesh, MeshTopology, MeshGeometry, MeshEntity, Cell, Facet, Face, Edge, Vertex, \
-    cells, facets, faces, edges, vertices, SubDomain, BoundaryMesh
+from .cpp.mesh import Mesh, MeshTopology, MeshGeometry, MeshEntity, Cell, Facet, \
+    Face, Edge, Vertex, cells, facets, faces, edges, vertices, SubDomain, BoundaryMesh, \
+    MeshEditor
 from .cpp.parameter import parameters
 from .cpp.refinement import refine
 
@@ -51,4 +52,9 @@ from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .function.functionspace import FunctionSpace
 from .function.constant import Constant
 from .function.expression import CompiledExpression, UserExpression
-from .mesh.meshfunction import MeshFunction
+from .mesh.meshfunction import MeshFunction, CellFunction, FacetFunction, FaceFunction, \
+    EdgeFunction, VertexFunction
+
+# FIXME
+def has_petsc4py():
+    return False

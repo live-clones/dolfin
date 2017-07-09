@@ -25,15 +25,11 @@
 from __future__ import print_function
 import pytest
 
-from dolfin.cpp.generation import BoxMesh, UnitCubeMesh
-from dolfin.cpp.geometry import Point
-from dolfin.function.functionspace import FunctionSpace
-from dolfin.cpp.function import Function, interpolate
-from dolfin.function.expression import CompiledExpression
-# from dolfin_utils.test import skip_in_parallel
+from dolfin import *
+from dolfin_utils.test import skip_in_parallel
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_issue_97():
     "Test from Mikael Mortensen (issue #97)"
 
@@ -41,12 +37,12 @@ def test_issue_97():
     L = 1000
     mesh = BoxMesh(Point(0, 0, 0), Point(L, L, L), N, N, N)
     V = FunctionSpace(mesh, 'CG', 1)
-    v = interpolate(CompiledExpression('x[0]', degree=1), V)
+    v = interpolate(Expression('x[0]', degree=1), V)
     x = Point(0.5*L, 0.5*L, 0.5*L)
     vx = v(x)
 
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_issue_168():
     "Test from Torsten Wendav (issue #168)"
 
