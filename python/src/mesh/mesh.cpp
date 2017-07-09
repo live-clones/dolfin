@@ -23,6 +23,7 @@
 #include <pybind11/stl.h>
 
 #include <dolfin/geometry/BoundingBoxTree.h>
+#include <dolfin/mesh/BoundaryMesh.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/CellType.h>
@@ -53,8 +54,8 @@ namespace dolfin_wrappers
             dolfin::SubDomain *p = reinterpret_cast<dolfin::SubDomain *>(e);
             return std::shared_ptr<const dolfin::SubDomain>(p);
           });
-
     //-----------------------------------------------------------------------------
+
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
       .def(py::init<>())
@@ -97,6 +98,13 @@ namespace dolfin_wrappers
       .def("cell_name", [](const dolfin::Mesh& self)
            { return dolfin::CellType::type2string(self.type().cell_type()); }
         );
+
+    //-----------------------------------------------------------------------------
+    // dolfin::BoundaryMesh class
+    py::class_<dolfin::BoundaryMesh, std::shared_ptr<dolfin::BoundaryMesh>, dolfin::Mesh>(m, "BoundaryMesh", "DOLFIN BoundaryMesh object")
+      .def(py::init<const dolfin::Mesh&, std::string, bool>(),
+           py::arg("mesh"), py::arg("type"), py::arg("order")=true);
+
 
     //-------------------------------------------------------------------------
     // dolfin::MeshTopology class
