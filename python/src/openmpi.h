@@ -18,17 +18,19 @@
 #ifndef _DOLFIN_PYBIND11_OPENMPI
 #define _DOLFIN_PYBIND11_OPENMPI
 
-// Custom type caster for OpenMPI MPI_Comm
-// MPI_Comm is defined as a typedef of ompi_communicator_t*
-//
+// Custom type caster for OpenMPI MPI_Comm, where MPI_Comm is defined
+// as a typedef of ompi_communicator_t*
+
 #ifdef OPEN_MPI
 #include <mpi.h>
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 
-namespace pybind11 {
-  namespace detail {
+namespace pybind11
+{
+  namespace detail
+  {
 
     template <> class type_caster<ompi_communicator_t>
     {
@@ -40,7 +42,8 @@ namespace pybind11 {
       {
         void* v = PyLong_AsVoidPtr(src.ptr());
 
-        if (PyErr_Occurred()) return false;
+        if (PyErr_Occurred())
+          return false;
         value = reinterpret_cast<MPI_Comm>(v);
 
         return true;
@@ -49,18 +52,13 @@ namespace pybind11 {
       // From C++ to Python
       static handle cast(const MPI_Comm &src,
                          return_value_policy /*policy*/, handle /*parent*/)
-      {
-        return py::cast(reinterpret_cast<std::uintptr_t>(src));
-      }
+      { return py::cast(reinterpret_cast<std::uintptr_t>(src)); }
 
       operator MPI_Comm()
-      {
-        return value;
-      }
+      { return value; }
     };
   }
 }
-// end namespace
 
 #endif
 #endif

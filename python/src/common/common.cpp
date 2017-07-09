@@ -52,15 +52,23 @@ namespace dolfin_wrappers
 
   void mpi(py::module& m)
   {
+    // MPI functions are static, so adding to module rather than to a
+    // class
+
     // MPI
-    // m.attr("comm_world") = MPI_COMM_WORLD;
-    // m.attr("comm_self") = MPI_COMM_SELF;
+    #ifdef OPEN_MPI
+    m.attr("comm_world") = reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD);
+    m.attr("comm_self") = reinterpret_cast<std::uintptr_t>(MPI_COMM_SELF);
+    m.attr("comm_null") = reinterpret_cast<std::uintptr_t>(MPI_COMM_NULL);
+    #else
+    m.attr("comm_world") = MPI_COMM_WORLD;
+    m.attr("comm_self") = MPI_COMM_SELF;
+    m.attr("comm_null") = MPI_COMM_NULL;
+    #endif
 
     m.def("init", [](){ dolfin::SubSystemsManager::init_mpi();});
-
-    m.def("comm_world", []() { return MPI_COMM_WORLD; });
-    m.def("comm_self", []() { return MPI_COMM_SELF; });
-
+    //m.def("comm_world", []() { return MPI_COMM_WORLD; });
+    //m.def("comm_self", []() { return MPI_COMM_SELF; });
     m.def("rank", &dolfin::MPI::rank);
     m.def("size", &dolfin::MPI::size);
     m.def("max", &dolfin::MPI::max<double>);
