@@ -8,6 +8,12 @@ find_package(DOLFIN REQUIRED)
 include(${DOLFIN_USE_FILE})
 add_subdirectory(pybind11)
 
+
+# Check for mpi4py
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+find_package(MPI4PY)
+
 # Create the binding library
 pybind11_add_module(cpp SHARED
   src/dolfin.cpp
@@ -24,8 +30,10 @@ pybind11_add_module(cpp SHARED
   src/refinement/refinement.cpp
   )
 
+if (MPI4PY_FOUND)
+  target_include_directories(cpp PRIVATE ${MPI4PY_INCLUDE_DIR})
+  add_definitions(-DHAS_MPI4PY)
+endif()
+
 # Add DOLFIN libraries and other config
 target_link_libraries(cpp PRIVATE pybind11::module dolfin)
-
-#set_target_properties(dolfin_test PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
-#  SUFFIX "${PYTHON_MODULE_EXTENSION}")

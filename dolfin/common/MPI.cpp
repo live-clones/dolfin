@@ -50,6 +50,7 @@ MPI_Info& dolfin::MPIInfo::operator*()
 //-----------------------------------------------------------------------------
 unsigned int dolfin::MPI::rank(const MPI_Comm comm)
 {
+  std::cout << "----In size dolfin rank" << std::endl;
 #ifdef HAS_MPI
   SubSystemsManager::init_mpi();
   int rank;

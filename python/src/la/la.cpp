@@ -41,7 +41,7 @@
 #include <dolfin/la/LUSolver.h>
 #include <dolfin/la/KrylovSolver.h>
 
-#include "../openmpi.h"
+#include "../mpi_interface.h"
 
 namespace py = pybind11;
 
