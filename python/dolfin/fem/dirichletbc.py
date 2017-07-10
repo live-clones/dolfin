@@ -1,4 +1,7 @@
 
+import types
+from six import string_types
+
 import dolfin.cpp as cpp
 from dolfin.mesh.subdomain import CompiledSubDomain
 

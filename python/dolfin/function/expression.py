@@ -157,8 +157,11 @@ def compile_expression(statements):
     params['build']['libs'] = d["libraries"]
     params['build']['lib_dirs'] = d["library_dirs"]
 
+    if isinstance(statements, string_types):
+        statements = tuple((statements,))
+
     if not isinstance(statements, tuple):
-        statements = tuple(statements,)
+        raise RuntimeError("Expression must be a string, or a tuple of strings")
 
     module_hash = hashlib.md5("".join(statements).encode('utf-8')).hexdigest()
     module_name = "expression_" + module_hash
