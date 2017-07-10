@@ -98,15 +98,16 @@ namespace dolfin_wrappers
           if (PyObject_TypeCheck(obj.ptr(), &PyMPIComm_Type))
             return obj;
 
-          // Try to cast to MPI_COmm
-          MPI_Comm c = obj.cast<MPI_Comm>();
+          // Try to cast to MPI_Comm
+          //MPI_Comm c = obj.cast<MPI_Comm>();
+          std::uintptr_t c = obj.cast<std::uintptr_t>();
 
           // Create wrapper for conversion to mpi4py
           dolfin_wrappers::mpi_communicator mpi_comm;
-          mpi_comm.comm = c;
+          mpi_comm.comm = reinterpret_cast<MPI_Comm>(c);
 
           return py::cast(mpi_comm);
-        },
+        }, py::return_value_policy::copy,
         "Convert a plain MPI communicator into a mpi4py communicator");
      }
 
