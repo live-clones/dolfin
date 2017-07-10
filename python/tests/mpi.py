@@ -32,13 +32,13 @@ print(type(tcomm))
 print("B-------------------------------------------------------")
 
 #print("----------")
-#print("Comm 0:", comm, type(comm))
+print("Comm 0:", comm, type(comm))
 
 #print("+++++++++++")
-#myrank = dolfin.cpp.MPI.size(tcomm)
+myrank = dolfin.cpp.MPI.size(tcomm)
 
-#print("rank (0a):", myrank)
-#print("rank (0b):", type(tcomm), tcomm)
+print("rank (0a):", myrank)
+print("rank (0b):", type(tcomm), tcomm)
 
 
 #print("C-------------------------------------------------------")
@@ -55,12 +55,12 @@ print("B-------------------------------------------------------")
 #print("^^^^^^^^^^^^")
 #print("Comm 1:", comm)
 
-#print("$$$$$$$$$$$$$")
-#size = dolfin.cpp.MPI.size(comm)
-#print("$$$$$$$$$$$$$")
-#print("Size:", size)
+print("$$$$$$$$$$$$$")
+size = dolfin.cpp.MPI.size(comm)
+print("$$$$$$$$$$$$$")
+print("Size:", size)
 
-#print(type(tcomm))
-#s = dolfin.cpp.MPI.sum(tcomm, 2.5)
-#print("Sum 2.5:", s)
-#print(tcomm)
+print(type(tcomm))
+s = dolfin.cpp.MPI.sum(tcomm, 2.5)
+print("Sum 2.5:", s)
+print(tcomm)

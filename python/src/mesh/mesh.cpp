@@ -56,8 +56,6 @@ namespace dolfin_wrappers
           });
     //-------------------------------------------------------------------------
 
-    import_mpi4py();
-
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
       .def(py::init<>())
