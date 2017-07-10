@@ -94,6 +94,7 @@ namespace dolfin_wrappers
     // dolfin::EigenFactory class
     py::class_<dolfin::EigenFactory, std::shared_ptr<dolfin::EigenFactory>>
       (m, "EigenFactory", "DOLFIN EigenFactory object")
+      .def("instance", &dolfin::EigenFactory::instance)
       .def("create_matrix", &dolfin::EigenFactory::create_matrix)
       .def("create_vector", &dolfin::EigenFactory::create_vector);
 

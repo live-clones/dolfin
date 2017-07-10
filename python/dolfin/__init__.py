@@ -46,7 +46,7 @@ from .cpp.la import (has_linear_algebra_backend,
 if has_linear_algebra_backend('PETSc'):
     from .cpp.la import PETScVector, PETScMatrix
 
-from .cpp.la import (Matrix, Vector, EigenMatrix, EigenVector,
+from .cpp.la import (Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
                      LUSolver, KrylovSolver)
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges,

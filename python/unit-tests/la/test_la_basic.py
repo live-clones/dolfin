@@ -267,7 +267,7 @@ class TestBasicLaOperations:
 
         a, b = get_forms(mesh)
         if use_backend:
-            backend = getattr(cpp, self.backend+self.sub_backend+'Factory').instance()
+            backend = getattr(cpp.la, self.backend+self.sub_backend+'Factory').instance()
         else:
             backend = None
 
