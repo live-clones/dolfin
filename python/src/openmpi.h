@@ -40,6 +40,8 @@ namespace pybind11
       // From Python to C++
       bool load(handle src, bool)
       {
+        std::cout << "Py to C++ (ptr): " << src.ptr() << std::endl;
+        std::cout << "Py to C++ (int): " << reinterpret_cast<std::uintptr_t>(src.ptr()) << std::endl;
         void* v = PyLong_AsVoidPtr(src.ptr());
 
         if (PyErr_Occurred())
@@ -51,8 +53,11 @@ namespace pybind11
 
       // From C++ to Python
       static handle cast(const MPI_Comm &src,
-                         return_value_policy /*policy*/, handle /*parent*/)
-      { return py::cast(reinterpret_cast<std::uintptr_t>(src)); }
+                         return_value_policy, handle)
+      {
+        std::cout << "C++ to Py: " << &(*src) << std::endl;
+        std::cout << "C++ to Py: " << reinterpret_cast<std::uintptr_t>(src) << std::endl;
+        return py::cast(reinterpret_cast<std::uintptr_t>(src)); }
 
       operator MPI_Comm()
       { return value; }

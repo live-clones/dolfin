@@ -28,7 +28,7 @@ del sys
 # cpp modules
 from .cpp.common import Variable, has_debug, has_hdf5, has_hdf5_parallel, \
     has_mpi, has_petsc, has_slepc, git_commit_hash
-from .cpp import MPI
+#from .cpp import MPI
 from .cpp.function import Expression, Constant, Function
 from .cpp.fem import FiniteElement, DofMap, Assembler
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect

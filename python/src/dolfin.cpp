@@ -41,31 +41,30 @@ namespace dolfin_wrappers
 
 PYBIND11_MODULE(cpp, m)
 {
-  // Create module
+  // Create module for C++ wrappers
   m.doc() ="DOLFIN Python interface";
 
-  // Create MPI submodule [common]
-  py::module mpi = m.def_submodule("MPI", "DOLFIN MPI module");
-  dolfin_wrappers::mpi(mpi);
+  // Create MPI class [common]
+  dolfin_wrappers::mpi(m);
 
-  // Create common submodule
+  // Create common submodule [common]
   py::module common = m.def_submodule("common", "DOLFIN common module");
   dolfin_wrappers::common(common);
 
-  // Create mesh submodule
-  py::module mesh = m.def_submodule("mesh", "DOLFIN mesh library");
+  // Create mesh submodule [mesh]
+  py::module mesh = m.def_submodule("mesh", "DOLFIN mesh library module");
   dolfin_wrappers::mesh(mesh);
 
-  // Create fem submodule
+  // Create fem submodule [fem]
   py::module fem = m.def_submodule("fem", "DOLFIN FEM module");
   dolfin_wrappers::fem(fem);
 
-  // Create function submodule
+  // Create function submodule [function]
   py::module function = m.def_submodule("function",
                                         "DOLFIN function module");
   dolfin_wrappers::function(function);
 
-  // Create generation submodule
+  // Create generation submodule [generation]
   py::module generation = m.def_submodule("generation",
                                           "DOLFIN mesh generation module");
   dolfin_wrappers::generation(generation);

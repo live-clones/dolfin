@@ -52,29 +52,19 @@ namespace dolfin_wrappers
 
   void mpi(py::module& m)
   {
-    // MPI functions are static, so adding to module rather than to a
-    // class
-
-    // MPI
-    #ifdef OPEN_MPI
-    m.attr("comm_world") = reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD);
-    m.attr("comm_self") = reinterpret_cast<std::uintptr_t>(MPI_COMM_SELF);
-    m.attr("comm_null") = reinterpret_cast<std::uintptr_t>(MPI_COMM_NULL);
-    #else
-    m.attr("comm_world") = MPI_COMM_WORLD;
-    m.attr("comm_self") = MPI_COMM_SELF;
-    m.attr("comm_null") = MPI_COMM_NULL;
-    #endif
-
-    m.def("init", [](){ dolfin::SubSystemsManager::init_mpi();});
-    //m.def("comm_world", []() { return MPI_COMM_WORLD; });
-    //m.def("comm_self", []() { return MPI_COMM_SELF; });
-    m.def("rank", &dolfin::MPI::rank);
-    m.def("size", &dolfin::MPI::size);
-    m.def("max", &dolfin::MPI::max<double>);
-    m.def("min", &dolfin::MPI::min<double>);
-    m.def("sum", &dolfin::MPI::sum<double>);
-
+    py::class_<dolfin::MPI>(m, "MPI", "MPI utilities")
+      .def_property_readonly_static("comm_world", [](py::object)
+           { return reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD); })
+      .def_property_readonly_static("comm_self", [](py::object)
+           { return reinterpret_cast<std::uintptr_t>(MPI_COMM_SELF); })
+      .def_property_readonly_static("comm_null", [](py::object)
+           { return reinterpret_cast<std::uintptr_t>(MPI_COMM_NULL); })
+      .def_static("init", [](){ dolfin::SubSystemsManager::init_mpi();})
+      .def_static("rank", &dolfin::MPI::rank)
+      .def_static("size", &dolfin::MPI::size)
+      .def_static("max", &dolfin::MPI::max<double>)
+      .def_static("min", &dolfin::MPI::min<double>)
+      .def_static("sum", &dolfin::MPI::sum<double>);
   }
 
 
