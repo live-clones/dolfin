@@ -51,13 +51,12 @@ namespace pybind11
     public:
       PYBIND11_TYPE_CASTER(dolfin_wrappers::mpi_communicator, _("mpi_communicator"));
 
-      /*
+      // Helper from pybind to C++
       bool load(handle src, bool)
       {
         std::cout << "***Here I am" << std::endl;
         return true;
       }
-      */
 
       // From C++ to Python
       static handle cast(const dolfin_wrappers::mpi_communicator &src, return_value_policy, handle)

@@ -32,7 +32,7 @@ print(type(tcomm))
 print("B-------------------------------------------------------")
 
 #print("----------")
-print("Comm 0:", comm, type(comm))
+print("Comm 0:", comm, type(tcomm))
 
 #print("+++++++++++")
 myrank = dolfin.cpp.MPI.size(tcomm)
