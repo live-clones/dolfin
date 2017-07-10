@@ -23,15 +23,17 @@ from __future__ import print_function
 import pytest
 import numpy
 
-from dolfin.cpp.geometry import BoundingBoxTree
-from dolfin.cpp.generation import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh
-from dolfin.cpp.geometry import Point
-from dolfin.cpp.mesh import MeshEntity
-from dolfin.cpp import MPI
+from dolfin import BoundingBoxTree
+from dolfin import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh
+from dolfin import Point
+from dolfin import MeshEntity
+from dolfin import MPI, mpi_comm_world
+from dolfin_utils.test import skip_in_parallel
+
 
 #--- compute_collisions with point ---
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_collisions_point_1d():
 
     reference = {1: set([4])}
@@ -44,7 +46,7 @@ def test_compute_collisions_point_1d():
         entities = tree.compute_collisions(p)
         assert set(entities) == reference[dim]
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_collisions_point_2d():
 
     reference = {1: set([226]),
@@ -63,7 +65,7 @@ def test_compute_collisions_point_2d():
             print("test: {}".format(x))
         #assert set(entities) == reference[dim]
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_collisions_point_3d():
 
     reference = {1: set([1364]),
@@ -86,7 +88,7 @@ def test_compute_collisions_point_3d():
 
 #--- compute_collisions with tree ---
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_collisions_tree_1d():
 
     references = [[set([8, 9, 10, 11, 12, 13, 14, 15]),
@@ -114,7 +116,7 @@ def test_compute_collisions_tree_1d():
         assert set(entities_A) == references[i][0]
         assert set(entities_B) == references[i][1]
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_collisions_tree_2d():
 
     references = [[set([20, 21, 22, 23, 28, 29, 30, 31]),
@@ -142,7 +144,7 @@ def test_compute_collisions_tree_2d():
         assert set(entities_A) == references[i][0]
         assert set(entities_B) == references[i][1]
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_collisions_tree_3d():
 
     references = [[set([18, 19, 20, 21, 22, 23, 42, 43, 44, 45, 46, 47]),
@@ -172,7 +174,7 @@ def test_compute_collisions_tree_3d():
 
 #--- compute_entity_collisions ---
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_entity_collisions_1d():
 
     reference = set([4])
@@ -189,7 +191,7 @@ def test_compute_entity_collisions_1d():
     entities = tree.compute_entity_collisions(p)
     assert set(entities) == reference
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_entity_collisions_2d():
 
     reference = set([136, 137])
@@ -206,7 +208,7 @@ def test_compute_entity_collisions_2d():
     entities = tree.compute_entity_collisions(p)
     assert set(entities) == reference
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_entity_collisions_3d():
 
     reference = set([876, 877, 878, 879, 880, 881])
@@ -221,7 +223,7 @@ def test_compute_entity_collisions_3d():
 
 #--- compute_entity_collisions with tree ---
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_entity_collisions_tree_1d():
 
     references = [[set([8, 9, 10, 11, 12, 13, 14, 15]),
@@ -249,7 +251,7 @@ def test_compute_entity_collisions_tree_1d():
         assert set(entities_A) == references[i][0]
         assert set(entities_B) == references[i][1]
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_entity_collisions_tree_2d():
 
     references = [[set([20, 21, 22, 23, 28, 29, 30, 31]),
@@ -277,7 +279,7 @@ def test_compute_entity_collisions_tree_2d():
         assert set(entities_A) == references[i][0]
         assert set(entities_B) == references[i][1]
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_entity_collisions_tree_3d():
 
     references = [[set([18, 19, 20, 21, 22, 23, 42, 43, 44, 45, 46, 47]),
@@ -307,7 +309,7 @@ def test_compute_entity_collisions_tree_3d():
 
 #--- compute_first_collision ---
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_first_collision_1d():
 
     reference = {1: [4]}
@@ -324,7 +326,7 @@ def test_compute_first_collision_1d():
     first = tree.compute_first_collision(p)
     assert first in reference[mesh.topology().dim()]
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_first_collision_2d():
 
     # FIXME: This test should not use facet indices as there are no guarantees
@@ -348,7 +350,7 @@ def test_compute_first_collision_2d():
     first = tree.compute_first_collision(p)
     assert first in reference[mesh.topology().dim()]
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_first_collision_3d():
 
     # FIXME: This test should not use facet indices as there are no guarantees
@@ -377,7 +379,7 @@ def test_compute_first_collision_3d():
 
 #--- compute_first_entity_collision ---
 
-# # @skip_in_parallel
+@skip_in_parallel
 def test_compute_first_entity_collision_1d():
 
     reference = [4]
@@ -393,7 +395,7 @@ def test_compute_first_entity_collision_1d():
     first = tree.compute_first_entity_collision(p)
     assert first in reference
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_first_entity_collision_2d():
 
     reference = [136, 137]
@@ -409,7 +411,7 @@ def test_compute_first_entity_collision_2d():
     first = tree.compute_first_entity_collision(p)
     assert first in reference
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_first_entity_collision_3d():
 
     reference = [876, 877, 878, 879, 880, 881]
@@ -427,7 +429,7 @@ def test_compute_first_entity_collision_3d():
 
 #--- compute_closest_entity ---
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_closest_entity_1d():
 
     reference = (0, 1.0)
@@ -446,7 +448,7 @@ def test_compute_closest_entity_1d():
     assert entity == reference[0]
     assert round(distance - reference[1], 7) == 0
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_closest_entity_2d():
 
     reference = (1, 1.0)
@@ -465,7 +467,7 @@ def test_compute_closest_entity_2d():
     assert entity == reference[0]
     assert round(distance - reference[1], 7) == 0
 
-# @skip_in_parallel
+@skip_in_parallel
 def test_compute_closest_entity_3d():
 
     reference = (0, 0.1)

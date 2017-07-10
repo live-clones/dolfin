@@ -23,6 +23,7 @@
 #include <pybind11/stl.h>
 
 #include <dolfin/geometry/BoundingBoxTree.h>
+#include <dolfin/mesh/BoundaryMesh.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/CellType.h>
@@ -53,8 +54,8 @@ namespace dolfin_wrappers
             dolfin::SubDomain *p = reinterpret_cast<dolfin::SubDomain *>(e);
             return std::shared_ptr<const dolfin::SubDomain>(p);
           });
-
     //-----------------------------------------------------------------------------
+
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
       .def(py::init<>())
@@ -85,6 +86,9 @@ namespace dolfin_wrappers
       .def("mpi_comm", &dolfin::Mesh::mpi_comm)
       .def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities")
       .def("num_vertices", &dolfin::Mesh::num_vertices, "Number of vertices")
+      .def("num_edges", &dolfin::Mesh::num_edges, "Number of edges")
+      .def("num_faces", &dolfin::Mesh::num_faces, "Number of faces")
+      .def("num_facets", &dolfin::Mesh::num_facets, "Number of facets")
       .def("num_cells", &dolfin::Mesh::num_cells, "Number of cells")
       .def("rmax", &dolfin::Mesh::rmax)
       .def("rmin", &dolfin::Mesh::rmin)
@@ -97,6 +101,13 @@ namespace dolfin_wrappers
       .def("cell_name", [](const dolfin::Mesh& self)
            { return dolfin::CellType::type2string(self.type().cell_type()); }
         );
+
+    //-----------------------------------------------------------------------------
+    // dolfin::BoundaryMesh class
+    py::class_<dolfin::BoundaryMesh, std::shared_ptr<dolfin::BoundaryMesh>, dolfin::Mesh>(m, "BoundaryMesh", "DOLFIN BoundaryMesh object")
+      .def(py::init<const dolfin::Mesh&, std::string, bool>(),
+           py::arg("mesh"), py::arg("type"), py::arg("order")=true);
+
 
     //-------------------------------------------------------------------------
     // dolfin::MeshTopology class
@@ -296,7 +307,13 @@ namespace dolfin_wrappers
            &dolfin::MeshFunction<bool>::operator[])
       .def("__setitem__", [](dolfin::MeshFunction<bool>& self,
                              const dolfin::MeshEntity& index, bool value)
-           { self.operator[](index) = value;});
+           { self.operator[](index) = value;})
+      .def("__len__", &dolfin::MeshFunction<bool>::size)
+      .def("size", &dolfin::MeshFunction<bool>::size)
+      .def("set_all", &dolfin::MeshFunction<bool>::set_all)
+      .def("array", [](dolfin::MeshFunction<bool>& self)
+           { return Eigen::Map<Eigen::Matrix<bool, Eigen::Dynamic, 1>>
+               (self.values(), self.size()); });
 
     py::class_<dolfin::MeshFunction<int>,
                std::shared_ptr<dolfin::MeshFunction<int>>>
@@ -314,7 +331,12 @@ namespace dolfin_wrappers
            &dolfin::MeshFunction<int>::operator[])
       .def("__setitem__", [](dolfin::MeshFunction<int>& self,
                              const dolfin::MeshEntity& index, int value)
-           { self.operator[](index) = value;});
+           { self.operator[](index) = value;})
+      .def("__len__", &dolfin::MeshFunction<int>::size)
+      .def("size", &dolfin::MeshFunction<int>::size)
+      .def("set_all", &dolfin::MeshFunction<int>::set_all)
+      .def("array", [](dolfin::MeshFunction<int>& self)
+           { return Eigen::Map<Eigen::VectorXi>(self.values(), self.size()); });
 
     py::class_<dolfin::MeshFunction<std::size_t>,
                std::shared_ptr<dolfin::MeshFunction<std::size_t>>>
@@ -332,7 +354,13 @@ namespace dolfin_wrappers
            &dolfin::MeshFunction<std::size_t>::operator[])
       .def("__setitem__", [](dolfin::MeshFunction<std::size_t>& self,
                              const dolfin::MeshEntity& index, std::size_t value)
-           { self.operator[](index) = value;});
+           { self.operator[](index) = value;})
+      .def("__len__", &dolfin::MeshFunction<std::size_t>::size)
+      .def("size", &dolfin::MeshFunction<std::size_t>::size)
+      .def("set_all", &dolfin::MeshFunction<std::size_t>::set_all)
+      .def("array", [](dolfin::MeshFunction<std::size_t>& self)
+           { return Eigen::Map<Eigen::Matrix<std::size_t, Eigen::Dynamic, 1>>
+               (self.values(), self.size()); });
 
     py::class_<dolfin::MeshFunction<double>,
                std::shared_ptr<dolfin::MeshFunction<double>>>
@@ -350,7 +378,12 @@ namespace dolfin_wrappers
            &dolfin::MeshFunction<double>::operator[])
       .def("__setitem__", [](dolfin::MeshFunction<double>& self,
                              const dolfin::MeshEntity& index, double value)
-           { self.operator[](index) = value;});
+           { self.operator[](index) = value;})
+      .def("__len__", &dolfin::MeshFunction<double>::size)
+      .def("size", &dolfin::MeshFunction<double>::size)
+      .def("set_all", &dolfin::MeshFunction<double>::set_all)
+      .def("array", [](dolfin::MeshFunction<double>& self)
+           { return Eigen::Map<Eigen::VectorXd>(self.values(), self.size()); });
 
     //--------------------------------------------------------------------------
     // dolfin::MeshEditor class

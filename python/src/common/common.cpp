@@ -20,6 +20,7 @@
 #include <pybind11/pybind11.h>
 
 #include <dolfin/common/MPI.h>
+#include <dolfin/common/constants.h>
 #include <dolfin/common/defines.h>
 #include <dolfin/common/SubSystemsManager.h>
 #include <dolfin/common/Variable.h>
@@ -47,19 +48,23 @@ namespace dolfin_wrappers
     m.def("has_petsc", &dolfin::has_petsc);
     m.def("has_slepc", &dolfin::has_slepc);
     m.def("git_commit_hash", &dolfin::git_commit_hash);
+    m.def("sizeof_la_index", &dolfin::sizeof_la_index);
 
+    m.attr("DOLFIN_EPS") = DOLFIN_EPS;
+    m.attr("DOLFIN_PI") = DOLFIN_PI;
   }
 
   void mpi(py::module& m)
   {
     py::class_<dolfin::MPI>(m, "MPI", "MPI utilities")
       .def_property_readonly_static("comm_world", [](py::object)
-           { return reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD); })
+                                    { return reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD); })
       .def_property_readonly_static("comm_self", [](py::object)
-           { return reinterpret_cast<std::uintptr_t>(MPI_COMM_SELF); })
+                                    { return reinterpret_cast<std::uintptr_t>(MPI_COMM_SELF); })
       .def_property_readonly_static("comm_null", [](py::object)
-           { return reinterpret_cast<std::uintptr_t>(MPI_COMM_NULL); })
+                                    { return reinterpret_cast<std::uintptr_t>(MPI_COMM_NULL); })
       .def_static("init", [](){ dolfin::SubSystemsManager::init_mpi();})
+      .def_static("barrier", &dolfin::MPI::barrier)
       .def_static("rank", &dolfin::MPI::rank)
       .def_static("size", &dolfin::MPI::size)
       .def_static("max", &dolfin::MPI::max<double>)

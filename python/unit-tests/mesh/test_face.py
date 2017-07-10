@@ -23,23 +23,21 @@
 # Last changed: 2014-05-30
 
 import pytest
-#from dolfin import *
-#from dolfin_utils.test import skip_in_parallel, fixture
-from dolfin.cpp.generation import UnitCubeMesh, UnitSquareMesh
-from dolfin.cpp.mesh import faces, Face
+from dolfin import *
+from dolfin_utils.test import skip_in_parallel, fixture
 
 
-@pytest.fixture
+@fixture
 def cube():
     return UnitCubeMesh(5, 5, 5)
 
 
-@pytest.fixture
+@fixture
 def square():
     return UnitSquareMesh(5, 5)
 
 
-#@skip_in_parallel
+@skip_in_parallel
 def test_Area(cube, square):
     """Iterate over faces and sum area."""
 
@@ -54,7 +52,7 @@ def test_Area(cube, square):
     assert round(area - 1.0, 7) == 0
 
 
-#@skip_in_parallel
+@skip_in_parallel
 def test_NormalPoint(cube, square):
     """Compute normal vector to each face."""
     for f in faces(cube):
@@ -66,7 +64,7 @@ def test_NormalPoint(cube, square):
         f.normal()
 
 
-#@skip_in_parallel
+@skip_in_parallel
 def test_NormalComponent(cube, square):
     """Compute normal vector components to each face."""
     D = cube.topology().dim()
