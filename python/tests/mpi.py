@@ -1,28 +1,39 @@
 import mpi4py.MPI as pyMPI
 
+print("----")
 
 
 import dolfin.cpp
 
-#dolfin.cpp.MPI.init()
-
-print("----------")
-
-
-comm =  pyMPI.COMM_WORLD
+print("XXXXX")
 #comm = dolfin.cpp.MPI.comm_world
 
-dcomm = test_comm = dolfin.cpp.MPI.to_comm(comm)
+
+#mesh = dolfin.cpp.generation.UnitSquareMesh(2, 2)
+
+#tcomm = mesh.mpi_comm()
+#print(type(tcomm))
+
+#dolfin.cpp.MPI.init()
 
 #print("----------")
-#print("Comm 0:", comm)
 
-print("+++++++++++")
-rank = dolfin.cpp.MPI.rank(comm)
-print(rank)
-rank = dolfin.cpp.MPI.rank(dcomm)
-print(rank)
-print("+++++++++++")
+
+#comm =  pyMPI.COMM_WORLD
+
+
+
+#dcomm = test_comm = dolfin.cpp.MPI.to_comm(comm)
+
+#print("----------")
+#print("Comm 0:", comm, type(comm))
+
+#print("+++++++++++")
+#rank = dolfin.cpp.MPI.rank(comm)
+#print(rank)
+#rank = dolfin.cpp.MPI.rank(dcomm)
+#print(rank)
+#print("+++++++++++")
 
 
 """

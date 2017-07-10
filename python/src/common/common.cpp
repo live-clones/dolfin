@@ -55,6 +55,7 @@ namespace dolfin_wrappers
   }
 
   // Return a MPI communicator from a mpi4py comm (untested)
+  /*
   static MPI_Comm mpi4py_to_comm(py::object obj)
   {
     MPI_Comm *comm_p = PyMPIComm_Get(obj.ptr());
@@ -66,26 +67,35 @@ namespace dolfin_wrappers
 
     return *comm_p;
   }
+  */
 
   void mpi(py::module& m)
   {
+    #ifdef HAS_MPI4PY
     import_mpi4py();
+    #endif
 
     py::class_<dolfin::MPI>(m, "MPI", "MPI utilities")
+      #ifdef OPEN_MPI
       .def_property_readonly_static("comm_world", [](py::object)
                                     { return reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD); })
       .def_property_readonly_static("comm_self", [](py::object)
                                     { return reinterpret_cast<std::uintptr_t>(MPI_COMM_SELF); })
       .def_property_readonly_static("comm_null", [](py::object)
-                                    { return reinterpret_cast<std::uintptr_t>(MPI_COMM_NULL); })
+                                   { return reinterpret_cast<std::uintptr_t>(MPI_COMM_NULL); })
+       #else
+      .def_property_readonly_static("comm_world", [](py::object) { return MPI_COMM_WORLD; })
+      .def_property_readonly_static("comm_self", [](py::object) { return MPI_COMM_SELF; })
+      .def_property_readonly_static("comm_null", [](py::object) { return MPI_COMM_NULL; })
+       #endif
       .def_static("init", [](){ dolfin::SubSystemsManager::init_mpi();})
       .def_static("barrier", &dolfin::MPI::barrier)
       .def_static("rank", &dolfin::MPI::rank)
       .def_static("size", &dolfin::MPI::size)
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
-      .def_static("sum", &dolfin::MPI::sum<double>)
-      .def_static("to_comm", &mpi4py_to_comm);
+      .def_static("sum", &dolfin::MPI::sum<double>) ;
+      //.def_static("to_comm", &mpi4py_to_comm);
   }
 
 

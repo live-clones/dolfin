@@ -21,10 +21,14 @@
 // Custom type caster for OpenMPI MPI_Comm, where MPI_Comm is defined
 // as a typedef of ompi_communicator_t*
 
-#ifdef OPEN_MPI
-#include <mpi4py/mpi4py.h>
+#ifdef HAS_MPI
 #include <mpi.h>
 #include <pybind11/pybind11.h>
+#include <Python.h>
+
+#ifdef HAS_MPI4PY
+#include <mpi4py/mpi4py.h>
+#endif
 
 namespace py = pybind11;
 
@@ -33,49 +37,103 @@ namespace pybind11
   namespace detail
   {
 
+    #ifdef OPEN_MPI
     template <> class type_caster<ompi_communicator_t>
     {
     public:
-      PYBIND11_TYPE_CASTER(MPI_Comm, _("ompi_communicator_t"));
+      PYBIND11_TYPE_CASTER(MPI_Comm, _("c_mpi_communicator_t"));
 
       // From Python to C++
       bool load(handle src, bool)
       {
         PyObject* obj = src.ptr();
+        #ifdef HAS_MPI4PY
         if (PyObject_TypeCheck(obj, &PyMPIComm_Type))
         {
-          std::cout << "Cast to MPI comm (mpi4py)" << std::endl;
-          MPI_Comm *comm_p = PyMPIComm_Get(src.ptr());
+          MPI_Comm *comm_p = PyMPIComm_Get(obj);
           value = *comm_p;
-
           if (PyErr_Occurred())
             return false;
         }
         else
         {
-          std::cout << "Cast to MPI comm (raw)" << std::endl;
-          std::cout << "Py to C++ (ptr): " << obj << std::endl;
-          std::cout << "Py to C++ (int): " << reinterpret_cast<std::uintptr_t>(obj) << std::endl;
           void* v = PyLong_AsVoidPtr(obj);
           value = reinterpret_cast<MPI_Comm>(v);
-
           if (PyErr_Occurred())
             return false;
         }
+        #else
+        void* v = PyLong_AsVoidPtr(obj);
+        value = reinterpret_cast<MPI_Comm>(v);
+        if (PyErr_Occurred())
+          return false;
+        #endif
+
         return true;
       }
 
       // From C++ to Python
       static handle cast(const MPI_Comm &src,
                          return_value_policy, handle)
-      {
-        std::cout << "C++ to Py: " << &(*src) << std::endl;
-        std::cout << "C++ to Py: " << reinterpret_cast<std::uintptr_t>(src) << std::endl;
-        return py::cast(reinterpret_cast<std::uintptr_t>(src)); }
+      { return py::cast(reinterpret_cast<std::uintptr_t>(src)); }
 
       operator MPI_Comm()
       { return value; }
     };
+    #else
+    template <> class type_caster<MPI_Comm>
+    {
+    public:
+      PYBIND11_TYPE_CASTER(MPI_Comm, _("MPI_Comm"));
+
+      // From Python (possibly a mpi4py comm) to C++
+      bool load(handle src, bool)
+      {
+        //std::cout << "Start cast" << std::endl;
+
+        PyObject* obj = src.ptr();
+        #ifdef HAS_MPI4PY
+        if (PyObject_TypeCheck(obj, &PyMPIComm_Type))
+        {
+          MPI_Comm *comm_p = PyMPIComm_Get(obj);
+          value = *comm_p;
+          if (PyErr_Occurred())
+            return false;
+        }
+        else if (PyObject_TypeCheck(obj, &PyLong_Type))
+        {
+          //std::cout << "In caster" << std::endl;
+          value = PyLong_AsLong(obj);
+          if (PyErr_Occurred())
+            return false;
+        }
+        else
+          std::cerr << "MPI communicator (MPI_Comm) type is unknown." << std::endl;
+        #else
+        value = PyLong_AsLong(obj);
+        if (PyErr_Occurred())
+          return false;
+        #endif
+
+        return true;
+      }
+
+      // Cast from C/C++ communicator to Python
+      static handle cast(const MPI_Comm &src, return_value_policy, handle)
+      {
+        //#if HAS_MPI4PY
+        //return PyMPIComm_New(src);
+        //return PyMPIComm_New(src);
+        //#else
+        return PyLong_FromLong(src);
+        //#endif
+      }
+
+      operator MPI_Comm()
+      { return value; }
+    };
+    #endif
+
   }
 }
 
