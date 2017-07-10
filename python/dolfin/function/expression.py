@@ -164,7 +164,7 @@ def compile_expression(statements):
         raise RuntimeError("Expression must be a string, or a tuple of strings")
 
     module_hash = hashlib.md5("".join(statements).encode('utf-8')).hexdigest()
-    module_name = "expression_" + module_hash
+    module_name = "dolfin_expression_" + module_hash
     module, signature = dijitso.jit(statements, module_name, params,
                                     generate=jit_generate)
 

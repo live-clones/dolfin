@@ -23,8 +23,8 @@ from __future__ import print_function
 import pytest
 import numpy as np
 
-from dolfin import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh, UnitDiscMesh
-from dolfin import FunctionSpace, VectorFunctionSpace, Function, mpi_comm_world
+from dolfin import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh # , UnitDiscMesh
+from dolfin import FunctionSpace, VectorFunctionSpace, Function
 from dolfin import get_coordinates, set_coordinates, Mesh
 from dolfin import Expression, interpolate
 from dolfin_utils.test import skip_in_parallel, fixture
@@ -35,9 +35,9 @@ def meshes_p1():
     return UnitIntervalMesh(10), UnitSquareMesh(3, 3), UnitCubeMesh(2, 2, 2)
 
 
-@fixture
-def meshes_p2():
-    return UnitDiscMesh.create(mpi_comm_world(), 1, 2, 2), UnitDiscMesh.create(mpi_comm_world(), 1, 2, 3)
+# @fixture
+# def meshes_p2():
+#    return UnitDiscMesh.create(mpi_comm_world(), 1, 2, 2), UnitDiscMesh.create(mpi_comm_world(), 1, 2, 3)
 
 
 def _test_get_set_coordinates(mesh):
@@ -81,10 +81,10 @@ def test_linear(meshes_p1):
         _test_get_set_coordinates(mesh)
 
 
-@skip_in_parallel(reason="FunctionSpace(UnitDiscMesh) not working in parallel")
-def test_higher_order(meshes_p2):
-    for mesh in meshes_p2:
-        _test_get_set_coordinates(mesh)
+# @skip_in_parallel(reason="FunctionSpace(UnitDiscMesh) not working in parallel")
+# def test_higher_order(meshes_p2):
+#     for mesh in meshes_p2:
+#         _test_get_set_coordinates(mesh)
 
 
 def test_raises(meshes_p1):

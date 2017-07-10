@@ -32,7 +32,8 @@ from .cpp.common import (Variable, has_debug, has_hdf5,
                          DOLFIN_PI)
 from .cpp import MPI
 from .cpp.function import Expression, Constant, Function, interpolate
-from .cpp.fem import FiniteElement, DofMap, Assembler, assemble
+from .cpp.fem import (FiniteElement, DofMap, Assembler, assemble, get_coordinates,
+                      set_coordinates, vertex_to_dof_map, dof_to_vertex_map)
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, UnitIntervalMesh,
                              UnitSquareMesh, UnitCubeMesh, BoxMesh, RectangleMesh,
@@ -56,7 +57,7 @@ from .cpp.refinement import refine
 # python modules
 from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
-from .function.functionspace import FunctionSpace
+from .function.functionspace import FunctionSpace, VectorFunctionSpace
 from .function.constant import Constant
 from .function.expression import CompiledExpression, UserExpression
 from .mesh.meshfunction import (MeshFunction, CellFunction,

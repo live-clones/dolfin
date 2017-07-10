@@ -25,7 +25,6 @@ import pytest
 from dolfin import intersect
 from dolfin import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh, BoxMesh
 from dolfin import Point, FunctionSpace, Expression, interpolate
-from dolfin import MPI, mpi_comm_world
 
 from dolfin_utils.test import skip_in_parallel
 

@@ -27,7 +27,6 @@ from dolfin import BoundingBoxTree
 from dolfin import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh
 from dolfin import Point
 from dolfin import MeshEntity
-from dolfin import MPI, mpi_comm_world
 from dolfin_utils.test import skip_in_parallel
 
 

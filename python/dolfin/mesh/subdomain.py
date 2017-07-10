@@ -76,7 +76,7 @@ def compile_subdomain(inside_code):
     params['build']['lib_dirs'] = d["library_dirs"]
 
     module_hash = hashlib.md5(inside_code.encode('utf-8')).hexdigest()
-    module_name = "subdomain_" + module_hash
+    module_name = "dolfin_subdomain_" + module_hash
     module, signature = dijitso.jit(inside_code, module_name, params,
                                     generate=jit_generate)
 
