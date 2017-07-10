@@ -22,34 +22,45 @@ print(type(tcomm))
 #print("----------")
 
 
-comm =  pyMPI.COMM_WORLD
-#comm =  dolfin.cpp.MPI.comm_world
+#comm =  pyMPI.COMM_WORLD
+comm =  dolfin.cpp.MPI.comm_world
 
+print("A-------------------------------------------------------")
+#print(type(comm))
 tcomm = dolfin.cpp.MPI.to_mpi4py_comm(comm)
 print(type(tcomm))
-
-#dcomm = test_comm = dolfin.cpp.MPI.to_comm(comm)
+print("B-------------------------------------------------------")
 
 #print("----------")
 #print("Comm 0:", comm, type(comm))
 
 #print("+++++++++++")
-rank = dolfin.cpp.MPI.rank(comm)
-print(rank)
-rank = dolfin.cpp.MPI.rank(comm)
-print(rank)
+#myrank = dolfin.cpp.MPI.size(tcomm)
+
+#print("rank (0a):", myrank)
+#print("rank (0b):", type(tcomm), tcomm)
+
+
+#print("C-------------------------------------------------------")
+#rank = dolfin.cpp.MPI.rank(tcomm)
+#print("rank (1a):", rank)
+#print("rank (1b):", type(tcomm))
+
+#print("rank (1):", rank, type(tcomm))
 #print("+++++++++++")
 
 
-print("^^^^^^^^^^^^")
-comm = dolfin.cpp.MPI.comm_world
-print("^^^^^^^^^^^^")
-print("Comm 1:", comm)
+#print("^^^^^^^^^^^^")
+#comm = dolfin.cpp.MPI.comm_world
+#print("^^^^^^^^^^^^")
+#print("Comm 1:", comm)
 
-print("$$$$$$$$$$$$$")
-size = dolfin.cpp.MPI.size(comm)
-print("$$$$$$$$$$$$$")
-print("Size:", size)
+#print("$$$$$$$$$$$$$")
+#size = dolfin.cpp.MPI.size(comm)
+#print("$$$$$$$$$$$$$")
+#print("Size:", size)
 
-s = dolfin.cpp.MPI.sum(tcomm, 2.5)
-print("Sum 2.5:", s)
+#print(type(tcomm))
+#s = dolfin.cpp.MPI.sum(tcomm, 2.5)
+#print("Sum 2.5:", s)
+#print(tcomm)

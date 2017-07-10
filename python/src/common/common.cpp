@@ -54,21 +54,6 @@ namespace dolfin_wrappers
     m.attr("DOLFIN_PI") = DOLFIN_PI;
   }
 
-  // Return a MPI communicator from a mpi4py comm (untested)
-  /*
-  static MPI_Comm mpi4py_to_comm(py::object obj)
-  {
-    MPI_Comm *comm_p = PyMPIComm_Get(obj.ptr());
-    if (!comm_p)
-    {
-      std::cout << "Cast failed" << std::endl;
-      //throw_error_already_set();
-    }
-
-    return *comm_p;
-  }
-  */
-
   void mpi(py::module& m)
   {
     #ifdef HAS_MPI4PY
@@ -95,11 +80,31 @@ namespace dolfin_wrappers
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)
-      .def_static("to_mpi4py_comm", [](MPI_Comm comm){
+      .def("to_mpi4py_comm", [](MPI_Comm comm){
+
+          // FIXME: This messes up if called with a mpi4py
+          // communicator. How can this be checked? (see commented
+          // function below)
+
           mpi_communicator _comm;
           _comm.comm = comm;
           return _comm;
-        }, "Convert a plain MPI communicator into a mpi4py communicator");
+        },
+        "Convert a plain MPI communicator into a mpi4py communicator");
+
+      /*
+      .def("to_mpi4py_comm", [](py::object obj){
+
+          // Check if object is already a mpi4py communivator
+          if (PyObject_TypeCheck(obj.ptr(), &PyMPIComm_Type))
+            return obj;
+
+          // FIXME: Do not know how to construct a mpi4py.Comm
+
+          return obj;
+        },
+        "Convert a plain MPI communicator into a mpi4py communicator");
+      */
   }
 
 
