@@ -28,7 +28,7 @@
 #include <dolfin/generation/UnitQuadMesh.h>
 #include <dolfin/generation/IntervalMesh.h>
 
-#include "../openmpi.h"
+#include "../mpi_interface.h"
 
 namespace py = pybind11;
 

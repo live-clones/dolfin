@@ -25,7 +25,7 @@
 #include <dolfin/common/SubSystemsManager.h>
 #include <dolfin/common/Variable.h>
 
-#include "../openmpi.h"
+#include "../mpi_interface.h"
 
 namespace py = pybind11;
 
@@ -94,8 +94,12 @@ namespace dolfin_wrappers
       .def_static("size", &dolfin::MPI::size)
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
-      .def_static("sum", &dolfin::MPI::sum<double>) ;
-      //.def_static("to_comm", &mpi4py_to_comm);
+      .def_static("sum", &dolfin::MPI::sum<double>)
+      .def_static("to_mpi4py_comm", [](MPI_Comm comm){
+          mpi_communicator _comm;
+          _comm.comm = comm;
+          return _comm;
+        }, "Convert a plain MPI communicator into a mpi4py communicator");
   }
 
 

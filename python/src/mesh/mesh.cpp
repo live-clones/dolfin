@@ -39,7 +39,7 @@
 #include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/SubDomain.h>
 
-#include "../openmpi.h"
+#include "../mpi_interface.h"
 
 namespace py = pybind11;
 
@@ -54,7 +54,9 @@ namespace dolfin_wrappers
             dolfin::SubDomain *p = reinterpret_cast<dolfin::SubDomain *>(e);
             return std::shared_ptr<const dolfin::SubDomain>(p);
           });
-    //-----------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+
+    import_mpi4py();
 
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
@@ -102,7 +104,7 @@ namespace dolfin_wrappers
            { return dolfin::CellType::type2string(self.type().cell_type()); }
         );
 
-    //-----------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     // dolfin::BoundaryMesh class
     py::class_<dolfin::BoundaryMesh, std::shared_ptr<dolfin::BoundaryMesh>, dolfin::Mesh>(m, "BoundaryMesh", "DOLFIN BoundaryMesh object")
       .def(py::init<const dolfin::Mesh&, std::string, bool>(),
