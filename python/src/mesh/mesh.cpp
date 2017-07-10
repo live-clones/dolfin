@@ -30,6 +30,7 @@
 #include <dolfin/mesh/MeshTopology.h>
 #include <dolfin/mesh/MeshGeometry.h>
 #include <dolfin/mesh/MeshEntity.h>
+#include <dolfin/mesh/MultiMesh.h>
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/Edge.h>
 #include <dolfin/mesh/Face.h>
@@ -37,6 +38,7 @@
 #include <dolfin/mesh/Cell.h>
 #include <dolfin/mesh/MeshEntityIterator.h>
 #include <dolfin/mesh/MeshFunction.h>
+#include <dolfin/mesh/MeshQuality.h>
 #include <dolfin/mesh/SubDomain.h>
 
 #include "../openmpi.h"
@@ -102,18 +104,25 @@ namespace dolfin_wrappers
            { return dolfin::CellType::type2string(self.type().cell_type()); }
         );
 
-    //-----------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     // dolfin::BoundaryMesh class
-    py::class_<dolfin::BoundaryMesh, std::shared_ptr<dolfin::BoundaryMesh>, dolfin::Mesh>(m, "BoundaryMesh", "DOLFIN BoundaryMesh object")
+    py::class_<dolfin::BoundaryMesh, std::shared_ptr<dolfin::BoundaryMesh>, dolfin::Mesh>
+      (m, "BoundaryMesh", "DOLFIN BoundaryMesh object")
       .def(py::init<const dolfin::Mesh&, std::string, bool>(),
            py::arg("mesh"), py::arg("type"), py::arg("order")=true);
 
+    //-------------------------------------------------------------------------
+    // dolfin::MeshConnectivity class
+    py::class_<dolfin::MeshConnectivity, std::shared_ptr<dolfin::MeshConnectivity>>
+      (m, "MeshConnectivity", "DOLFIN MeshConnectivity object");
 
     //-------------------------------------------------------------------------
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
       (m, "MeshTopology", "DOLFIN MeshTopology object")
-      .def("dim", &dolfin::MeshTopology::dim, "Topological dimension");
+      .def("dim", &dolfin::MeshTopology::dim, "Topological dimension")
+      .def("__call__", (const dolfin::MeshConnectivity& (dolfin::MeshTopology::*)(std::size_t, std::size_t) const)
+           &dolfin::MeshTopology::operator());
 
     //--------------------------------------------------------------------------
     // dolfin::MeshGeometry class
@@ -403,6 +412,21 @@ namespace dolfin_wrappers
            &dolfin::MeshEditor::add_cell)
       .def("close", &dolfin::MeshEditor::close, py::arg("order") = true);
 
+    //--------------------------------------------------------------------------
+    // dolfin::MultiMesh class
+    py::class_<dolfin::MultiMesh, std::shared_ptr<dolfin::MultiMesh>>
+      (m, "MultiMesh", "DOLFIN MultiMesh");
+
+    //--------------------------------------------------------------------------
+    // dolfin::MultiMesh class
+    py::class_<dolfin::MeshQuality>
+      (m, "MeshQuality", "DOLFIN MeshQuality class")
+      .def_static("radius_ratios", &dolfin::MeshQuality::radius_ratios)
+      .def_static("radius_ratio_histogram_data", &dolfin::MeshQuality::radius_ratio_histogram_data)
+      .def_static("radius_ratio_min_max", &dolfin::MeshQuality::radius_ratio_min_max)
+      .def_static("radius_ratio_matplotlib_histogram", &dolfin::MeshQuality::radius_ratio_matplotlib_histogram)
+      .def_static("dihedral_angles_min_max", &dolfin::MeshQuality::dihedral_angles_min_max)
+      .def_static("dihedral_angles_matplotlib_histogram", &dolfin::MeshQuality::dihedral_angles_matplotlib_histogram);
 
     //--------------------------------------------------------------------------
     // dolfin::SubDomain class

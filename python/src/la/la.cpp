@@ -94,15 +94,30 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm, std::size_t>())
       .def("__iadd__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
            &dolfin::Vector::operator+=)
-      .def("backend_type", [](dolfin::Vector& self){
-          // Experiment with determining backend type
-          auto instance = self.instance();
-          auto type_index = std::type_index(typeid(*instance));
-          if (type_index == std::type_index(typeid(dolfin::EigenVector)))
-            return "EigenVector";
-          else
-            return "Not an EigenVector";
-        });
+      .def("__iadd__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
+           &dolfin::Vector::operator+=)
+      .def("__isub__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
+           &dolfin::Vector::operator-=)
+      .def("__isub__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
+           &dolfin::Vector::operator-=)
+      .def("__imul__", (const dolfin::Vector& (dolfin::Vector::*)(double))
+           &dolfin::Vector::operator*=)
+      .def("__imul__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
+           &dolfin::Vector::operator*=)
+      .def("__idiv__", (const dolfin::Vector& (dolfin::Vector::*)(double))
+           &dolfin::Vector::operator/=)
+      .def("__setitem__", [](dolfin::Vector& self, dolfin::la_index index, double value)
+           { self.instance()->setitem(index, value); })
+      .def("backend_type", [](dolfin::Vector& self)
+           {
+             // Experiment with determining backend type
+             auto instance = self.instance();
+             auto type_index = std::type_index(typeid(*instance));
+             if (type_index == std::type_index(typeid(dolfin::EigenVector)))
+               return "EigenVector";
+             else
+               return "Not an EigenVector";
+           });
 
     //----------------------------------------------------------------------------
     // dolfin::EigenFactory class

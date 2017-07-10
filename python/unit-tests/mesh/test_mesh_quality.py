@@ -27,7 +27,7 @@ import pytest
 import numpy
 from dolfin import *
 from dolfin_utils.test import skip_in_parallel
-
+from math import sqrt
 
 def test_radius_ratio_triangle():
 
