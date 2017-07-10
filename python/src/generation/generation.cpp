@@ -46,7 +46,9 @@ namespace dolfin_wrappers
     py::class_<dolfin::UnitIntervalMesh, std::shared_ptr<dolfin::UnitIntervalMesh>,
                dolfin::IntervalMesh, dolfin::Mesh>(m, "UnitIntervalMesh")
       .def(py::init<std::size_t>())
-      .def(py::init<MPI_Comm, std::size_t>());
+      .def(py::init<MPI_Comm, std::size_t>())
+      .def_static("create", [](std::size_t n){ return dolfin::UnitIntervalMesh::create(n); });
+
 
     // dolfin::RectangleMesh
     py::class_<dolfin::RectangleMesh, std::shared_ptr<dolfin::RectangleMesh>, dolfin::Mesh>(m, "RectangleMesh")

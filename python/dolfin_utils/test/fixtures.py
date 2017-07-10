@@ -29,7 +29,6 @@ import decorator
 
 from instant import get_status_output
 #from dolfin import MPI, mpi_comm_world, parameters
-import dolfin.cpp.MPI as MPI
 from dolfin import  parameters
 from dolfin import *
 
