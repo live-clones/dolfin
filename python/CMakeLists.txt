@@ -8,6 +8,12 @@ find_package(DOLFIN REQUIRED)
 include(${DOLFIN_USE_FILE})
 add_subdirectory(pybind11)
 
+
+# FIXME: Put this into a FindFoo.cmake
+# Get mpi4py include path
+execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import mpi4py, sys; sys.stdout.write(mpi4py.get_include())"
+  OUTPUT_VARIABLE MPI4PY_INCLUDE_DIR)
+
 # Create the binding library
 pybind11_add_module(cpp SHARED
   src/dolfin.cpp
@@ -23,6 +29,8 @@ pybind11_add_module(cpp SHARED
   src/parameter/parameter.cpp
   src/refinement/refinement.cpp
   )
+
+target_include_directories(cpp PRIVATE ${MPI4PY_INCLUDE_DIR})
 
 # Add DOLFIN libraries and other config
 target_link_libraries(cpp PRIVATE pybind11::module dolfin)

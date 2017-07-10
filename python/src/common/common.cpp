@@ -54,8 +54,23 @@ namespace dolfin_wrappers
     m.attr("DOLFIN_PI") = DOLFIN_PI;
   }
 
+  // Return a MPI communicator from a mpi4py comm (untested)
+  static MPI_Comm mpi4py_to_comm(py::object obj)
+  {
+    MPI_Comm *comm_p = PyMPIComm_Get(obj.ptr());
+    if (!comm_p)
+    {
+      std::cout << "Cast failed" << std::endl;
+      //throw_error_already_set();
+    }
+
+    return *comm_p;
+  }
+
   void mpi(py::module& m)
   {
+    import_mpi4py();
+
     py::class_<dolfin::MPI>(m, "MPI", "MPI utilities")
       .def_property_readonly_static("comm_world", [](py::object)
                                     { return reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD); })
@@ -69,7 +84,8 @@ namespace dolfin_wrappers
       .def_static("size", &dolfin::MPI::size)
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
-      .def_static("sum", &dolfin::MPI::sum<double>);
+      .def_static("sum", &dolfin::MPI::sum<double>)
+      .def_static("to_comm", &mpi4py_to_comm);
   }
 
 

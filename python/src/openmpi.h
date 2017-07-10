@@ -22,6 +22,7 @@
 // as a typedef of ompi_communicator_t*
 
 #ifdef OPEN_MPI
+#include <mpi4py/mpi4py.h>
 #include <mpi.h>
 #include <pybind11/pybind11.h>
 
@@ -40,14 +41,27 @@ namespace pybind11
       // From Python to C++
       bool load(handle src, bool)
       {
-        std::cout << "Py to C++ (ptr): " << src.ptr() << std::endl;
-        std::cout << "Py to C++ (int): " << reinterpret_cast<std::uintptr_t>(src.ptr()) << std::endl;
-        void* v = PyLong_AsVoidPtr(src.ptr());
+        PyObject* obj = src.ptr();
+        if (PyObject_TypeCheck(obj, &PyMPIComm_Type))
+        {
+          std::cout << "Cast to MPI comm (mpi4py)" << std::endl;
+          MPI_Comm *comm_p = PyMPIComm_Get(src.ptr());
+          value = *comm_p;
 
-        if (PyErr_Occurred())
-          return false;
-        value = reinterpret_cast<MPI_Comm>(v);
+          if (PyErr_Occurred())
+            return false;
+        }
+        else
+        {
+          std::cout << "Cast to MPI comm (raw)" << std::endl;
+          std::cout << "Py to C++ (ptr): " << obj << std::endl;
+          std::cout << "Py to C++ (int): " << reinterpret_cast<std::uintptr_t>(obj) << std::endl;
+          void* v = PyLong_AsVoidPtr(obj);
+          value = reinterpret_cast<MPI_Comm>(v);
 
+          if (PyErr_Occurred())
+            return false;
+        }
         return true;
       }
 
