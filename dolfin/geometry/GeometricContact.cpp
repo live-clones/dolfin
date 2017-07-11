@@ -63,16 +63,16 @@ std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mes
   return {X1, X2, X3, x1, x2, x3};
 }
 //-----------------------------------------------------------------------------
-bool GeometricContact::check_tet_set_collision(const Mesh& master_mesh, std::size_t mindex,
+bool GeometricContact::check_tri_set_collision(const Mesh& master_mesh, std::size_t mindex,
                                                const Mesh& slave_mesh, std::size_t sindex)
 {
 
-  for (unsigned int i = mindex; i < mindex + 3; ++i)
-    for (unsigned int j = sindex; j < sindex + 3; ++j)
+  for (unsigned int i = mindex; i < mindex + 8; ++i)
+    for (unsigned int j = sindex; j < sindex + 8; ++j)
     {
       // FIXME: needs to work with zero-volume tetrahedra
-      if (CollisionDetection::collides_tetrahedron_tetrahedron(Cell(master_mesh, i),
-                                                               Cell(slave_mesh, j)))
+      if (CollisionDetection::collides_triangle_triangle(Cell(master_mesh, i),
+                                                         Cell(slave_mesh, j)))
         return true;
     }
 
@@ -106,28 +106,41 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   // Make sure facet->cell connections are made
   mesh.init(mesh.topology().dim() - 1, mesh.topology().dim());
 
-  // Local mesh of master 'prisms', three tetrahedra created per facet
+  // Local mesh of master 'prisms', eight triangles are created per facet
   Mesh master_mesh(mesh.mpi_comm());
   MeshEditor master_ed;
-  master_ed.open(master_mesh, mesh.topology().dim(), mesh.geometry().dim());
-  std::size_t nc_local = master_facets.size()*3;
-  std::size_t nc_global = MPI::sum(mesh.mpi_comm(), nc_local);
-  master_ed.init_cells_global(nc_local, nc_global);
-  master_ed.init_vertices_global(nc_local*2, nc_global*2);
+  master_ed.open(master_mesh, mesh.topology().dim() - 1, mesh.geometry().dim());
+  std::size_t nf_local = master_facets.size();
+  std::size_t nf_global = MPI::sum(mesh.mpi_comm(), nf_local);
+  master_ed.init_cells_global(nf_local*8, nf_global*8);
+  master_ed.init_vertices_global(nf_local*6, nf_global*6);
   int c = 0;
   int v = 0;
+
+  // Precalculate triangles making the surface of a prism
+  static const std::int32_t triangles[8][3] = {{0, 1, 2},
+                                               {0, 1, 3},
+                                               {1, 4, 3},
+                                               {1, 2, 4},
+                                               {2, 5, 4},
+                                               {2, 0, 5},
+                                               {0, 3, 5},
+                                               {3, 4, 5}};
 
   for (auto &mf : master_facets)
   {
     // Get six points defining prism
     std::vector<Point> master_tet_set = create_deformed_segment_volume_3d(mesh, mf, u);
-    // Add three tetrahedra
-    for (int i = 0; i < 3; ++i)
-      master_ed.add_cell(c+i, v+i, v+i+1, v+i+2, v+i+3);
-    c += 3;
+    // Add eight triangles
+    for (int i = 0; i < 8; ++i)
+       master_ed.add_cell(c + i, v + triangles[i][0],
+                                 v + triangles[i][1],
+                                 v + triangles[i][2]);
+
+    c += 8;
     // Add six points
     for (int i = 0; i < 6; ++i)
-      master_ed.add_vertex(v+i, master_tet_set[i]);
+      master_ed.add_vertex(v + i, master_tet_set[i]);
     v += 6;
   }
   master_ed.close();
@@ -137,20 +150,22 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   Mesh slave_mesh(mesh.mpi_comm());
   MeshEditor slave_ed;
   slave_ed.open(slave_mesh, mesh.topology().dim(), mesh.geometry().dim());
-  nc_local = slave_facets.size()*3;
-  nc_global = MPI::sum(mesh.mpi_comm(), nc_local);
-  slave_ed.init_cells_global(nc_local, nc_global);
-  slave_ed.init_vertices_global(nc_local*2, nc_global*2);
+  nf_local = slave_facets.size();
+  nf_global = MPI::sum(mesh.mpi_comm(), nf_local);
+  slave_ed.init_cells_global(nf_local*8, nf_global*8);
+  slave_ed.init_vertices_global(nf_local*6, nf_global*6);
   c = 0;
   v = 0;
   for (auto &sf : slave_facets)
   {
     std::vector<Point> slave_tet_set = create_deformed_segment_volume_3d(mesh, sf, u);
-    for (int i = 0; i < 3; ++i)
-      slave_ed.add_cell(c+i, v+i, v+i+1, v+i+2, v+i+3);
-    c += 3;
+    for (int i = 0; i < 8; ++i)
+      slave_ed.add_cell(c + i, v + triangles[i][0],
+                               v + triangles[i][1],
+                               v + triangles[i][2]);
+    c += 8;
     for (int i = 0; i < 6; ++i)
-      slave_ed.add_vertex(v+i, slave_tet_set[i]);
+      slave_ed.add_vertex(v + i, slave_tet_set[i]);
     v += 6;
   }
   slave_ed.close();
@@ -167,7 +182,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   for (unsigned int i = 0; i < master_facets.size(); ++i)
     for (unsigned int j = 0; j < slave_facets.size(); ++j)
     {
-      if (check_tet_set_collision(master_mesh, i*3, slave_mesh, j*3))
+      if (check_tri_set_collision(master_mesh, i*8, slave_mesh, j*8))
       {
         const std::size_t mf = master_facets[i];
         const std::size_t sf = slave_facets[j];
@@ -185,7 +200,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
     auto slave_cells = overlap.second;
 
     // Get slave facet indices to send
-    // The slave mesh consists of repeated units of three tetrahedra,
+    // The slave mesh consists of repeated units of eight triangles
     // making the prisms which are projected forward. The "prism index"
     // can be obtained by integer division of the cell index.
     // Each prism corresponds to a slave facet of the original mesh
@@ -197,7 +212,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
       if (master_rank != mpi_rank)
       {
         // Get facet from cell index (three tets per prism)
-        unsigned int facet = slave_cells[i]/3;
+        unsigned int facet = slave_cells[i]/8;
         send_facets[master_rank].push_back(facet);
       }
     }
@@ -245,10 +260,9 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
         Mesh prism_mesh(MPI_COMM_SELF);
         MeshEditor m_ed;
         m_ed.open(prism_mesh, mesh.topology().dim(), mesh.geometry().dim());
-        m_ed.init_cells(3);
-        m_ed.add_cell(0, 0,1,2,3);
-        m_ed.add_cell(0, 1,2,3,4);
-        m_ed.add_cell(0, 2,3,4,5);
+        m_ed.init_cells(8);
+        for (unsigned int i = 0; i < 8; ++i)
+          m_ed.add_cell(i, triangles[i][0], triangles[i][1], triangles[i][2]);
         m_ed.init_vertices(6);
         for (unsigned int v = 0; v < 6; ++v)
           m_ed.add_vertex(v, Point(3, coord.data() + j*18 + v*3));
@@ -257,7 +271,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
         // Check all local master facets against received slave data
         for (unsigned int i = 0; i < master_facets.size(); ++i)
         {
-          if (check_tet_set_collision(master_mesh, i*3, prism_mesh, 0))
+          if (check_tri_set_collision(master_mesh, i*8, prism_mesh, 0))
           {
             const std::size_t mf = master_facets[i];
             _master_to_slave[mf].push_back(proc);
