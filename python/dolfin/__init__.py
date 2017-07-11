@@ -38,6 +38,7 @@ from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, interse
 from .cpp.generation import (IntervalMesh, UnitIntervalMesh,
                              UnitSquareMesh, UnitCubeMesh, BoxMesh, RectangleMesh,
                              UnitQuadMesh)
+from .cpp.graph import GraphBuilder
 from .cpp.io import XDMFFile, VTKFile
 from .cpp.la import (has_linear_algebra_backend,
                      linear_algebra_backends, has_krylov_solver_method,

@@ -51,7 +51,7 @@ namespace dolfin_wrappers
   {
     // dolfin::GenericLinearOperator class
     //py::class_<dolfin::LinearAlgerabObject, std::shared_ptr<dolfin::LinearAlgerabObject>>
-    //  (m, "LinearAlgerabObject", "DOLFIN LinearAlgerabObject object");
+    //  (m, "LinearAlgebraObject", "DOLFIN LinearAlgebraObject object");
 
     // dolfin::GenericLinearOperator class
     py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
@@ -133,8 +133,12 @@ namespace dolfin_wrappers
              auto type_index = std::type_index(typeid(*instance));
              if (type_index == std::type_index(typeid(dolfin::EigenVector)))
                return "EigenVector";
+#ifdef HAS_PETSC
+             else if (type_index == std::type_index(typeid(dolfin::PETScVector)))
+               return "PETScVector";
+#endif
              else
-               return "Not an EigenVector";
+               return "Unknown";
            });
 
     //----------------------------------------------------------------------------

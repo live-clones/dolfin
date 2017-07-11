@@ -5,6 +5,10 @@ jobs:
       - image: quay.io/fenicsproject/dev-env:latest
     working_directory: /home/fenics/working
     steps:
+      - persist_to_workspace:
+        root: .
+        paths:
+         - /usr/local
       - run:
           name: Clone DOLFIN
           command: git lfs clone https://bitbucket.org/"${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}".git .
@@ -35,6 +39,9 @@ jobs:
       - image: quay.io/fenicsproject/dev-env:latest
     working_directory: /home/fenics/working
     steps:
+      - attach_workspace:
+        at: /usr/local
+      - checkout
       - run:
           name: Run unit tests
           command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_unittests
@@ -46,9 +53,12 @@ jobs:
       - image: quay.io/fenicsproject/dev-env:latest
     working_directory: /home/fenics/working
     steps:
+      - attach_workspace:
+        at: /usr/local
+      - checkout
       - run:
           name: Build pybind11 interface
-          command: source /usr/local/share/dolfin/dolfin.conf && cd python && python3 setup.py build && ls -l build
+          command: source /usr/local/share/dolfin/dolfin.conf && cd python && python3 setup.py build
 
 workflows:
   version: 2
