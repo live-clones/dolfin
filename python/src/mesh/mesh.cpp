@@ -300,112 +300,61 @@ namespace dolfin_wrappers
 
     //--------------------------------------------------------------------------
     // dolfin::MeshFunction class
-    py::class_<dolfin::MeshFunction<bool>,
-               std::shared_ptr<dolfin::MeshFunction<bool>>>
-      (m, "MeshFunction_bool", "DOLFIN MeshFunction object")
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, bool>())
-      .def("__getitem__", (const bool& (dolfin::MeshFunction<bool>::*)
-                           (std::size_t) const)
-           &dolfin::MeshFunction<bool>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<bool>& self,
-                             std::size_t index, bool value)
-           { self.operator[](index) = value;})
-      .def("__getitem__", (const bool& (dolfin::MeshFunction<bool>::*)
-                           (const dolfin::MeshEntity&) const)
-           &dolfin::MeshFunction<bool>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<bool>& self,
-                             const dolfin::MeshEntity& index, bool value)
-           { self.operator[](index) = value;})
-      .def("__len__", &dolfin::MeshFunction<bool>::size)
-      .def("size", &dolfin::MeshFunction<bool>::size)
-      .def("set_all", &dolfin::MeshFunction<bool>::set_all)
-      .def("where_equal", &dolfin::MeshFunction<bool>::where_equal)
-      .def("array", [](dolfin::MeshFunction<bool>& self)
-           { return Eigen::Map<Eigen::Matrix<bool, Eigen::Dynamic, 1>>
-               (self.values(), self.size()); });
 
-    py::class_<dolfin::MeshFunction<int>,
-               std::shared_ptr<dolfin::MeshFunction<int>>>
-      (m, "MeshFunction_int", "DOLFIN MeshFunction object")
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, int>())
-      .def("__getitem__", (const int& (dolfin::MeshFunction<int>::*)
-                           (std::size_t) const)
-           &dolfin::MeshFunction<int>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<int>& self,
-                             std::size_t index, int value)
-           { self.operator[](index) = value;})
-      .def("__getitem__", (const int& (dolfin::MeshFunction<int>::*)
-                           (const dolfin::MeshEntity&) const)
-           &dolfin::MeshFunction<int>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<int>& self,
-                             const dolfin::MeshEntity& index, int value)
-           { self.operator[](index) = value;})
-      .def("__len__", &dolfin::MeshFunction<int>::size)
-      .def("size", &dolfin::MeshFunction<int>::size)
-      .def("set_all", &dolfin::MeshFunction<int>::set_all)
-      .def("where_equal", &dolfin::MeshFunction<int>::where_equal)
-      .def("array", [](dolfin::MeshFunction<int>& self)
-           { return Eigen::Map<Eigen::VectorXi>(self.values(), self.size()); });
+#define MESHFUNCTION_MACRO(SCALAR, SCALAR_NAME) \
+    py::class_<dolfin::MeshFunction<SCALAR>, \
+               std::shared_ptr<dolfin::MeshFunction<SCALAR>>> \
+      (m, "MeshFunction_"#SCALAR_NAME, "DOLFIN MeshFunction object") \
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>()) \
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, double>()) \
+      .def("__getitem__", (const SCALAR& (dolfin::MeshFunction<SCALAR>::*) \
+                           (std::size_t) const) \
+           &dolfin::MeshFunction<SCALAR>::operator[]) \
+      .def("__setitem__", [](dolfin::MeshFunction<SCALAR>& self, \
+                             std::size_t index, SCALAR value) \
+           { self.operator[](index) = value;}) \
+      .def("__getitem__", (const SCALAR& (dolfin::MeshFunction<SCALAR>::*) \
+                           (const dolfin::MeshEntity&) const) \
+           &dolfin::MeshFunction<SCALAR>::operator[]) \
+      .def("__setitem__", [](dolfin::MeshFunction<SCALAR>& self, \
+                             const dolfin::MeshEntity& index, SCALAR value) \
+           { self.operator[](index) = value;}) \
+      .def("__len__", &dolfin::MeshFunction<SCALAR>::size) \
+      .def("size", &dolfin::MeshFunction<SCALAR>::size) \
+      .def("set_all", &dolfin::MeshFunction<SCALAR>::set_all) \
+      .def("where_equal", &dolfin::MeshFunction<SCALAR>::where_equal) \
+      .def("array", [](dolfin::MeshFunction<SCALAR>& self) \
+           { return Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>(self.values(), self.size()); })
 
-    py::class_<dolfin::MeshFunction<std::size_t>,
-               std::shared_ptr<dolfin::MeshFunction<std::size_t>>>
-      (m, "MeshFunction_sizet", "DOLFIN MeshFunction object")
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, std::size_t>())
-      .def("__getitem__", (const std::size_t& (dolfin::MeshFunction<std::size_t>::*)
-                           (std::size_t) const)
-           &dolfin::MeshFunction<std::size_t>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<std::size_t>& self,
-                             std::size_t index, std::size_t value)
-           { self.operator[](index) = value;})
-      .def("__getitem__", (const std::size_t& (dolfin::MeshFunction<std::size_t>::*)
-                           (const dolfin::MeshEntity&) const)
-           &dolfin::MeshFunction<std::size_t>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<std::size_t>& self,
-                             const dolfin::MeshEntity& index, std::size_t value)
-           { self.operator[](index) = value;})
-      .def("__len__", &dolfin::MeshFunction<std::size_t>::size)
-      .def("size", &dolfin::MeshFunction<std::size_t>::size)
-      .def("set_all", &dolfin::MeshFunction<std::size_t>::set_all)
-      .def("where_equal", &dolfin::MeshFunction<std::size_t>::where_equal)
-      .def("array", [](dolfin::MeshFunction<std::size_t>& self)
-           { return Eigen::Map<Eigen::Matrix<std::size_t, Eigen::Dynamic, 1>>
-               (self.values(), self.size()); });
+    MESHFUNCTION_MACRO(bool, bool);
+    MESHFUNCTION_MACRO(int, int);
+    MESHFUNCTION_MACRO(double, double);
+    MESHFUNCTION_MACRO(std::size_t, sizet);
 
-    py::class_<dolfin::MeshFunction<double>,
-               std::shared_ptr<dolfin::MeshFunction<double>>>
-      (m, "MeshFunction_double", "DOLFIN MeshFunction object")
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, double>())
-      .def("__getitem__", (const double& (dolfin::MeshFunction<double>::*)
-                           (std::size_t) const)
-           &dolfin::MeshFunction<double>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<double>& self,
-                             std::size_t index, double value)
-           { self.operator[](index) = value;})
-      .def("__getitem__", (const double& (dolfin::MeshFunction<double>::*)
-                           (const dolfin::MeshEntity&) const)
-           &dolfin::MeshFunction<double>::operator[])
-      .def("__setitem__", [](dolfin::MeshFunction<double>& self,
-                             const dolfin::MeshEntity& index, double value)
-           { self.operator[](index) = value;})
-      .def("__len__", &dolfin::MeshFunction<double>::size)
-      .def("size", &dolfin::MeshFunction<double>::size)
-      .def("set_all", &dolfin::MeshFunction<double>::set_all)
-      .def("where_equal", &dolfin::MeshFunction<double>::where_equal)
-      .def("array", [](dolfin::MeshFunction<double>& self)
-           { return Eigen::Map<Eigen::VectorXd>(self.values(), self.size()); });
+#define MESH_ENTITY_FUNCTION_MACRO(TYPE, SCALAR, SCALAR_NAME) \
+    py::class_<dolfin::TYPE<SCALAR>, std::shared_ptr<dolfin::TYPE<SCALAR>>, \
+      dolfin::MeshFunction<SCALAR>>(m, #TYPE"_"#SCALAR_NAME)
 
-    py::class_<dolfin::CellFunction<bool>, std::shared_ptr<dolfin::CellFunction<bool>>,
-      dolfin::MeshFunction<bool>>(m, "CellFunction_bool");
-    py::class_<dolfin::CellFunction<int>, std::shared_ptr<dolfin::CellFunction<int>>,
-      dolfin::MeshFunction<int>>(m, "CellFunction_int");
-    py::class_<dolfin::CellFunction<std::size_t>, std::shared_ptr<dolfin::CellFunction<std::size_t>>,
-      dolfin::MeshFunction<std::size_t>>(m, "CellFunction_sizet");
-    py::class_<dolfin::CellFunction<double>, std::shared_ptr<dolfin::CellFunction<double>>,
-      dolfin::MeshFunction<double>>(m, "CellFunction_double");
+    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, bool, bool);
+    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, int, int);
+    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, double, double);
+    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, std::size_t, sizet);
+    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, bool, bool);
+    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, int, int);
+    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, double, double);
+    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, std::size_t, sizet);
+    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, bool, bool);
+    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, int, int);
+    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, double, double);
+    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, std::size_t, sizet);
+    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, bool, bool);
+    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, int, int);
+    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, double, double);
+    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, std::size_t, sizet);
+    MESH_ENTITY_FUNCTION_MACRO(CellFunction, bool, bool);
+    MESH_ENTITY_FUNCTION_MACRO(CellFunction, int, int);
+    MESH_ENTITY_FUNCTION_MACRO(CellFunction, double, double);
+    MESH_ENTITY_FUNCTION_MACRO(CellFunction, std::size_t, sizet);
 
     //--------------------------------------------------------------------------
     // dolfin::MeshEditor class
