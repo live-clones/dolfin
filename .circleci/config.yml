@@ -30,6 +30,9 @@ jobs:
       - run:
           name: Build DOLFIN
           command: cd build && make install
+#      - run:
+#          name: Run Python unit tests
+#          command: source /usr/local/share/dolfin/dolfin.conf && cd test/unit/python && python3 -m pytest .
       - run:
-          name: Run Python unit tests
-          command: source /usr/local/share/dolfin/dolfin.conf && cd test/unit/python && python3 -m pytest .
+          name: Build pybind11
+          command: source /usr/local/share/dolfin/dolfin.conf && cd python && python3 setup.py build && ls -l $PWD/build/lib*
