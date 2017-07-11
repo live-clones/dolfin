@@ -62,8 +62,8 @@ namespace dolfin
   private:
 
     // Check whether two sets of tetrahedra collide
-    static bool check_tet_set_collision(const Mesh& mmesh, std::size_t mi,
-                                 const Mesh& smesh, std::size_t si);
+    static bool check_tri_set_collision(const Mesh& mmesh, std::size_t mi,
+                                        const Mesh& smesh, std::size_t si);
 
     // Project surface forward from a facet using 'u', creating a prismoidal volume
     static std::vector<Point> create_deformed_segment_volume_3d(Mesh& mesh, std::size_t facet_index, const Function& u);
