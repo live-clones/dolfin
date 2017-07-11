@@ -40,7 +40,7 @@ jobs:
     working_directory: /home/fenics/working
     steps:
       - attach_workspace:
-        at: /usr/local
+        at:  /usr/local
       - checkout
       - run:
           name: Run unit tests
