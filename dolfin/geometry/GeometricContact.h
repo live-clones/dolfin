@@ -47,9 +47,8 @@ namespace dolfin
     }
 
     /// Calculate map from master facets to possible colliding slave facets
-    /// (in serial)
     void
-      contact_surface_map_volume_sweep_3d(Mesh& mesh, Function& u,
+      contact_surface_map_volume_sweep(Mesh& mesh, Function& u,
                                           const std::vector<std::size_t>& master_facets,
                                           const std::vector<std::size_t>& slave_facets);
 
@@ -61,12 +60,17 @@ namespace dolfin
 
   private:
 
-    // Check whether two sets of tetrahedra collide
+    // Check whether two sets of triangles collide in 3D
     static bool check_tri_set_collision(const Mesh& mmesh, std::size_t mi,
                                         const Mesh& smesh, std::size_t si);
 
-    // Project surface forward from a facet using 'u', creating a prismoidal volume
-    static std::vector<Point> create_deformed_segment_volume_3d(Mesh& mesh, std::size_t facet_index, const Function& u);
+    // Check whether two sets of edges collide in 2D
+    static bool check_edge_set_collision(const Mesh& mmesh, std::size_t mi,
+                                        const Mesh& smesh, std::size_t si);
+
+    // Project surface forward from a facet using 'u', creating a prismoidal volume in 2D or 3D
+    static std::vector<Point> create_deformed_segment_volume(Mesh& mesh, std::size_t facet_index, const Function& u,
+                                                             std::size_t gdim);
 
     std::map<std::size_t, std::vector<std::size_t>> _master_to_slave;
 
