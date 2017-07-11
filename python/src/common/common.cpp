@@ -25,7 +25,7 @@
 #include <dolfin/common/SubSystemsManager.h>
 #include <dolfin/common/Variable.h>
 
-#include "../openmpi.h"
+#include "../mpi_interface.h"
 
 namespace py = pybind11;
 
@@ -56,30 +56,53 @@ namespace dolfin_wrappers
 
   void mpi(py::module& m)
   {
+    #ifdef HAS_MPI4PY
+    import_mpi4py();
+    #endif
+
     py::class_<dolfin::MPI>(m, "MPI", "MPI utilities")
-#ifdef OPEN_MPI
+      #ifdef OPEN_MPI
       .def_property_readonly_static("comm_world", [](py::object)
                                     { return reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD); })
       .def_property_readonly_static("comm_self", [](py::object)
                                     { return reinterpret_cast<std::uintptr_t>(MPI_COMM_SELF); })
       .def_property_readonly_static("comm_null", [](py::object)
-                                    { return reinterpret_cast<std::uintptr_t>(MPI_COMM_NULL); })
-#else
-      .def_property_readonly_static("comm_world", [](py::object)
-                                    { return MPI_COMM_WORLD; })
-      .def_property_readonly_static("comm_self", [](py::object)
-                                    { return MPI_COMM_SELF; })
-      .def_property_readonly_static("comm_null", [](py::object)
-                                    { return MPI_COMM_NULL; })
-#endif
+      #else
+      .def_property_readonly_static("comm_world", [](py::object) { return MPI_COMM_WORLD; })
+      .def_property_readonly_static("comm_self", [](py::object) { return MPI_COMM_SELF; })
+      .def_property_readonly_static("comm_null", [](py::object) { return MPI_COMM_NULL; })
+      #endif
       .def_static("init", [](){ dolfin::SubSystemsManager::init_mpi();})
       .def_static("barrier", &dolfin::MPI::barrier)
       .def_static("rank", &dolfin::MPI::rank)
       .def_static("size", &dolfin::MPI::size)
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
-      .def_static("sum", &dolfin::MPI::sum<double>);
-  }
+      .def_static("sum", &dolfin::MPI::sum<double>)
+      .def("to_mpi4py_comm", [](MPI_Comm comm){
 
+          // FIXME: This messes up if called with a mpi4py
+          // communicator. How can this be checked? (see commented
+          // function below)
+
+          mpi_communicator _comm;
+          _comm.comm = comm;
+          return _comm;
+        },
+        "Convert a plain MPI communicator into a mpi4py communicator");
+      /*
+      .def("to_mpi4py_comm", [](py::object obj){
+
+          // Check if object is already a mpi4py communivator
+          if (PyObject_TypeCheck(obj.ptr(), &PyMPIComm_Type))
+            return obj;
+
+          // FIXME: Do not know how to construct a mpi4py.Comm
+
+          return obj;
+        },
+        "Convert a plain MPI communicator into a mpi4py communicator");
+      */
+  }
 
 }
