@@ -211,6 +211,11 @@ PETScLUSolver::~PETScLUSolver()
   // Do nothing
 }
 //-----------------------------------------------------------------------------
+void PETScLUSolver::destroy()
+{
+  _solver.destroy();
+}
+//-----------------------------------------------------------------------------
 void
 PETScLUSolver::set_operator(std::shared_ptr<const GenericLinearOperator> A)
 {

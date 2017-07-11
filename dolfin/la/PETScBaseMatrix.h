@@ -62,6 +62,10 @@ namespace dolfin
     /// Destructor
     ~PETScBaseMatrix();
 
+    /// Explicit destruction/cleanup (used to ensure collective
+    /// destruction)
+    void destroy();
+
     /// Return number of rows (dim = 0) or columns (dim = 1)
     std::size_t size(std::size_t dim) const;
 

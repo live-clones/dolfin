@@ -211,7 +211,14 @@ PETScKrylovSolver::PETScKrylovSolver(KSP ksp) : _ksp(ksp), pc_dolfin(0),
 //-----------------------------------------------------------------------------
 PETScKrylovSolver::~PETScKrylovSolver()
 {
-  // Decrease reference count for KSP object, and clean-up if
+  destroy();
+}
+//-----------------------------------------------------------------------------
+void PETScKrylovSolver::destroy()
+{
+  _preconditioner.reset();
+
+// Decrease reference count for KSP object, and clean-up if
   // reference count goes to zero.
   if (_ksp)
     KSPDestroy(&_ksp);

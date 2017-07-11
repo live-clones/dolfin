@@ -101,6 +101,10 @@ namespace dolfin
     /// Destructor
     virtual ~PETScKrylovSolver();
 
+    /// Explicit destruction/cleanup (used to ensure collective
+    /// destruction)
+    void destroy();
+
     /// Set operator (matrix)
     void set_operator(std::shared_ptr<const GenericLinearOperator> A);
 

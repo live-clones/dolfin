@@ -94,6 +94,11 @@ PETScVector::PETScVector(const PETScVector& v) : _x(nullptr)
 //-----------------------------------------------------------------------------
 PETScVector::~PETScVector()
 {
+  destroy();
+}
+//-----------------------------------------------------------------------------
+void PETScVector::destroy()
+{
   if (_x)
     VecDestroy(&_x);
 }

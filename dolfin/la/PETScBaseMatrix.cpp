@@ -44,6 +44,11 @@ PETScBaseMatrix::PETScBaseMatrix(Mat A) : _matA(A)
 //-----------------------------------------------------------------------------
 PETScBaseMatrix::~PETScBaseMatrix()
 {
+  destroy();
+}
+//-----------------------------------------------------------------------------
+void PETScBaseMatrix::destroy()
+{
   // Decrease reference count (PETSc will destroy object once
   // reference counts reached zero)
   if (_matA)

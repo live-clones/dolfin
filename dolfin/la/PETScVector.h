@@ -84,6 +84,10 @@ namespace dolfin
     /// Destructor
     virtual ~PETScVector();
 
+    /// Explicit destruction/cleanup (used to ensure collective
+    /// destruction)
+    void destroy();
+
     //--- Implementation of the GenericTensor interface ---
 
     /// Set all entries to zero and keep any sparse structure
