@@ -69,7 +69,25 @@ namespace dolfin_wrappers
     // dolfin::GenericVector class
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>,
                dolfin::GenericTensor>
-      (m, "GenericVector", "DOLFIN GenericVector object");
+      (m, "GenericVector", "DOLFIN GenericVector object")
+      .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
+           { std::size_t start, stop, step, slicelength;
+             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+             if (start != 0 or stop != self.size() or step != 1)
+               throw std::range_error("Only full slices are supported");
+             std::vector<double> values;
+             self.get_local(values);
+             return values;})
+      .def("__getitem__", &dolfin::GenericVector::getitem)
+      .def("__setitem__", [](dolfin::GenericVector& self, py::slice slice, double value)
+           { std::size_t start, stop, step, slicelength;
+             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+             if (start != 0 or stop != self.size() or step != 1)
+               throw std::range_error("Only full slices are supported");
+             self = value; })
+      .def("__setitem__", &dolfin::GenericVector::setitem);
 
     // dolfin::GenericLinearSolver class
     py::class_<dolfin::GenericLinearSolver, std::shared_ptr<dolfin::GenericLinearSolver>>

@@ -330,6 +330,7 @@ namespace dolfin_wrappers
     MESHFUNCTION_MACRO(int, int);
     MESHFUNCTION_MACRO(double, double);
     MESHFUNCTION_MACRO(std::size_t, sizet);
+#undef MESHFUNCTION_MACRO
 
 #define MESH_ENTITY_FUNCTION_MACRO(TYPE, SCALAR, SCALAR_NAME) \
     py::class_<dolfin::TYPE<SCALAR>, std::shared_ptr<dolfin::TYPE<SCALAR>>, \
@@ -355,6 +356,7 @@ namespace dolfin_wrappers
     MESH_ENTITY_FUNCTION_MACRO(CellFunction, int, int);
     MESH_ENTITY_FUNCTION_MACRO(CellFunction, double, double);
     MESH_ENTITY_FUNCTION_MACRO(CellFunction, std::size_t, sizet);
+#undef MESH_ENTITY_FUNCTION_MACRO
 
     //--------------------------------------------------------------------------
     // dolfin::MeshEditor class
