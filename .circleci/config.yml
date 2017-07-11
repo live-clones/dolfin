@@ -36,3 +36,24 @@ jobs:
       - run:
           name: Run regressions tests
           command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_regressiontests
+
+  test:
+    docker:
+      - image: quay.io/fenicsproject/dev-env:latest
+    working_directory: /home/fenics/working
+    steps:
+      - run:
+          name: Test list
+          command: ls -l
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+         requires:
+	   - build
+	 filters:
+	   branches:
+	     only: garth/feature-pybind11
