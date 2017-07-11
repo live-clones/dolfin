@@ -320,6 +320,7 @@ namespace dolfin_wrappers
       .def("__len__", &dolfin::MeshFunction<bool>::size)
       .def("size", &dolfin::MeshFunction<bool>::size)
       .def("set_all", &dolfin::MeshFunction<bool>::set_all)
+      .def("where_equal", &dolfin::MeshFunction<bool>::where_equal)
       .def("array", [](dolfin::MeshFunction<bool>& self)
            { return Eigen::Map<Eigen::Matrix<bool, Eigen::Dynamic, 1>>
                (self.values(), self.size()); });
@@ -344,6 +345,7 @@ namespace dolfin_wrappers
       .def("__len__", &dolfin::MeshFunction<int>::size)
       .def("size", &dolfin::MeshFunction<int>::size)
       .def("set_all", &dolfin::MeshFunction<int>::set_all)
+      .def("where_equal", &dolfin::MeshFunction<int>::where_equal)
       .def("array", [](dolfin::MeshFunction<int>& self)
            { return Eigen::Map<Eigen::VectorXi>(self.values(), self.size()); });
 
@@ -367,6 +369,7 @@ namespace dolfin_wrappers
       .def("__len__", &dolfin::MeshFunction<std::size_t>::size)
       .def("size", &dolfin::MeshFunction<std::size_t>::size)
       .def("set_all", &dolfin::MeshFunction<std::size_t>::set_all)
+      .def("where_equal", &dolfin::MeshFunction<std::size_t>::where_equal)
       .def("array", [](dolfin::MeshFunction<std::size_t>& self)
            { return Eigen::Map<Eigen::Matrix<std::size_t, Eigen::Dynamic, 1>>
                (self.values(), self.size()); });
@@ -391,8 +394,18 @@ namespace dolfin_wrappers
       .def("__len__", &dolfin::MeshFunction<double>::size)
       .def("size", &dolfin::MeshFunction<double>::size)
       .def("set_all", &dolfin::MeshFunction<double>::set_all)
+      .def("where_equal", &dolfin::MeshFunction<double>::where_equal)
       .def("array", [](dolfin::MeshFunction<double>& self)
            { return Eigen::Map<Eigen::VectorXd>(self.values(), self.size()); });
+
+    py::class_<dolfin::CellFunction<bool>, std::shared_ptr<dolfin::CellFunction<bool>>,
+      dolfin::MeshFunction<bool>>(m, "CellFunction_bool");
+    py::class_<dolfin::CellFunction<int>, std::shared_ptr<dolfin::CellFunction<int>>,
+      dolfin::MeshFunction<int>>(m, "CellFunction_int");
+    py::class_<dolfin::CellFunction<std::size_t>, std::shared_ptr<dolfin::CellFunction<std::size_t>>,
+      dolfin::MeshFunction<std::size_t>>(m, "CellFunction_sizet");
+    py::class_<dolfin::CellFunction<double>, std::shared_ptr<dolfin::CellFunction<double>>,
+      dolfin::MeshFunction<double>>(m, "CellFunction_double");
 
     //--------------------------------------------------------------------------
     // dolfin::MeshEditor class
@@ -415,7 +428,8 @@ namespace dolfin_wrappers
     //--------------------------------------------------------------------------
     // dolfin::MultiMesh class
     py::class_<dolfin::MultiMesh, std::shared_ptr<dolfin::MultiMesh>>
-      (m, "MultiMesh", "DOLFIN MultiMesh");
+      (m, "MultiMesh", "DOLFIN MultiMesh")
+      .def(py::init<>());
 
     //--------------------------------------------------------------------------
     // dolfin::MultiMesh class

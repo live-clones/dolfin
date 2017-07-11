@@ -41,7 +41,19 @@ namespace dolfin_wrappers
            {
              auto param = self.find_parameter(key);
              *param = value;
-           });
+           })
+      .def("__setitem__", [](dolfin::Parameters& self, std::string key, bool value)
+           {
+             auto param = self.find_parameter(key);
+             *param = value;
+           })
+      .def("__setitem__", [](dolfin::Parameters& self, std::string key, int value)
+           {
+             auto param = self.find_parameter(key);
+             *param = value;
+           })
+      .def("copy", [](dolfin::Parameters& self) { return dolfin::Parameters(self); })
+      .def("assign", [](dolfin::Parameters& self, dolfin::Parameters& other) { self = other;}) ;
 
     py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>
       (m, "Parameter");
@@ -66,6 +78,7 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,
       dolfin::Parameters> (m, "GlobalParameters");
+
 
     m.attr("parameters") = dolfin::parameters;
 

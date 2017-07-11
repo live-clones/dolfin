@@ -32,6 +32,7 @@ from __future__ import print_function
 import pytest
 import numpy
 from dolfin import *
+from math import sqrt
 import os
 
 from dolfin_utils.test import fixture, skip_in_parallel, xfail_in_parallel, cd_tempdir
