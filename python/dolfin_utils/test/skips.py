@@ -34,15 +34,15 @@ skip_if_not_petsc4py = pytest.mark.skipif(not has_petsc4py(),
                                           reason="Skipping unit test(s) depending on petsc4py.")
 
 # Skips with respect to parallel or serial
-xfail_in_parallel = pytest.mark.xfail(MPI.size(mpi_comm_world()) > 1,
+xfail_in_parallel = pytest.mark.xfail(MPI.size(MPI.comm_world) > 1,
                                       reason="This test does not yet work in parallel.")
-xfail_with_serial_hdf5_in_parallel = pytest.mark.xfail(MPI.size(mpi_comm_world()) > 1 and not has_hdf5_parallel(),
+xfail_with_serial_hdf5_in_parallel = pytest.mark.xfail(MPI.size(MPI.comm_world) > 1 and not has_hdf5_parallel(),
                                                        reason="Serial HDF5 library cannot work in parallel.")
-skip_in_parallel = pytest.mark.skipif(MPI.size(mpi_comm_world()) > 1,
+skip_in_parallel = pytest.mark.skipif(MPI.size(MPI.comm_world) > 1,
                                       reason="This test should only be run in serial.")
-skip_with_serial_hdf5_in_parallel = pytest.mark.skipif(MPI.size(mpi_comm_world()) > 1 and not has_hdf5_parallel(),
+skip_with_serial_hdf5_in_parallel = pytest.mark.skipif(MPI.size(MPI.comm_world) > 1 and not has_hdf5_parallel(),
                                                        reason="Serial HDF5 library cannot work in parallel.")
-skip_in_serial = pytest.mark.skipif(MPI.size(mpi_comm_world()) <= 1,
+skip_in_serial = pytest.mark.skipif(MPI.size(MPI.comm_world) <= 1,
                                     reason="This test should only be run in parallel.")
 
 # Skips with respect to linear algebra index type

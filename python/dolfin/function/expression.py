@@ -95,7 +95,7 @@ class UserExpression(ufl.Coefficient):
         return self._cpp_expression
 
 
-def jit_generate(statement, module_name, signature, parameters):
+def jit_generate(statements, module_name, signature, parameters):
 
     template_code = """
 
@@ -116,7 +116,7 @@ namespace dolfin
 
        void eval(Eigen::Ref<Eigen::VectorXd> values, const Eigen::Ref<Eigen::VectorXd> x) const override
        {{
-         values[0] = {statement};
+{statement}
        }}
   }};
 }}
@@ -128,6 +128,10 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
 
 """
 
+    statement = ""
+    for i, val in enumerate(statements):
+        statement += "          values[" + str(i) + "] = " + val + ";\n"
+
     classname = signature
     code_c = template_code.format(statement=statement, classname=classname,
                                   members= "", constructor="")
@@ -137,7 +141,7 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
     return code_h, code_c, depends
 
 
-def compile_expression(statement):
+def compile_expression(statements):
     """Compile a user C(++) string to a Python object"""
 
     import pkgconfig
@@ -153,9 +157,15 @@ def compile_expression(statement):
     params['build']['libs'] = d["libraries"]
     params['build']['lib_dirs'] = d["library_dirs"]
 
-    module_hash = hashlib.md5(statement.encode('utf-8')).hexdigest()
-    module_name = "expression_" + module_hash
-    module, signature = dijitso.jit(statement, module_name, params,
+    if isinstance(statements, string_types):
+        statements = tuple((statements,))
+
+    if not isinstance(statements, tuple):
+        raise RuntimeError("Expression must be a string, or a tuple of strings")
+
+    module_hash = hashlib.md5("".join(statements).encode('utf-8')).hexdigest()
+    module_name = "dolfin_expression_" + module_hash
+    module, signature = dijitso.jit(statements, module_name, params,
                                     generate=jit_generate)
 
     submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
@@ -169,7 +179,10 @@ class CompiledExpression(ufl.Coefficient):
     def __init__(self, statement, degree):
         self._cpp_expression = compile_expression(statement)
 
-        element = ufl.FiniteElement("Lagrange", None, degree)
+        if (degree == 0):
+            element = ufl.FiniteElement("DG", None, 0)
+        else:
+            element = ufl.FiniteElement("Lagrange", None, degree)
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 

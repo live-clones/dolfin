@@ -18,6 +18,7 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 
+#include <dolfin/io/File.h>
 #include <dolfin/io/VTKFile.h>
 #include <dolfin/io/XDMFFile.h>
 #include <dolfin/mesh/Mesh.h>

@@ -17,6 +17,8 @@
 
 #include <iostream>
 #include <memory>
+#include <typeinfo>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/eigen.h>
@@ -39,7 +41,7 @@
 #include <dolfin/la/LUSolver.h>
 #include <dolfin/la/KrylovSolver.h>
 
-#include "../openmpi.h"
+#include "../mpi_interface.h"
 
 namespace py = pybind11;
 
@@ -67,7 +69,25 @@ namespace dolfin_wrappers
     // dolfin::GenericVector class
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>,
                dolfin::GenericTensor>
-      (m, "GenericVector", "DOLFIN GenericVector object");
+      (m, "GenericVector", "DOLFIN GenericVector object")
+      .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
+           { std::size_t start, stop, step, slicelength;
+             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+             if (start != 0 or stop != self.size() or step != 1)
+               throw std::range_error("Only full slices are supported");
+             std::vector<double> values;
+             self.get_local(values);
+             return values;})
+      .def("__getitem__", &dolfin::GenericVector::getitem)
+      .def("__setitem__", [](dolfin::GenericVector& self, py::slice slice, double value)
+           { std::size_t start, stop, step, slicelength;
+             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+             if (start != 0 or stop != self.size() or step != 1)
+               throw std::range_error("Only full slices are supported");
+             self = value; })
+      .def("__setitem__", &dolfin::GenericVector::setitem);
 
     // dolfin::GenericLinearSolver class
     py::class_<dolfin::GenericLinearSolver, std::shared_ptr<dolfin::GenericLinearSolver>>
@@ -88,12 +108,40 @@ namespace dolfin_wrappers
                dolfin::GenericVector, dolfin::GenericTensor>
       (m, "Vector", "DOLFIN Vector object")
       .def(py::init<>())
-      .def(py::init<MPI_Comm>());
+      .def(py::init<MPI_Comm>())
+      .def(py::init<MPI_Comm, std::size_t>())
+      .def("__iadd__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
+           &dolfin::Vector::operator+=)
+      .def("__iadd__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
+           &dolfin::Vector::operator+=)
+      .def("__isub__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
+           &dolfin::Vector::operator-=)
+      .def("__isub__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
+           &dolfin::Vector::operator-=)
+      .def("__imul__", (const dolfin::Vector& (dolfin::Vector::*)(double))
+           &dolfin::Vector::operator*=)
+      .def("__imul__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
+           &dolfin::Vector::operator*=)
+      .def("__idiv__", (const dolfin::Vector& (dolfin::Vector::*)(double))
+           &dolfin::Vector::operator/=)
+      .def("__setitem__", [](dolfin::Vector& self, dolfin::la_index index, double value)
+           { self.instance()->setitem(index, value); })
+      .def("backend_type", [](dolfin::Vector& self)
+           {
+             // Experiment with determining backend type
+             auto instance = self.instance();
+             auto type_index = std::type_index(typeid(*instance));
+             if (type_index == std::type_index(typeid(dolfin::EigenVector)))
+               return "EigenVector";
+             else
+               return "Not an EigenVector";
+           });
 
     //----------------------------------------------------------------------------
     // dolfin::EigenFactory class
     py::class_<dolfin::EigenFactory, std::shared_ptr<dolfin::EigenFactory>>
       (m, "EigenFactory", "DOLFIN EigenFactory object")
+      .def("instance", &dolfin::EigenFactory::instance)
       .def("create_matrix", &dolfin::EigenFactory::create_matrix)
       .def("create_vector", &dolfin::EigenFactory::create_vector);
 
@@ -163,5 +211,8 @@ namespace dolfin_wrappers
 
 
     m.def("has_linear_algebra_backend", &dolfin::has_linear_algebra_backend);
+    m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
+    m.def("has_krylov_solver_method", &dolfin::has_krylov_solver_method);
+    m.def("has_krylov_solver_preconditioner", &dolfin::has_krylov_solver_preconditioner);
   }
 }

@@ -21,6 +21,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/fem/fem_utils.h>
 #include <dolfin/fem/assemble.h>
 #include <dolfin/fem/Assembler.h>
 #include <dolfin/fem/DirichletBC.h>
@@ -119,8 +120,17 @@ namespace dolfin_wrappers
       .def("set_coefficient", (void (dolfin::Form::*)(std::string, std::shared_ptr<const dolfin::GenericFunction>))
            &dolfin::Form::set_coefficient, "Doc");
 
-           m.def("assemble", (void (*)(dolfin::GenericTensor&, const dolfin::Form&)) &dolfin::assemble);
-           m.def("assemble", (double (*)(const dolfin::Form&)) &dolfin::assemble);
+    // Assemble functions
+
+    m.def("assemble", (void (*)(dolfin::GenericTensor&, const dolfin::Form&)) &dolfin::assemble);
+    m.def("assemble", (double (*)(const dolfin::Form&)) &dolfin::assemble);
+
+    // FEM utils functions
+
+    m.def("set_coordinates", &dolfin::set_coordinates);
+    m.def("get_coordinates", &dolfin::get_coordinates);
+    m.def("vertex_to_dof_map", &dolfin::vertex_to_dof_map);
+    m.def("dof_to_vertex_map", &dolfin::dof_to_vertex_map);
   }
 
 }

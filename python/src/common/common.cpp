@@ -20,11 +20,12 @@
 #include <pybind11/pybind11.h>
 
 #include <dolfin/common/MPI.h>
+#include <dolfin/common/constants.h>
 #include <dolfin/common/defines.h>
 #include <dolfin/common/SubSystemsManager.h>
 #include <dolfin/common/Variable.h>
 
-#include "../openmpi.h"
+#include "../mpi_interface.h"
 
 namespace py = pybind11;
 
@@ -47,35 +48,61 @@ namespace dolfin_wrappers
     m.def("has_petsc", &dolfin::has_petsc);
     m.def("has_slepc", &dolfin::has_slepc);
     m.def("git_commit_hash", &dolfin::git_commit_hash);
+    m.def("sizeof_la_index", &dolfin::sizeof_la_index);
 
+    m.attr("DOLFIN_EPS") = DOLFIN_EPS;
+    m.attr("DOLFIN_PI") = DOLFIN_PI;
   }
 
   void mpi(py::module& m)
   {
-    // MPI functions are static, so adding to module rather than to a
-    // class
-
-    // MPI
-    #ifdef OPEN_MPI
-    m.attr("comm_world") = reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD);
-    m.attr("comm_self") = reinterpret_cast<std::uintptr_t>(MPI_COMM_SELF);
-    m.attr("comm_null") = reinterpret_cast<std::uintptr_t>(MPI_COMM_NULL);
-    #else
-    m.attr("comm_world") = MPI_COMM_WORLD;
-    m.attr("comm_self") = MPI_COMM_SELF;
-    m.attr("comm_null") = MPI_COMM_NULL;
+    #ifdef HAS_MPI4PY
+    import_mpi4py();
     #endif
 
-    m.def("init", [](){ dolfin::SubSystemsManager::init_mpi();});
-    //m.def("comm_world", []() { return MPI_COMM_WORLD; });
-    //m.def("comm_self", []() { return MPI_COMM_SELF; });
-    m.def("rank", &dolfin::MPI::rank);
-    m.def("size", &dolfin::MPI::size);
-    m.def("max", &dolfin::MPI::max<double>);
-    m.def("min", &dolfin::MPI::min<double>);
-    m.def("sum", &dolfin::MPI::sum<double>);
+    py::class_<dolfin::MPI>(m, "MPI", "MPI utilities")
+      #ifdef OPEN_MPI
+      .def_property_readonly_static("comm_world", [](py::object)
+                                    { return reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD); })
+      .def_property_readonly_static("comm_self", [](py::object)
+                                    { return reinterpret_cast<std::uintptr_t>(MPI_COMM_SELF); })
+      .def_property_readonly_static("comm_null", [](py::object)
+      #else
+      .def_property_readonly_static("comm_world", [](py::object) { return MPI_COMM_WORLD; })
+      .def_property_readonly_static("comm_self", [](py::object) { return MPI_COMM_SELF; })
+      .def_property_readonly_static("comm_null", [](py::object) { return MPI_COMM_NULL; })
+      #endif
+      .def_static("init", [](){ dolfin::SubSystemsManager::init_mpi();})
+      .def_static("barrier", &dolfin::MPI::barrier)
+      .def_static("rank", &dolfin::MPI::rank)
+      .def_static("size", &dolfin::MPI::size)
+      .def_static("max", &dolfin::MPI::max<double>)
+      .def_static("min", &dolfin::MPI::min<double>)
+      .def_static("sum", &dolfin::MPI::sum<double>)
+      .def("to_mpi4py_comm", [](MPI_Comm comm){
 
+          // FIXME: This messes up if called with a mpi4py
+          // communicator. How can this be checked? (see commented
+          // function below)
+
+          mpi_communicator _comm;
+          _comm.comm = comm;
+          return _comm;
+        },
+        "Convert a plain MPI communicator into a mpi4py communicator");
+      /*
+      .def("to_mpi4py_comm", [](py::object obj){
+
+          // Check if object is already a mpi4py communivator
+          if (PyObject_TypeCheck(obj.ptr(), &PyMPIComm_Type))
+            return obj;
+
+          // FIXME: Do not know how to construct a mpi4py.Comm
+
+          return obj;
+        },
+        "Convert a plain MPI communicator into a mpi4py communicator");
+      */
   }
-
 
 }
