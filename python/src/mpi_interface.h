@@ -92,7 +92,7 @@ with mpi4py for this functionality" << std::endl;
       // mpi4py communicator, it is unwrapped
       bool load(handle src, bool)
       {
-        std::cout << "ompi load" << std::endl;
+        std::cout << "**ompi load (mpi4py)" << std::endl;
         PyObject* obj = src.ptr();
         #ifdef HAS_MPI4PY
         if (PyObject_TypeCheck(obj, &PyMPIComm_Type))
@@ -105,7 +105,7 @@ with mpi4py for this functionality" << std::endl;
         }
         else
         {
-          std::cout << "  Working with plain mpi object" << std::endl;
+          std::cout << "**ompi load (plain)" << std::endl;
           void* v = PyLong_AsVoidPtr(obj);
           value = reinterpret_cast<MPI_Comm>(v);
           if (PyErr_Occurred())
@@ -132,7 +132,7 @@ with mpi4py for this functionality" << std::endl;
 
       operator MPI_Comm()
       {
-        std::cout << "ompi op" << std::endl;
+        std::cout << "**ompi op" << std::endl;
         return value;
       }
     };
