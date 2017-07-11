@@ -30,21 +30,25 @@ jobs:
       - run:
           name: Build DOLFIN and install
           command: cd build && make install
-      - run:
-          name: Run unit tests
-          command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_unittests
-      - run:
-          name: Run regressions tests
-          command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_regressiontests
-
   test:
     docker:
       - image: quay.io/fenicsproject/dev-env:latest
     working_directory: /home/fenics/working
     steps:
       - run:
-          name: Test list
-          command: ls -l
+          name: Run unit tests
+          command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_unittests
+      - run:
+          name: Run regressions tests
+          command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_regressiontests
+  testpy11:
+    docker:
+      - image: quay.io/fenicsproject/dev-env:latest
+    working_directory: /home/fenics/working
+    steps:
+      - run:
+          name: Build pybind11 interface
+          command: source /usr/local/share/dolfin/dolfin.conf && cd python && python3 setup.py build && ls -l build
 
 workflows:
   version: 2
@@ -52,6 +56,12 @@ workflows:
     jobs:
       - build
       - test:
+         requires:
+           - build
+         filters:
+           branches:
+             ignore: garth/feature-pybind11
+      - testpy11:
          requires:
            - build
          filters:
