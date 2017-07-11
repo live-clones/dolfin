@@ -32,32 +32,44 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-std::vector<Point> GeometricContact::create_deformed_segment_volume_3d(Mesh& mesh,
-                                       std::size_t facet_index, const Function& u)
+std::vector<Point> GeometricContact::create_deformed_segment_volume(Mesh& mesh,
+                  std::size_t facet_index, const Function& u, std::size_t gdim)
 {
+  if (gdim != 3 and gdim != 2)
+  {
+    dolfin_error("GeometricContact.cpp",
+                 "calculate deformation volume",
+                 "Must be 2D or 3D");
+  }
+
   Facet facet(mesh, facet_index);
-  Point X1 = Vertex(mesh, facet.entities(0)[0]).point();
-  Point X2 = Vertex(mesh, facet.entities(0)[1]).point();
-  Point X3 = Vertex(mesh, facet.entities(0)[2]).point();
 
   // Get id of attached cell
   std::size_t id = facet.entities(mesh.topology().dim())[0];
 
   // Vector value of Function
   Array<double> uval(3);
+  // make sure z-component is zero, for 2D
+  uval[2] = 0.0;
 
   const Cell cell(mesh, id);
   ufc::cell ufc_cell;
   cell.get_cell_data(ufc_cell);
 
+  Point X1 = Vertex(mesh, facet.entities(0)[0]).point();
   const Array<double> _x1(3, X1.coordinates());
   u.eval(uval, _x1, cell, ufc_cell);
   Point x1 = X1 + Point(uval);
 
+  Point X2 = Vertex(mesh, facet.entities(0)[1]).point();
   const Array<double> _x2(3, X2.coordinates());
   u.eval(uval, _x2, cell, ufc_cell);
   Point x2 = X2 + Point(uval);
 
+  if (gdim == 2)
+    return {X1, X2, x1, x2};
+
+  Point X3 = Vertex(mesh, facet.entities(0)[2]).point();
   const Array<double> _x3(3, X3.coordinates());
   u.eval(uval, _x3, cell, ufc_cell);
   Point x3 = X3 + Point(uval);
@@ -72,7 +84,6 @@ bool GeometricContact::check_tri_set_collision(const Mesh& master_mesh, std::siz
   for (unsigned int i = mindex; i < mindex + 8; ++i)
     for (unsigned int j = sindex; j < sindex + 8; ++j)
     {
-      // FIXME: needs to work with zero-volume tetrahedra
       if (CollisionDetection::collides_triangle_triangle(Cell(master_mesh, i),
                                                          Cell(slave_mesh, j)))
         return true;
@@ -81,46 +92,72 @@ bool GeometricContact::check_tri_set_collision(const Mesh& master_mesh, std::siz
   return false;
 }
 //-----------------------------------------------------------------------------
-void GeometricContact::contact_surface_map_volume_sweep_3d(Mesh& mesh, Function& u,
+bool GeometricContact::check_edge_set_collision(const Mesh& master_mesh, std::size_t mindex,
+                                               const Mesh& slave_mesh, std::size_t sindex)
+{
+  const auto mconn = master_mesh.topology()(1, 0);
+  const auto sconn = slave_mesh.topology()(1, 0);
+
+  for (unsigned int i = mindex; i < mindex + 4; ++i)
+    for (unsigned int j = sindex; j < sindex + 4; ++j)
+    {
+      const Point p0 = Vertex(master_mesh, mconn(i)[0]).point();
+      const Point p1 = Vertex(master_mesh, mconn(i)[1]).point();
+      const Point p2 = Vertex(slave_mesh, sconn(j)[0]).point();
+      const Point p3 = Vertex(slave_mesh, sconn(j)[1]).point();
+
+      if (CollisionDetection::collides_edge_edge(p0, p1, p2, p3))
+        return true;
+    }
+
+  return false;
+}
+//-----------------------------------------------------------------------------
+void GeometricContact::contact_surface_map_volume_sweep(Mesh& mesh, Function& u,
 const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& slave_facets)
 {
   // Construct a dictionary mapping master facets to their collided slave counterparts.
 
-  // This algorithm find which slave facets are contained in the volume swept out by
-  // the master surface and its displacement.
-
-  // :param mesh: The mesh
-  // :param u: The (3D) solution vector field
-  // :param master_facets: list of master facet indices
-  // :param slave_facets: list of slave facet indices
-  // :return: mapping master facet index to slave facet indices
-
-  if (mesh.topology().dim() != 3)
+  const std::size_t tdim = mesh.topology().dim();
+  if (tdim != 3 and tdim != 2)
   {
     dolfin_error("GeometricContact.cpp",
                  "find contact surface",
-                 "Only implemented in 3D");
+                 "Only implemented in 2D/3D");
+  }
+
+  const std::size_t gdim = mesh.geometry().dim();
+  if (gdim != tdim)
+  {
+    dolfin_error("GeometricContact.cpp",
+                 "find contact surface",
+                 "Manifold meshes not supported");
   }
 
   // Ensure BBT built
   auto mesh_bb = mesh.bounding_box_tree();
 
   // Make sure facet->cell connections are made
-  mesh.init(mesh.topology().dim() - 1, mesh.topology().dim());
+  mesh.init(tdim - 1, tdim);
 
-  // Local mesh of master 'prisms', eight triangles are created per facet
+  // Find number of cells/vertices in projected prism in 2D or 3D
+  const std::size_t cells_per_facet = (tdim - 1)*4;
+  const std::size_t vertices_per_facet = tdim*2;
+
+  // Local mesh of master 'prisms', eight triangles are created per facet in 3D
+  // Four edges in 2D
   Mesh master_mesh(mesh.mpi_comm());
   MeshEditor master_ed;
   master_ed.open(master_mesh, mesh.topology().dim() - 1, mesh.geometry().dim());
   std::size_t nf_local = master_facets.size();
   std::size_t nf_global = MPI::sum(mesh.mpi_comm(), nf_local);
-  master_ed.init_cells_global(nf_local*8, nf_global*8);
-  master_ed.init_vertices_global(nf_local*6, nf_global*6);
+  master_ed.init_cells_global(nf_local*cells_per_facet, nf_global*cells_per_facet);
+  master_ed.init_vertices_global(nf_local*vertices_per_facet, nf_global*vertices_per_facet);
   int c = 0;
-  int v = 0;
+  std::size_t v = 0;
 
   // Precalculate triangles making the surface of a prism
-  static const std::int32_t triangles[8][3] = {{0, 1, 2},
+  static const std::size_t triangles[8][3] = {{0, 1, 2},
                                                {0, 1, 3},
                                                {1, 4, 3},
                                                {1, 2, 4},
@@ -129,21 +166,36 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
                                                {0, 3, 5},
                                                {3, 4, 5}};
 
+  // Edges of surface of prism in 2D
+  static const std::size_t edges[4][2] = {{0, 1},
+                                           {1, 2},
+                                           {2, 3},
+                                           {3, 0}};
+
+
   for (auto &mf : master_facets)
   {
-    // Get six points defining prism
-    std::vector<Point> master_tet_set = create_deformed_segment_volume_3d(mesh, mf, u);
-    // Add eight triangles
-    for (int i = 0; i < 8; ++i)
-       master_ed.add_cell(c + i, v + triangles[i][0],
-                                 v + triangles[i][1],
-                                 v + triangles[i][2]);
+    std::vector<Point> master_point_set = create_deformed_segment_volume(mesh, mf, u, tdim);
 
-    c += 8;
-    // Add six points
-    for (int i = 0; i < 6; ++i)
-      master_ed.add_vertex(v + i, master_tet_set[i]);
-    v += 6;
+    if (tdim == 3)
+    {
+      // Add eight triangles
+      for (unsigned int i = 0; i < cells_per_facet; ++i)
+        master_ed.add_cell(c + i, v + triangles[i][0],
+                                  v + triangles[i][1],
+                                  v + triangles[i][2]);
+    }
+    else
+    {
+      // Add four edges
+      for (unsigned int i = 0; i < cells_per_facet; ++i)
+        master_ed.add_cell(c + i, v + edges[i][0],
+                                  v + edges[i][1]);
+    }
+    c += cells_per_facet;
+    for (unsigned int i = 0; i < vertices_per_facet; ++i)
+      master_ed.add_vertex(v + i, master_point_set[i]);
+    v += vertices_per_facet;
   }
   master_ed.close();
   auto master_bb = master_mesh.bounding_box_tree();
@@ -154,21 +206,31 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   slave_ed.open(slave_mesh, mesh.topology().dim(), mesh.geometry().dim());
   nf_local = slave_facets.size();
   nf_global = MPI::sum(mesh.mpi_comm(), nf_local);
-  slave_ed.init_cells_global(nf_local*8, nf_global*8);
-  slave_ed.init_vertices_global(nf_local*6, nf_global*6);
+  slave_ed.init_cells_global(nf_local*cells_per_facet, nf_global*cells_per_facet);
+  slave_ed.init_vertices_global(nf_local*vertices_per_facet, nf_global*vertices_per_facet);
   c = 0;
   v = 0;
+
   for (auto &sf : slave_facets)
   {
-    std::vector<Point> slave_tet_set = create_deformed_segment_volume_3d(mesh, sf, u);
-    for (int i = 0; i < 8; ++i)
-      slave_ed.add_cell(c + i, v + triangles[i][0],
-                               v + triangles[i][1],
-                               v + triangles[i][2]);
-    c += 8;
-    for (int i = 0; i < 6; ++i)
-      slave_ed.add_vertex(v + i, slave_tet_set[i]);
-    v += 6;
+    std::vector<Point> slave_point_set = create_deformed_segment_volume(mesh, sf, u, tdim);
+    if (tdim == 3)
+    {
+      for (unsigned int i = 0; i < cells_per_facet; ++i)
+        slave_ed.add_cell(c + i, v + triangles[i][0],
+                                 v + triangles[i][1],
+                                 v + triangles[i][2]);
+    }
+    else
+    {
+      for (unsigned int i = 0; i < cells_per_facet; ++i)
+        slave_ed.add_cell(c + i, v + edges[i][0],
+                                 v + edges[i][1]);
+    }
+    c += cells_per_facet;
+    for (unsigned int i = 0; i < vertices_per_facet; ++i)
+      slave_ed.add_vertex(v + i, slave_point_set[i]);
+    v += vertices_per_facet;
   }
   slave_ed.close();
   auto slave_bb = slave_mesh.bounding_box_tree();
@@ -184,7 +246,14 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   for (unsigned int i = 0; i < master_facets.size(); ++i)
     for (unsigned int j = 0; j < slave_facets.size(); ++j)
     {
-      if (check_tri_set_collision(master_mesh, i*8, slave_mesh, j*8))
+      // FIXME: for efficiency, use BBT here
+      bool collision;
+      if (tdim == 3)
+        collision = check_tri_set_collision(master_mesh, i*cells_per_facet, slave_mesh, j*cells_per_facet);
+      else
+        collision = check_edge_set_collision(master_mesh, i*cells_per_facet, slave_mesh, j*cells_per_facet);
+
+      if (collision)
       {
         const std::size_t mf = master_facets[i];
         const std::size_t sf = slave_facets[j];
@@ -213,8 +282,8 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
       // Ignore local (already done)
       if (master_rank != mpi_rank)
       {
-        // Get facet from cell index (three tets per prism)
-        unsigned int facet = slave_cells[i]/8;
+        // Get facet from cell index (eight triangles per prism)
+        unsigned int facet = slave_cells[i]/cells_per_facet;
         send_facets[master_rank].push_back(facet);
       }
     }
@@ -228,7 +297,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
       v.erase(last, v.end());
     }
 
-    // Get coordinates of prism (18 doubles in 3D)
+    // Get coordinates of prism (18 doubles in 3D, 8 in 2D)
     // and convert index of slave mesh back to index of main mesh
     std::vector<std::vector<double>> send_coordinates(mpi_size);
     for (unsigned int p = 0; p != mpi_size; ++p)
@@ -236,8 +305,8 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
       std::vector<double>& coords_p = send_coordinates[p];
       for (auto& q : send_facets[p])
       {
-        const double *coord_vals = slave_mesh.geometry().vertex_coordinates(q*6);
-        coords_p.insert(coords_p.end(), coord_vals, coord_vals + 18);
+        const double *coord_vals = slave_mesh.geometry().vertex_coordinates(q*vertices_per_facet);
+        coords_p.insert(coords_p.end(), coord_vals, coord_vals + gdim*vertices_per_facet);
         // Convert back to main mesh indexing
         q = slave_facets[q];
       }
@@ -253,7 +322,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
     {
       auto& rfacet = recv_facets[proc];
       auto& coord = recv_coordinates[proc];
-      dolfin_assert(coord.size() == 18*rfacet.size());
+      dolfin_assert(coord.size() == gdim*vertices_per_facet*rfacet.size());
 
       for (unsigned int j = 0; j < rfacet.size(); ++j)
       {
@@ -261,19 +330,34 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
         // so create a small Mesh for each received prism
         Mesh prism_mesh(MPI_COMM_SELF);
         MeshEditor m_ed;
-        m_ed.open(prism_mesh, mesh.topology().dim(), mesh.geometry().dim());
-        m_ed.init_cells(8);
-        for (unsigned int i = 0; i < 8; ++i)
-          m_ed.add_cell(i, triangles[i][0], triangles[i][1], triangles[i][2]);
-        m_ed.init_vertices(6);
-        for (unsigned int v = 0; v < 6; ++v)
-          m_ed.add_vertex(v, Point(3, coord.data() + j*18 + v*3));
+        m_ed.open(prism_mesh, tdim, gdim);
+        m_ed.init_cells(cells_per_facet);
+        if (tdim == 3)
+        {
+          for (unsigned int i = 0; i < cells_per_facet; ++i)
+            m_ed.add_cell(i, triangles[i][0], triangles[i][1], triangles[i][2]);
+        }
+        else
+        {
+          for (unsigned int i = 0; i < cells_per_facet; ++i)
+            m_ed.add_cell(i, edges[i][0], edges[i][1]);
+        }
+
+        m_ed.init_vertices(vertices_per_facet);
+        for (unsigned int v = 0; v < vertices_per_facet; ++v)
+          m_ed.add_vertex(v, Point(gdim, coord.data() + (j*vertices_per_facet + v)*gdim));
         m_ed.close();
 
         // Check all local master facets against received slave data
         for (unsigned int i = 0; i < master_facets.size(); ++i)
         {
-          if (check_tri_set_collision(master_mesh, i*8, prism_mesh, 0))
+          bool collision;
+          if (tdim == 3)
+            collision = check_tri_set_collision(master_mesh, i*cells_per_facet, prism_mesh, 0);
+          else
+            collision = check_edge_set_collision(master_mesh, i*cells_per_facet, prism_mesh, 0);
+
+          if (collision)
           {
             const std::size_t mf = master_facets[i];
             _master_to_slave[mf].push_back(proc);
