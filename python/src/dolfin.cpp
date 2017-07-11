@@ -33,6 +33,7 @@ namespace dolfin_wrappers
   void geometry(py::module& m);
   void io(py::module& m);
   void la(py::module& m);
+  void math(py::module& m);
   void mesh(py::module& m);
   void parameter(py::module& m);
   void refinement(py::module& m);
@@ -50,6 +51,10 @@ PYBIND11_MODULE(cpp, m)
   // Create common submodule [common]
   py::module common = m.def_submodule("common", "DOLFIN common module");
   dolfin_wrappers::common(common);
+
+  // Create math submodule [math]
+  py::module math = m.def_submodule("math", "DOLFIN math library module");
+  dolfin_wrappers::math(math);
 
   // Create mesh submodule [mesh]
   py::module mesh = m.def_submodule("mesh", "DOLFIN mesh library module");

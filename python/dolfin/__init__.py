@@ -48,6 +48,7 @@ if has_linear_algebra_backend('PETSc'):
 
 from .cpp.la import (Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
                      LUSolver, KrylovSolver)
+from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges,
                        vertices, SubDomain, BoundaryMesh, MeshEditor, MultiMesh, MeshQuality)

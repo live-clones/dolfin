@@ -26,6 +26,7 @@ import pytest
 import numpy
 from dolfin import *
 
+MPI.init()
 
 def test_near():
     eps = DOLFIN_EPS
