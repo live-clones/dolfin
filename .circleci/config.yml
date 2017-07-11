@@ -5,39 +5,31 @@ jobs:
       - image: quay.io/fenicsproject/dev-env:latest
     working_directory: /home/fenics/working
     steps:
-      -run:
-         command: mkdir -p workspace/local
-      - persist_to_workspace:
-        root: workspace
-        paths:
-         - local
       - run:
           name: Clone DOLFIN
           command: git lfs clone https://bitbucket.org/"${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}".git .
       - checkout
       - run:
           name: Install FIAT
-          command: ls -l && pip3 install git+https://bitbucket.org/fenics-project/fiat.git@master --install-option="--prefix=/home/fenics/working/workspace/local"
-  testpy11:
-    docker:
-      - image: quay.io/fenicsproject/dev-env:latest
-    working_directory: /home/fenics/working
-    steps:
-      - attach_workspace:
-        at:  /home/fenics/working/workspace
-      - checkout
+          command: pip3 install git+https://bitbucket.org/fenics-project/fiat.git@master
       - run:
-          name: Build pybind11 interface
-          command: ls -lR workspace
-
-workflows:
-  version: 2
-  build_and_test:
-    jobs:
-      - build
-      - testpy11:
-         requires:
-           - build
-         filters:
-           branches:
-             only: garth/feature-pybind11
+          name: Install UFL
+          command: pip3 install git+https://bitbucket.org/fenics-project/ufl.git@master
+      - run:
+          name: Install Dijitso
+          command: pip3 install git+https://bitbucket.org/fenics-project/dijitso.git@master
+      - run:
+          name: Install Instant
+          command: pip3 install git+https://bitbucket.org/fenics-project/instant.git@master
+      - run:
+          name: Install FFC
+          command: pip3 install git+https://bitbucket.org/fenics-project/ffc.git@master
+      - run:
+          name: Configure DOLFIN
+          command: mkdir -p build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Debug -DDOLFIN_ENABLE_TESTING=ON
+      - run:
+          name: Build DOLFIN
+          command: cd build && make install
+      - run:
+          name: Run Python unit tests
+          command: source /usr/local/share/dolfin/dolfin.conf && cd test/unit/python && python3 -m pytest .
