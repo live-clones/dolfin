@@ -17,6 +17,7 @@ find_package(MPI4PY)
 # Create the binding library
 pybind11_add_module(cpp SHARED
   src/dolfin.cpp
+  src/ale/ale.cpp
   src/common/common.cpp
   src/experimental/experimental.cpp
   src/fem/fem.cpp
@@ -26,6 +27,7 @@ pybind11_add_module(cpp SHARED
   src/graph/graph.cpp
   src/math/math.cpp
   src/mesh/mesh.cpp
+  src/multistage/multistage.cpp
   src/io/io.cpp
   src/la/la.cpp
   src/parameter/parameter.cpp

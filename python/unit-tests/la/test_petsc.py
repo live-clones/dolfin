@@ -21,10 +21,13 @@ GenericFoo interface
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-from dolfin import (PETScVector, PETScMatrix, PETScLUSolver,
-                    PETScKrylovSolver, UnitSquareMesh, TrialFunction,
-                    TestFunction, mpi_comm_self, mpi_comm_world,
-                    FunctionSpace, assemble, Constant, dx, parameters)
+
+from dolfin import has_petsc
+if has_petsc():
+    from dolfin import (PETScVector, PETScMatrix, PETScLUSolver,
+                        PETScKrylovSolver, UnitSquareMesh, TrialFunction,
+                        TestFunction, mpi_comm_self, mpi_comm_world,
+                        FunctionSpace, assemble, Constant, dx, parameters)
 from dolfin_utils.test import (skip_if_not_PETSc,
                                skip_if_not_petsc4py, pushpop_parameters)
 

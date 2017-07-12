@@ -118,6 +118,7 @@ namespace dolfin
        {{
 {statement}
        }}
+
   }};
 }}
 
@@ -132,9 +133,12 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
     for i, val in enumerate(statements):
         statement += "          values[" + str(i) + "] = " + val + ";\n"
 
+    # Set the value_shape
+    constructor = "_value_shape.push_back(" + str(len(statements)) + ");"
+
     classname = signature
     code_c = template_code.format(statement=statement, classname=classname,
-                                  members= "", constructor="")
+                                  members= "", constructor=constructor)
     code_h = ""
     depends = []
 

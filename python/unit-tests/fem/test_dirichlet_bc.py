@@ -80,7 +80,7 @@ def test_get_values():
     bc = DirichletBC(V, 0.0, upper)
     bc_values = bc.get_boundary_values()
 
-
+@pytest.mark.skip
 def test_meshdomain_bcs(datadir):
     """Test application of Dirichlet boundary conditions stored as
     part of the mesh. This test is also a compatibility test for

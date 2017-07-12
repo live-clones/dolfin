@@ -26,6 +26,7 @@ namespace dolfin_wrappers
   void common(py::module& m);
   void mpi(py::module& m);
 
+  void ale(py::module& m);
   void experimental(py::module& m);
   void fem(py::module& m);
   void function(py::module& m);
@@ -36,6 +37,7 @@ namespace dolfin_wrappers
   void la(py::module& m);
   void math(py::module& m);
   void mesh(py::module& m);
+  void multistage(py::module& m);
   void parameter(py::module& m);
   void refinement(py::module& m);
 }
@@ -49,6 +51,10 @@ PYBIND11_MODULE(cpp, m)
   // Create MPI class [common]
   dolfin_wrappers::mpi(m);
 
+  // Create ale submodule [ale]
+  py::module ale = m.def_submodule("ale", "DOLFIN ALE module");
+  dolfin_wrappers::ale(ale);
+
   // Create common submodule [common]
   py::module common = m.def_submodule("common", "DOLFIN common module");
   dolfin_wrappers::common(common);
@@ -60,6 +66,10 @@ PYBIND11_MODULE(cpp, m)
   // Create mesh submodule [mesh]
   py::module mesh = m.def_submodule("mesh", "DOLFIN mesh library module");
   dolfin_wrappers::mesh(mesh);
+
+  // Create multistage submodule [multistage]
+  py::module multistage = m.def_submodule("multistage", "DOLFIN multistage library module");
+  dolfin_wrappers::multistage(multistage);
 
   // Create graph submodule [graph]
   py::module graph = m.def_submodule("graph", "DOLFIN graph module");

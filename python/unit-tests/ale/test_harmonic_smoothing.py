@@ -23,7 +23,7 @@ from __future__ import print_function
 import pytest
 from dolfin import UnitSquareMesh, BoundaryMesh, Expression, \
                    CellFunction, SubMesh, Constant, MPI, MeshQuality,\
-                   mpi_comm_world, ALE
+                   ALE
 from dolfin_utils.test import skip_in_parallel
 
 def test_HarmonicSmoothing():

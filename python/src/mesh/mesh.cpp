@@ -40,6 +40,7 @@
 #include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/MeshQuality.h>
 #include <dolfin/mesh/SubDomain.h>
+#include <dolfin/mesh/SubMesh.h>
 
 #include "../mpi_interface.h"
 
@@ -383,7 +384,7 @@ namespace dolfin_wrappers
       .def(py::init<>());
 
     //--------------------------------------------------------------------------
-    // dolfin::MultiMesh class
+    // dolfin::MeshQuality class
     py::class_<dolfin::MeshQuality>
       (m, "MeshQuality", "DOLFIN MeshQuality class")
       .def_static("radius_ratios", &dolfin::MeshQuality::radius_ratios)
@@ -392,6 +393,12 @@ namespace dolfin_wrappers
       .def_static("radius_ratio_matplotlib_histogram", &dolfin::MeshQuality::radius_ratio_matplotlib_histogram)
       .def_static("dihedral_angles_min_max", &dolfin::MeshQuality::dihedral_angles_min_max)
       .def_static("dihedral_angles_matplotlib_histogram", &dolfin::MeshQuality::dihedral_angles_matplotlib_histogram);
+
+    //--------------------------------------------------------------------------
+    // dolfin::SubMesh class
+    py::class_<dolfin::SubMesh, std::shared_ptr<dolfin::SubMesh>>
+      (m, "SubMesh", "DOLFIN SubMesh")
+      .def(py::init<const dolfin::Mesh&, const dolfin::SubDomain&>());
 
     //--------------------------------------------------------------------------
     // dolfin::SubDomain class

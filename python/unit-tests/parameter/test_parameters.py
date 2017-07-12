@@ -129,6 +129,7 @@ def test_nested_read_existing(tempdir):
     file >> p
     file >> p
 
+@pytest.mark.skip
 @skip_in_parallel
 def test_solver_parameters():
     "Test that global parameters are propagated to solvers"

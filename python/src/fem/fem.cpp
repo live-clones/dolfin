@@ -28,6 +28,7 @@
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/Form.h>
+#include <dolfin/fem/PointSource.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/GenericFunction.h>
 #include <dolfin/mesh/SubDomain.h>
@@ -119,6 +120,12 @@ namespace dolfin_wrappers
            &dolfin::Form::set_coefficient, "Doc")
       .def("set_coefficient", (void (dolfin::Form::*)(std::string, std::shared_ptr<const dolfin::GenericFunction>))
            &dolfin::Form::set_coefficient, "Doc");
+
+    // dolfin::PointSource class
+    py::class_<dolfin::PointSource, std::shared_ptr<dolfin::PointSource>>
+      (m, "PointSource")
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, const dolfin::Point&, double>(),
+           py::arg("V"), py::arg("p"), py::arg("magnitude") = 1.0);
 
     // Assemble functions
 

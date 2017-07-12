@@ -26,6 +26,7 @@ del sys
 #del sys
 
 # cpp modules
+from .cpp.ale import ALE
 from .cpp.common import (Variable, has_debug, has_hdf5,
                          has_hdf5_parallel, has_mpi, has_petsc,
                          has_slepc, git_commit_hash, DOLFIN_EPS,
@@ -33,7 +34,7 @@ from .cpp.common import (Variable, has_debug, has_hdf5,
 from .cpp import MPI
 from .cpp.function import Expression, Constant, Function, interpolate
 from .cpp.fem import (FiniteElement, DofMap, Assembler, assemble, get_coordinates,
-                      set_coordinates, vertex_to_dof_map, dof_to_vertex_map)
+                      set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource)
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, UnitIntervalMesh,
                              UnitSquareMesh, UnitCubeMesh, BoxMesh, RectangleMesh,
@@ -52,7 +53,8 @@ from .cpp.la import (Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges,
-                       vertices, SubDomain, BoundaryMesh, MeshEditor, MultiMesh, MeshQuality)
+                       vertices, SubDomain, BoundaryMesh, MeshEditor, MultiMesh, MeshQuality,
+                       SubMesh)
 from .cpp.parameter import parameters
 from .cpp.refinement import refine
 
@@ -66,7 +68,7 @@ from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
 
 # ufl
-from ufl import (TestFunction, TrialFunction, inner, dot, grad, dx,
+from ufl import (FiniteElement, VectorElement, MixedElement, TestFunction, TrialFunction, inner, dot, grad, dx,
                  ds, dS, triangle, tetrahedron)
 
 # FIXME
