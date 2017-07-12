@@ -304,14 +304,17 @@ namespace dolfin_wrappers
                std::shared_ptr<dolfin::MeshValueCollection<SCALAR>>> \
       (m, "MeshValueCollection_"#SCALAR_NAME, "DOLFIN MeshValueCollection object") \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>>()) \
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>())
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>()) \
+      .def("set_value", (bool (dolfin::MeshValueCollection<SCALAR>::*)(std::size_t, const SCALAR&)) \
+           &dolfin::MeshValueCollection<SCALAR>::set_value) \
+      .def("assign", [](dolfin::MeshValueCollection<SCALAR>& self, const dolfin::MeshValueCollection<SCALAR>& other) \
+         { self = other; })
 
     MESHVALUECOLLECTION_MACRO(bool, bool);
     MESHVALUECOLLECTION_MACRO(int, int);
     MESHVALUECOLLECTION_MACRO(double, double);
     MESHVALUECOLLECTION_MACRO(std::size_t, sizet);
 #undef MESHVALUECOLLECTION_MACRO
-
 
     //--------------------------------------------------------------------------
     // dolfin::MeshEditor class

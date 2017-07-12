@@ -66,6 +66,7 @@ from .function.constant import Constant
 from .function.expression import CompiledExpression, UserExpression
 from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
+from .mesh.meshvaluecollection import MeshValueCollection
 
 # ufl
 from ufl import (FiniteElement, VectorElement, MixedElement, TestFunction, TrialFunction, inner, dot, grad, dx,
