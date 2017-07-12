@@ -4,11 +4,8 @@ from dolfin import *
 mesh = UnitCubeMesh(32, 32, 32)
 
 marker = EdgeFunction("size_t", mesh, 0)
-i=0
 for e in edges(mesh):
-    if 0.5 - DOLFIN_EPS < e.midpoint().z() < 0.5 + DOLFIN_EPS and 0.5 - DOLFIN_EPS < e.midpoint().y() < 0.5 + DOLFIN_EPS:
-        marker[i] = 1;
-    i+=1
+    marker[e] = 0.5 - DOLFIN_EPS < e.midpoint().z() < 0.5 + DOLFIN_EPS and 0.5 - DOLFIN_EPS < e.midpoint().y() < 0.5 + DOLFIN_EPS
 
 submesh = MeshViewMapping.create_from_marker(marker, 1)
 

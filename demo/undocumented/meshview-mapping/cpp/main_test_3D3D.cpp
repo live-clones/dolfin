@@ -47,13 +47,10 @@ int main()
   auto V = std::make_shared<Test_3D3D::FunctionSpace>(mesh);
 
   CellFunction<std::size_t> marker(mesh, 0);
-  int i=0;
   for (CellIterator cell(*mesh); !cell.end(); ++cell)
     {
       auto x = cell->midpoint().coordinates();
-      if(x[0] < 0.5)
-	marker[i] = 1;
-      i++;
+      marker[cell->index()] = x[0] < 0.5;
     }
 
   std::vector<std::size_t> vertex_map,cell_map;

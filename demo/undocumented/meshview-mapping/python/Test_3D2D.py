@@ -4,11 +4,8 @@ from dolfin import *
 mesh = UnitCubeMesh(32, 32, 32)
 
 marker = FacetFunction("size_t", mesh, 0)
-i=0
 for f in facets(mesh):
-    if 0.5 - DOLFIN_EPS < f.midpoint().z() < 0.5 + DOLFIN_EPS:
-        marker[i] = 1;
-    i+=1
+    marker[f] = 0.5 - DOLFIN_EPS < f.midpoint().z() < 0.5 + DOLFIN_EPS
 
 submesh = MeshViewMapping.create_from_marker(marker, 1)
 

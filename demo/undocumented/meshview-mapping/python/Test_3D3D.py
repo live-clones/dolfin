@@ -5,11 +5,8 @@ mesh = UnitCubeMesh(32, 32, 32)
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 marker = CellFunction("size_t", mesh, 0)
-i=0
 for c in cells(mesh):
-    if c.midpoint().x() < 0.5:
-        marker[i] = 1;
-    i+=1
+    marker[c] = c.midpoint().x() < 0.5
 
 submesh1 = MeshViewMapping.create_from_marker(marker, 1)
 submesh2 = MeshViewMapping.create_from_marker(marker, 0)
