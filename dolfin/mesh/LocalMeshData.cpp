@@ -14,11 +14,6 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-//
-// Modified by Anders Logg 2008-2011
-//
-// First added:  2008-11-28
-// Last changed: 2012-11-24
 
 #include <utility>
 #include <dolfin/common/MPI.h>
@@ -33,14 +28,14 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-LocalMeshData::LocalMeshData(const MPI_Comm mpi_comm) : _mpi_comm(mpi_comm)
+LocalMeshData::LocalMeshData()
 {
   // Do nothing
 }
 //-----------------------------------------------------------------------------
-LocalMeshData::LocalMeshData(const Mesh& mesh) : _mpi_comm(mesh.mpi_comm())
+LocalMeshData::LocalMeshData(const Mesh& mesh)
 {
-  Timer timer("Build LocalMeshData from local Mesh");
+  Timer timer("Build LocalMeshData from Mesh with data on one process");
 
   // Extract data on main process and split among processes
   if (MPI::is_broadcaster(mesh.mpi_comm()))

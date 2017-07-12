@@ -14,8 +14,6 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-//
-// Modified by Garth N. Wells, 2012
 
 #ifndef __DOLFIN_XDMFFILE_H
 #define __DOLFIN_XDMFFILE_H
@@ -412,7 +410,7 @@ namespace dolfin
 
     // Build local mesh data structure
     static void
-      build_local_mesh_data (LocalMeshData& local_mesh_data,
+      build_local_mesh_data (MPI_Comm comm, LocalMeshData& local_mesh_data,
                              const CellType& cell_type,
                              std::int64_t num_points, std::int64_t num_cells,
                              int tdim, int gdim,

@@ -14,14 +14,6 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-//
-// Modified by Anders Logg, 2008-2009.
-//
-// First added:  2008-11-28
-// Last changed: 2013-02-18
-//
-// Modified by Anders Logg, 2008-2009.
-// Modified by Kent-Andre Mardal, 2011.
 
 #ifndef __LOCAL_MESH_DATA_H
 #define __LOCAL_MESH_DATA_H
@@ -39,7 +31,8 @@ namespace dolfin
 
   class Mesh;
 
-  /// This class stores mesh data on a local processor corresponding to a portion of a (larger) global mesh.
+  /// This class stores mesh data on a local processor corresponding
+  /// to a portion of a (larger) global mesh.
 
   /// Note that the data stored in this class does typically not
   /// correspond to a topologically connected mesh; it merely stores a
@@ -60,7 +53,7 @@ namespace dolfin
   public:
 
     /// Create empty local mesh data
-    explicit LocalMeshData(const MPI_Comm mpi_comm);
+    LocalMeshData();
 
     /// Create local mesh data for given mesh
     explicit LocalMeshData(const Mesh& mesh);
@@ -181,15 +174,6 @@ namespace dolfin
     /// Mesh domain data [dim](line, (cell_index, local_index, value))
     std::map<std::size_t, std::vector<std::pair<std::pair<std::size_t,
       std::size_t>, std::size_t>>> domain_data;
-
-    /// Return MPI communicator
-    MPI_Comm mpi_comm() const
-    { return _mpi_comm.comm(); }
-
-  private:
-
-    // MPI communicator
-    dolfin::MPI::Comm _mpi_comm;
 
   };
 

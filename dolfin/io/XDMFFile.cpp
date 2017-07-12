@@ -14,8 +14,6 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-//
-// Modified by Garth N. Wells, 2012
 
 #include <iomanip>
 #include <memory>
@@ -1386,8 +1384,9 @@ void XDMFFile::read(Mesh& mesh) const
   else
   {
     // Build local mesh data structure
-    LocalMeshData local_mesh_data(_mpi_comm.comm());
-    build_local_mesh_data(local_mesh_data, *cell_type, num_points_global,
+    LocalMeshData local_mesh_data;
+    build_local_mesh_data(_mpi_comm.comm(), local_mesh_data, *cell_type,
+                          num_points_global,
                           num_cells_global,
                           tdim, gdim,
                           topology_data_node, geometry_data_node,
@@ -1698,7 +1697,8 @@ void XDMFFile::build_mesh(Mesh& mesh, const CellType& cell_type,
 }
 //----------------------------------------------------------------------------
 void
-XDMFFile::build_local_mesh_data(LocalMeshData& local_mesh_data,
+XDMFFile::build_local_mesh_data(MPI_Comm comm,
+                                LocalMeshData& local_mesh_data,
                                 const CellType& cell_type,
                                 std::int64_t num_points_global,
                                 std::int64_t num_cells_global,
@@ -1720,7 +1720,7 @@ XDMFFile::build_local_mesh_data(LocalMeshData& local_mesh_data,
 
   // Get share of topology data
   dolfin_assert(topology_dataset_node);
-  const auto topology_data = get_dataset<std::int64_t>(local_mesh_data.mpi_comm(),
+  const auto topology_data = get_dataset<std::int64_t>(comm,
                                                        topology_dataset_node,
                                                        relative_path);
   dolfin_assert(topology_data.size() % num_vertices_per_cell == 0);
@@ -1741,8 +1741,7 @@ XDMFFile::build_local_mesh_data(LocalMeshData& local_mesh_data,
   }
 
   // Set cell global indices by adding offset
-  const std::int64_t cell_index_offset
-    = MPI::global_offset(local_mesh_data.mpi_comm(), num_local_cells, true);
+  const std::int64_t cell_index_offset = MPI::global_offset(comm, num_local_cells, true);
   local_mesh_data.topology.global_cell_indices.resize(num_local_cells);
   std::iota(local_mesh_data.topology.global_cell_indices.begin(),
             local_mesh_data.topology.global_cell_indices.end(),
@@ -1756,7 +1755,7 @@ XDMFFile::build_local_mesh_data(LocalMeshData& local_mesh_data,
 
   // Read geometry dataset
   dolfin_assert(geometry_dataset_node);
-  const auto geometry_data = get_dataset<double>(local_mesh_data.mpi_comm(),
+  const auto geometry_data = get_dataset<double>(comm,
                                                  geometry_dataset_node,
                                                  relative_path);
   dolfin_assert(geometry_data.size() % gdim == 0);
@@ -1771,7 +1770,7 @@ XDMFFile::build_local_mesh_data(LocalMeshData& local_mesh_data,
 
   // vertex offset
   const std::int64_t vertex_index_offset
-    = MPI::global_offset(local_mesh_data.mpi_comm(), num_local_vertices, true);
+    = MPI::global_offset(comm, num_local_vertices, true);
   local_mesh_data.geometry.vertex_indices.resize(num_local_vertices);
   std::iota(local_mesh_data.geometry.vertex_indices.begin(),
             local_mesh_data.geometry.vertex_indices.end(),
