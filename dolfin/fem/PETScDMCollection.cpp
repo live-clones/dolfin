@@ -357,6 +357,9 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
       exterior_global_indices.insert(exterior_global_indices.end(),
                                      map_it.second.begin(),
                                      map_it.second.end());
+      // We might need to pad the global indices with -1's, as this
+      // point might not have data_size dofs associated with it
+      for (int pad = 0; pad < data_size - map_it.second.size(); pad++) exterior_global_indices.push_back(-1);
     }
     else
     {
@@ -372,6 +375,7 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
         send_found_global_row_indices[rp].insert(
          send_found_global_row_indices[rp].end(),
          map_it.second.begin(), map_it.second.end());
+        for (int pad = 0; pad < data_size - map_it.second.size(); pad++) send_found_global_row_indices[rp].push_back(-1);
       }
     }
   }
@@ -547,7 +551,13 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
     {
       const unsigned int fine_row = i*data_size + k;
       const std::size_t global_fine_dof = global_row_indices[fine_row];
-      int p = finemap->index_map()->global_index_owner(global_fine_dof/data_size);
+      if (global_fine_dof == -1)
+      {
+        // We've reached the end of the fine dofs associated with this point,
+        // short-circuit
+        break;
+      }
+      int p = finemap->index_map()->global_index_owner(global_fine_dof/finemap->index_map()->block_size());
 
       // Loop over the coarse dofs and stuff their contributions
       for (unsigned j = 0; j < eldim; j++)
@@ -560,7 +570,7 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
         // Set the value
         values[fine_row][j] = temp_values[data_size*j + k];
 
-        int pc = coarsemap->index_map()->global_index_owner(coarse_dof/data_size);
+        int pc = coarsemap->index_map()->global_index_owner(coarse_dof/coarsemap->index_map()->block_size());
         if (p == pc)
           send_dnnz[p].push_back(global_fine_dof);
         else
@@ -621,6 +631,7 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
   for (unsigned int fine_row = 0; fine_row < m_owned; ++fine_row)
   {
     PetscInt fine_dof = global_row_indices[fine_row];
+    if (fine_dof == -1) continue; // for the case where data_size isn't constant
     ierr = MatSetValues(I, 1, &fine_dof, eldim, col_indices[fine_row].data(),
                         values[fine_row].data(), INSERT_VALUES);
     CHKERRABORT(PETSC_COMM_WORLD, ierr);
