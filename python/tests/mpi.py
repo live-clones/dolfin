@@ -11,11 +11,9 @@ print("XXXXX")
 
 mesh = dolfin.cpp.generation.UnitSquareMesh(2, 2)
 
-tcomm = mesh.mpi_comm()
-print(type(tcomm))
-
-#tcomm = dolfin.cpp.MPI.to_comm(tcomm)
-#print("****:", type(tcomm))
+# Uncommenting this messes up later (somethig with memory management)
+#tcomm = mesh.mpi_comm()
+#print(type(tcomm))
 
 #dolfin.cpp.MPI.init()
 
@@ -24,21 +22,22 @@ print(type(tcomm))
 
 #comm =  pyMPI.COMM_WORLD
 comm =  dolfin.cpp.MPI.comm_world
+print(comm)
 
 print("A-------------------------------------------------------")
-#print(type(comm))
+print(type(comm), comm)
 tcomm = dolfin.cpp.MPI.to_mpi4py_comm(comm)
-print(type(tcomm))
+print(type(comm), comm)
 print("B-------------------------------------------------------")
 
 #print("----------")
 print("Comm 0:", comm, type(comm))
 
-#print("+++++++++++")
-myrank = dolfin.cpp.MPI.size(tcomm)
+print("+++++++++++")
+myrank = dolfin.cpp.MPI.size(comm)
 
-print("rank (0a):", myrank)
-print("rank (0b):", type(tcomm), tcomm)
+print("rank (0a):", comm)
+print("rank (0b):", comm, type(tcomm))
 
 
 #print("C-------------------------------------------------------")
@@ -56,11 +55,17 @@ print("rank (0b):", type(tcomm), tcomm)
 #print("Comm 1:", comm)
 
 print("$$$$$$$$$$$$$")
-size = dolfin.cpp.MPI.size(comm)
+print(comm)
+size = dolfin.cpp.MPI.size(tcomm)
+print(comm)
 print("$$$$$$$$$$$$$")
+print(comm)
 print("Size:", size)
+print(comm)
 
-print(type(tcomm))
-s = dolfin.cpp.MPI.sum(tcomm, 2.5)
+print("pre sum", comm)
+s = dolfin.cpp.MPI.sum(comm, 2.5)
+print("post-sum")
 print("Sum 2.5:", s)
 print(tcomm)
+print(comm)

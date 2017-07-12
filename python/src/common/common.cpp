@@ -73,13 +73,14 @@ namespace dolfin_wrappers
       .def_property_readonly_static("comm_self", [](py::object) { return MPI_COMM_SELF; })
       .def_property_readonly_static("comm_null", [](py::object) { return MPI_COMM_NULL; })
       #endif
-      .def_static("init", [](){ dolfin::SubSystemsManager::init_mpi();})
+      .def_static("init", [](){ dolfin::SubSystemsManager::init_mpi(); })
       .def_static("barrier", &dolfin::MPI::barrier)
       .def_static("rank", &dolfin::MPI::rank)
       .def_static("size", &dolfin::MPI::size)
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)
+      /*
       .def("to_mpi4py_comm", [](MPI_Comm comm){
 
           // FIXME: This messes up if called with a mpi4py
@@ -91,19 +92,33 @@ namespace dolfin_wrappers
           return _comm;
         },
         "Convert a plain MPI communicator into a mpi4py communicator");
-      /*
+      */
       .def("to_mpi4py_comm", [](py::object obj){
-
-          // Check if object is already a mpi4py communivator
+          // If object is already a mpi4py communicator, return
           if (PyObject_TypeCheck(obj.ptr(), &PyMPIComm_Type))
             return obj;
 
-          // FIXME: Do not know how to construct a mpi4py.Comm
+          /*
+          // Try to cast to MPI_Comm
+          std::uintptr_t c = obj.cast<std::uintptr_t>();
 
-          return obj;
+          // Create wrapper for conversion to mpi4py
+          dolfin_wrappers::mpi_communicator mpi_comm;
+          mpi_comm.comm = reinterpret_cast<MPI_Comm>(c);
+          */
+
+          std::uintptr_t c = obj.cast<std::uintptr_t>();
+
+          MPI_Comm comm_new;
+          MPI_Comm_dup(reinterpret_cast<MPI_Comm>(c), &comm_new);
+
+          // Create wrapper for conversion to mpi4py
+          dolfin_wrappers::mpi_communicator mpi_comm;
+          mpi_comm.comm = comm_new;
+
+          return py::cast(mpi_comm);
         },
         "Convert a plain MPI communicator into a mpi4py communicator");
-      */
-  }
+     }
 
 }

@@ -51,18 +51,17 @@ namespace pybind11
     public:
       PYBIND11_TYPE_CASTER(dolfin_wrappers::mpi_communicator, _("mpi_communicator"));
 
-      /*
+      // Helper from pybind to C++
       bool load(handle src, bool)
       {
-        std::cout << "***Here I am" << std::endl;
+        //std::cout << "***Here I am" << std::endl;
         return true;
       }
-      */
 
       // From C++ to Python
       static handle cast(const dolfin_wrappers::mpi_communicator &src, return_value_policy, handle)
       {
-        std::cout << "cpp to Py for comm struct" << std::endl;
+        //std::cout << "cpp to Py for comm struct" << std::endl;
         #ifdef HAS_MPI4PY
         return PyMPIComm_New(src.comm);
         #else
@@ -74,7 +73,7 @@ with mpi4py for this functionality" << std::endl;
 
       operator dolfin_wrappers::mpi_communicator()
       {
-        std::cout << "****mpi comm op" << std::endl;
+        //std::cout << "****mpi comm op" << std::endl;
         return value;
       }
 
@@ -93,12 +92,12 @@ with mpi4py for this functionality" << std::endl;
       // mpi4py communicator, it is unwrapped
       bool load(handle src, bool)
       {
-        std::cout << "ompi load" << std::endl;
+        //std::cout << "**ompi load (mpi4py)" << std::endl;
         PyObject* obj = src.ptr();
         #ifdef HAS_MPI4PY
         if (PyObject_TypeCheck(obj, &PyMPIComm_Type))
         {
-          std::cout << "  Working with mpi4py object" << std::endl;
+          //std::cout << "  Working with mpi4py object" << std::endl;
           const MPI_Comm *comm_p = PyMPIComm_Get(obj);
           value = *comm_p;
           if (PyErr_Occurred())
@@ -106,14 +105,14 @@ with mpi4py for this functionality" << std::endl;
         }
         else
         {
-          std::cout << "  Working with plain mpi object" << std::endl;
+          //std::cout << "**ompi load (plain)" << std::endl;
           void* v = PyLong_AsVoidPtr(obj);
           value = reinterpret_cast<MPI_Comm>(v);
           if (PyErr_Occurred())
             return false;
         }
         #else
-        std::cout << "  Shouldn't be here" << std::endl;
+        //std::cout << "  Shouldn't be here" << std::endl;
         // mpi4py is not available, cast int to pointer
         void* v = PyLong_AsVoidPtr(obj);
         value = reinterpret_cast<MPI_Comm>(v);
@@ -127,13 +126,13 @@ with mpi4py for this functionality" << std::endl;
       // Cast from C++ to Python (cast to pointer)
       static handle cast(const MPI_Comm &src, return_value_policy, handle)
       {
-        std::cout << "!!!!ompi cast" << std::endl;
+        //std::cout << "!!!!ompi cast" << std::endl;
         return py::cast(reinterpret_cast<std::uintptr_t>(src));
       }
 
       operator MPI_Comm()
       {
-        std::cout << "ompi op" << std::endl;
+        //std::cout << "**ompi op" << std::endl;
         return value;
       }
     };
