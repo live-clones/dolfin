@@ -40,7 +40,7 @@ from .cpp.generation import (IntervalMesh, UnitIntervalMesh,
                              UnitSquareMesh, UnitCubeMesh, BoxMesh, RectangleMesh,
                              UnitQuadMesh)
 from .cpp.graph import GraphBuilder
-from .cpp.io import File, XDMFFile, VTKFile
+from .cpp.io import File, XDMFFile, VTKFile, HDF5File
 from .cpp.la import (has_linear_algebra_backend,
                      linear_algebra_backends, has_krylov_solver_method,
                      has_krylov_solver_preconditioner)

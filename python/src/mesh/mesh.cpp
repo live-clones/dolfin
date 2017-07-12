@@ -313,6 +313,8 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::Mesh>>()) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>()) \
       .def("dim", &dolfin::MeshValueCollection<SCALAR>::dim) \
+      .def("size", &dolfin::MeshValueCollection<SCALAR>::size) \
+      .def("get_value", &dolfin::MeshValueCollection<SCALAR>::get_value) \
       .def("set_value", (bool (dolfin::MeshValueCollection<SCALAR>::*)(std::size_t, const SCALAR&)) \
            &dolfin::MeshValueCollection<SCALAR>::set_value) \
       .def("assign", [](dolfin::MeshValueCollection<SCALAR>& self, const dolfin::MeshValueCollection<SCALAR>& other) \

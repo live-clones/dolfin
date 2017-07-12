@@ -110,6 +110,8 @@ namespace dolfin_wrappers
       .def(py::init<>())
       .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::size_t>())
+      .def("mpi_comm", &dolfin::Vector::mpi_comm)
+      .def("size", &dolfin::Vector::size)
       .def("__iadd__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
            &dolfin::Vector::operator+=)
       .def("__iadd__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
@@ -126,6 +128,13 @@ namespace dolfin_wrappers
            &dolfin::Vector::operator/=)
       .def("__setitem__", [](dolfin::Vector& self, dolfin::la_index index, double value)
            { self.instance()->setitem(index, value); })
+      .def("__setitem__", [](dolfin::Vector& self, py::slice slice, double value)
+           { std::size_t start, stop, step, slicelength;
+             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+             if (start != 0 or stop != self.size() or step != 1)
+               throw std::range_error("Only full slices are supported");
+             *self.instance() = value; })
       .def("backend_type", [](dolfin::Vector& self)
            {
              // Experiment with determining backend type

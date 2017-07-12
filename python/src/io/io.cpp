@@ -20,8 +20,10 @@
 
 #include <dolfin/io/File.h>
 #include <dolfin/io/GenericFile.h>
+#include <dolfin/io/HDF5File.h>
 #include <dolfin/io/VTKFile.h>
 #include <dolfin/io/XDMFFile.h>
+#include <dolfin/la/GenericVector.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/MeshValueCollection.h>
@@ -48,6 +50,47 @@ namespace dolfin_wrappers
       .def(py::init<std::string, std::string>())
       .def("__lshift__",  [](py::object& obj, const dolfin::Mesh& mesh) { dolfin::VTKFile *cls = obj.cast<dolfin::VTKFile*>(); *cls << mesh; })
       .def("write", [](py::object& obj, const dolfin::Mesh& mesh) { dolfin::VTKFile *cls = obj.cast<dolfin::VTKFile*>(); *cls << mesh; });
+
+    // dolfin::HDF5File
+    py::class_<dolfin::HDF5File, std::shared_ptr<dolfin::HDF5File>> (m, "HDF5File")
+      .def(py::init<MPI_Comm, std::string, std::string>())
+      .def("__enter__", [](dolfin::HDF5File& self){ return &self; })
+      .def("__exit__", [](dolfin::HDF5File& self, py::args args, py::kwargs kwargs){ self.close(); })
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::Mesh&, std::string)) &dolfin::HDF5File::write)
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::Mesh&, std::string, bool) const) &dolfin::HDF5File::read)
+      .def("close", &dolfin::HDF5File::close)
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshValueCollection<bool>&, std::string))
+           &dolfin::HDF5File::write, py::arg("mvc"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshValueCollection<std::size_t>&, std::string))
+           &dolfin::HDF5File::write, py::arg("mvc"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshValueCollection<double>&, std::string))
+           &dolfin::HDF5File::write, py::arg("mvc"), py::arg("name"))
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshValueCollection<bool>&, std::string) const)
+           &dolfin::HDF5File::read, py::arg("mvc"), py::arg("name"))
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshValueCollection<std::size_t>&, std::string) const)
+           &dolfin::HDF5File::read, py::arg("mvc"), py::arg("name"))
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshValueCollection<double>&, std::string) const)
+           &dolfin::HDF5File::read, py::arg("mvc"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<bool>&, std::string))
+           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<std::size_t>&, std::string))
+           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<int>&, std::string))
+           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<double>&, std::string))
+           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshFunction<bool>&, std::string) const)
+           &dolfin::HDF5File::read, py::arg("meshfunction"), py::arg("name"))
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshFunction<std::size_t>&, std::string) const)
+           &dolfin::HDF5File::read, py::arg("meshfunction"), py::arg("name"))
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshFunction<int>&, std::string) const)
+           &dolfin::HDF5File::read, py::arg("meshfunction"), py::arg("name"))
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshFunction<double>&, std::string) const)
+           &dolfin::HDF5File::read, py::arg("meshfunction"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::GenericVector&, std::string))
+           &dolfin::HDF5File::write, py::arg("vector"), py::arg("name"))
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::GenericVector&, std::string, bool) const)
+           &dolfin::HDF5File::read, py::arg("vector"), py::arg("name"), py::arg("use_partitioning"));
 
     // dolfin::XDMFFile
     py::class_<dolfin::XDMFFile, std::shared_ptr<dolfin::XDMFFile>> xdmffile(m, "XDMFFile");
