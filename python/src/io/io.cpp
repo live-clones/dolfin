@@ -26,6 +26,8 @@
 #include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/MeshValueCollection.h>
 
+#include "../mpi_interface.h"
+
 namespace py = pybind11;
 
 namespace dolfin_wrappers

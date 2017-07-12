@@ -134,7 +134,10 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
         statement += "          values[" + str(i) + "] = " + val + ";\n"
 
     # Set the value_shape
-    constructor = "_value_shape.push_back(" + str(len(statements)) + ");"
+    if len(statements) > 1:
+        constructor = "_value_shape.push_back(" + str(len(statements)) + ");"
+    else:
+        constructor = ""
 
     classname = signature
     code_c = template_code.format(statement=statement, classname=classname,
