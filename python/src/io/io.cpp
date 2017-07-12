@@ -19,6 +19,7 @@
 #include <pybind11/pybind11.h>
 
 #include <dolfin/io/File.h>
+#include <dolfin/io/GenericFile.h>
 #include <dolfin/io/VTKFile.h>
 #include <dolfin/io/XDMFFile.h>
 #include <dolfin/mesh/Mesh.h>
@@ -30,6 +31,14 @@ namespace dolfin_wrappers
 
   void io(py::module& m)
   {
+    // dolfin::File
+    py::class_<dolfin::File, std::shared_ptr<dolfin::File>>(m, "File")
+      .def(py::init<std::string>());
+
+    // dolfin::GenericFile
+    py::class_<dolfin::GenericFile, std::shared_ptr<dolfin::GenericFile>>(m, "GenericFile")
+    .def("__lshift__", (void (dolfin::GenericFile::*)(const dolfin::Parameters&)) &dolfin::GenericFile::operator<<);
+
     // dolfin::VTKFile
     py::class_<dolfin::VTKFile, std::shared_ptr<dolfin::VTKFile>>(m, "VTKFile")
       .def(py::init<std::string, std::string>())

@@ -32,6 +32,14 @@ namespace dolfin_wrappers
   {
     py::class_<dolfin::Parameters, std::shared_ptr<dolfin::Parameters>>
       (m, "Parameters")
+      .def(py::init<std::string>())
+      .def(py::init<dolfin::Parameters>())
+      .def("add", (void (dolfin::Parameters::*)(std::string, std::string)) &dolfin::Parameters::add)
+      .def("add", (void (dolfin::Parameters::*)(std::string, int)) &dolfin::Parameters::add)
+      .def("add", (void (dolfin::Parameters::*)(std::string, double)) &dolfin::Parameters::add)
+      .def("add", (void (dolfin::Parameters::*)(const dolfin::Parameters&)) &dolfin::Parameters::add)
+      .def("rename", &dolfin::Parameters::rename)
+      .def("update", &dolfin::Parameters::update)
       .def("__getitem__", [](dolfin::Parameters& self, std::string key)
            {
              const dolfin::Parameter *param = self.find_parameter(key);

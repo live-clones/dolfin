@@ -40,7 +40,7 @@ from .cpp.generation import (IntervalMesh, UnitIntervalMesh,
                              UnitSquareMesh, UnitCubeMesh, BoxMesh, RectangleMesh,
                              UnitQuadMesh)
 from .cpp.graph import GraphBuilder
-from .cpp.io import XDMFFile, VTKFile
+from .cpp.io import File, XDMFFile, VTKFile
 from .cpp.la import (has_linear_algebra_backend,
                      linear_algebra_backends, has_krylov_solver_method,
                      has_krylov_solver_preconditioner)
@@ -55,7 +55,7 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges,
                        vertices, SubDomain, BoundaryMesh, MeshEditor, MultiMesh, MeshQuality,
                        SubMesh)
-from .cpp.parameter import parameters
+from .cpp.parameter import parameters, Parameters
 from .cpp.refinement import refine
 
 # python modules
