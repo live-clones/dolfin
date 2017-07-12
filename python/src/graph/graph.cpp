@@ -17,8 +17,10 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 #include <pybind11/pybind11.h>
 
+#include <dolfin/mesh/Mesh.h>
 #include <dolfin/graph/Graph.h>
 #include <dolfin/graph/GraphBuilder.h>
 
@@ -31,7 +33,11 @@ namespace dolfin_wrappers
   {
     py::class_<dolfin::Graph>(m, "Graph");
 
-    py::class_<dolfin::GraphBuilder>(m, "GraphBuilder");
+    py::class_<dolfin::GraphBuilder>(m, "GraphBuilder")
+      .def_static("local_graph", [](const dolfin::Mesh& mesh, const std::vector<std::size_t>& coloring)
+                  { return dolfin::GraphBuilder::local_graph(mesh, coloring); })
+      .def_static("local_graph", [](const dolfin::Mesh& mesh, std::size_t dim0, std::size_t dim1)
+                  { return dolfin::GraphBuilder::local_graph(mesh, dim0, dim1); });
 
   }
 
