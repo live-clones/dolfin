@@ -5,11 +5,8 @@
 # Require CMake 3.5
 cmake_minimum_required(VERSION 3.5)
 
-set(PROJECT_NAME_TEST_2D2D demo_meshview_test_2D2D)
-project(${PROJECT_NAME_TEST_2D2D})
-
-set(PROJECT_NAME_TEST_3D3D demo_meshview_test_3D3D)
-project(${PROJECT_NAME_TEST_3D3D})
+set(PROJECT_NAME demo_meshview-mapping-2D2D)
+project(${PROJECT_NAME})
 
 # Set CMake behavior
 cmake_policy(SET CMP0004 NEW)
@@ -35,11 +32,6 @@ if (HAVE_NO_MULTLINE)
 endif()
 
 # Executable
-add_executable(${PROJECT_NAME_TEST_2D2D} main_test_2D2D.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 # Target libraries
-target_link_libraries(${PROJECT_NAME_TEST_2D2D} dolfin)
-
-# Executable
-add_executable(${PROJECT_NAME_TEST_3D3D} main_test_3D3D.cpp)
-# Target libraries
-target_link_libraries(${PROJECT_NAME_TEST_3D3D} dolfin)
+target_link_libraries(${PROJECT_NAME} dolfin)

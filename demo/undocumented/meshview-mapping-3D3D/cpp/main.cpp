@@ -1,5 +1,5 @@
 #include <dolfin.h>
-#include "Test_2D2D.h"
+#include "MeshView_3D3D.h"
 
 using namespace dolfin;
 
@@ -35,16 +35,16 @@ class Source : public Expression
   {
     double dx = x[0] - 0.5;
     double dy = x[1] - 0.5;
-    values[0] = 10*exp(-(dx*dx + dy*dy) / 0.02);
+    double dz = x[2] - 0.5;
+    values[0] = 10*exp(-(dx*dx + dy*dy + dz*dz) / 0.02);
   }
 };
-
 
 int main()
 {
   // Create mesh and function space
-  auto mesh = std::make_shared<UnitSquareMesh>(32, 32);
-  auto V = std::make_shared<Test_2D2D::FunctionSpace>(mesh);
+  auto mesh = std::make_shared<UnitCubeMesh>(32, 32, 32);
+  auto V = std::make_shared<MeshView_3D3D::FunctionSpace>(mesh);
 
   CellFunction<std::size_t> marker(mesh, 0);
   for (CellIterator cell(*mesh); !cell.end(); ++cell)
@@ -59,17 +59,17 @@ int main()
   auto submesh2 = std::make_shared<Mesh>( mapping->create_from_marker(marker,0) );
 
   // Function spaces associated with each of the function spaces
-  auto V1=std::make_shared<Test_2D2D::FunctionSpace>( submesh1 );
-  auto V2=std::make_shared<Test_2D2D::FunctionSpace>( submesh2 );
+  auto V1=std::make_shared<MeshView_3D3D::FunctionSpace>( submesh1 );
+  auto V2=std::make_shared<MeshView_3D3D::FunctionSpace>( submesh2 );
 
   // Bilinear and linear forms
-  Test_2D2D::BilinearForm a(V, V);
-  Test_2D2D::LinearForm L(V);
+  MeshView_3D3D::BilinearForm a(V, V);
+  MeshView_3D3D::LinearForm L(V);
 
-  Test_2D2D::BilinearForm a1(V1, V1);
-  Test_2D2D::BilinearForm a2(V2, V2);
-  Test_2D2D::LinearForm L1(V1);
-  Test_2D2D::LinearForm L2(V2);
+  MeshView_3D3D::BilinearForm a1(V1, V1);
+  MeshView_3D3D::BilinearForm a2(V2, V2);
+  MeshView_3D3D::LinearForm L1(V1);
+  MeshView_3D3D::LinearForm L2(V2);
 
   // Define boundary conditions
   auto zero = std::make_shared<Constant>(0.0);
@@ -99,10 +99,26 @@ int main()
   Function u2(V2);
   solve(a2 == L2, u2, bc2);
 
-  File file("test2D2D-global.pvd");
-  file << u;
-  File file1("test2D2D-subdomain1.pvd");
-  file1 << u1;
-  File file2("test2D2D-subdomain2.pvd");
-  file2 << u2;
+  // Save solution in XDMF format if available
+  XDMFFile out_global(mesh->mpi_comm(), "meshview-mapping-3D3D-global.xdmf");
+  XDMFFile out_sub1(mesh->mpi_comm(), "meshview-mapping-3D3D-subdomain1.xdmf");
+  XDMFFile out_sub2(mesh->mpi_comm(), "meshview-mapping-3D3D-subdomain2.xdmf");
+  if( has_hdf5() )
+    {
+      out_global.write(u);
+      out_sub1.write(u1);
+      out_sub2.write(u2);
+    }
+  else
+    {
+      // Save solution in vtk format
+      File out_global("meshview-mapping-3D3D-global.pvd");
+      out_global << u;
+      File out_sub1("meshview-mapping-3D3D-subdomain1.pvd");
+      out_sub1 << u1;
+      File out_sub2("meshview-mapping-3D3D-subdomain2.pvd");
+      out_sub2 << u2;
+    }
 }
+
+

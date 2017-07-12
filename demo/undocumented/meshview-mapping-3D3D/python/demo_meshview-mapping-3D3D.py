@@ -1,7 +1,7 @@
 from dolfin import *
 
 # Create mesh and define function space
-mesh = UnitSquareMesh(32, 32)
+mesh = UnitCubeMesh(32, 32, 32)
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 marker = CellFunction("size_t", mesh, 0)
@@ -44,7 +44,7 @@ v1 = TestFunction(V1)
 u2 = TrialFunction(V2)
 v2 = TestFunction(V2)
 
-f = Expression("10*exp(-(pow(x[0] - 0.5, 2) + pow(x[1] - 0.5, 2)) / 0.02)", degree=2)
+f = Expression("10*exp(-(pow(x[0] - 0.5, 2) + pow(x[1] - 0.5, 2) + pow(x[2] - 0.5, 2)) / 0.02)", degree=2)
 
 # Whole domain
 a = inner(grad(u), grad(v))*dx
@@ -62,10 +62,19 @@ L2 = f*v2*dx
 u2 = Function(V2)
 solve(a2 == L2, u2, bc2)
 
-# Save solution in VTK format
-file = File("test2D2D-global.pvd")
-file << u
-file1 = File("test2D2D-subdomain1.pvd")
-file1 << u1
-file2 = File("test2D2D-subdomain2.pvd")
-file2 << u2
+# Save solution in XDMF format if available
+out_global = XDMFFile(mesh.mpi_comm(), "meshview-mapping-3D3D-global.xdmf")
+out_sub1 = XDMFFile(mesh.mpi_comm(), "meshview-mapping-3D3D-subdomain1.xdmf")
+out_sub2 = XDMFFile(mesh.mpi_comm(), "meshview-mapping-3D3D-subdomain2.xdmf")
+if has_hdf5():
+    out_global.write(u)
+    out_sub1.write(u1)
+    out_sub2.write(u2)
+else:
+    # Save solution in vtk format
+    out_global = File("meshview-mapping-3D3D-global.pvd")
+    out_global << u
+    out_sub1 = File("meshview-mapping-3D3D-subdomain1.pvd")
+    out_sub1 << u1
+    out_sub2 = File("meshview-mapping-3D3D-subdomain2.pvd")
+    out_sub2 << u2

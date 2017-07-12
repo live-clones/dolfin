@@ -43,8 +43,15 @@ L_1D = f*v_1D*dx
 u_1D = Function(V2)
 solve(a_1D == L_1D, u_1D, bc_1D)
 
-# Save solution in VTK format
-file1 = File("test3D1D_3D-sol.pvd")
-file1 << u_3D
-file2 = File("test3D1D_1D-sol.pvd")
-file2 << u_1D
+# Save solution in XDMF format if available
+out_3D = XDMFFile(mesh.mpi_comm(), "meshview-mapping-3D1D-3Dsol.xdmf")
+out_1D = XDMFFile(mesh.mpi_comm(), "meshview-mapping-3D1D-1Dsol.xdmf")
+if has_hdf5():
+    out_3D.write(u_3D)
+    out_1D.write(u_1D)
+else:
+    # Save solution in vtk format
+    out_3D = File("meshview-mapping-3D1D-3Dsol.pvd")
+    out_3D << u_3D
+    out_1D = File("meshview-mapping-3D1D-1Dsol.pvd")
+    out_1D << u_1D
