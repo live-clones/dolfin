@@ -22,6 +22,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/common/Variable.h>
 #include <dolfin/geometry/BoundingBoxTree.h>
 #include <dolfin/mesh/BoundaryMesh.h>
 #include <dolfin/mesh/Mesh.h>
@@ -159,7 +160,8 @@ namespace dolfin_wrappers
     // dolfin::Vertex class
     py::class_<dolfin::Vertex, std::shared_ptr<dolfin::Vertex>, dolfin::MeshEntity>
       (m, "Vertex", "DOLFIN Vertex object")
-      .def(py::init<const dolfin::Mesh&, std::size_t>());
+      .def(py::init<const dolfin::Mesh&, std::size_t>())
+      .def("point", &dolfin::Vertex::point);
 
     //--------------------------------------------------------------------------
     // dolfin::Edge class
@@ -212,6 +214,11 @@ namespace dolfin_wrappers
           return *self;
         });
 
+    m.def("entities", [](dolfin::Mesh& mesh, std::size_t dim)
+          { return dolfin::MeshEntityIterator(mesh, dim); });
+    m.def("entities", [](dolfin::MeshEntity& meshentity, std::size_t dim)
+          { return dolfin::MeshEntityIterator(meshentity, dim); });
+
 #define MESHITERATOR_MACRO(TYPE, NAME) \
     py::class_<dolfin::MeshEntityIteratorBase<dolfin::TYPE>, \
                std::shared_ptr<dolfin::MeshEntityIteratorBase<dolfin::TYPE>>> \
@@ -242,7 +249,7 @@ namespace dolfin_wrappers
 
 #define MESHFUNCTION_MACRO(SCALAR, SCALAR_NAME) \
     py::class_<dolfin::MeshFunction<SCALAR>, \
-               std::shared_ptr<dolfin::MeshFunction<SCALAR>>> \
+      std::shared_ptr<dolfin::MeshFunction<SCALAR>>, dolfin::Variable>  \
       (m, "MeshFunction_"#SCALAR_NAME, "DOLFIN MeshFunction object") \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>()) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, SCALAR>()) \
@@ -301,10 +308,11 @@ namespace dolfin_wrappers
     // dolfin::MeshValueCollection class
 #define MESHVALUECOLLECTION_MACRO(SCALAR, SCALAR_NAME) \
     py::class_<dolfin::MeshValueCollection<SCALAR>, \
-               std::shared_ptr<dolfin::MeshValueCollection<SCALAR>>> \
+      std::shared_ptr<dolfin::MeshValueCollection<SCALAR>>, dolfin::Variable>   \
       (m, "MeshValueCollection_"#SCALAR_NAME, "DOLFIN MeshValueCollection object") \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>>()) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>()) \
+      .def("dim", &dolfin::MeshValueCollection<SCALAR>::dim) \
       .def("set_value", (bool (dolfin::MeshValueCollection<SCALAR>::*)(std::size_t, const SCALAR&)) \
            &dolfin::MeshValueCollection<SCALAR>::set_value) \
       .def("assign", [](dolfin::MeshValueCollection<SCALAR>& self, const dolfin::MeshValueCollection<SCALAR>& other) \

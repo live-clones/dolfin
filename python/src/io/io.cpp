@@ -23,6 +23,8 @@
 #include <dolfin/io/VTKFile.h>
 #include <dolfin/io/XDMFFile.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshFunction.h>
+#include <dolfin/mesh/MeshValueCollection.h>
 
 namespace py = pybind11;
 
@@ -47,16 +49,64 @@ namespace dolfin_wrappers
 
     // dolfin::XDMFFile
     py::class_<dolfin::XDMFFile, std::shared_ptr<dolfin::XDMFFile>> xdmffile(m, "XDMFFile");
+
     py::enum_<dolfin::XDMFFile::Encoding>(xdmffile, "Encoding")
       .value("HDF5", dolfin::XDMFFile::Encoding::HDF5)
       .value("ASCII", dolfin::XDMFFile::Encoding::ASCII);
 
     xdmffile
+      .def(py::init<MPI_Comm, std::string>())
       .def(py::init<std::string>())
+      .def("__enter__", [](dolfin::XDMFFile& self){ return &self; })
+      .def("__exit__", [](dolfin::XDMFFile& self, py::args args, py::kwargs kwargs){ self.close(); })
       .def("write", (void (dolfin::XDMFFile::*)(const dolfin::Function&, dolfin::XDMFFile::Encoding))
            &dolfin::XDMFFile::write, py::arg("u"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::Function&, double, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("u"), py::arg("t"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       .def("write", (void (dolfin::XDMFFile::*)(const dolfin::Mesh&, dolfin::XDMFFile::Encoding))
            &dolfin::XDMFFile::write, py::arg("mesh"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5);
+
+    xdmffile
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshValueCollection<bool>&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshValueCollection<std::size_t>&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshValueCollection<int>&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshValueCollection<double>&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5);
+
+    xdmffile
+      .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshValueCollection<bool>&, std::string))
+           &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "")
+      .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshValueCollection<std::size_t>&, std::string))
+           &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "")
+      .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshValueCollection<int>&, std::string))
+           &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "")
+      .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshValueCollection<double>&, std::string))
+           &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "");
+
+    xdmffile
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshFunction<bool>&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshFunction<std::size_t>&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshFunction<int>&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
+      .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshFunction<double>&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5);
+
+    xdmffile
+      .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshFunction<bool>&, std::string))
+           &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "")
+      .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshFunction<std::size_t>&, std::string))
+           &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "")
+      .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshFunction<int>&, std::string))
+           &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "")
+      .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshFunction<double>&, std::string))
+           &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "");
+
+
 
   }
 

@@ -52,7 +52,7 @@ from .cpp.la import (Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
                      LUSolver, KrylovSolver)
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
-                       Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges,
+                       Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges, entities,
                        vertices, SubDomain, BoundaryMesh, MeshEditor, MultiMesh, MeshQuality,
                        SubMesh)
 from .cpp.parameter import parameters, Parameters
@@ -61,7 +61,7 @@ from .cpp.refinement import refine
 # python modules
 from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
-from .function.functionspace import FunctionSpace, VectorFunctionSpace
+from .function.functionspace import FunctionSpace, VectorFunctionSpace #, TensorFunctionSpace
 from .function.constant import Constant
 from .function.expression import CompiledExpression, UserExpression
 from .mesh.meshfunction import (MeshFunction, CellFunction,
