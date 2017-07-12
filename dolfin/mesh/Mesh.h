@@ -118,7 +118,7 @@ namespace dolfin
     ///         Data from which to build the mesh.
     Mesh(MPI_Comm comm, LocalMeshData& local_mesh_data);
 
-    /// Destructor.
+    /// Destructor
     ~Mesh();
 
     /// Assignment operator

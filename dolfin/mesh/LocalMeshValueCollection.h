@@ -70,9 +70,6 @@ namespace dolfin
     // MeshValueCollection values (cell_index, local_index), value))
     std::vector<std::pair<std::pair<std::size_t, std::size_t>, T> >  _values;
 
-    // MPI communicator
-    dolfin::MPI::Comm _mpi_comm;
-
   };
 
   //---------------------------------------------------------------------------
@@ -82,17 +79,17 @@ namespace dolfin
     LocalMeshValueCollection<T>::LocalMeshValueCollection(MPI_Comm comm,
                                                           const MeshValueCollection<T>& values,
                                                           std::size_t dim)
-    : _dim(dim), _mpi_comm(comm)
+    : _dim(dim)
   {
     // Prepare data
     std::vector<std::vector<std::size_t> > send_indices;
     std::vector<std::vector<T> > send_v;
 
     // Extract data on main process and split among processes
-    if (MPI::is_broadcaster(_mpi_comm.comm()))
+    if (MPI::is_broadcaster(comm))
     {
       // Get number of processes
-      const std::size_t num_processes = MPI::size(_mpi_comm.comm());
+      const std::size_t num_processes = MPI::size(comm);
       send_indices.resize(num_processes);
       send_v.resize(num_processes);
 
@@ -101,7 +98,7 @@ namespace dolfin
       for (std::size_t p = 0; p < num_processes; p++)
       {
         const std::pair<std::size_t, std::size_t> local_range
-          = MPI::local_range(_mpi_comm.comm(), p, vals.size());
+          = MPI::local_range(comm, p, vals.size());
         typename std::map<std::pair<std::size_t,
           std::size_t>, T>::const_iterator it = vals.begin();
         std::advance(it, local_range.first);
@@ -118,8 +115,8 @@ namespace dolfin
     // Scatter data
     std::vector<std::size_t> indices;
     std::vector<T> v;
-    MPI::scatter(_mpi_comm.comm(), send_indices, indices);
-    MPI::scatter(_mpi_comm.comm(), send_v, v);
+    MPI::scatter(comm, send_indices, indices);
+    MPI::scatter(comm, send_v, v);
     dolfin_assert(2*v.size() == indices.size());
 
     // Unpack
