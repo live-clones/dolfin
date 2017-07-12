@@ -35,4 +35,7 @@ jobs:
 #          command: source /usr/local/share/dolfin/dolfin.conf && cd test/unit/python && python3 -m pytest .
       - run:
           name: Build pybind11
-          command: source /usr/local/share/dolfin/dolfin.conf && cd python && git clone https://github.com/pybind/pybind11.git && python3 setup.py build && ls -l $PWD/build/lib*
+          command: source /usr/local/share/dolfin/dolfin.conf && cd python && git clone https://github.com/pybind/pybind11.git && python3 setup.py build
+      - run:
+          name: Test pybind11
+          command: source /usr/local/share/dolfin/dolfin.conf && export PYTHONPATH=$PWD/python/build/lib.linux-x86_64-3.5:$PYTHONPATH && python3 -m pytest python/unit-tests
