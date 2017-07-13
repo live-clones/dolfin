@@ -57,6 +57,7 @@ namespace dolfin_wrappers
   void mpi(py::module& m)
   {
     #ifdef HAS_MPI4PY
+    dolfin::SubSystemsManager::init_mpi();
     import_mpi4py();
     #endif
 
