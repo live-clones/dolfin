@@ -1,0 +1,14 @@
+V1 = FiniteElement("Lagrange", triangle, 1)
+V2 = FiniteElement("Lagrange", triangle, 2)
+
+V = FunctionSpaceProduct(V1,V2)
+
+(u1,u2) = TrialFunction(V)
+(v1,v2) = TestFunction(V)
+(f1,f2) = CoefficientProduct(V)
+
+a_prod = inner(grad(u1), grad(v1))*dx + inner(grad(u2), grad(v2))*dx
+L_prod = f1*v1*dx + f2*v2*dx
+
+a = extract_blocks(a_prod,0,0)
+L = extract_blocks(L_prod,0)

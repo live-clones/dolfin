@@ -22,7 +22,7 @@ from dolfin.function.functionspace import FunctionSpace
 from dolfin.function.function import Function
 from dolfin.function.argument import Argument
 
-__all__ = ["derivative", "adjoint", "increase_order", "tear"]
+__all__ = ["derivative", "adjoint", "increase_order", "tear", "extract_blocks"]
 
 
 def adjoint(form, reordered_arguments=None):
@@ -114,3 +114,6 @@ def tear(V):
     space
     """
     return change_regularity(V, "DG")
+
+def extract_blocks(form, i=None, j=None):
+    return ufl.extract_blocks(form,i,j)
