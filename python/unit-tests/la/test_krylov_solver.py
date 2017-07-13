@@ -26,6 +26,7 @@ from dolfin_utils.test import skip_if_not_PETSc, skip_in_parallel, pushpop_param
 
 
 @skip_if_not_PETSc
+@pytest.mark.xfail
 def test_krylov_samg_solver_elasticity(pushpop_parameters):
     "Test PETScKrylovSolver with smoothed aggregation AMG"
 
@@ -124,6 +125,7 @@ def test_krylov_samg_solver_elasticity(pushpop_parameters):
 
 
 @skip_if_not_PETSc
+@pytest.mark.xfail
 def test_krylov_reuse_pc():
     "Test preconditioner re-use with PETScKrylovSolver"
 
