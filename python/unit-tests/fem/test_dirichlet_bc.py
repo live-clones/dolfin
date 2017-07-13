@@ -72,7 +72,7 @@ def test_director_lifetime():
 
 
 @pytest.mark.xfail
-def test_get_values():
+def xtest_get_values():
     mesh = UnitSquareMesh(8, 8)
     dofs = numpy.zeros(3, dtype="I")
 
@@ -84,7 +84,7 @@ def test_get_values():
     bc_values = bc.get_boundary_values()
 
 @pytest.mark.skip
-def test_meshdomain_bcs(datadir):
+def xtest_meshdomain_bcs(datadir):
     """Test application of Dirichlet boundary conditions stored as
     part of the mesh. This test is also a compatibility test for
     VMTK."""
@@ -110,7 +110,7 @@ def test_meshdomain_bcs(datadir):
 
 
 @pytest.mark.xfail
-def test_user_meshfunction_domains():
+def xtest_user_meshfunction_domains():
     mesh0 = UnitSquareMesh(12, 12)
     mesh1 = UnitSquareMesh(12, 12)
     V = FunctionSpace(mesh0, "CG", 1)
