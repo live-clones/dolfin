@@ -359,7 +359,7 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
                                      map_it.second.end());
       // We might need to pad the global indices with -1's, as this
       // point might not have data_size dofs associated with it
-      for (int pad = 0; pad < data_size - map_it.second.size(); pad++) exterior_global_indices.push_back(-1);
+      for (unsigned int pad = 0; pad < data_size - map_it.second.size(); ++pad) exterior_global_indices.push_back(-1);
     }
     else
     {
@@ -375,7 +375,7 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
         send_found_global_row_indices[rp].insert(
          send_found_global_row_indices[rp].end(),
          map_it.second.begin(), map_it.second.end());
-        for (int pad = 0; pad < data_size - map_it.second.size(); pad++) send_found_global_row_indices[rp].push_back(-1);
+        for (unsigned int pad = 0; pad < data_size - map_it.second.size(); ++pad) send_found_global_row_indices[rp].push_back(-1);
       }
     }
   }
@@ -550,7 +550,7 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
     for (unsigned k = 0; k < data_size; k++)
     {
       const unsigned int fine_row = i*data_size + k;
-      const std::size_t global_fine_dof = global_row_indices[fine_row];
+      const std::int64_t global_fine_dof = global_row_indices[fine_row];
       if (global_fine_dof == -1)
       {
         // We've reached the end of the fine dofs associated with this point,
