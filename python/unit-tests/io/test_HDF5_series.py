@@ -27,7 +27,6 @@ from dolfin_utils.test import skip_if_not_HDF5, fixture, tempdir, \
     xfail_with_serial_hdf5_in_parallel
 
 @skip_if_not_HDF5
-@xfail_with_serial_hdf5_in_parallel
 @pytest.mark.xfail
 def test_save_and_read_function_timeseries(tempdir):
     filename = os.path.join(tempdir, "function.h5")

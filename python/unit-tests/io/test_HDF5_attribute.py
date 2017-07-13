@@ -44,7 +44,6 @@ def attr(tempdir):
     MPI.barrier(MPI.comm_world)
 
 @skip_if_not_HDF5
-@xfail_with_serial_hdf5_in_parallel
 @pytest.mark.xfail
 def test_fail_on_accessing_attribute_on_non_existing_dataset(tempdir):
     hdf_file = HDF5File(MPI.comm_world, os.path.join(tempdir, "hdf_file.h5"), "w")

@@ -465,18 +465,9 @@ class TestVectorForAnyBackend:
         xfail_type_py3(numpy.longlong(42.0)),
     ])
 
+
     @pytest.mark.xfail
-    @pytest.mark.xfail
-    @pytest.mark.xfail
-    @pytest.mark.xfail
-    @pytest.mark.xfail
-    @pytest.mark.xfail
-    @pytest.mark.xfail
-    @pytest.mark.xfail
-    @pytest.mark.xfail
-    @pytest.mark.xfail
-    @pytest.mark.xfail
-    def test_vector_type_priority_with_numpy(self, any_backend, operand):
+    def xtest_vector_type_priority_with_numpy(self, any_backend, operand):
         """Test that DOLFIN return types are prefered over
         NumPy types for binary operations on NumPy objects"""
 
