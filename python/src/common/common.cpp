@@ -80,6 +80,7 @@ namespace dolfin_wrappers
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)
+#ifdef HAS_MPI4PY
       /*
       .def("to_mpi4py_comm", [](MPI_Comm comm){
 
@@ -118,7 +119,9 @@ namespace dolfin_wrappers
 
           return py::cast(mpi_comm);
         },
-        "Convert a plain MPI communicator into a mpi4py communicator");
+        "Convert a plain MPI communicator into a mpi4py communicator")
+#endif
+      ;
      }
 
 }
