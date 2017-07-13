@@ -610,21 +610,21 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
   Mat I;
 
   // Create and initialise the transfer matrix as MATMPIAIJ/MATSEQAIJ
-  ierr = MatCreate(mpi_comm, &I); CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = MatCreate(mpi_comm, &I); CHKERRABORT(mpi_comm, ierr);
   if (mpi_size > 1)
   {
-    ierr = MatSetType(I, MATMPIAIJ); CHKERRABORT(PETSC_COMM_WORLD, ierr);
-    ierr = MatSetSizes(I, m, n, M, N); CHKERRABORT(PETSC_COMM_WORLD, ierr);
+    ierr = MatSetType(I, MATMPIAIJ); CHKERRABORT(mpi_comm, ierr);
+    ierr = MatSetSizes(I, m, n, M, N); CHKERRABORT(mpi_comm, ierr);
     ierr = MatMPIAIJSetPreallocation(I, PETSC_DEFAULT, dnnz.data(),
                                      PETSC_DEFAULT, onnz.data());
-    CHKERRABORT(PETSC_COMM_WORLD, ierr);
+    CHKERRABORT(mpi_comm, ierr);
   }
   else
   {
-    ierr = MatSetType(I, MATSEQAIJ); CHKERRABORT(PETSC_COMM_WORLD, ierr);
-    ierr = MatSetSizes(I, m, n, M, N); CHKERRABORT(PETSC_COMM_WORLD, ierr);
+    ierr = MatSetType(I, MATSEQAIJ); CHKERRABORT(mpi_comm, ierr);
+    ierr = MatSetSizes(I, m, n, M, N); CHKERRABORT(mpi_comm, ierr);
     ierr = MatSeqAIJSetPreallocation(I, PETSC_DEFAULT, dnnz.data());
-    CHKERRABORT(PETSC_COMM_WORLD, ierr);
+    CHKERRABORT(mpi_comm, ierr);
   }
 
   // Setting transfer matrix values row by row
@@ -634,17 +634,17 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
     if (fine_dof == -1) continue; // for the case where data_size isn't constant
     ierr = MatSetValues(I, 1, &fine_dof, eldim, col_indices[fine_row].data(),
                         values[fine_row].data(), INSERT_VALUES);
-    CHKERRABORT(PETSC_COMM_WORLD, ierr);
+    CHKERRABORT(mpi_comm, ierr);
   }
 
   // Assemble the transfer matrix
-  ierr = MatAssemblyBegin(I, MAT_FINAL_ASSEMBLY); CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  ierr = MatAssemblyEnd(I, MAT_FINAL_ASSEMBLY); CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = MatAssemblyBegin(I, MAT_FINAL_ASSEMBLY); CHKERRABORT(mpi_comm, ierr);
+  ierr = MatAssemblyEnd(I, MAT_FINAL_ASSEMBLY); CHKERRABORT(mpi_comm, ierr);
 
   // create shared pointer and return the pointer to the transfer
   // matrix
   std::shared_ptr<PETScMatrix> ptr = std::make_shared<PETScMatrix>(I);
-  ierr = MatDestroy(&I); CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = MatDestroy(&I); CHKERRABORT(mpi_comm, ierr);
   return ptr;
 }
 //-----------------------------------------------------------------------------
