@@ -99,19 +99,14 @@ namespace dolfin_wrappers
           if (PyObject_TypeCheck(obj.ptr(), &PyMPIComm_Type))
             return obj;
 
-          /*
-          // Try to cast to MPI_Comm
-          std::uintptr_t c = obj.cast<std::uintptr_t>();
-
-          // Create wrapper for conversion to mpi4py
-          dolfin_wrappers::mpi_communicator mpi_comm;
-          mpi_comm.comm = reinterpret_cast<MPI_Comm>(c);
-          */
-
-          std::uintptr_t c = obj.cast<std::uintptr_t>();
-
           MPI_Comm comm_new;
+          #ifdef OPEN_MPI
+          std::uintptr_t c = obj.cast<std::uintptr_t>();
           MPI_Comm_dup(reinterpret_cast<MPI_Comm>(c), &comm_new);
+          #else
+          auto value = PyLong_AsLong(obj.ptr());
+          MPI_Comm_dup(value, &comm_new);
+          #endif
 
           // Create wrapper for conversion to mpi4py
           dolfin_wrappers::mpi_communicator mpi_comm;
