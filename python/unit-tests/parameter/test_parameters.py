@@ -135,7 +135,7 @@ def test_nested_read_existing(tempdir):
 
 @pytest.mark.skip
 @skip_in_parallel
-def test_solver_parameters():
+def xtest_solver_parameters():
     "Test that global parameters are propagated to solvers"
 
     # Record default values so we can change back
