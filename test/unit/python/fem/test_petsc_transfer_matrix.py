@@ -163,8 +163,8 @@ def test_vector_p1_3d():
     assert diff.vector().norm("l2") < 1.0e-12
 
 def test_taylor_hood_square():
-    meshc = UnitSquareMesh(1, 1)
-    meshf = UnitSquareMesh(2, 3)
+    meshc = UnitSquareMesh(3, 4)
+    meshf = UnitSquareMesh(4, 5)
 
     Ve = VectorElement("CG", meshc.ufl_cell(), 2)
     Qe = FiniteElement("CG", meshc.ufl_cell(), 1)
