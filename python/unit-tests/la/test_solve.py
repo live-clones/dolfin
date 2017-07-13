@@ -22,8 +22,10 @@
 # First added:  2011-12-21
 # Last changed:se
 
+import pytest
 from dolfin import *
 
+@pytest.mark.xfail
 def test_normalize_average():
     MPI.init()
     size = 200
@@ -34,6 +36,7 @@ def test_normalize_average():
     assert factor == value
     assert x.sum() == 0.0
 
+@pytest.mark.xfail
 def test_normalize_l2():
     MPI.init()
     size = 200

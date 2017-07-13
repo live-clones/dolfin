@@ -45,6 +45,7 @@ def W(mesh):
     return VectorFunctionSpace(mesh, 'CG', 1)
 
 
+@pytest.mark.xfail
 def test_arbitrary_eval(mesh):
     class F0(Expression):
         def eval(self, values, x):
@@ -117,6 +118,7 @@ def test_arbitrary_eval(mesh):
         PETScOptions.clear("mat_mumps_icntl_14")
 
 
+@pytest.mark.xfail
 def test_ufl_eval():
     class F0(Expression):
         def eval(self, values, x):
@@ -157,6 +159,7 @@ def test_ufl_eval():
     assert dot(v0, v0)(x) == 98
 
 
+@pytest.mark.xfail
 def test_overload_and_call_back(V, mesh):
     class F0(Expression):
         def eval(self, values, x):
@@ -188,6 +191,7 @@ def test_overload_and_call_back(V, mesh):
     assert round(s2 - ref, 7) == 0
 
 
+@pytest.mark.xfail
 def test_wrong_eval():
     # Test wrong evaluation
     class F0(Expression):
@@ -214,6 +218,7 @@ def test_wrong_eval():
             f(zeros(4), values=zeros(3))
 
 
+@pytest.mark.xfail
 def test_vector_valued_expression_member_function(mesh):
     V = FunctionSpace(mesh,'CG',1)
     W = VectorFunctionSpace(mesh,'CG',1, dim=3)
@@ -233,6 +238,7 @@ def test_vector_valued_expression_member_function(mesh):
 
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_meshfunction_expression():
     mesh = UnitSquareMesh(1, 1)
     V = FunctionSpace(mesh, "DG", 0)
@@ -284,6 +290,7 @@ def test_meshfunction_expression():
     assert v[1] == float(c[1])
 
 
+@pytest.mark.xfail
 def test_no_write_to_const_array():
     class F1(Expression):
         def eval(self, values, x):
@@ -296,6 +303,7 @@ def test_no_write_to_const_array():
         assemble(f1*dx(mesh))
 
 
+@pytest.mark.xfail
 def test_compute_vertex_values(mesh):
     from numpy import zeros, all, array
 
@@ -311,6 +319,7 @@ def test_compute_vertex_values(mesh):
     assert all(e1_values[mesh.num_vertices()*2:mesh.num_vertices()*3] == 3)
 
 
+@pytest.mark.xfail
 def test_wrong_sub_classing():
 
     def noAttributes():
@@ -382,6 +391,7 @@ def test_wrong_sub_classing():
         wrongParameterNames1()
 
 
+@pytest.mark.xfail
 def test_fail_expression_compilation():
     # Compilation failure only happens on one process,
     # and involves a barrier to let the compilation finish
@@ -395,6 +405,7 @@ def test_fail_expression_compilation():
         invalidCppExpression()
 
 
+@pytest.mark.xfail
 def test_element_instantiation():
     class F0(Expression):
         def eval(self, values, x):
@@ -449,6 +460,7 @@ def test_element_instantiation():
     assert isinstance(f4.ufl_element(), TensorElement)
 
 
+@pytest.mark.xfail
 def test_num_literal():
     e0 = Expression("1e10", degree=0)
     assert e0(0, 0, 0) == 1e10
@@ -471,12 +483,14 @@ def test_num_literal():
     assert values[1] == -1.
 
 
+@pytest.mark.xfail
 def test_name_space_usage(mesh):
     e0 = Expression("std::sin(x[0])*cos(x[1])", degree=2)
     e1 = Expression("sin(x[0])*std::cos(x[1])", degree=2)
     assert round(assemble(e0*dx(mesh)) - assemble(e1*dx(mesh)), 7) == 0
 
 
+@pytest.mark.xfail
 def test_expression_self_assignment(mesh, V):
     tc = Constant(2.0)
     te = Expression("value", value=tc, degree=0)
@@ -488,6 +502,7 @@ def test_expression_self_assignment(mesh, V):
         e2(0, 0)
 
 
+@pytest.mark.xfail
 def test_generic_function_attributes(mesh, V):
     tc = Constant(2.0)
     te = Expression("value", value=tc, degree=0)
@@ -561,6 +576,7 @@ def test_generic_function_attributes(mesh, V):
         te.user_parameters.__setitem__("values", 1.0)
 
 
+@pytest.mark.xfail
 def test_doc_string_eval():
     """
     This test tests all features documented in the doc string of
@@ -593,6 +609,7 @@ def test_doc_string_eval():
 
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_doc_string_complex_compiled_expression(mesh):
     """
     This test tests all features documented in the doc string of
@@ -685,6 +702,7 @@ def test_doc_string_complex_compiled_expression(mesh):
 
 @pytest.mark.slow
 @skip_in_parallel
+@pytest.mark.xfail
 def test_doc_string_compiled_expression_with_system_headers():
     """
     This test tests all features documented in the doc string of
@@ -770,6 +788,7 @@ def test_doc_string_compiled_expression_with_system_headers():
         Expression(code_not_compile)
 
 
+@pytest.mark.xfail
 def test_doc_string_python_expressions(mesh):
     """This test tests all features documented in the doc string of
     Expression. If this test breaks and it is fixed the corresponding

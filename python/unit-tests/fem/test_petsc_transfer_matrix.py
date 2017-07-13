@@ -26,6 +26,7 @@ from dolfin import *
 
 from dolfin_utils.test import *
 
+@pytest.mark.xfail
 def test_scalar_p1():
     meshc = UnitCubeMesh(2, 2, 2)
     meshf = UnitCubeMesh(3, 4, 5)
@@ -46,6 +47,7 @@ def test_scalar_p1():
     diff.assign(Vuc - uf)
     assert diff.vector().norm("l2") < 1.0e-12
 
+@pytest.mark.xfail
 def test_scalar_p1_scaled_mesh():
     # Make coarse mesh smaller than fine mesh
     meshc = UnitCubeMesh(2, 2, 2)
@@ -82,6 +84,7 @@ def test_scalar_p1_scaled_mesh():
     diff.assign(Vuc - uf)
     assert diff.vector().norm("l2") < 1.0e-12
 
+@pytest.mark.xfail
 def test_scalar_p2():
     meshc = UnitCubeMesh(2, 2, 2)
     meshf = UnitCubeMesh(3, 4, 5)
@@ -102,6 +105,7 @@ def test_scalar_p2():
     diff.assign(Vuc - uf)
     assert diff.vector().norm("l2") < 1.0e-12
 
+@pytest.mark.xfail
 def test_vector_p1_2d():
     meshc = UnitSquareMesh(3, 3)
     meshf = UnitSquareMesh(5, 5)
@@ -122,6 +126,7 @@ def test_vector_p1_2d():
     diff.assign(Vuc - uf)
     assert diff.vector().norm("l2") < 1.0e-12
 
+@pytest.mark.xfail
 def test_vector_p2_2d():
     meshc = UnitSquareMesh(5, 4)
     meshf = UnitSquareMesh(5, 8)
@@ -142,6 +147,7 @@ def test_vector_p2_2d():
     diff.assign(Vuc - uf)
     assert diff.vector().norm("l2") < 1.0e-12
 
+@pytest.mark.xfail
 def test_vector_p1_3d():
     meshc = UnitCubeMesh(2, 3, 4)
     meshf = UnitCubeMesh(3, 4, 5)

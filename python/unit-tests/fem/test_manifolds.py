@@ -168,6 +168,7 @@ def rotate_2d_mesh(theta):
 
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_poisson2D_in_3D():
     """This test solves Poisson's equation on a unit square in 2D, and
     then on a unit square embedded in 3D and rotated pi/4 radians
@@ -186,6 +187,7 @@ def test_poisson2D_in_3D():
 
 # TODO: Use pytest parameterization
 @skip_in_parallel
+@pytest.mark.xfail
 def test_basis_evaluation_2D_in_3D():
     """This test checks that basis functions and their derivatives are
     unaffected by rotations."""

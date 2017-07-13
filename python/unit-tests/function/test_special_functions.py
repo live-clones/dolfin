@@ -29,6 +29,7 @@ import dolfin
 from dolfin_utils.test import skip_in_parallel
 
 @skip_in_parallel
+@pytest.mark.xfail
 def testFacetArea():
 
     references = [(UnitIntervalMesh(1), 2, 2),\

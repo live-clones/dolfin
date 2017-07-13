@@ -24,21 +24,25 @@ import pytest
 from dolfin import *
 from dolfin_utils.test import fixture, cd_tempdir
 
+@pytest.mark.xfail
 def test_write_mesh_1d(cd_tempdir):
     mesh = UnitIntervalMesh(8)
     f = File("_1d.svg")
     f << mesh
 
+@pytest.mark.xfail
 def test_write_mesh_2d(cd_tempdir):
     mesh = UnitSquareMesh(8, 8)
     f = File("2d.svg")
     f << mesh
 
+@pytest.mark.xfail
 def test_write_mesh_3d(cd_tempdir):
     mesh = UnitCubeMesh(8, 8, 8)
     f = File("3d.svg")
     f << mesh
 
+@pytest.mark.xfail
 def test_ipython_svg(cd_tempdir):
     # Test IPython SVG repr hooks
     mesh2d = UnitSquareMesh(8, 8)

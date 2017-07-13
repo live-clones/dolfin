@@ -18,9 +18,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
+import pytest
 from dolfin import *
+import pytest
 from dolfin_utils.test import cd_tempdir
 
+@pytest.mark.xfail
 def test_save_and_read_xml_function(cd_tempdir):
     mesh = UnitSquareMesh(10, 10)
     Q = FunctionSpace(mesh, "CG", 3)

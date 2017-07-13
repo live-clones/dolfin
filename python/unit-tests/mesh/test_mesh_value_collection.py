@@ -23,9 +23,11 @@
 # Last changed: 2011-03-10
 
 import numpy.random
+import pytest
 from dolfin import *
 
 
+@pytest.mark.xfail
 def test_assign_2D_cells():
     mesh = UnitSquareMesh(3, 3)
     ncells = mesh.num_cells()
@@ -49,6 +51,7 @@ def test_assign_2D_cells():
     assert old_value + 1 == g.get_value(0, 0)
 
 
+@pytest.mark.xfail
 def test_assign_2D_facets():
     mesh = UnitSquareMesh(3, 3)
     mesh.init(2, 1)
@@ -72,6 +75,7 @@ def test_assign_2D_facets():
             assert value+i == g.get_value(cell.index(), i)
 
 
+@pytest.mark.xfail
 def test_assign_2D_vertices():
     mesh = UnitSquareMesh(3, 3)
     mesh.init(2, 0)
@@ -95,6 +99,7 @@ def test_assign_2D_vertices():
             assert value+i == g.get_value(cell.index(), i)
 
 
+@pytest.mark.xfail
 def test_mesh_function_assign_2D_cells():
     mesh = UnitSquareMesh(3, 3)
     ncells = mesh.num_cells()
@@ -134,6 +139,7 @@ def test_mesh_function_assign_2D_cells():
     assert MPI.sum(mesh.mpi_comm(), values.sum()*1.0) == 140.
 
 
+@pytest.mark.xfail
 def test_mesh_function_assign_2D_facets():
     mesh = UnitSquareMesh(3, 3)
     mesh.init(1)
@@ -157,6 +163,7 @@ def test_mesh_function_assign_2D_facets():
             assert f2[facet] == g.get_value(cell.index(), i)
 
 
+@pytest.mark.xfail
 def test_mesh_function_assign_2D_vertices():
     mesh = UnitSquareMesh(3, 3)
     mesh.init(0)

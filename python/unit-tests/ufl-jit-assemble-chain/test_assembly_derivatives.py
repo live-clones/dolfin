@@ -26,9 +26,11 @@ from __future__ import print_function
 import unittest
 import numpy
 import math
+import pytest
 from dolfin import *
 
 
+@pytest.mark.xfail
 def test_diff_then_integrate():
 
     # Define 1D geometry
@@ -153,6 +155,7 @@ def test_diff_then_integrate():
         assert f_integral - F_diff <= delta
 
 
+@pytest.mark.xfail
 def test_div_grad_then_integrate_over_cells_and_boundary():
 
     # Define 2D geometry

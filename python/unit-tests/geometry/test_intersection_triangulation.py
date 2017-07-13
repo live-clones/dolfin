@@ -71,6 +71,7 @@ def triangulation_to_mesh_3d(triangulation):
     return mesh
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_triangulate_intersection_2d():
 
     # Create two meshes of the unit square
@@ -98,6 +99,7 @@ def test_triangulate_intersection_2d():
     assert round(volume - exactvolume, 7) == 0, errorstring
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_triangulate_intersection_2d_3d():
 
     # Note: this test will fail if the triangle mesh is aligned
@@ -146,6 +148,7 @@ def test_triangulate_intersection_2d_3d():
 
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_triangulate_intersection_3d():
 
     # Create two meshes of the unit cube

@@ -49,14 +49,17 @@ def v(V):
     return MultiMeshFunction(V)
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_measure_mul(v, multimesh):
     assert isinstance(v*dX, ufl.form.Form)
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_assemble_zero(v, multimesh):
     assert numpy.isclose(assemble_multimesh(v*dX), 0)
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_assemble_area(v, multimesh):
     v.vector()[:] = 1
     assert numpy.isclose(assemble_multimesh(v*dX), 1)

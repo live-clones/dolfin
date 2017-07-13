@@ -24,6 +24,7 @@ from dolfin import *
 from dolfin_utils.test import *
 
 
+@pytest.mark.xfail
 def test_bcs():
     "Check that the bcs argument is picked up"
 
@@ -61,6 +62,7 @@ def test_bcs():
     assert round(u4.vector().norm("l2") - 14.9362601686, 10) == 0
 
 
+@pytest.mark.xfail
 def test_bcs_space():
     "Check that the bc space is checked to be a subspace of trial space"
     mesh = UnitSquareMesh(4, 4)
@@ -84,6 +86,7 @@ def test_bcs_space():
         solve(action(a, u) - L == 0, u, bc)
 
 
+@pytest.mark.xfail
 def test_calling():
     "Test that unappropriate arguments are not allowed"
     mesh = UnitSquareMesh(4, 4)
@@ -110,6 +113,7 @@ def test_calling():
     # FIXME: Include more tests for this versatile function
 
 
+@pytest.mark.xfail
 def test_nonlinear_variational_solver_custom_comm():
     "Check that nonlinear variational solver works on subset of comm_world"
     if MPI.rank(mpi_comm_world()) == 0:

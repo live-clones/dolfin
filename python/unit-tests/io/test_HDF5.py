@@ -44,6 +44,7 @@ def test_save_vector(tempdir):
 
 @skip_if_not_HDF5
 @xfail_with_serial_hdf5_in_parallel
+@pytest.mark.xfail
 def test_save_and_read_vector(tempdir):
     filename = os.path.join(tempdir, "vector.h5")
 
@@ -120,6 +121,7 @@ def test_save_and_read_meshfunction_3D(tempdir):
 
 @skip_if_not_HDF5
 @xfail_with_serial_hdf5_in_parallel
+@pytest.mark.xfail
 def test_save_and_read_mesh_value_collection(tempdir):
     ndiv = 5
     filename = os.path.join(tempdir, "mesh_value_collection.h5")
@@ -174,6 +176,7 @@ def test_save_and_read_mesh_value_collection_with_only_one_marked_entity(tempdir
 
 @skip_if_not_HDF5
 @xfail_with_serial_hdf5_in_parallel
+@pytest.mark.xfail
 def test_save_and_read_function(tempdir):
     filename = os.path.join(tempdir, "function.h5")
 

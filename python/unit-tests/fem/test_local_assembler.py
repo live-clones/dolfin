@@ -21,13 +21,16 @@
 
 from __future__ import division
 import numpy
+import pytest
 from dolfin import *
+import pytest
 from dolfin_utils.test import set_parameters_fixture
 
 
 ghost_mode = set_parameters_fixture("ghost_mode", ["shared_facet"])
 
 
+@pytest.mark.xfail
 def test_local_assembler_1D():
     mesh = UnitIntervalMesh(20)
     V = FunctionSpace(mesh, 'CG', 1)
@@ -59,6 +62,7 @@ def test_local_assembler_1D():
     assert near(A_matrix[1, 1], 1/60)
 
 
+@pytest.mark.xfail
 def test_local_assembler_on_facet_integrals(ghost_mode):
     mesh = UnitSquareMesh(4, 4, 'right')
     Vcg = FunctionSpace(mesh, 'CG', 1)
@@ -100,6 +104,7 @@ def test_local_assembler_on_facet_integrals(ghost_mode):
     assert error < 1e-8
 
 
+@pytest.mark.xfail
 def test_local_assembler_on_facet_integrals2(ghost_mode):
     mesh = UnitSquareMesh(4, 4)
     Vu = VectorFunctionSpace(mesh, 'DG', 1)

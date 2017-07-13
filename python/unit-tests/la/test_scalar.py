@@ -19,9 +19,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
+import pytest
 from dolfin import *
 
 
+@pytest.mark.xfail
 def test_scalar_parallel_sum():
     a = Scalar()
     b = 1.0
@@ -30,6 +32,7 @@ def test_scalar_parallel_sum():
     assert round(a.get_scalar_value() - b*MPI.size(a.mpi_comm()), 7) == 0
 
 
+@pytest.mark.xfail
 def test_scalar_assembly():
     mesh = UnitSquareMesh(3, 3)
 

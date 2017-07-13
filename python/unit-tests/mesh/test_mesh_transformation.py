@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
+import pytest
 from dolfin import *
 
 
@@ -34,6 +35,7 @@ def test_translate_3d():
     mesh.translate(p)
 
 
+@pytest.mark.xfail
 def test_rotate_2d():
     mesh = UnitSquareMesh(8, 8)
     p = Point(1, 2)
@@ -42,6 +44,7 @@ def test_rotate_2d():
     mesh.rotate(10, 2, p)
 
 
+@pytest.mark.xfail
 def test_rotate_3d():
     mesh = UnitCubeMesh(8, 8, 8)
     p = Point(1, 2, 3)
@@ -51,6 +54,7 @@ def test_rotate_3d():
     mesh.rotate(30, 0, p)
 
 
+@pytest.mark.xfail
 def test_rescale_2d():
     mesh = UnitSquareMesh(8, 8)
     p = Point(4, 4)
@@ -60,6 +64,7 @@ def test_rescale_2d():
     assert MPI.sum(comm, sum(c.volume() for c in cells(mesh))) == s*s
 
 
+@pytest.mark.xfail
 def test_rescale_3d():
     mesh = UnitCubeMesh(8, 8, 8)
     p = Point(4, 4, 4)

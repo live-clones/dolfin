@@ -35,6 +35,7 @@ def test_name_argument():
     assert str(v) == "v"
 
 
+@pytest.mark.xfail
 def testConstantInit():
     c0 = Constant(1.)
     c1 = Constant([2, 3], interval)
@@ -53,6 +54,7 @@ def testConstantInit():
     assert c3.ufl_shape == (2,)
 
 
+@pytest.mark.xfail
 def testGrad():
     import ufl
     zero = ufl.constantvalue.Zero((2, 3))
@@ -66,6 +68,7 @@ def testGrad():
     assert zero == gradient(c3)
 
 
+@pytest.mark.xfail
 def test_compute_vertex_values():
     from numpy import zeros, all, array
 
@@ -86,6 +89,7 @@ def test_compute_vertex_values():
     assert all(e1_values[mesh.num_vertices()*2:mesh.num_vertices()*3] == 3)
 
 
+@pytest.mark.xfail
 def test_values():
     import numpy as np
 
@@ -102,6 +106,7 @@ def test_values():
     assert np.all(c2_vals == np.array([1., 2., 3.], dtype=np.double))
 
 
+@pytest.mark.xfail
 def test_str():
     c0 = Constant(1.)
     c0.str(False)

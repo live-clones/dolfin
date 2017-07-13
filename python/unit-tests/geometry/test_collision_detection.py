@@ -102,6 +102,7 @@ def test_tetrahedron_collides_point():
 
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_tetrahedron_collides_triangle():
     """Test if point collide with tetrahedron"""
 

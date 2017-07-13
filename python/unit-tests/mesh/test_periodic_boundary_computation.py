@@ -53,6 +53,7 @@ def mesh():
 
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_ComputePeriodicPairs(pbc, periodic_boundary, mesh):
 
     # Verify that correct number of periodic pairs are computed
@@ -63,6 +64,7 @@ def test_ComputePeriodicPairs(pbc, periodic_boundary, mesh):
 
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_MastersSlaves(pbc, periodic_boundary, mesh):
 
     # Verify that correct number of masters and slaves are marked

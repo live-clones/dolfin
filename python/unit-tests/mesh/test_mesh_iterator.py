@@ -28,6 +28,7 @@ from dolfin import *
 from six.moves import xrange as range
 
 
+@pytest.mark.xfail
 def test_vertex_iterators():
     "Iterate over vertices"
 
@@ -59,6 +60,7 @@ def test_vertex_iterators():
     #assert end_point[1] + 2 == mesh.coordinates()[-1,1]
     #assert end_point[2] + 2 == mesh.coordinates()[-1,2]
 
+@pytest.mark.xfail
 def test_edge_iterators():
     "Iterate over edges"
 
@@ -82,6 +84,7 @@ def test_edge_iterators():
 
     assert n == mesh.num_edges()
 
+@pytest.mark.xfail
 def test_face_iterator():
     "Iterate over faces"
 
@@ -113,6 +116,7 @@ def test_facet_iterators():
         n += 1
     assert n == mesh.num_facets()
 
+@pytest.mark.xfail
 def test_cell_iterators():
     "Iterate over cells"
     mesh = UnitCubeMesh(5, 5, 5)

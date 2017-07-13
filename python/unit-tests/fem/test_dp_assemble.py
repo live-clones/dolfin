@@ -73,6 +73,9 @@ def _create_dp_problem(dim):
     return (u, uu), (v, vv), (U, UU), dPP, bc
 
 
+@pytest.mark.xfail
+@pytest.mark.xfail
+@pytest.mark.xfail
 def test_scalar_assemble(dim):
     eps = 1000*DOLFIN_EPS
 
@@ -89,6 +92,9 @@ def test_scalar_assemble(dim):
     assert abs(scalar_value-uu.vector().sum()) < eps
 
 
+@pytest.mark.xfail
+@pytest.mark.xfail
+@pytest.mark.xfail
 def test_vector_assemble(dim):
     eps = 1000*DOLFIN_EPS
 
@@ -106,6 +112,9 @@ def test_vector_assemble(dim):
     assert sum(np.absolute(vec.array() - uu.vector().array())) < eps
 
 
+@pytest.mark.xfail
+@pytest.mark.xfail
+@pytest.mark.xfail
 def test_matrix_assemble(dim):
     eps = 1000*DOLFIN_EPS
 

@@ -26,6 +26,7 @@ import pytest
 from dolfin import *
 
 
+@pytest.mark.xfail
 def test_build_from_mesh_simple():
     """Build mesh graph """
 

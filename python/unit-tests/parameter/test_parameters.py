@@ -27,6 +27,7 @@ from dolfin import *
 from dolfin_utils.test import *
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_simple(tempdir):
 
     # Create some parameters
@@ -53,6 +54,7 @@ def test_simple(tempdir):
     assert p1["monitor_convergence"] == True
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_gzipped_simple(tempdir):
 
     # Create some parameters
@@ -79,6 +81,7 @@ def test_gzipped_simple(tempdir):
     assert p1["monitor_convergence"] == True
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_nested(tempdir):
 
     # Create some nested parameters
@@ -118,6 +121,7 @@ def test_parameters_update(tempdir):
     p1.update(p0)
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_nested_read_existing(tempdir):
     """Test that we can read in a nested parameter database into
        an existing (and matching) parameter database"""

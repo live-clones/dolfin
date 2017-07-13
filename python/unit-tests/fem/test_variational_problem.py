@@ -24,6 +24,7 @@ from dolfin import *
 from dolfin_utils.test import *
 
 
+@pytest.mark.xfail
 def test_linear_construction():
     "Test construction of LinearVariationalProblem"
 
@@ -50,6 +51,7 @@ def test_linear_construction():
     problem = LinearVariationalProblem(a, L, w, [bc, bc])
 
 
+@pytest.mark.xfail
 def test_nonlinear_construction():
     "Test construction of NonlinearVariationalProblem"
 

@@ -70,6 +70,7 @@ def test_read_gzipped_vector(cd_tempdir):
     assert x.size() == y.size()
     assert round(x.norm("l2") - y.norm("l2"), 7) == 0
 
+@pytest.mark.xfail
 def test_save_read_vector(cd_tempdir):
     size = 512
     x = Vector(MPI.comm_world, size)

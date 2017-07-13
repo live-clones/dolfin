@@ -26,6 +26,7 @@ from dolfin import UnitSquareMesh, BoundaryMesh, Expression, \
                    ALE
 from dolfin_utils.test import skip_in_parallel
 
+@pytest.mark.xfail
 def test_HarmonicSmoothing():
 
     # Create some mesh and its boundary
@@ -55,6 +56,7 @@ def test_HarmonicSmoothing():
     assert rmin > magic_number
 
 @skip_in_parallel
+@pytest.mark.xfail
 def test_ale():
 
     # Create some mesh

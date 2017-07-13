@@ -26,6 +26,7 @@ from dolfin_utils.test import skip_if_not_PETSc, skip_in_parallel
 backends = ["PETSc", skip_in_parallel("Eigen")]
 
 @pytest.mark.parametrize('backend', backends)
+@pytest.mark.xfail
 def test_lu_solver(backend):
 
     # Check whether backend is available

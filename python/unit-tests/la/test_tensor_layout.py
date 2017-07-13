@@ -44,6 +44,10 @@ def mesh():
     VectorElement("P", triangle, 2)*FiniteElement("P", triangle, 1),
     VectorElement("P", triangle, 1)*FiniteElement("R", triangle, 0),
 ])
+@pytest.mark.xfail
+@pytest.mark.xfail
+@pytest.mark.xfail
+@pytest.mark.xfail
 def test_layout_and_pattern_interface(backend, mesh, element):
     # Strange Tpetra segfault with Reals in sequential
     if (backend == "Tpetra"

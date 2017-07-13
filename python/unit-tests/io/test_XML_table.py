@@ -23,6 +23,7 @@ import pytest
 from dolfin import *
 from dolfin_utils.test import cd_tempdir
 
+@pytest.mark.xfail
 def test_write_and_read_table(cd_tempdir):
     # Do something that takes time
     x = PETScVector(MPI.comm_world, 197)

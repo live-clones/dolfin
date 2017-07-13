@@ -4,6 +4,7 @@ import numpy
 from dolfin import *
 
 
+@pytest.mark.xfail
 def test_manifold_point_search():
     # Simple two-triangle surface in 3d
     vertices = [

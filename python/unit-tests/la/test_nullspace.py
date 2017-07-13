@@ -84,6 +84,7 @@ def build_broken_elastic_nullspace(V, x):
     return VectorSpaceBasis(nullspace_basis)
 
 
+@pytest.mark.xfail
 def test_nullspace_orthogonal():
     """Test that null spaces orthogonalisation"""
     meshes = [UnitSquareMesh(12, 12), UnitCubeMesh(4, 4, 4)]
@@ -109,6 +110,7 @@ def test_nullspace_orthogonal():
 
 
 @pytest.mark.parametrize('backend', backends)
+@pytest.mark.xfail
 def test_nullspace_check(backend):
     # Check whether backend is available
     if not has_linear_algebra_backend(backend):

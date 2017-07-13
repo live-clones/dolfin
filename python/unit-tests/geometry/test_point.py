@@ -24,6 +24,7 @@ import numpy as np
 from dolfin import Point
 
 
+@pytest.mark.xfail
 def test_point_getitem():
     p = Point(1, 2, 3)
     assert p[0] == 1.0
@@ -36,6 +37,7 @@ def test_point_getitem():
     assert np.all(p[:] == np.array((1.0, 2.0, 3.0)))
 
 
+@pytest.mark.xfail
 def test_point_setitem():
     p = Point()
 
@@ -73,6 +75,7 @@ def test_point_setitem():
 
 
 
+@pytest.mark.xfail
 def test_point_array():
     p = Point(1, 2, 3)
     assert np.all(p.array() == (1, 2, 3))

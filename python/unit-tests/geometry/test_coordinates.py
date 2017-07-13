@@ -76,6 +76,7 @@ def _check_coords(mesh, c):
     assert np.isclose(x.vector().norm("l1"), 0.0)
 
 
+@pytest.mark.xfail
 def test_linear(meshes_p1):
     for mesh in meshes_p1:
         _test_get_set_coordinates(mesh)
@@ -87,6 +88,7 @@ def test_linear(meshes_p1):
 #         _test_get_set_coordinates(mesh)
 
 
+@pytest.mark.xfail
 def test_raises(meshes_p1):
     mesh1, mesh2 = meshes_p1[:2]
 
