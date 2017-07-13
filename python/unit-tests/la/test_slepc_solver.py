@@ -71,6 +71,7 @@ def K_M_vec(V_vec):
 # Tests
 
 @skip_if_not_PETsc_or_not_slepc
+@pytest.mark.xfail
 def test_slepc_eigensolver_gen_hermitian(K_M):
     "Test SLEPc eigen solver"
 
@@ -111,6 +112,7 @@ def test_slepc_eigensolver_gen_hermitian(K_M):
 
 
 @skip_if_not_PETsc_or_not_slepc
+@pytest.mark.xfail
 def test_slepc_null_space(K_M, V):
     "Test SLEPc eigen solver with nullspace as PETScVector"
 
@@ -119,7 +121,7 @@ def test_slepc_null_space(K_M, V):
 
     esolver.parameters["solver"] = "jacobi-davidson"
     esolver.parameters["problem_type"] = 'gen_hermitian'
-    
+
     u0 = Function(V)
     nullspace_basis = as_backend_type(u0.vector().copy())
     V.dofmap().set(nullspace_basis, 1.0)
@@ -137,6 +139,7 @@ def test_slepc_null_space(K_M, V):
 
 
 @skip_if_not_PETsc_or_not_slepc
+@pytest.mark.xfail
 def test_slepc_vector_null_space(K_M_vec, V_vec):
     "Test SLEPc eigen solver with nullspace as VectorSpaceBasis"
 
@@ -160,7 +163,7 @@ def test_slepc_vector_null_space(K_M_vec, V_vec):
 
     esolver.parameters["solver"] = "jacobi-davidson"
     esolver.parameters["problem_type"] = 'gen_hermitian'
-    
+
     u0 = Function(V_vec)
     nullspace_basis = build_nullspace(V_vec, u0.vector())
     esolver.set_deflation_space(nullspace_basis)

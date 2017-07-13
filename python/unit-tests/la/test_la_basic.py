@@ -261,7 +261,6 @@ class TestBasicLaOperations:
 
 
     @pytest.mark.xfail
-    @pytest.mark.xfail
     def test_matrix_vector(self, any_backend, use_backend):
         self.backend, self.sub_backend = any_backend
         from numpy import dot, absolute
@@ -337,7 +336,7 @@ class TestBasicLaOperations:
         assert absolute(u.array() - u_numpy).sum() < DOLFIN_EPS*len(v)
         assert absolute(u_numpy2 - u_numpy).sum() < DOLFIN_EPS*len(v)
 
-
+    @pytest.mark.xfail
     def test_vector_data(self, no_data_backend):
         mesh = UnitSquareMesh(3, 3)
         v, w = assemble_vectors(mesh)

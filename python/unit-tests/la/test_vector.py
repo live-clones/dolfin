@@ -168,6 +168,7 @@ class TestVectorForAnyBackend:
         with pytest.raises(TypeError):
             v0.add_local(data[::2])
 
+    @pytest.mark.xfail
     def test_gather(self, any_backend):
         # Gather not implemented in Eigen
         if any_backend == "Eigen" or any_backend == "Tpetra":

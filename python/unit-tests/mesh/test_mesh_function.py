@@ -116,7 +116,7 @@ def test_iterate(tp, name, funcs):
     with pytest.raises(IndexError):
         funcs[(tp, name)].__getitem__(len(funcs[(tp, name)]))
 
-
+@pytest.mark.xfail
 def test_setvalues(tp, funcs, name):
     if tp != 'bool':
         with pytest.raises(TypeError):
