@@ -78,6 +78,8 @@ namespace dolfin_wrappers
       .def_static("barrier", &dolfin::MPI::barrier)
       .def_static("rank", &dolfin::MPI::rank)
       .def_static("size", &dolfin::MPI::size)
+      .def_static("local_range", (std::pair<std::int64_t, std::int64_t> (*)(MPI_Comm, std::int64_t))
+                  &dolfin::MPI::local_range)
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)

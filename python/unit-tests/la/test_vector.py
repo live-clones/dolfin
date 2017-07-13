@@ -30,6 +30,7 @@ from copy import copy
 
 from dolfin import *
 from dolfin_utils.test import *
+from math import sqrt
 
 # TODO: Use the fixture setup from matrix in a shared conftest.py when
 #       we move tests to one flat folder.

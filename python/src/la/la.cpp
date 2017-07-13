@@ -108,8 +108,10 @@ namespace dolfin_wrappers
                dolfin::GenericVector, dolfin::GenericTensor>
       (m, "Vector", "DOLFIN Vector object")
       .def(py::init<>())
+      .def(py::init<const dolfin::Vector&>())
       .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::size_t>())
+      .def("init", (void (dolfin::Vector::*)(std::pair<std::size_t, std::size_t>))&dolfin::Vector::init)
       .def("mpi_comm", &dolfin::Vector::mpi_comm)
       .def("size", &dolfin::Vector::size)
       .def("__iadd__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
@@ -135,6 +137,36 @@ namespace dolfin_wrappers
              if (start != 0 or stop != self.size() or step != 1)
                throw std::range_error("Only full slices are supported");
              *self.instance() = value; })
+      .def("sum", (double (dolfin::Vector::*)() const) &dolfin::Vector::sum)
+      .def("min", &dolfin::Vector::min)
+      .def("max", &dolfin::Vector::max)
+      .def("abs", &dolfin::Vector::abs)
+      .def("norm", &dolfin::Vector::norm)
+      .def("inner", &dolfin::Vector::inner)
+      .def("axpy", &dolfin::Vector::axpy)
+      .def("zero", &dolfin::Vector::zero)
+      .def("local_size", &dolfin::Vector::local_size)
+      .def("local_range", &dolfin::Vector::local_range)
+      .def("owns_index", &dolfin::Vector::owns_index)
+      .def("get_local", [](dolfin::Vector& self)
+           {
+             std::vector<double> values;
+             self.get_local(values); return values;
+           })
+      .def("add_local", [](dolfin::Vector& self, const std::vector<double>& values)
+           {
+             std::vector<dolfin::la_index> indices(values.size());
+             std::iota(indices.begin(), indices.end(), 0);
+             self.add_local(values.data(), values.size(), indices.data());
+           })
+      .def("set_local", [](dolfin::Vector& self, const std::vector<double>& values)
+           {
+             std::vector<dolfin::la_index> indices(values.size());
+             std::iota(indices.begin(), indices.end(), 0);
+             self.set_local(values.data(), values.size(), indices.data());
+           })
+      .def("apply", &dolfin::Vector::apply)
+      .def("str", &dolfin::Vector::str)
       .def("backend_type", [](dolfin::Vector& self)
            {
              // Experiment with determining backend type
