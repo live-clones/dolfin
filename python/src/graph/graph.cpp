@@ -19,10 +19,11 @@
 #include <memory>
 #include <vector>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
-#include <dolfin/mesh/Mesh.h>
 #include <dolfin/graph/Graph.h>
 #include <dolfin/graph/GraphBuilder.h>
+#include <dolfin/mesh/Mesh.h>
 
 namespace py = pybind11;
 
