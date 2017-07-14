@@ -82,7 +82,7 @@ def test_gzipped_simple(tempdir):
 
 @skip_in_parallel
 @pytest.mark.xfail
-def test_nested(tempdir):
+def xtest_nested(tempdir):
 
     # Create some nested parameters
     p0 = Parameters("test")

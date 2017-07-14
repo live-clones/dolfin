@@ -39,7 +39,9 @@ namespace dolfin_wrappers
   {
     // dolfin::File
     py::class_<dolfin::File, std::shared_ptr<dolfin::File>>(m, "File")
-      .def(py::init<std::string>());
+      .def(py::init<std::string>())
+      .def("__lshift__", (void (dolfin::File::*)(const dolfin::Parameters&)) &dolfin::File::operator<<)
+      .def("__rshift__", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::operator>>);
 
     // dolfin::GenericFile
     py::class_<dolfin::GenericFile, std::shared_ptr<dolfin::GenericFile>>(m, "GenericFile")
