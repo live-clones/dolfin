@@ -136,6 +136,7 @@ namespace dolfin_wrappers
             self.eval(_values, x);
             return values;
           })
+      .def("interpolate", &dolfin::Function::interpolate)
       .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
            &dolfin::Function::vector);
 
