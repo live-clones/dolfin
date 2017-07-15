@@ -95,7 +95,7 @@ class UserExpression(ufl.Coefficient):
         return self._cpp_expression
 
 
-def jit_generate(statements, module_name, signature, parameters):
+def jit_generate(class_data, module_name, signature, parameters):
 
     template_code = """
 
@@ -141,6 +141,7 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
     _get_props = """          if (name == "{name}") return {name};"""
     _set_props = """          if (name == "{name}") {{ {name} = value; return; }}"""
 
+    statements = class_data["statements"]
     statement = ""
     for i, val in enumerate(statements):
         statement += "          values[" + str(i) + "] = " + val + ";\n"
@@ -150,8 +151,8 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
     set_props = ""
     get_props = ""
 
-    properties = {'a': 1.0}
-
+    # Add code for setting and getting property values
+    properties = class_data["properties"]
     for k in properties:
         value = properties[k]
         members += "double " + k + ";\n"
@@ -172,7 +173,7 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
     return code_h, code_c, depends
 
 
-def compile_expression(statements):
+def compile_expression(statements, properties):
     """Compile a user C(++) string to a Python object"""
 
     import pkgconfig
@@ -194,21 +195,37 @@ def compile_expression(statements):
     if not isinstance(statements, tuple):
         raise RuntimeError("Expression must be a string, or a tuple of strings")
 
+    class_data = {'statements': statements, 'properties': properties}
+
     module_hash = hashlib.md5("".join(statements).encode('utf-8')).hexdigest()
     module_name = "dolfin_expression_" + module_hash
-    module, signature = dijitso.jit(statements, module_name, params,
+    module, signature = dijitso.jit(class_data, module_name, params,
                                     generate=jit_generate)
 
     submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
     print("JIT gives:", submodule, module, signature)
 
     expression = cpp.function.make_dolfin_expression(submodule)
+
+    # Set properties to initial values
+    for k in properties:
+        expression.set_property(k, properties[k])
+
     return expression
 
-
 class CompiledExpression(ufl.Coefficient):
-    def __init__(self, statement, degree):
-        self._cpp_expression = compile_expression(statement)
+    def __init__(self, statements, **kwargs):
+
+        degree = kwargs.pop("degree")
+
+        properties = kwargs
+        for k in properties:
+            if not isinstance(k, string_types):
+                raise KeyError("Invalid key")
+            if not isinstance(properties[k], float):
+                raise ValueError("Invalid value")
+
+        self._cpp_expression = compile_expression(statements, properties)
 
         if (degree == 0):
             element = ufl.FiniteElement("DG", None, 0)
@@ -216,6 +233,15 @@ class CompiledExpression(ufl.Coefficient):
             element = ufl.FiniteElement("Lagrange", None, degree)
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
+
+    def __getattr__(self, name):
+        return self._cpp_expression.get_property(name)
+
+    def __setattr__(self, name, value):
+        if name.startswith("_"):
+            super().__setattr__(name, value)
+        else:
+            self._cpp_expression.set_property(name, value)
 
     def id(self):
         return self._cpp_expression.id()
