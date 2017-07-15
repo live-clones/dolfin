@@ -12,3 +12,6 @@ class Parameters(cpp.parameter.Parameters):
             return np
         else:
             raise RuntimeError("invalid parameter")
+
+# Global parameters
+parameters = Parameters(cpp.parameter.parameters)
