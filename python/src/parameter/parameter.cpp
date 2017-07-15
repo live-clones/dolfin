@@ -47,6 +47,8 @@ namespace dolfin_wrappers
       .def("has_parameter_set", &dolfin::Parameters::has_parameter_set)
       .def("_get_parameter", (dolfin::Parameter& (dolfin::Parameters::*)(std::string))
            &dolfin::Parameters::operator[], py::return_value_policy::reference)
+      .def("_get_parameter_set", (dolfin::Parameters& (dolfin::Parameters::*)(std::string))
+           &dolfin::Parameters::operator(), py::return_value_policy::reference)
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
              auto param = self.find_parameter(key);
