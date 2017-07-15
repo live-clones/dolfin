@@ -66,6 +66,7 @@ setup(
               "dolfin.function",
               "dolfin.fem",
               "dolfin.mesh",
+              "dolfin.parameter",
               "dolfin_utils.test"],
     package_dir={'dolfin' : 'dolfin', 'dolfin_test' : 'dolfin_test'},
     ext_modules=[CMakeExtension('dolfin.cpp')],

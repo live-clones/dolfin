@@ -45,7 +45,7 @@ namespace dolfin_wrappers
       .def("update", &dolfin::Parameters::update)
       .def("has_parameter", &dolfin::Parameters::has_parameter)
       .def("has_parameter_set", &dolfin::Parameters::has_parameter_set)
-      .def("__getitem__", (dolfin::Parameter& (dolfin::Parameters::*)(std::string))
+      .def("_get_parameter", (dolfin::Parameter& (dolfin::Parameters::*)(std::string))
            &dolfin::Parameters::operator[], py::return_value_policy::reference)
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
@@ -71,21 +71,27 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::IntParameter, std::shared_ptr<dolfin::IntParameter>,
       dolfin::Parameter>
-      (m, "IntParameter");
+      (m, "IntParameter")
+      .def("value", [](dolfin::IntParameter& self) { return int(self); })
+      .def("__str__", &dolfin::IntParameter::value_str);
 
     py::class_<dolfin::DoubleParameter, std::shared_ptr<dolfin::DoubleParameter>,
       dolfin::Parameter>
       (m, "DoubleParameter")
+      .def("value", [](dolfin::DoubleParameter& self) { return double(self); })
       .def("__str__", &dolfin::DoubleParameter::value_str);
 
     py::class_<dolfin::StringParameter, std::shared_ptr<dolfin::StringParameter>,
                dolfin::Parameter>
       (m, "StringParameter")
+      .def("value", [](dolfin::StringParameter& self) { return std::string(self); })
       .def("__str__", &dolfin::StringParameter::value_str);
 
     py::class_<dolfin::BoolParameter, std::shared_ptr<dolfin::BoolParameter>,
       dolfin::Parameter>
-      (m, "BoolParameter");
+      (m, "BoolParameter")
+      .def("value", [](dolfin::BoolParameter& self) { return bool(self); })
+      .def("__str__", &dolfin::BoolParameter::value_str);
 
     py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,
       dolfin::Parameters> (m, "GlobalParameters");

@@ -55,7 +55,7 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges, entities,
                        vertices, SubDomain, BoundaryMesh, MeshEditor, MultiMesh, MeshQuality,
                        SubMesh)
-from .cpp.parameter import parameters, Parameters
+from .cpp.parameter import parameters
 from .cpp.refinement import refine
 
 # python modules
@@ -67,6 +67,7 @@ from .function.expression import CompiledExpression, UserExpression
 from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
+from .parameter.parameters import Parameters
 
 # ufl
 from ufl import (FiniteElement, VectorElement, MixedElement, TestFunction, TrialFunction, inner, dot, grad, dx,
