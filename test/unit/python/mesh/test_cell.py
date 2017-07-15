@@ -18,14 +18,13 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# First added:  2013-04-18
-# Last changed: 2014-05-30
+
+from __future__ import print_function, division
 
 import pytest
 import numpy
-from dolfin import *
 
+from dolfin import *
 from dolfin_utils.test import skip_in_parallel, skip_in_release
 
 
