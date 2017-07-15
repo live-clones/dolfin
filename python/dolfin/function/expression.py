@@ -119,6 +119,16 @@ namespace dolfin
 {statement}
        }}
 
+       void set_property(std::string name, double value)
+       {{
+{set_props}
+       }}
+
+       double get_property(std::string name) const
+       {{
+{get_props}
+       }}
+
   }};
 }}
 
@@ -128,20 +138,34 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
 }}
 
 """
+    _get_props = """          if (name == "{name}") return {name};"""
+    _set_props = """          if (name == "{name}") {{ {name} = value; return; }}"""
 
     statement = ""
     for i, val in enumerate(statements):
         statement += "          values[" + str(i) + "] = " + val + ";\n"
 
+    constructor = ""
+    members = ""
+    set_props = ""
+    get_props = ""
+
+    properties = {'a': 1.0}
+
+    for k in properties:
+        value = properties[k]
+        members += "double " + k + ";\n"
+        set_props += _set_props.format(name=k)
+        get_props += _get_props.format(name=k)
+
     # Set the value_shape
     if len(statements) > 1:
-        constructor = "_value_shape.push_back(" + str(len(statements)) + ");"
-    else:
-        constructor = ""
+        constructor += "_value_shape.push_back(" + str(len(statements)) + ");"
 
     classname = signature
     code_c = template_code.format(statement=statement, classname=classname,
-                                  members= "", constructor=constructor)
+                                  members=members, constructor=constructor,
+                                  set_props=set_props, get_props=get_props)
     code_h = ""
     depends = []
 
