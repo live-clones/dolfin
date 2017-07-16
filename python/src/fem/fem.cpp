@@ -30,6 +30,7 @@
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/Form.h>
 #include <dolfin/fem/PointSource.h>
+#include <dolfin/fem/PETScDMCollection.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/GenericFunction.h>
 #include <dolfin/mesh/SubDomain.h>
