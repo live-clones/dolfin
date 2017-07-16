@@ -183,13 +183,19 @@ def compile_expression(statements):
 
 
 class CompiledExpression(ufl.Coefficient):
-    def __init__(self, statement, degree):
+    def __init__(self, statement, **kwargs):
+
+        degree = kwargs.pop("degree", None)
+        element = kwargs.pop("element", None)
+
         self._cpp_expression = compile_expression(statement)
 
-        if (degree == 0):
-            element = ufl.FiniteElement("DG", None, 0)
-        else:
-            element = ufl.FiniteElement("Lagrange", None, degree)
+        if element is None:
+            if (degree == 0):
+                element = ufl.FiniteElement("DG", None, 0)
+            else:
+                element = ufl.FiniteElement("Lagrange", None, degree)
+
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 

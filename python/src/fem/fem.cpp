@@ -25,6 +25,7 @@
 #include <dolfin/fem/assemble.h>
 #include <dolfin/fem/Assembler.h>
 #include <dolfin/fem/DirichletBC.h>
+#include <dolfin/fem/DiscreteOperators.h>
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/Form.h>
@@ -109,6 +110,10 @@ namespace dolfin_wrappers
       .def(py::init<>())
       .def("assemble", &dolfin::Assembler::assemble);
 
+    // dolfin::DiscreteOperators
+    py::class_<dolfin::DiscreteOperators> (m, "DiscreteOperators")
+      .def_static("build_gradient", &dolfin::DiscreteOperators::build_gradient);
+
     // dolfin::Form class
     py::class_<dolfin::Form, std::shared_ptr<dolfin::Form>>
       (m, "Form", "DOLFIN Form object")
@@ -127,10 +132,28 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, const dolfin::Point&, double>(),
            py::arg("V"), py::arg("p"), py::arg("magnitude") = 1.0);
 
+#ifdef HAS_PETSC
+    // dolfin::PETScDMCollection
+    py::class_<dolfin::PETScDMCollection, std::shared_ptr<dolfin::PETScDMCollection>>
+      (m, "PETScDMCollection")
+      .def_static("create_transfer_matrix", &dolfin::PETScDMCollection::create_transfer_matrix);
+#endif
+
     // Assemble functions
 
     m.def("assemble", (void (*)(dolfin::GenericTensor&, const dolfin::Form&)) &dolfin::assemble);
     m.def("assemble", (double (*)(const dolfin::Form&)) &dolfin::assemble);
+
+    m.def("assemble_system", (void (*)(dolfin::GenericMatrix&, dolfin::GenericVector&,
+                                       const dolfin::Form&, const dolfin::Form&,
+                                       std::vector<std::shared_ptr<const dolfin::DirichletBC>>))
+          &dolfin::assemble_system);
+
+    m.def("assemble_system", (void (*)(dolfin::GenericMatrix&, dolfin::GenericVector&,
+                                       const dolfin::Form&, const dolfin::Form&,
+                                       std::vector<std::shared_ptr<const dolfin::DirichletBC>>,
+                                       const dolfin::GenericVector&))
+          &dolfin::assemble_system);
 
     // FEM utils functions
 

@@ -100,7 +100,9 @@ namespace dolfin_wrappers
                dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "Matrix", "DOLFIN Matrix object")
       .def(py::init<>())
-      .def(py::init<MPI_Comm>());
+      .def(py::init<MPI_Comm>())
+      .def("norm", &dolfin::Matrix::norm)
+      .def("size", &dolfin::Matrix::size);
 
     //-----------------------------------------------------------------------------
     // dolfin::Vector class

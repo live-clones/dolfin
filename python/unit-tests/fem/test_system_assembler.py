@@ -136,7 +136,7 @@ def test_facet_assembly():
         n = FacetNormal(mesh)
         h = CellSize(mesh)
         h_avg = (h('+') + h('-'))/2
-        f = Expression("500.0*exp(-(pow(x[0] - 0.5, 2) + pow(x[1] - 0.5, 2)) / 0.02)", degree=1)
+        f = CompiledExpression("500.0*exp(-(pow(x[0] - 0.5, 2) + pow(x[1] - 0.5, 2)) / 0.02)", degree=1)
 
         # Define bilinear form
         a = dot(grad(v), grad(u))*dx \
@@ -227,7 +227,7 @@ def test_incremental_assembly():
         V = FunctionSpace(mesh, 'CG', 1)
         u, v = TrialFunction(V), TestFunction(V)
         a, L = inner(grad(u), grad(v))*dx, f*v*dx
-        uD = Expression("42.0*(2.0*x[0]-1.0)", degree=1)
+        uD = CompiledExpression("42.0*(2.0*x[0]-1.0)", degree=1)
         bc = DirichletBC(V, uD, "on_boundary")
 
         # Initialize initial guess by some number
@@ -465,7 +465,7 @@ def test_ghost_mode_handling(pushpop_parameters):
 
     # Not-ghosted mesh won't work in parallel and assembler should raise
     parameters["ghost_mode"] = "none"
-    if MPI.size(mpi_comm_world()) == 1:
+    if MPI.size(MPI.comm_world) == 1:
         _check_value(_forms())
     else:
         assembler = SystemAssembler(*_forms())

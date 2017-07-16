@@ -23,11 +23,11 @@ from __future__ import print_function
 import pytest
 import numpy as np
 from dolfin import *
+from math import sqrt
 
 from dolfin_utils.test import *
 
 
-@pytest.mark.xfail
 def test_gradient():
     """Test discrete gradient computation (typically used for curl-curl
     AMG preconditioners"""
@@ -47,7 +47,6 @@ def test_gradient():
         compute_discrete_gradient(mesh)
 
 
-@pytest.mark.xfail
 def test_incompatible_spaces():
     "Test that error is thrown when function spaces are not compatible"
 

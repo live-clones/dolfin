@@ -73,8 +73,8 @@ def test_local_assembler_on_facet_integrals(ghost_mode):
     n = FacetNormal(mesh)
 
     # Initialize DG function "w" in discontinuous pattern
-    w = Expression('(1.0 + pow(x[0], 2.2) + 1/(0.1 + pow(x[1], 3)))*300.0',
-                   element=Vdg.ufl_element())
+    w = CompiledExpression('(1.0 + pow(x[0], 2.2) + 1/(0.1 + pow(x[1], 3)))*300.0',
+                           element=Vdg.ufl_element())
 
     # Define form that tests that the correct + and - values are used
     L = w('-')*v('+')*dS
@@ -100,7 +100,7 @@ def test_local_assembler_on_facet_integrals(ghost_mode):
     else:
         error = 0.0
 
-    error = MPI.max(mpi_comm_world(), float(error))
+    error = MPI.max(MPI.comm_world, float(error))
     assert error < 1e-8
 
 
@@ -139,7 +139,7 @@ def test_local_assembler_on_facet_integrals2(ghost_mode):
     else:
         error = 0.0
 
-    error = MPI.max(mpi_comm_world(), float(error))
+    error = MPI.max(MPI.comm_world, float(error))
     assert error < 1e-16
 
 
@@ -159,6 +159,6 @@ def get_cell_at(mesh, x, y, z, eps=1e-3):
 
     # Make sure this cell is on at least one of the parallel processes
     marker = 1 if found is not None else 0
-    assert MPI.max(mpi_comm_world(), marker) == 1
+    assert MPI.max(MPI.comm_world, marker) == 1
 
     return found

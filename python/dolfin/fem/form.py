@@ -12,10 +12,10 @@ class Form(cpp.fem.Form):
         print("jit returns: ", ufc_form)
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 
-        #function_spaces = [func.function_space() for func
-        #                   in form.arguments()]
+#        function_spaces = [func.function_space() for func
+#                           in form.arguments()]
 
-        #print(function_spaces)
+#        print(function_spaces)
 
         # Initialize base class
         print("--init--")

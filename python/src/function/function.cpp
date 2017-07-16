@@ -28,6 +28,7 @@
 #include <dolfin/function/Expression.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/MultiMeshFunction.h>
+#include <dolfin/function/SpecialFunctions.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/mesh/Mesh.h>
@@ -121,6 +122,18 @@ namespace dolfin_wrappers
       (m, "Constant")
       .def(py::init<double>())
       .def(py::init<std::vector<double>>());
+
+    //-----------------------------------------------------------------------------
+    // dolfin::FacetArea
+    py::class_<dolfin::FacetArea, std::shared_ptr<dolfin::FacetArea>,
+               dolfin::Expression, dolfin::GenericFunction>
+      (m, "FacetArea");
+
+    //-----------------------------------------------------------------------------
+    // dolfin::MeshCoordinates
+    py::class_<dolfin::MeshCoordinates, std::shared_ptr<dolfin::MeshCoordinates>,
+               dolfin::Expression, dolfin::GenericFunction>
+      (m, "MeshCoordinates");
 
     //-----------------------------------------------------------------------------
     // dolfin::Function

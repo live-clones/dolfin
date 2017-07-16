@@ -8,15 +8,20 @@ from dolfin.mesh.subdomain import CompiledSubDomain
 class DirichletBC(cpp.fem.DirichletBC):
     def __init__(self, *args, **kwargs):
 
+        method = kwargs.pop("method", None)
+        print("method: ", method)
+
         if len(args) != 3:
-            raise(RuntimeError, "Not yet supported")
+            raise RuntimeError("Not yet supported")
 
         if not isinstance(args[0], cpp.function.FunctionSpace):
-            raise(RuntimeError, "First argument must be of type FunctionSpace")
+            raise RuntimeError("First argument must be of type FunctionSpace")
         function_space = args[0]
 
-        if not isinstance(args[1], cpp.function.GenericFunction):
-            raise(RuntimeError, "Second argument must be of type GenericFunction")
+        if isinstance(args[1], float) or isinstance(args[1], int):
+            function = cpp.function.Constant(float(args[1]))
+        elif not isinstance(args[1], cpp.function.GenericFunction):
+            raise RuntimeError("Second argument must be of type GenericFunction")
         function = args[1]
 
         if isinstance(args[2], cpp.mesh.SubDomain):
@@ -24,6 +29,6 @@ class DirichletBC(cpp.fem.DirichletBC):
         elif isinstance(args[2], string_types):
             subdomain = CompiledSubDomain(args[2])
         else:
-            raise(RuntimeError, "Third argument must be of type SubDomain or string")
+            raise RuntimeError("Third argument must be of type SubDomain or string")
 
         super().__init__(function_space, function, subdomain)

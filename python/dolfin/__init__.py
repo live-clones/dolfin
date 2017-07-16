@@ -34,7 +34,8 @@ from .cpp.common import (Variable, has_debug, has_hdf5,
 from .cpp import MPI
 from .cpp.function import Expression, Constant, Function, interpolate
 from .cpp.fem import (FiniteElement, DofMap, Assembler, assemble, get_coordinates,
-                      set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource)
+                      set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
+                      DiscreteOperators, assemble_system)
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, UnitIntervalMesh,
                              UnitSquareMesh, UnitCubeMesh, BoxMesh, RectangleMesh,
@@ -47,6 +48,7 @@ from .cpp.la import (has_linear_algebra_backend,
 
 if has_linear_algebra_backend('PETSc'):
     from .cpp.la import PETScVector, PETScMatrix
+    from .cpp.fem import PETScDMCollection
 
 from .cpp.la import (Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
                      LUSolver, KrylovSolver)
@@ -62,6 +64,7 @@ from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .function.functionspace import FunctionSpace, VectorFunctionSpace #, TensorFunctionSpace
 from .function.constant import Constant
+from .function.specialfunctions import FacetNormal, CellSize
 from .function.expression import CompiledExpression, UserExpression
 from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
@@ -69,8 +72,8 @@ from .mesh.meshvaluecollection import MeshValueCollection
 from .parameter.parameters import Parameters, parameters
 
 # ufl
-from ufl import (FiniteElement, VectorElement, MixedElement, TestFunction, TrialFunction, inner, dot, grad, dx,
-                 ds, dS, triangle, tetrahedron)
+from ufl import (FiniteElement, VectorElement, MixedElement, TestFunction, TrialFunction, inner, dot, grad, dx, div,
+                 ds, dS, triangle, tetrahedron, avg, jump)
 
 # FIXME
 def has_petsc4py():

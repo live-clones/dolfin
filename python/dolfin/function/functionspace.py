@@ -62,11 +62,13 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
 
 class VectorFunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
 
-    def __init__(self, mesh, family, degree):
+    def __init__(self, mesh, family, degree, **kwargs):
         """Create finite element function space."""
 
         print("hello boo")
         print(mesh.ufl_id())
+
+        dim = kwargs.pop("dim", None)
 
         # Add ufl_cell function to mesh
         def ufl_cell(self):
@@ -95,7 +97,7 @@ class VectorFunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
 
         # Create UFL element
         element = ufl.VectorElement(family, mesh.ufl_cell(), degree,
-                                    form_degree=None)
+                                    form_degree=None, dim=dim)
 
         # Initialize the ufl.FunctionSpace first to check for good
         # meaning

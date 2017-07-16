@@ -21,6 +21,7 @@ def jit_generate(inside_code, module_name, signature, parameters):
     #define DLL_EXPORT __attribute__ ((visibility ("default")))
 #endif
 
+#include <dolfin/math/basic.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <Eigen/Dense>
 

@@ -97,6 +97,10 @@ namespace dolfin_wrappers
       .def("num_cells", &dolfin::Mesh::num_cells, "Number of cells")
       .def("rmax", &dolfin::Mesh::rmax)
       .def("rmin", &dolfin::Mesh::rmin)
+      .def("rotate", (void (dolfin::Mesh::*)(double, std::size_t, const dolfin::Point&))
+           &dolfin::Mesh::rotate)
+      .def("rotate", (void (dolfin::Mesh::*)(double, std::size_t)) &dolfin::Mesh::rotate,
+                      py::arg("angle"), py::arg("axis")=2)
       .def("size_global", &dolfin::Mesh::size_global)
       .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
            &dolfin::Mesh::topology, "Mesh topology")
@@ -363,7 +367,7 @@ namespace dolfin_wrappers
 
     //--------------------------------------------------------------------------
     // dolfin::SubMesh class
-    py::class_<dolfin::SubMesh, std::shared_ptr<dolfin::SubMesh>>
+    py::class_<dolfin::SubMesh, std::shared_ptr<dolfin::SubMesh>, dolfin::Mesh>
       (m, "SubMesh", "DOLFIN SubMesh")
       .def(py::init<const dolfin::Mesh&, const dolfin::SubDomain&>());
 
@@ -384,7 +388,10 @@ namespace dolfin_wrappers
       (m, "SubDomain", "DOLFIN SubDomain object")
       .def(py::init<>())
       .def("inside", (bool (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>&, bool) const)
-           &dolfin::SubDomain::inside);
+           &dolfin::SubDomain::inside)
+      .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<std::size_t>&, std::size_t, bool) const)
+           &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true);
+
 
   }
 
