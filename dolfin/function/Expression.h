@@ -141,6 +141,12 @@ namespace dolfin
     ///         The value dimension (for the given axis).
     virtual std::size_t value_dimension(std::size_t i) const override;
 
+    /// Property setter
+    virtual void set_property(std::string name, double value);
+
+    /// Parameter getter
+    virtual double get_property(std::string name) const;
+
     /// Restrict function to local cell (compute expansion coefficients w).
     ///
     /// @param    w (list of doubles)

@@ -95,7 +95,7 @@ class UserExpression(ufl.Coefficient):
         return self._cpp_expression
 
 
-def jit_generate(statements, module_name, signature, parameters):
+def jit_generate(class_data, module_name, signature, parameters):
 
     template_code = """
 
@@ -119,6 +119,16 @@ namespace dolfin
 {statement}
        }}
 
+       void set_property(std::string name, double value)
+       {{
+{set_props}
+       }}
+
+       double get_property(std::string name) const
+       {{
+{get_props}
+       }}
+
   }};
 }}
 
@@ -128,27 +138,42 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
 }}
 
 """
+    _get_props = """          if (name == "{name}") return {name};"""
+    _set_props = """          if (name == "{name}") {{ {name} = value; return; }}"""
 
+    statements = class_data["statements"]
     statement = ""
     for i, val in enumerate(statements):
         statement += "          values[" + str(i) + "] = " + val + ";\n"
 
+    constructor = ""
+    members = ""
+    set_props = ""
+    get_props = ""
+
+    # Add code for setting and getting property values
+    properties = class_data["properties"]
+    for k in properties:
+        value = properties[k]
+        members += "double " + k + ";\n"
+        set_props += _set_props.format(name=k)
+        get_props += _get_props.format(name=k)
+
     # Set the value_shape
     if len(statements) > 1:
-        constructor = "_value_shape.push_back(" + str(len(statements)) + ");"
-    else:
-        constructor = ""
+        constructor += "_value_shape.push_back(" + str(len(statements)) + ");"
 
     classname = signature
     code_c = template_code.format(statement=statement, classname=classname,
-                                  members= "", constructor=constructor)
+                                  members=members, constructor=constructor,
+                                  set_props=set_props, get_props=get_props)
     code_h = ""
     depends = []
 
     return code_h, code_c, depends
 
 
-def compile_expression(statements):
+def compile_expression(statements, properties):
     """Compile a user C(++) string to a Python object"""
 
     import pkgconfig
@@ -170,17 +195,23 @@ def compile_expression(statements):
     if not isinstance(statements, tuple):
         raise RuntimeError("Expression must be a string, or a tuple of strings")
 
+    class_data = {'statements': statements, 'properties': properties}
+
     module_hash = hashlib.md5("".join(statements).encode('utf-8')).hexdigest()
     module_name = "dolfin_expression_" + module_hash
-    module, signature = dijitso.jit(statements, module_name, params,
+    module, signature = dijitso.jit(class_data, module_name, params,
                                     generate=jit_generate)
 
     submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
     print("JIT gives:", submodule, module, signature)
 
     expression = cpp.function.make_dolfin_expression(submodule)
-    return expression
 
+    # Set properties to initial values
+    for k in properties:
+        expression.set_property(k, properties[k])
+
+    return expression
 
 class CompiledExpression(ufl.Coefficient):
     def __init__(self, statement, **kwargs):
@@ -188,7 +219,14 @@ class CompiledExpression(ufl.Coefficient):
         degree = kwargs.pop("degree", None)
         element = kwargs.pop("element", None)
 
-        self._cpp_expression = compile_expression(statement)
+        properties = kwargs
+        for k in properties:
+            if not isinstance(k, string_types):
+                raise KeyError("Invalid key")
+            if not isinstance(properties[k], float):
+                raise ValueError("Invalid value")
+
+        self._cpp_expression = compile_expression(statements, properties)
 
         if element is None:
             if (degree == 0):
@@ -198,6 +236,15 @@ class CompiledExpression(ufl.Coefficient):
 
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
+
+    def __getattr__(self, name):
+        return self._cpp_expression.get_property(name)
+
+    def __setattr__(self, name, value):
+        if name.startswith("_"):
+            super().__setattr__(name, value)
+        else:
+            self._cpp_expression.set_property(name, value)
 
     def id(self):
         return self._cpp_expression.id()

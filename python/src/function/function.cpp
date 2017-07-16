@@ -112,7 +112,9 @@ namespace dolfin_wrappers
            &dolfin::Expression::eval,
            "Evaluate Expression (cell version)")
       .def("value_rank", &dolfin::Expression::value_rank)
-      .def("value_dimension", &dolfin::Expression::value_dimension);
+      .def("value_dimension", &dolfin::Expression::value_dimension)
+      .def("get_property", &dolfin::Expression::get_property)
+      .def("set_property", &dolfin::Expression::set_property);
 
 
     //-----------------------------------------------------------------------------
