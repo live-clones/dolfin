@@ -64,6 +64,9 @@ namespace dolfin_wrappers
 
   void function(py::module& m)
   {
+    // Delcare ufc::function
+    py::class_<ufc::function, std::shared_ptr<ufc::function>>(m, "ufc_function");
+
     // dolfin::GenericFunction
     py::class_<dolfin::GenericFunction, std::shared_ptr<dolfin::GenericFunction>>
       (m, "GenericFunction")
@@ -101,13 +104,19 @@ namespace dolfin_wrappers
 
 
     py::class_<dolfin::Expression, PyExpression,
-               std::shared_ptr<dolfin::Expression>, dolfin::GenericFunction,
+               std::shared_ptr<dolfin::Expression>, dolfin::GenericFunction, ufc::function,
                dolfin::Variable>
       (m, "Expression")
       .def(py::init<>())
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
       .def(py::init<std::vector<std::size_t>>())
+      .def("__call__", [](const dolfin::Expression& self, const Eigen::Ref<Eigen::VectorXd>& x)
+           {
+             Eigen::VectorXd f(self.value_size());
+             self.eval(f, x);
+             return f;
+           })
       .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>) const)
            &dolfin::Expression::eval, "Evaluate Expression")
       .def("eval_cell", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
@@ -168,9 +177,15 @@ namespace dolfin_wrappers
     //-----------------------------------------------------------------------------
     // dolfin::FunctionSpace
     py::class_<dolfin::FunctionSpace, std::shared_ptr<dolfin::FunctionSpace>>
-      (m, "FunctionSpace")
+      (m, "FunctionSpace", py::dynamic_attr())
       .def(py::init<std::shared_ptr<dolfin::Mesh>, std::shared_ptr<dolfin::FiniteElement>,
-           std::shared_ptr<dolfin::GenericDofMap>>());
+           std::shared_ptr<dolfin::GenericDofMap>>())
+      .def(py::init<const dolfin::FunctionSpace&>())
+      .def("element", &dolfin::FunctionSpace::element)
+      .def("mesh", &dolfin::FunctionSpace::mesh)
+      .def("sub", (std::shared_ptr<dolfin::FunctionSpace> (dolfin::FunctionSpace::*)(std::size_t) const)
+           &dolfin::FunctionSpace::sub);
+
 
   }
 

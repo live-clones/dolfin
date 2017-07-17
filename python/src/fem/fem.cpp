@@ -17,7 +17,9 @@
 
 #include <iostream>
 #include <memory>
+#include <Eigen/Dense>
 #include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
@@ -82,6 +84,28 @@ namespace dolfin_wrappers
     py::class_<dolfin::FiniteElement, std::shared_ptr<dolfin::FiniteElement>>
       (m, "FiniteElement", "DOLFIN FiniteElement object")
       .def(py::init<std::shared_ptr<const ufc::finite_element>>())
+      .def("num_sub_elements", &dolfin::FiniteElement::num_sub_elements)
+      .def("evaluate_dofs", &dolfin::FiniteElement::evaluate_dofs)
+      .def("tabulate_dof_coordinates", [](const dolfin::FiniteElement& self, const dolfin::Cell& cell)
+           {
+             // Initialize the boost::multi_array structure
+             boost::multi_array<double, 2> tmparray;
+
+             // Get cell vertex coordinates
+             std::vector<double> coordinate_dofs;
+             cell.get_coordinate_dofs(coordinate_dofs);
+
+             // Tabulate the coordinates
+             self.tabulate_dof_coordinates(tmparray, coordinate_dofs, cell);
+
+             // Copy data
+             Eigen::Array<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> x(tmparray.shape()[0], tmparray.shape()[1]);
+             for (std::size_t i = 0; i < tmparray.shape()[0]; ++i)
+               for (std::size_t j = 0; j < tmparray.shape()[1]; ++j)
+                 x(i, j) = tmparray[i][j];
+
+             return x;
+           })
       .def("signature", &dolfin::FiniteElement::signature);
 
     // dolfin::GenericDofMap class
