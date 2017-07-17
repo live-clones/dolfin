@@ -21,6 +21,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
+#include <pybind11/eval.h>
 
 #include <dolfin/common/Variable.h>
 #include <dolfin/geometry/BoundingBoxTree.h>
@@ -113,6 +114,13 @@ namespace dolfin_wrappers
       .def("type", (const dolfin::CellType& (dolfin::Mesh::*)() const) &dolfin::Mesh::type,
            py::return_value_policy::reference)
       // UFL related
+      .def("ufl_cell", [](const dolfin::Mesh& self)
+           {
+             py::object scope = py::module::import("ufl").attr("__dict__");
+             std::string gdim = std::to_string(self.geometry().dim());
+             std::string cellname = self.type().description(false);
+             return py::eval("Cell(\"" + cellname + "\", geometric_dimension=" + gdim + ")", scope);
+           })
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
            { return dolfin::CellType::type2string(self.type().cell_type()); }
