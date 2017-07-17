@@ -18,11 +18,13 @@
 #include <memory>
 #include <string>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <dolfin/common/MPI.h>
 #include <dolfin/common/constants.h>
 #include <dolfin/common/defines.h>
 #include <dolfin/common/SubSystemsManager.h>
+#include <dolfin/common/Timer.h>
 #include <dolfin/common/Variable.h>
 
 #include "../mpi_interface.h"
@@ -52,6 +54,17 @@ namespace dolfin_wrappers
 
     m.attr("DOLFIN_EPS") = DOLFIN_EPS;
     m.attr("DOLFIN_PI") = DOLFIN_PI;
+
+    // Timer
+    py::class_<dolfin::Timer, std::shared_ptr<dolfin::Timer>>
+      (m, "Timer", "Timer class")
+      .def(py::init<>())
+      .def(py::init<std::string>())
+      .def("start", &dolfin::Timer::start)
+      .def("stop", &dolfin::Timer::stop)
+      .def("resume", &dolfin::Timer::resume)
+      .def("elapsed", &dolfin::Timer::elapsed);
+
   }
 
   void mpi(py::module& m)
