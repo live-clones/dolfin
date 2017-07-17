@@ -66,7 +66,9 @@ namespace dolfin_wrappers
   {
     // dolfin::GenericFunction
     py::class_<dolfin::GenericFunction, std::shared_ptr<dolfin::GenericFunction>>
-      (m, "GenericFunction");
+      (m, "GenericFunction")
+      .def("compute_vertex_values", [](dolfin::GenericFunction& self, const dolfin::Mesh& mesh)
+           { std::vector<double> values; self.compute_vertex_values(values, mesh); return values; });
 
     // dolfin::MultiMeshFunction
     py::class_<dolfin::MultiMeshFunction, std::shared_ptr<dolfin::MultiMeshFunction>>
