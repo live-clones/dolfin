@@ -33,6 +33,7 @@
 #include <dolfin/la/LinearAlgebraObject.h>
 #include <dolfin/la/Matrix.h>
 #include <dolfin/la/Vector.h>
+#include <dolfin/la/Scalar.h>
 #include <dolfin/la/EigenFactory.h>
 #include <dolfin/la/EigenMatrix.h>
 #include <dolfin/la/EigenVector.h>
@@ -183,6 +184,13 @@ namespace dolfin_wrappers
              else
                return "Unknown";
            });
+
+    //----------------------------------------------------------------------------
+    // dolfin::Scalar
+    py::class_<dolfin::Scalar, std::shared_ptr<dolfin::Scalar>, dolfin::GenericTensor>
+      (m, "Scalar")
+      .def(py::init<>())
+      .def(py::init<MPI_Comm>());
 
     //----------------------------------------------------------------------------
     // dolfin::EigenFactory class
