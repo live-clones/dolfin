@@ -34,9 +34,11 @@
 #include <dolfin/la/Matrix.h>
 #include <dolfin/la/Vector.h>
 #include <dolfin/la/Scalar.h>
+#include <dolfin/la/DefaultFactory.h>
 #include <dolfin/la/EigenFactory.h>
 #include <dolfin/la/EigenMatrix.h>
 #include <dolfin/la/EigenVector.h>
+#include <dolfin/la/PETScFactory.h>
 #include <dolfin/la/PETScMatrix.h>
 #include <dolfin/la/PETScVector.h>
 #include <dolfin/la/LUSolver.h>
@@ -193,6 +195,14 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm>());
 
     //----------------------------------------------------------------------------
+    // dolfin::DefaultFactory class
+    py::class_<dolfin::DefaultFactory, std::shared_ptr<dolfin::DefaultFactory>>
+      (m, "DefaultFactory", "DOLFIN DefaultFactory object")
+      .def_static("factory", &dolfin::DefaultFactory::factory)
+      .def("create_matrix", &dolfin::DefaultFactory::create_matrix)
+      .def("create_vector", &dolfin::DefaultFactory::create_vector);
+
+    //----------------------------------------------------------------------------
     // dolfin::EigenFactory class
     py::class_<dolfin::EigenFactory, std::shared_ptr<dolfin::EigenFactory>>
       (m, "EigenFactory", "DOLFIN EigenFactory object")
@@ -220,6 +230,14 @@ namespace dolfin_wrappers
            py::return_value_policy::reference_internal);
 
     #ifdef HAS_PETSC
+    //----------------------------------------------------------------------------
+    // dolfin::PETScFactory class
+    py::class_<dolfin::PETScFactory, std::shared_ptr<dolfin::PETScFactory>>
+      (m, "PETScFactory", "DOLFIN PETScFactory object")
+      .def("instance", &dolfin::PETScFactory::instance)
+      .def("create_matrix", &dolfin::PETScFactory::create_matrix)
+      .def("create_vector", &dolfin::PETScFactory::create_vector);
+
     //----------------------------------------------------------------------------
     // dolfin::PETScVector class
     py::class_<dolfin::PETScVector, std::shared_ptr<dolfin::PETScVector>,

@@ -59,8 +59,13 @@ namespace dolfin_wrappers
             dolfin::SubDomain *p = reinterpret_cast<dolfin::SubDomain *>(e);
             return std::shared_ptr<const dolfin::SubDomain>(p);
           });
-    //-------------------------------------------------------------------------
 
+    //-------------------------------------------------------------------------
+    // dolfin::CellType
+    py::class_<dolfin::CellType> (m, "CellType")
+      .def("description", &dolfin::CellType::description);
+
+    //-------------------------------------------------------------------------
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
       .def(py::init<>())
@@ -105,6 +110,8 @@ namespace dolfin_wrappers
       .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
            &dolfin::Mesh::topology, "Mesh topology")
       .def("translate", &dolfin::Mesh::translate)
+      .def("type", (const dolfin::CellType& (dolfin::Mesh::*)() const) &dolfin::Mesh::type,
+           py::return_value_policy::reference)
       // UFL related
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
