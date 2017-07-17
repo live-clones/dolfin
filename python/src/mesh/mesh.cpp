@@ -68,7 +68,9 @@ namespace dolfin_wrappers
 
     //-------------------------------------------------------------------------
     // dolfin::Mesh class
-    py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
+    py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh",
+                                                            py::dynamic_attr(),
+                                                            "DOLFIN Mesh object")
       .def(py::init<>())
       .def("bounding_box_tree", &dolfin::Mesh::bounding_box_tree)
       .def("cells",
@@ -144,7 +146,8 @@ namespace dolfin_wrappers
       (m, "MeshTopology", "DOLFIN MeshTopology object")
       .def("dim", &dolfin::MeshTopology::dim, "Topological dimension")
       .def("__call__", (const dolfin::MeshConnectivity& (dolfin::MeshTopology::*)(std::size_t, std::size_t) const)
-           &dolfin::MeshTopology::operator());
+           &dolfin::MeshTopology::operator())
+      .def("hash", &dolfin::MeshTopology::hash);
 
     //--------------------------------------------------------------------------
     // dolfin::MeshGeometry class

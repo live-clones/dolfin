@@ -21,12 +21,12 @@
 
 from __future__ import print_function
 import pytest
-from dolfin import UnitSquareMesh, BoundaryMesh, Expression, \
+from dolfin import UnitSquareMesh, BoundaryMesh, CompiledExpression, \
                    CellFunction, SubMesh, Constant, MPI, MeshQuality,\
                    ALE
 from dolfin_utils.test import skip_in_parallel
 
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_HarmonicSmoothing():
 
     # Create some mesh and its boundary
@@ -34,8 +34,10 @@ def test_HarmonicSmoothing():
     boundary = BoundaryMesh(mesh, 'exterior')
 
     # Move boundary
-    disp = Expression(("0.3*x[0]*x[1]", "0.5*(1.0-x[1])"), degree=2)
-    ALE.move(boundary, disp)
+    disp = CompiledExpression(("0.3*x[0]*x[1]", "0.5*(1.0-x[1])"), degree=2)
+    ALE.move(boundary, disp.cpp_object())
+
+    print(type(boundary))
 
     # Move mesh according to given boundary
     ALE.move(mesh, boundary)

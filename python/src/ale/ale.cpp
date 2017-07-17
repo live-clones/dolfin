@@ -15,12 +15,15 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
 
 #include <dolfin/ale/ALE.h>
+#include <dolfin/ale/MeshDisplacement.h>
+#include <dolfin/function/Expression.h>
+#include <dolfin/function/GenericFunction.h>
 #include <dolfin/mesh/BoundaryMesh.h>
+#include <dolfin/mesh/Mesh.h>
 
 namespace py = pybind11;
 
@@ -28,10 +31,21 @@ namespace dolfin_wrappers
 {
   void ale(py::module& m)
   {
+    // Wrap MeshDisplacement
+    py::class_<dolfin::MeshDisplacement, std::shared_ptr<dolfin::MeshDisplacement>,
+               dolfin::Expression>(m, "MeshDisplacement")
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>>())
+      .def(py::init<const dolfin::MeshDisplacement&>());
+
+    // ALE static functions
     py::class_<dolfin::ALE>
       (m, "ALE")
       .def_static("move", [](std::shared_ptr<dolfin::Mesh> mesh, const dolfin::BoundaryMesh bmesh)
-                  { return dolfin::ALE::move(mesh, bmesh); });
+                  { return dolfin::ALE::move(mesh, bmesh); })
+      .def_static("move", [](std::shared_ptr<dolfin::Mesh> mesh0, const dolfin::Mesh& mesh1)
+                  { return dolfin::ALE::move(mesh0, mesh1); })
+      .def_static("move", [](dolfin::Mesh& mesh, const dolfin::GenericFunction& disp)
+                  { dolfin::ALE::move(mesh, disp); });
 
   }
 
