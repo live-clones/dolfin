@@ -96,12 +96,12 @@ def test_assemble_functional(V1, V2):
     surfacearea = assemble(u*dx)
     assert round(surfacearea - 6.0, 7) == 0
 
-    f = Expression("1.0", degree=0)
+    f = CompiledExpression("1.0", degree=0)
     u = interpolate(f, V1)
     surfacearea = assemble(u*dx)
     assert round(surfacearea - 4.0, 7) == 0
 
-    f = Expression("1.0", degree=0)
+    f = CompiledExpression("1.0", degree=0)
     u = interpolate(f, V2)
     surfacearea = assemble(u*dx)
     assert round(surfacearea - 6.0, 7) == 0
@@ -236,7 +236,7 @@ def base():
     square = UnitSquareMesh(n, n)
 
     square3d = SubMesh(BoundaryMesh(UnitCubeMesh(n, n, n), "exterior"), plane)
-    global_normal = Expression(("0.0", "1.0", "0.0"), degree=0)
+    global_normal = CompiledExpression(("0.0", "1.0", "0.0"), degree=0)
     square3d.init_cell_orientations(global_normal)
 
     RT2 = FiniteElement("RT", square.ufl_cell(), 1)
@@ -285,8 +285,8 @@ def QQ3(base):
 @pytest.mark.xfail
 def test_basic_rt(RT2, RT3):
 
-    f2 = Expression(("2.0", "1.0"), degree=0)
-    f3 = Expression(("1.0", "0.0", "2.0"), degree=0)
+    f2 = CompiledExpression(("2.0", "1.0"), degree=0)
+    f3 = CompiledExpression(("1.0", "0.0", "2.0"), degree=0)
 
     u2 = TrialFunction(RT2)
     u3 = TrialFunction(RT3)
@@ -550,8 +550,8 @@ def test_coefficient_derivatives(V1, V2):
         v = TestFunction(V)
         u = TrialFunction(V)
 
-        f.interpolate(Expression("1.0 + x[0] + x[1]", degree=1))
-        g.interpolate(Expression("2.0 + x[0] + x[1]", degree=1))
+        f.interpolate(CompiledExpression("1.0 + x[0] + x[1]", degree=1))
+        g.interpolate(CompiledExpression("2.0 + x[0] + x[1]", degree=1))
 
         # Since g = f + 1, define dg/df = 1
         cd = {g: 1}

@@ -119,3 +119,6 @@ class VectorFunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         # Initialize the cpp.FunctionSpace
         cpp.function.FunctionSpace.__init__(self, mesh, dolfin_element,
                                             dolfin_dofmap)
+
+    def ufl_function_space(self):
+        return self
