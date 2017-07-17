@@ -63,6 +63,7 @@ setup(
     description='Experimental DOLFIN pybind11 interface',
     long_description='',
     packages=["dolfin",
+              "dolfin.common",
               "dolfin.function",
               "dolfin.fem",
               "dolfin.mesh",

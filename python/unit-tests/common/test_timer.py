@@ -23,6 +23,7 @@ import gc
 import uuid
 from time import sleep
 
+from dolfin.common import timer
 from dolfin import *
 
 
@@ -48,7 +49,7 @@ def test_context_manager_anonymous():
 
 # Test case for free function
 fun2_task = get_random_task_name()
-@timed(fun2_task)
+@timer.timed(fun2_task)
 def fun2(*args, **kwargs):
     "Foo"
     sleep(0.05)
@@ -57,7 +58,7 @@ def fun2(*args, **kwargs):
 class C(object):
     # Test case for instancemethod
     task_method2 = get_random_task_name()
-    @timed(task_method2)
+    @timer.timed(task_method2)
     def method2(self, *args, **kwargs):
         "Foo"
         sleep(0.05)
@@ -66,7 +67,7 @@ class C(object):
     # Test case for staticmethod
     task_method3 = get_random_task_name()
     @staticmethod
-    @timed(task_method3)
+    @timer.timed(task_method3)
     def method3(*args, **kwargs):
         "Foo"
         sleep(0.05)
@@ -75,7 +76,7 @@ class C(object):
     # Test case for classmethod
     task_method5 = get_random_task_name()
     @classmethod
-    @timed(task_method5)
+    @timer.timed(task_method5)
     def method5(cls, *args, **kwargs):
         "Foo"
         sleep(0.05)
