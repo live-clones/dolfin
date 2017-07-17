@@ -78,7 +78,7 @@ def test_compute_vertex_values(V, W, mesh):
     u_values = u.compute_vertex_values(mesh)
     v_values = v.compute_vertex_values(mesh)
 
-    assert all(u_values == 1)
+    assert all(u_values == 1.)
 
 
 @pytest.mark.xfail
