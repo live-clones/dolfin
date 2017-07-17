@@ -26,6 +26,7 @@ namespace dolfin_wrappers
   void common(py::module& m);
   void mpi(py::module& m);
 
+  void adaptivity(py::module& m);
   void ale(py::module& m);
   void experimental(py::module& m);
   void fem(py::module& m);
@@ -62,6 +63,9 @@ PYBIND11_MODULE(cpp, m)
 
 
 
+  // Create adaptivity submodule [adaptivity]
+  py::module adaptivity = m.def_submodule("adaptivity", "DOLFIN adaptivity module");
+  dolfin_wrappers::adaptivity(adaptivity);
 
   // Create ale submodule [ale]
   py::module ale = m.def_submodule("ale", "DOLFIN ALE module");

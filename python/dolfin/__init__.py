@@ -26,6 +26,7 @@ del sys
 #del sys
 
 # cpp modules
+from .cpp.adaptivity import TimeSeries
 from .cpp.ale import ALE
 from .cpp.common import (Variable, has_debug, has_hdf5,
                          has_hdf5_parallel, has_mpi, has_petsc,
@@ -80,3 +81,7 @@ from ufl import (FiniteElement, VectorElement, MixedElement,
 # FIXME
 def has_petsc4py():
     return False
+
+
+def mpi_comm_world():
+    return MPI.comm_world

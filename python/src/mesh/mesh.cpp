@@ -145,7 +145,11 @@ namespace dolfin_wrappers
     //-------------------------------------------------------------------------
     // dolfin::MeshConnectivity class
     py::class_<dolfin::MeshConnectivity, std::shared_ptr<dolfin::MeshConnectivity>>
-      (m, "MeshConnectivity", "DOLFIN MeshConnectivity object");
+      (m, "MeshConnectivity", "DOLFIN MeshConnectivity object")
+      .def("size", (std::size_t (dolfin::MeshConnectivity::*)() const)
+           &dolfin::MeshConnectivity::size)
+      .def("size", (std::size_t (dolfin::MeshConnectivity::*)(std::size_t) const)
+           &dolfin::MeshConnectivity::size);
 
     //-------------------------------------------------------------------------
     // dolfin::MeshTopology class
@@ -154,6 +158,7 @@ namespace dolfin_wrappers
       .def("dim", &dolfin::MeshTopology::dim, "Topological dimension")
       .def("__call__", (const dolfin::MeshConnectivity& (dolfin::MeshTopology::*)(std::size_t, std::size_t) const)
            &dolfin::MeshTopology::operator())
+      .def("size", &dolfin::MeshTopology::size)
       .def("hash", &dolfin::MeshTopology::hash);
 
     //--------------------------------------------------------------------------

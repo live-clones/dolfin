@@ -27,9 +27,9 @@ from dolfin_utils.test import skip_in_parallel, skip_if_not_HDF5, fixture, tempd
 
 @skip_in_parallel
 @skip_if_not_HDF5
-@pytest.mark.xfail
 def test_retrieve_all_connectivities(tempdir):
     _test_retrieve(tempdir, "test_retrieve_all_connectivities")
+
 
 def _test_retrieve(tempdir, basename):
     filename = os.path.join(tempdir, basename)
@@ -75,7 +75,6 @@ def _test_retrieve(tempdir, basename):
 
 @skip_in_parallel
 @skip_if_not_HDF5
-@pytest.mark.xfail
 def test_subdirectory(tempdir):
     "Test that retrieve/store works with nonexisting subdirectory"
     filename = os.path.join(tempdir, "test_subdirectory")
