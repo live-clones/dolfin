@@ -35,7 +35,6 @@ def test_translate_3d():
     mesh.translate(p)
 
 
-@pytest.mark.xfail
 def test_rotate_2d():
     mesh = UnitSquareMesh(8, 8)
     p = Point(1, 2)
@@ -44,7 +43,6 @@ def test_rotate_2d():
     mesh.rotate(10, 2, p)
 
 
-@pytest.mark.xfail
 def test_rotate_3d():
     mesh = UnitCubeMesh(8, 8, 8)
     p = Point(1, 2, 3)

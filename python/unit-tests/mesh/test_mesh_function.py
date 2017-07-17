@@ -89,25 +89,7 @@ def test_numpy_access(funcs, tp, name):
     assert all(values[i] == funcs[(tp, name)][i] for i in range(len(values)))
 
 
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
+
 @pytest.mark.xfail
 def test_iterate(tp, name, funcs):
     for index, value in enumerate(funcs[(tp, name)]):
@@ -116,7 +98,6 @@ def test_iterate(tp, name, funcs):
     with pytest.raises(IndexError):
         funcs[(tp, name)].__getitem__(len(funcs[(tp, name)]))
 
-@pytest.mark.xfail
 def test_setvalues(tp, funcs, name):
     if tp != 'bool':
         with pytest.raises(TypeError):
