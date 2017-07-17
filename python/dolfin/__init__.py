@@ -63,6 +63,7 @@ from .cpp.refinement import refine
 from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .function.functionspace import FunctionSpace, VectorFunctionSpace #, TensorFunctionSpace
+from .function.argument import TestFunction, TrialFunction
 from .function.constant import Constant
 from .function.specialfunctions import FacetNormal, CellSize
 from .function.expression import CompiledExpression, UserExpression
@@ -72,7 +73,8 @@ from .mesh.meshvaluecollection import MeshValueCollection
 from .parameter.parameters import Parameters, parameters
 
 # ufl
-from ufl import (FiniteElement, VectorElement, MixedElement, TestFunction, TrialFunction, inner, dot, grad, dx, div,
+from ufl import (FiniteElement, VectorElement, MixedElement,
+                 inner, dot, grad, dx, div,
                  ds, dS, triangle, tetrahedron, avg, jump)
 
 # FIXME

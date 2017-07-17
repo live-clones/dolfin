@@ -9,7 +9,7 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
     def __init__(self, mesh, family, degree):
         """Create finite element function space."""
 
-        print("hello boo")
+        print("hello boox")
         print(mesh.ufl_id())
 
         # Add ufl_cell function to mesh
@@ -58,6 +58,9 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         # Initialize the cpp.FunctionSpace
         cpp.function.FunctionSpace.__init__(self, mesh, dolfin_element,
                                             dolfin_dofmap)
+
+    def ufl_function_space(self):
+        return self
 
 
 class VectorFunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
