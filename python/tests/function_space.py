@@ -1,21 +1,20 @@
-import ufl
-import dolfin.function.functionspace
-import dolfin.function.constant
-import dolfin.cpp.generation
+from dolfin import *
 
 # Create mesh
-mesh = dolfin.cpp.generation.UnitSquareMesh(6, 9)
+mesh = UnitSquareMesh(6, 9)
 
 # Create function space
-V = dolfin.function.functionspace.FunctionSpace(mesh, "Lagrange", 1)
+V = FunctionSpace(mesh, "Lagrange", 1)
 
 # Variation problem
-u = ufl.TrialFunction(V)
-v = ufl.TestFunction(V)
+u = TrialFunction(V)
+v = TestFunction(V)
 
-c = dolfin.function.constant.Constant(1.0)
+c = Constant(1.0)
 
-a = ufl.dot(ufl.grad(u), ufl.grad(v))*(ufl.dx)
-L = c*v*(ufl.dx)
+a = dot(grad(u), grad(v))*dx
+L = c*v*dx
 
 # Assemble
+A = assemble(a)
+print(A)

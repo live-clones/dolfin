@@ -30,6 +30,7 @@
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/Form.h>
 #include <dolfin/fem/PointSource.h>
+#include <dolfin/fem/SystemAssembler.h>
 #include <dolfin/fem/PETScDMCollection.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/GenericFunction.h>
@@ -109,7 +110,18 @@ namespace dolfin_wrappers
     py::class_<dolfin::Assembler, std::shared_ptr<dolfin::Assembler>>
       (m, "Assembler", "DOLFIN Assembler object")
       .def(py::init<>())
-      .def("assemble", &dolfin::Assembler::assemble);
+      .def("assemble", &dolfin::Assembler::assemble)
+      .def_readwrite("add_values", &dolfin::Assembler::add_values)
+      .def_readwrite("keep_diagonal", &dolfin::Assembler::keep_diagonal)
+      .def_readwrite("finalize_tensor", &dolfin::Assembler::finalize_tensor);
+
+    // dolfin::SystemAssembler class
+    py::class_<dolfin::SystemAssembler, std::shared_ptr<dolfin::SystemAssembler>>
+      (m, "SystemAssembler", "DOLFIN SystemAssembler object")
+      .def(py::init<std::shared_ptr<const dolfin::Form>, std::shared_ptr<const dolfin::Form>,
+           std::vector<std::shared_ptr<const dolfin::DirichletBC>>>())
+      .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericMatrix&, dolfin::GenericVector&))
+           &dolfin::SystemAssembler::assemble);
 
     // dolfin::DiscreteOperators
     py::class_<dolfin::DiscreteOperators> (m, "DiscreteOperators")
@@ -125,7 +137,9 @@ namespace dolfin_wrappers
       .def("set_coefficient", (void (dolfin::Form::*)(std::size_t, std::shared_ptr<const dolfin::GenericFunction>))
            &dolfin::Form::set_coefficient, "Doc")
       .def("set_coefficient", (void (dolfin::Form::*)(std::string, std::shared_ptr<const dolfin::GenericFunction>))
-           &dolfin::Form::set_coefficient, "Doc");
+           &dolfin::Form::set_coefficient, "Doc")
+      .def("rank", &dolfin::Form::rank)
+      .def("mesh", &dolfin::Form::mesh);
 
     // dolfin::PointSource class
     py::class_<dolfin::PointSource, std::shared_ptr<dolfin::PointSource>>

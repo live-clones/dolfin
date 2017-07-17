@@ -33,9 +33,9 @@ from .cpp.common import (Variable, has_debug, has_hdf5,
                          DOLFIN_PI)
 from .cpp import MPI
 from .cpp.function import Expression, Constant, Function, interpolate
-from .cpp.fem import (FiniteElement, DofMap, Assembler, assemble, get_coordinates,
+from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
-                      DiscreteOperators, assemble_system)
+                      DiscreteOperators)
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, UnitIntervalMesh,
                              UnitSquareMesh, UnitCubeMesh, BoxMesh, RectangleMesh,
@@ -60,12 +60,13 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
 from .cpp.refinement import refine
 
 # python modules
+from .fem.assembling import assemble, assemble_system
 from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .function.functionspace import FunctionSpace, VectorFunctionSpace #, TensorFunctionSpace
 from .function.argument import TestFunction, TrialFunction
 from .function.constant import Constant
-from .function.specialfunctions import FacetNormal, CellSize
+from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate
 from .function.expression import CompiledExpression, UserExpression
 from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)

@@ -3,9 +3,10 @@ import ufl
 import ffc
 
 class Form(cpp.fem.Form):
-    def __init__(self, form):
+    def __init__(self, form, **kwargs):
 
-        form_compiler_parameters = None
+        form_compiler_parameters = kwargs.pop("form_compiler_parameters", None)
+
         print("Compile form. . . . . .", form)
         ufc_form = ffc.jit(form, form_compiler_parameters)
         print("post jit")
@@ -14,8 +15,6 @@ class Form(cpp.fem.Form):
 
         function_spaces = [func.function_space() for func
                            in form.arguments()]
-
-        print(function_spaces)
 
         # Initialize base class
         print("--init--")

@@ -24,7 +24,7 @@
 # Modified by Martin Sandve Alnæs 2013-2014
 
 __all__ = ["MeshCoordinates", "FacetArea", "FacetNormal", "CellSize", "CellVolume",
-           'SpatialCoordinate', 'CellNormal', 'Circumradius', 'MinFacetEdgeLength', 'MaxFacetEdgeLength']
+           "SpatialCoordinate", "CellNormal", "Circumradius", "MinFacetEdgeLength", "MaxFacetEdgeLength"]
 
 # Import UFL and SWIG-generated extension module (DOLFIN C++)
 import ufl
