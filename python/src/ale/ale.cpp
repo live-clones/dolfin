@@ -20,10 +20,12 @@
 
 #include <dolfin/ale/ALE.h>
 #include <dolfin/ale/MeshDisplacement.h>
+#include <dolfin/common/Variable.h>
 #include <dolfin/function/Expression.h>
 #include <dolfin/function/GenericFunction.h>
 #include <dolfin/mesh/BoundaryMesh.h>
 #include <dolfin/mesh/Mesh.h>
+
 
 namespace py = pybind11;
 
@@ -31,11 +33,11 @@ namespace dolfin_wrappers
 {
   void ale(py::module& m)
   {
-    // Wrap MeshDisplacement
-    py::class_<dolfin::MeshDisplacement, std::shared_ptr<dolfin::MeshDisplacement>,
-               dolfin::Expression>(m, "MeshDisplacement")
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>>())
-      .def(py::init<const dolfin::MeshDisplacement&>());
+    //auto other_m = py::module::import("dolfin.cpp.common");
+
+     // Wrap MeshDisplacement
+    py::class_<dolfin::MeshDisplacement, std::shared_ptr<dolfin::MeshDisplacement>>(m, "MeshDisplacement")
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>>());
 
     // ALE static functions
     py::class_<dolfin::ALE>

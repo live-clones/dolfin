@@ -27,6 +27,7 @@
 #include <dolfin/geometry/BoundingBoxTree.h>
 #include <dolfin/mesh/BoundaryMesh.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshData.h>
 #include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/CellType.h>
 #include <dolfin/mesh/MeshTopology.h>
@@ -89,6 +90,8 @@ namespace dolfin_wrappers
                 self.geometry().num_points(),
                 self.geometry().dim());
            })
+      .def("data", (dolfin::MeshData& (dolfin::Mesh::*)())
+           &dolfin::Mesh::data, "Data associated with a mesh")
       .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
            &dolfin::Mesh::geometry, "Mesh geometry")
       .def("init_global", &dolfin::Mesh::init_global)
@@ -127,6 +130,10 @@ namespace dolfin_wrappers
       .def("cell_name", [](const dolfin::Mesh& self)
            { return dolfin::CellType::type2string(self.type().cell_type()); }
         );
+
+    // dolfin::MeshData class
+    py::class_<dolfin::MeshData, std::shared_ptr<dolfin::MeshData>>(m, "MeshData", "Mesh data object")
+      .def("array", (std::vector<std::size_t>& (dolfin::MeshData::*)(std::string, std::size_t)) &dolfin::MeshData::array);
 
     //-------------------------------------------------------------------------
     // dolfin::BoundaryMesh class
@@ -387,7 +394,8 @@ namespace dolfin_wrappers
     // dolfin::SubMesh class
     py::class_<dolfin::SubMesh, std::shared_ptr<dolfin::SubMesh>, dolfin::Mesh>
       (m, "SubMesh", "DOLFIN SubMesh")
-      .def(py::init<const dolfin::Mesh&, const dolfin::SubDomain&>());
+      .def(py::init<const dolfin::Mesh&, const dolfin::SubDomain&>())
+      .def(py::init<const dolfin::Mesh&, const dolfin::MeshFunction<std::size_t>&, std::size_t>());
 
     //--------------------------------------------------------------------------
     // dolfin::SubDomain class

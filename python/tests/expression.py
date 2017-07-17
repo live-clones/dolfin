@@ -45,7 +45,7 @@ L = e0*v*dx
 assembler = Assembler()
 b = EigenVector(MPI.comm_world, 0)
 
-form = Form(L, [V0])
+#form = Form(L)
 #print(type(b), type(form))
 assembler.assemble(b, form)
 

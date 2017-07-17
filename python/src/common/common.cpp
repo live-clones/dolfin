@@ -56,10 +56,12 @@ namespace dolfin_wrappers
 
   void mpi(py::module& m)
   {
+    /*
     #ifdef HAS_MPI4PY
     dolfin::SubSystemsManager::init_mpi();
     import_mpi4py();
     #endif
+    */
 
     py::class_<dolfin::MPI>(m, "MPI", "MPI utilities")
       #ifdef OPEN_MPI
@@ -83,20 +85,8 @@ namespace dolfin_wrappers
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)
-#ifdef HAS_MPI4PY
       /*
-      .def("to_mpi4py_comm", [](MPI_Comm comm){
-
-          // FIXME: This messes up if called with a mpi4py
-          // communicator. How can this be checked? (see commented
-          // function below)
-
-          mpi_communicator _comm;
-          _comm.comm = comm;
-          return _comm;
-        },
-        "Convert a plain MPI communicator into a mpi4py communicator");
-      */
+#ifdef HAS_MPI4PY
       .def("to_mpi4py_comm", [](py::object obj){
           // If object is already a mpi4py communicator, return
           if (PyObject_TypeCheck(obj.ptr(), &PyMPIComm_Type))
@@ -119,6 +109,7 @@ namespace dolfin_wrappers
         },
         "Convert a plain MPI communicator into a mpi4py communicator")
 #endif
+      */
       ;
      }
 
