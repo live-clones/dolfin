@@ -33,10 +33,9 @@ namespace dolfin_wrappers
 {
   void ale(py::module& m)
   {
-    //auto other_m = py::module::import("dolfin.cpp.common");
-
      // Wrap MeshDisplacement
-    py::class_<dolfin::MeshDisplacement, std::shared_ptr<dolfin::MeshDisplacement>>(m, "MeshDisplacement")
+    py::class_<dolfin::MeshDisplacement, std::shared_ptr<dolfin::MeshDisplacement>,
+               dolfin::Expression>(m, "MeshDisplacement")
       .def(py::init<std::shared_ptr<const dolfin::Mesh>>());
 
     // ALE static functions
