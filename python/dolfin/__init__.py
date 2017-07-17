@@ -45,10 +45,10 @@ from .cpp.la import (has_linear_algebra_backend,
                      has_krylov_solver_preconditioner)
 
 if has_linear_algebra_backend('PETSc'):
-    from .cpp.la import PETScVector, PETScMatrix
+    from .cpp.la import PETScVector, PETScMatrix, PETScFactory
     from .cpp.fem import PETScDMCollection
 
-from .cpp.la import (Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
+from .cpp.la import (DefaultFactory, Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
                      LUSolver, KrylovSolver)
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
