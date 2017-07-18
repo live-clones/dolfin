@@ -9,7 +9,6 @@ class DirichletBC(cpp.fem.DirichletBC):
     def __init__(self, *args, **kwargs):
 
         method = kwargs.pop("method", None)
-        print("method: ", method)
 
         if len(args) != 3:
             raise RuntimeError("Not yet supported")

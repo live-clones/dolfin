@@ -73,7 +73,7 @@ def test_evaluate_dofs(W, mesh, V):
         coords = V.element().tabulate_dof_coordinates(cell)
         for i in range(coords.shape[0]):
             values0[i] = e(coords[i, :])
-        L0.element().evaluate_dofs(values1, e.cpp_object(), vx, orientation, cell)
+        L0.element().evaluate_dofs_new(values1, e, vx, orientation, cell)
         L01.element().evaluate_dofs(values2, e.cpp_object(), vx, orientation, cell)
         L11.element().evaluate_dofs(values3, e.cpp_object(), vx, orientation, cell)
         L1.element().evaluate_dofs(values4, e2.cpp_object(), vx, orientation, cell)
