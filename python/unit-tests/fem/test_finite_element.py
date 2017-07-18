@@ -56,8 +56,6 @@ def test_evaluate_dofs(W, mesh, V):
     e = CompiledExpression("x[0] + x[1]", degree=1)
     e2 = CompiledExpression(("x[0] + x[1]", "x[0] + x[1]"), degree=1)
 
-    coords = numpy.zeros((3, 2), dtype="d")
-    coord = numpy.zeros(2, dtype="d")
     values0 = numpy.zeros(3, dtype="d")
     values1 = numpy.zeros(3, dtype="d")
     values2 = numpy.zeros(3, dtype="d")
@@ -74,8 +72,7 @@ def test_evaluate_dofs(W, mesh, V):
         orientation = cell.orientation()
         coords = V.element().tabulate_dof_coordinates(cell)
         for i in range(coords.shape[0]):
-            coord[:] = coords[i, :]
-            values0[i] = e.cpp_object()(coord)
+            values0[i] = e(coords[i, :])
         L0.element().evaluate_dofs(values1, e.cpp_object(), vx, orientation, cell)
         L01.element().evaluate_dofs(values2, e.cpp_object(), vx, orientation, cell)
         L11.element().evaluate_dofs(values3, e.cpp_object(), vx, orientation, cell)
@@ -89,7 +86,6 @@ def test_evaluate_dofs(W, mesh, V):
             assert round(values4[3:][i] - values0[i], 7) == 0
 
 
-@pytest.mark.xfail
 def test_evaluate_dofs_manifolds_affine():
     "Testing evaluate_dofs vs tabulated coordinates."
 
@@ -106,34 +102,24 @@ def test_evaluate_dofs_manifolds_affine():
     CG22 = FunctionSpace(mesh2, "CG", 2)
     elements = [DG0, DG1, CG1, CG2, DG20, DG21, CG21, CG22]
 
-    f = Expression("x[0] + x[1]", degree=1)
+    f = CompiledExpression("x[0] + x[1]", degree=1)
     for V in elements:
         sdim = V.element().space_dimension()
         gdim = V.mesh().geometry().dim()
-        coords = numpy.zeros((sdim, gdim), dtype="d")
-        coord = numpy.zeros(gdim, dtype="d")
         values0 = numpy.zeros(sdim, dtype="d")
         values1 = numpy.zeros(sdim, dtype="d")
         for cell in cells(V.mesh()):
             vx = cell.get_vertex_coordinates()
             orientation = cell.orientation()
-            V.element().tabulate_dof_coordinates(cell, coords)
+            coords = V.element().tabulate_dof_coordinates(cell)
             for i in range(coords.shape[0]):
-                coord[:] = coords[i, :]
-                values0[i] = f(*coord)
-            V.element().evaluate_dofs(values1, f, vx, orientation, cell)
+                values0[i] = f(coords[i, :])
+            V.element().evaluate_dofs(values1, f.cpp_object(), vx, orientation, cell)
             for i in range(sdim):
                 assert round(values0[i] - values1[i], 7) == 0
 
 
-@pytest.mark.xfail
 def test_tabulate_coord(V, W, mesh):
-
-    coord0 = numpy.zeros((3, 2), dtype="d")
-    coord1 = numpy.zeros((3, 2), dtype="d")
-    coord2 = numpy.zeros((3, 2), dtype="d")
-    coord3 = numpy.zeros((3, 2), dtype="d")
-    coord4 = numpy.zeros((6, 2), dtype="d")
 
     L0 = W.sub(0)
     L1 = W.sub(1)
@@ -141,11 +127,11 @@ def test_tabulate_coord(V, W, mesh):
     L11 = L1.sub(1)
 
     for cell in cells(mesh):
-        V.element().tabulate_dof_coordinates(cell, coord0)
-        L0.element().tabulate_dof_coordinates(cell, coord1)
-        L01.element().tabulate_dof_coordinates(cell, coord2)
-        L11.element().tabulate_dof_coordinates(cell, coord3)
-        L1.element().tabulate_dof_coordinates(cell, coord4)
+        coord0 = V.element().tabulate_dof_coordinates(cell)
+        coord1 = L0.element().tabulate_dof_coordinates(cell)
+        coord2 = L01.element().tabulate_dof_coordinates(cell)
+        coord3 = L11.element().tabulate_dof_coordinates(cell)
+        coord4 = L1.element().tabulate_dof_coordinates(cell)
 
         assert (coord0 == coord1).all()
         assert (coord0 == coord2).all()

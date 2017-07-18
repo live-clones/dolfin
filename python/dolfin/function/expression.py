@@ -246,6 +246,9 @@ class CompiledExpression(ufl.Coefficient):
         else:
             self._cpp_expression.set_property(name, value)
 
+    def __call__(self, x):
+        return self._cpp_expression(x)
+
     def id(self):
         return self._cpp_expression.id()
 

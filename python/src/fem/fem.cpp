@@ -84,9 +84,12 @@ namespace dolfin_wrappers
       (m, "FiniteElement", "DOLFIN FiniteElement object")
       .def(py::init<std::shared_ptr<const ufc::finite_element>>())
       .def("num_sub_elements", &dolfin::FiniteElement::num_sub_elements)
-      .def("evaluate_dofs", [](const dolfin::FiniteElement& self, py::array_t<double> values, ufc::function& f,
-                               py::array_t<double> coordinate_dofs, int cell_orientation, const dolfin::Cell& c)
+      .def("evaluate_dofs", [](const dolfin::FiniteElement& self,
+                               py::array_t<double> values, ufc::function& f,
+                               py::array_t<double> coordinate_dofs,
+                               int cell_orientation, const dolfin::Cell& c)
            {
+             // FIXME: Use a return value, and do some shape checking
              ufc::cell ufc_cell;
              c.get_cell_data(ufc_cell);
              self.evaluate_dofs(values.mutable_data(), f,
@@ -112,6 +115,7 @@ namespace dolfin_wrappers
 
              return x;
            })
+      .def("space_dimension", &dolfin::FiniteElement::space_dimension)
       .def("signature", &dolfin::FiniteElement::signature);
 
     // dolfin::GenericDofMap class
