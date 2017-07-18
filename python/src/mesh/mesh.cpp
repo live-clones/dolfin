@@ -73,6 +73,7 @@ namespace dolfin_wrappers
                                                             py::dynamic_attr(),
                                                             "DOLFIN Mesh object")
       .def(py::init<>())
+      .def(py::init<std::string>())
       .def("bounding_box_tree", &dolfin::Mesh::bounding_box_tree)
       .def("cells",
            [](const dolfin::Mesh& self)
@@ -287,6 +288,7 @@ namespace dolfin_wrappers
       (m, "MeshFunction_"#SCALAR_NAME, "DOLFIN MeshFunction object") \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>()) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, SCALAR>()) \
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, const dolfin::MeshValueCollection<SCALAR>&>()) \
       .def("__getitem__", (const SCALAR& (dolfin::MeshFunction<SCALAR>::*) \
                            (std::size_t) const) \
            &dolfin::MeshFunction<SCALAR>::operator[]) \
@@ -351,6 +353,7 @@ namespace dolfin_wrappers
       .def("get_value", &dolfin::MeshValueCollection<SCALAR>::get_value) \
       .def("set_value", (bool (dolfin::MeshValueCollection<SCALAR>::*)(std::size_t, const SCALAR&)) \
            &dolfin::MeshValueCollection<SCALAR>::set_value) \
+      .def("assign", [](dolfin::MeshValueCollection<SCALAR>& self, const dolfin::MeshFunction<SCALAR>& mf) { self = mf; }) \
       .def("assign", [](dolfin::MeshValueCollection<SCALAR>& self, const dolfin::MeshValueCollection<SCALAR>& other) \
          { self = other; })
 

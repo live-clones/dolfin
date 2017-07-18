@@ -131,9 +131,9 @@ def datadir(request):
     "Return the directory of the shared test data. Assumes run from within repository filetree."
     d = os.path.dirname(os.path.abspath(request.module.__file__))
     t = ''
-    while t != "test":
+    while t != "unit-tests":
         d, t = os.path.split(d)
-    return os.path.join(d, "test", "data")
+    return os.path.join(d, "unit-tests", "data")
 
 
 def _create_tempdir(request):

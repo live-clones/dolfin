@@ -56,6 +56,7 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges, entities,
                        vertices, SubDomain, BoundaryMesh, MeshEditor, MultiMesh, MeshQuality,
                        SubMesh)
+from .cpp.nls import NonlinearProblem, NewtonSolver, PETScSNESSolver
 from .cpp.refinement import refine
 
 # python modules
