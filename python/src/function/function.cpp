@@ -36,29 +36,6 @@
 
 namespace py = pybind11;
 
-namespace expression_wrappers
-{
-  /*
-  py::array_t<double> expression_eval(dolfin::Expression &instance,
-                                      py::array_t<double> x)
-  {
-    // Create coordinate array
-    const py::buffer_info x_info = x.request();
-    const dolfin::Array<double> _x(x_info.shape[0], x.mutable_data());
-
-    // Create object to hold data to be computed and returned
-    py::array_t<double, py::array::c_style> values(instance.value_size());
-    dolfin::Array<double> _values(instance.value_size(), values.mutable_data());
-
-    // Evaluate basis
-    instance.eval(_values, _x);
-    return values;
-  }
-  */
-
-}
-
-
 namespace dolfin_wrappers
 {
 
@@ -68,7 +45,8 @@ namespace dolfin_wrappers
     py::class_<ufc::function, std::shared_ptr<ufc::function>>(m, "ufc_function");
 
     // dolfin::GenericFunction
-    py::class_<dolfin::GenericFunction, std::shared_ptr<dolfin::GenericFunction>>
+    py::class_<dolfin::GenericFunction, std::shared_ptr<dolfin::GenericFunction>,
+               ufc::function, dolfin::Variable>
       (m, "GenericFunction")
       .def("compute_vertex_values", [](dolfin::GenericFunction& self, const dolfin::Mesh& mesh)
            { std::vector<double> values; self.compute_vertex_values(values, mesh); return values; });
@@ -102,11 +80,8 @@ namespace dolfin_wrappers
 
     };
 
-
-    py::class_<dolfin::Expression, PyExpression,
-               std::shared_ptr<dolfin::Expression>, dolfin::GenericFunction, ufc::function,
-               dolfin::Variable>
-      (m, "Expression")
+    py::class_<dolfin::Expression, PyExpression, std::shared_ptr<dolfin::Expression>,
+               dolfin::GenericFunction>(m, "Expression")
       .def(py::init<>())
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
@@ -117,9 +92,11 @@ namespace dolfin_wrappers
              self.eval(f, x);
              return f;
            })
-      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>) const)
+      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>,
+                                                 const Eigen::Ref<Eigen::VectorXd>) const)
            &dolfin::Expression::eval, "Evaluate Expression")
-      .def("eval_cell", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
+      .def("eval_cell", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>,
+                                                      const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::Expression::eval,
            "Evaluate Expression (cell version)")
       .def("value_rank", &dolfin::Expression::value_rank)
@@ -130,8 +107,7 @@ namespace dolfin_wrappers
 
     //-----------------------------------------------------------------------------
     // dolfin::Constant
-    py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>, dolfin::Expression,
-               dolfin::GenericFunction, dolfin::Variable>
+    py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>, dolfin::Expression>
       (m, "Constant")
       .def(py::init<double>())
       .def(py::init<std::vector<double>>());
