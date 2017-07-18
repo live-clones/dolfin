@@ -29,8 +29,10 @@ namespace dolfin_wrappers
   void adaptivity(py::module& m);
   void ale(py::module& m);
   void experimental(py::module& m);
-  void fem(py::module& m);
+
   void function(py::module& m);
+  void fem(py::module& m);
+
   void generation(py::module& m);
   void geometry(py::module& m);
   void graph(py::module& m);

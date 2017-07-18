@@ -234,8 +234,9 @@ class CompiledExpression(ufl.Coefficient):
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
-    def __getattr__(self, name):
-        return self._cpp_expression.get_property(name)
+    # This messes up attribute checking from pybinf11
+    #def __getattr__(self, name):
+    #    return self._cpp_expression.get_property(name)
 
     def __setattr__(self, name, value):
         if name.startswith("_"):
