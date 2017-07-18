@@ -51,7 +51,6 @@ def W(mesh):
     return FunctionSpace(mesh, V*Q)
 
 
-@pytest.mark.xfail
 def test_evaluate_dofs(W, mesh, V):
 
     e = CompiledExpression("x[0] + x[1]", degree=1)

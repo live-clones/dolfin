@@ -23,6 +23,8 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <ufc.h>
+
 #include <dolfin/fem/fem_utils.h>
 #include <dolfin/fem/assemble.h>
 #include <dolfin/fem/Assembler.h>
@@ -40,9 +42,6 @@
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
-
-
-#include <ufc.h>
 
 
 namespace py = pybind11;
@@ -85,7 +84,14 @@ namespace dolfin_wrappers
       (m, "FiniteElement", "DOLFIN FiniteElement object")
       .def(py::init<std::shared_ptr<const ufc::finite_element>>())
       .def("num_sub_elements", &dolfin::FiniteElement::num_sub_elements)
-      .def("evaluate_dofs", &dolfin::FiniteElement::evaluate_dofs)
+      .def("evaluate_dofs", [](const dolfin::FiniteElement& self, py::array_t<double> values, ufc::function& f,
+                               py::array_t<double> coordinate_dofs, int cell_orientation, const dolfin::Cell& c)
+           {
+             ufc::cell ufc_cell;
+             c.get_cell_data(ufc_cell);
+             self.evaluate_dofs(values.mutable_data(), f,
+                                coordinate_dofs.data(), cell_orientation, ufc_cell);
+           })
       .def("tabulate_dof_coordinates", [](const dolfin::FiniteElement& self, const dolfin::Cell& cell)
            {
              // Initialize the boost::multi_array structure
