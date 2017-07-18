@@ -21,6 +21,8 @@
 
 #include <dolfin/nls/NewtonSolver.h>
 #include <dolfin/nls/PETScSNESSolver.h>
+#include <dolfin/nls/PETScTAOSolver.h>
+#include <dolfin/nls/TAOLinearBoundSolver.h>
 #include <dolfin/nls/NonlinearProblem.h>
 
 #include "../mpi_interface.h"
@@ -37,6 +39,19 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::NewtonSolver>(m, "NewtonSolver")
       .def(py::init<MPI_Comm>());
+
+    py::class_<dolfin::TAOLinearBoundSolver>(m, "TAOLinearBoundSolver")
+      .def(py::init<MPI_Comm>());
+
+    py::class_<dolfin::PETScTAOSolver>(m, "PETScTAOSolver")
+    .def("__init__",
+         [](dolfin::PETScTAOSolver &instance,
+            MPI_Comm comm, std::string tao_type,
+            std::string ksp_type, std::string pc_type)
+         { new (&instance) dolfin::PETScTAOSolver(comm, tao_type, ksp_type, pc_type); },
+         py::arg("comm"), py::arg("tao_type")="default",
+         py::arg("ksp_type")="default", py::arg("pc_type")="default");
+
 
     // dolfin::NonlinearProblem
     class PyNonlinearProblem : public dolfin::NonlinearProblem
