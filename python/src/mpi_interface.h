@@ -45,39 +45,39 @@ namespace pybind11
   namespace detail
   {
 
-    // Caster used to convert MPI_Comm to a mpi4py communicator
-    template <> class type_caster<dolfin_wrappers::mpi_communicator>
-    {
-    public:
-      PYBIND11_TYPE_CASTER(dolfin_wrappers::mpi_communicator, _("mpi_communicator"));
+//     // Caster used to convert MPI_Comm to a mpi4py communicator
+//     template <> class type_caster<dolfin_wrappers::mpi_communicator>
+//     {
+//     public:
+//       PYBIND11_TYPE_CASTER(dolfin_wrappers::mpi_communicator, _("mpi_communicator"));
 
-      // Helper from pybind to C++
-      bool load(handle src, bool)
-      {
-        //std::cout << "***Here I am" << std::endl;
-        return true;
-      }
+//       // Helper from pybind to C++
+//       bool load(handle src, bool)
+//       {
+//         //std::cout << "***Here I am" << std::endl;
+//         return true;
+//       }
 
-      // From C++ to Python
-      static handle cast(const dolfin_wrappers::mpi_communicator &src, return_value_policy, handle)
-      {
-        //std::cout << "cpp to Py for comm struct" << std::endl;
-        #ifdef HAS_MPI4PY
-        return PyMPIComm_New(src.comm);
-        #else
-        std::cerr << "Cannot convert MPI communicator to a mpi4py communicator. DOLFIN must be enabled \
-with mpi4py for this functionality" << std::endl;
-        #endif
-        return nullptr;
-      }
+//       // From C++ to Python
+//       static handle cast(const dolfin_wrappers::mpi_communicator &src, return_value_policy, handle)
+//       {
+//         //std::cout << "cpp to Py for comm struct" << std::endl;
+//         #ifdef HAS_MPI4PY
+//         return PyMPIComm_New(src.comm);
+//         #else
+//         std::cerr << "Cannot convert MPI communicator to a mpi4py communicator. DOLFIN must be enabled \
+// with mpi4py for this functionality" << std::endl;
+//         #endif
+//         return nullptr;
+//       }
 
-      operator dolfin_wrappers::mpi_communicator()
-      {
-        //std::cout << "****mpi comm op" << std::endl;
-        return value;
-      }
+//       operator dolfin_wrappers::mpi_communicator()
+//       {
+//         //std::cout << "****mpi comm op" << std::endl;
+//         return value;
+//       }
 
-    };
+//     };
 
 
     // Custom type caster for OpenMPI MPI_Comm, in which MPI_Comm is
@@ -136,50 +136,51 @@ with mpi4py for this functionality" << std::endl;
         return value;
       }
     };
-    #else
-    // Custom type caster for MPI_Comm, where MPI_Comm is defined
-    // as a typedef of int, when mpi4py is available
-    #ifdef HAS_MPI4PY
-    template <> class type_caster<MPI_Comm>
-    {
-    public:
-      PYBIND11_TYPE_CASTER(MPI_Comm, _("MPI_Comm"));
+//     #else
 
-      // From Python (possibly a mpi4py comm) to C++
-      bool load(handle src, bool)
-      {
+//     // Custom type caster for MPI_Comm, where MPI_Comm is defined
+//     // as a typedef of int, when mpi4py is available
+//     #ifdef HAS_MPI4PY
+//     template <> class type_caster<MPI_Comm>
+//     {
+//     public:
+//       PYBIND11_TYPE_CASTER(MPI_Comm, _("MPI_Comm"));
 
-        PyObject* obj = src.ptr();
+//       // From Python (possibly a mpi4py comm) to C++
+//       bool load(handle src, bool)
+//       {
 
-        if (PyObject_TypeCheck(obj, &PyMPIComm_Type))
-        {
-          MPI_Comm *comm_p = PyMPIComm_Get(obj);
-          value = *comm_p;
-          if (PyErr_Occurred())
-            return false;
-        }
-        else if (PyObject_TypeCheck(obj, &PyLong_Type))
-        {
-          //std::cout << "In caster" << std::endl;
-          value = PyLong_AsLong(obj);
-          if (PyErr_Occurred())
-            return false;
-        }
-        else
-          std::cerr << "MPI communicator (MPI_Comm) type is unknown." << std::endl;
+//         PyObject* obj = src.ptr();
 
-        return true;
-      }
+//         if (PyObject_TypeCheck(obj, &PyMPIComm_Type))
+//         {
+//           MPI_Comm *comm_p = PyMPIComm_Get(obj);
+//           value = *comm_p;
+//           if (PyErr_Occurred())
+//             return false;
+//         }
+//         else if (PyObject_TypeCheck(obj, &PyLong_Type))
+//         {
+//           //std::cout << "In caster" << std::endl;
+//           value = PyLong_AsLong(obj);
+//           if (PyErr_Occurred())
+//             return false;
+//         }
+//         else
+//           std::cerr << "MPI communicator (MPI_Comm) type is unknown." << std::endl;
 
-      // Cast from C/C++ communicator to Python. Cannot return mpi4py
-      // caster because we cannot distinguish between MPI_Comm and int
-      static handle cast(const MPI_Comm &src, return_value_policy, handle)
-      { return PyLong_FromLong(src); }
+//         return true;
+//       }
 
-      operator MPI_Comm()
-      { return value; }
-    };
-    #endif
+//       // Cast from C/C++ communicator to Python. Cannot return mpi4py
+//       // caster because we cannot distinguish between MPI_Comm and int
+//       static handle cast(const MPI_Comm &src, return_value_policy, handle)
+//       { return PyLong_FromLong(src); }
+
+//       operator MPI_Comm()
+//       { return value; }
+//     };
+//     #endif
     #endif
 
   }

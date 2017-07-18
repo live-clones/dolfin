@@ -18,11 +18,13 @@
 #include <memory>
 #include <string>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <dolfin/common/MPI.h>
 #include <dolfin/common/constants.h>
 #include <dolfin/common/defines.h>
 #include <dolfin/common/SubSystemsManager.h>
+#include <dolfin/common/Timer.h>
 #include <dolfin/common/Variable.h>
 
 #include "../mpi_interface.h"
@@ -52,14 +54,27 @@ namespace dolfin_wrappers
 
     m.attr("DOLFIN_EPS") = DOLFIN_EPS;
     m.attr("DOLFIN_PI") = DOLFIN_PI;
+
+    // Timer
+    py::class_<dolfin::Timer, std::shared_ptr<dolfin::Timer>>
+      (m, "Timer", "Timer class")
+      .def(py::init<>())
+      .def(py::init<std::string>())
+      .def("start", &dolfin::Timer::start)
+      .def("stop", &dolfin::Timer::stop)
+      .def("resume", &dolfin::Timer::resume)
+      .def("elapsed", &dolfin::Timer::elapsed);
+
   }
 
   void mpi(py::module& m)
   {
+    /*
     #ifdef HAS_MPI4PY
     dolfin::SubSystemsManager::init_mpi();
     import_mpi4py();
     #endif
+    */
 
     py::class_<dolfin::MPI>(m, "MPI", "MPI utilities")
       #ifdef OPEN_MPI
@@ -83,20 +98,8 @@ namespace dolfin_wrappers
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)
-#ifdef HAS_MPI4PY
       /*
-      .def("to_mpi4py_comm", [](MPI_Comm comm){
-
-          // FIXME: This messes up if called with a mpi4py
-          // communicator. How can this be checked? (see commented
-          // function below)
-
-          mpi_communicator _comm;
-          _comm.comm = comm;
-          return _comm;
-        },
-        "Convert a plain MPI communicator into a mpi4py communicator");
-      */
+#ifdef HAS_MPI4PY
       .def("to_mpi4py_comm", [](py::object obj){
           // If object is already a mpi4py communicator, return
           if (PyObject_TypeCheck(obj.ptr(), &PyMPIComm_Type))
@@ -119,6 +122,7 @@ namespace dolfin_wrappers
         },
         "Convert a plain MPI communicator into a mpi4py communicator")
 #endif
+      */
       ;
      }
 

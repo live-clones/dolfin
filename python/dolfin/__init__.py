@@ -26,6 +26,7 @@ del sys
 #del sys
 
 # cpp modules
+from .cpp.adaptivity import TimeSeries
 from .cpp.ale import ALE
 from .cpp.common import (Variable, has_debug, has_hdf5,
                          has_hdf5_parallel, has_mpi, has_petsc,
@@ -33,13 +34,11 @@ from .cpp.common import (Variable, has_debug, has_hdf5,
                          DOLFIN_PI)
 from .cpp import MPI
 from .cpp.function import Expression, Constant, Function, interpolate
-from .cpp.fem import (FiniteElement, DofMap, Assembler, assemble, get_coordinates,
+from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
-                      DiscreteOperators, assemble_system)
+                      DiscreteOperators)
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
-from .cpp.generation import (IntervalMesh, UnitIntervalMesh,
-                             UnitSquareMesh, UnitCubeMesh, BoxMesh, RectangleMesh,
-                             UnitQuadMesh)
+from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitQuadMesh, UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh)
 from .cpp.graph import GraphBuilder
 from .cpp.io import File, XDMFFile, VTKFile, HDF5File
 from .cpp.la import (has_linear_algebra_backend,
@@ -47,10 +46,10 @@ from .cpp.la import (has_linear_algebra_backend,
                      has_krylov_solver_preconditioner)
 
 if has_linear_algebra_backend('PETSc'):
-    from .cpp.la import PETScVector, PETScMatrix
+    from .cpp.la import PETScVector, PETScMatrix, PETScFactory
     from .cpp.fem import PETScDMCollection
 
-from .cpp.la import (Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
+from .cpp.la import (DefaultFactory, Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
                      LUSolver, KrylovSolver)
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
@@ -60,21 +59,29 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
 from .cpp.refinement import refine
 
 # python modules
+from .fem.assembling import assemble, assemble_system
 from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .function.functionspace import FunctionSpace, VectorFunctionSpace #, TensorFunctionSpace
+from .function.argument import TestFunction, TrialFunction
 from .function.constant import Constant
-from .function.specialfunctions import FacetNormal, CellSize
+from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate
 from .function.expression import CompiledExpression, UserExpression
+# from .mesh.mesh import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh
 from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
 from .parameter.parameters import Parameters, parameters
 
 # ufl
-from ufl import (FiniteElement, VectorElement, MixedElement, TestFunction, TrialFunction, inner, dot, grad, dx, div,
+from ufl import (FiniteElement, VectorElement, MixedElement,
+                 inner, dot, grad, dx, div,
                  ds, dS, triangle, tetrahedron, avg, jump)
 
 # FIXME
 def has_petsc4py():
     return False
+
+
+def mpi_comm_world():
+    return MPI.comm_world

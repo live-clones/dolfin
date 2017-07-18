@@ -54,8 +54,8 @@ def W(mesh):
 @pytest.mark.xfail
 def test_evaluate_dofs(W, mesh, V):
 
-    e = Expression("x[0] + x[1]", degree=1)
-    e2 = Expression(("x[0] + x[1]", "x[0] + x[1]"), degree=1)
+    e = CompiledExpression("x[0] + x[1]", degree=1)
+    e2 = CompiledExpression(("x[0] + x[1]", "x[0] + x[1]"), degree=1)
 
     coords = numpy.zeros((3, 2), dtype="d")
     coord = numpy.zeros(2, dtype="d")
@@ -73,14 +73,14 @@ def test_evaluate_dofs(W, mesh, V):
     for cell in cells(mesh):
         vx = cell.get_vertex_coordinates()
         orientation = cell.orientation()
-        V.element().tabulate_dof_coordinates(cell, coords)
+        coords = V.element().tabulate_dof_coordinates(cell)
         for i in range(coords.shape[0]):
             coord[:] = coords[i, :]
-            values0[i] = e(*coord)
-        L0.element().evaluate_dofs(values1, e, vx, orientation, cell)
-        L01.element().evaluate_dofs(values2, e, vx, orientation, cell)
-        L11.element().evaluate_dofs(values3, e, vx, orientation, cell)
-        L1.element().evaluate_dofs(values4, e2, vx, orientation, cell)
+            values0[i] = e.cpp_object()(coord)
+        L0.element().evaluate_dofs(values1, e.cpp_object(), vx, orientation, cell)
+        L01.element().evaluate_dofs(values2, e.cpp_object(), vx, orientation, cell)
+        L11.element().evaluate_dofs(values3, e.cpp_object(), vx, orientation, cell)
+        L1.element().evaluate_dofs(values4, e2.cpp_object(), vx, orientation, cell)
 
         for i in range(3):
             assert round(values0[i] - values1[i], 7) == 0

@@ -95,7 +95,7 @@ def test_facet_assembly(pushpop_parameters):
     n = FacetNormal(mesh)
     h = CellSize(mesh)
     h_avg = (h('+') + h('-'))/2
-    f = Expression("500.0*exp(-(pow(x[0] - 0.5, 2) + pow(x[1] - 0.5, 2)) / 0.02)", degree=1)
+    f = CompiledExpression("500.0*exp(-(pow(x[0] - 0.5, 2) + pow(x[1] - 0.5, 2)) / 0.02)", degree=1)
 
     # Define bilinear form
     a = dot(grad(v), grad(u))*dx \
@@ -244,8 +244,8 @@ def test_subdomain_assembly_form_1():
     right.mark(boundaries, 1)
 
     V = FunctionSpace(mesh, "CG", 2)
-    f = Expression("x[0] + 2", degree=1)
-    g = Expression("x[1] + 1", degree=1)
+    f = CompiledExpression("x[0] + 2", degree=1)
+    g = CompiledExpression("x[1] + 1", degree=1)
 
     f = interpolate(f, V)
     g = interpolate(g, V)
@@ -412,13 +412,13 @@ def test_ways_to_pass_mesh_to_assembler():
     # A function equal to x[0] for comparison
     V = FunctionSpace(mesh, "CG", 1)
     f = Function(V)
-    f.interpolate(Expression("x[0]", degree=1))
+    f.interpolate(CompiledExpression("x[0]", degree=1))
 
     # An expression equal to x[0], with different geometry info:
-    e = Expression("x[0]", degree=1)  # nothing
-    e2 = Expression("x[0]", cell=mesh.ufl_cell(), degree=1)  # cell
-    e3 = Expression("x[0]", element=V.ufl_element())  # ufl element
-    e4 = Expression("x[0]", domain=mesh, degree=1)  # mesh
+    e = CompiledExpression("x[0]", degree=1)  # nothing
+    e2 = CompiledExpression("x[0]", cell=mesh.ufl_cell(), degree=1)  # cell
+    e3 = CompiledExpression("x[0]", element=V.ufl_element())  # ufl element
+    e4 = CompiledExpression("x[0]", domain=mesh, degree=1)  # mesh
 
     # Provide mesh in measure:
     dx2 = Measure("dx", domain=mesh)

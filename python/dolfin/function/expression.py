@@ -214,7 +214,7 @@ def compile_expression(statements, properties):
     return expression
 
 class CompiledExpression(ufl.Coefficient):
-    def __init__(self, statement, **kwargs):
+    def __init__(self, statements, **kwargs):
 
         degree = kwargs.pop("degree", None)
         element = kwargs.pop("element", None)

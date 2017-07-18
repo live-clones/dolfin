@@ -21,11 +21,13 @@
 #include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
+#include <pybind11/eval.h>
 
 #include <dolfin/common/Variable.h>
 #include <dolfin/geometry/BoundingBoxTree.h>
 #include <dolfin/mesh/BoundaryMesh.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshData.h>
 #include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/CellType.h>
 #include <dolfin/mesh/MeshTopology.h>
@@ -59,10 +61,17 @@ namespace dolfin_wrappers
             dolfin::SubDomain *p = reinterpret_cast<dolfin::SubDomain *>(e);
             return std::shared_ptr<const dolfin::SubDomain>(p);
           });
-    //-------------------------------------------------------------------------
 
+    //-------------------------------------------------------------------------
+    // dolfin::CellType
+    py::class_<dolfin::CellType> (m, "CellType")
+      .def("description", &dolfin::CellType::description);
+
+    //-------------------------------------------------------------------------
     // dolfin::Mesh class
-    py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh", py::dynamic_attr(), "DOLFIN Mesh object")
+    py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh",
+                                                            py::dynamic_attr(),
+                                                            "DOLFIN Mesh object")
       .def(py::init<>())
       .def("bounding_box_tree", &dolfin::Mesh::bounding_box_tree)
       .def("cells",
@@ -81,6 +90,8 @@ namespace dolfin_wrappers
                 self.geometry().num_points(),
                 self.geometry().dim());
            })
+      .def("data", (dolfin::MeshData& (dolfin::Mesh::*)())
+           &dolfin::Mesh::data, "Data associated with a mesh")
       .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
            &dolfin::Mesh::geometry, "Mesh geometry")
       .def("init_global", &dolfin::Mesh::init_global)
@@ -105,11 +116,24 @@ namespace dolfin_wrappers
       .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
            &dolfin::Mesh::topology, "Mesh topology")
       .def("translate", &dolfin::Mesh::translate)
+      .def("type", (const dolfin::CellType& (dolfin::Mesh::*)() const) &dolfin::Mesh::type,
+           py::return_value_policy::reference)
       // UFL related
+      .def("ufl_cell", [](const dolfin::Mesh& self)
+           {
+             py::object scope = py::module::import("ufl").attr("__dict__");
+             std::string gdim = std::to_string(self.geometry().dim());
+             std::string cellname = self.type().description(false);
+             return py::eval("Cell(\"" + cellname + "\", geometric_dimension=" + gdim + ")", scope);
+           })
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
            { return dolfin::CellType::type2string(self.type().cell_type()); }
         );
+
+    // dolfin::MeshData class
+    py::class_<dolfin::MeshData, std::shared_ptr<dolfin::MeshData>>(m, "MeshData", "Mesh data object")
+      .def("array", (std::vector<std::size_t>& (dolfin::MeshData::*)(std::string, std::size_t)) &dolfin::MeshData::array);
 
     //-------------------------------------------------------------------------
     // dolfin::BoundaryMesh class
@@ -121,7 +145,11 @@ namespace dolfin_wrappers
     //-------------------------------------------------------------------------
     // dolfin::MeshConnectivity class
     py::class_<dolfin::MeshConnectivity, std::shared_ptr<dolfin::MeshConnectivity>>
-      (m, "MeshConnectivity", "DOLFIN MeshConnectivity object");
+      (m, "MeshConnectivity", "DOLFIN MeshConnectivity object")
+      .def("size", (std::size_t (dolfin::MeshConnectivity::*)() const)
+           &dolfin::MeshConnectivity::size)
+      .def("size", (std::size_t (dolfin::MeshConnectivity::*)(std::size_t) const)
+           &dolfin::MeshConnectivity::size);
 
     //-------------------------------------------------------------------------
     // dolfin::MeshTopology class
@@ -129,7 +157,9 @@ namespace dolfin_wrappers
       (m, "MeshTopology", "DOLFIN MeshTopology object")
       .def("dim", &dolfin::MeshTopology::dim, "Topological dimension")
       .def("__call__", (const dolfin::MeshConnectivity& (dolfin::MeshTopology::*)(std::size_t, std::size_t) const)
-           &dolfin::MeshTopology::operator());
+           &dolfin::MeshTopology::operator())
+      .def("size", &dolfin::MeshTopology::size)
+      .def("hash", &dolfin::MeshTopology::hash);
 
     //--------------------------------------------------------------------------
     // dolfin::MeshGeometry class
@@ -203,7 +233,13 @@ namespace dolfin_wrappers
       .def("inradius", &dolfin::Cell::inradius)
       .def("circumradius", &dolfin::Cell::circumradius)
       .def("radius_ratio", &dolfin::Cell::radius_ratio)
-      .def("volume", &dolfin::Cell::volume);
+      .def("volume", &dolfin::Cell::volume)
+      .def("get_vertex_coordinates", [](const dolfin::Cell& self){
+          std::vector<double> x;
+          self.get_vertex_coordinates(x);
+          return x; }, "Get cell vertex coordinates")
+      .def("orientation", (std::size_t (dolfin::Cell::*)() const) &dolfin::Cell::orientation)
+      .def("orientation", (std::size_t (dolfin::Cell::*)(const dolfin::Point&) const) &dolfin::Cell::orientation);
 
     //--------------------------------------------------------------------------
     // dolfin::MeshEntityIterator class
@@ -369,7 +405,8 @@ namespace dolfin_wrappers
     // dolfin::SubMesh class
     py::class_<dolfin::SubMesh, std::shared_ptr<dolfin::SubMesh>, dolfin::Mesh>
       (m, "SubMesh", "DOLFIN SubMesh")
-      .def(py::init<const dolfin::Mesh&, const dolfin::SubDomain&>());
+      .def(py::init<const dolfin::Mesh&, const dolfin::SubDomain&>())
+      .def(py::init<const dolfin::Mesh&, const dolfin::MeshFunction<std::size_t>&, std::size_t>());
 
     //--------------------------------------------------------------------------
     // dolfin::SubDomain class

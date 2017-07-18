@@ -9,6 +9,8 @@ mesh = refine(mesh)
 
 # Create function space
 V = FunctionSpace(mesh, "Lagrange", 1)
+print(V, dir(V))
+
 
 # Create a function
 w = Function(V)
@@ -36,10 +38,10 @@ L = f*v*dx + g*v*ds
 assembler = Assembler()
 
 A = Matrix()
-assembler.assemble(A, Form(a, [V, V]))
+assembler.assemble(A, Form(a))
 
 b = Vector()
-myform = Form(L, [V])
+myform = Form(L)
 assembler.assemble(b, myform)
 
 bc.apply(b)

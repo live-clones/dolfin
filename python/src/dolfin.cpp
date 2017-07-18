@@ -26,6 +26,7 @@ namespace dolfin_wrappers
   void common(py::module& m);
   void mpi(py::module& m);
 
+  void adaptivity(py::module& m);
   void ale(py::module& m);
   void experimental(py::module& m);
   void fem(py::module& m);
@@ -48,16 +49,27 @@ PYBIND11_MODULE(cpp, m)
   // Create module for C++ wrappers
   m.doc() ="DOLFIN Python interface";
 
+  // Create common submodule [common]
+  py::module common = m.def_submodule("common", "DOLFIN common module");
+  dolfin_wrappers::common(common);
+
   // Create MPI class [common]
   dolfin_wrappers::mpi(m);
+
+  // Create function submodule [function]
+  py::module function = m.def_submodule("function",
+                                        "DOLFIN function module");
+  dolfin_wrappers::function(function);
+
+
+
+  // Create adaptivity submodule [adaptivity]
+  py::module adaptivity = m.def_submodule("adaptivity", "DOLFIN adaptivity module");
+  dolfin_wrappers::adaptivity(adaptivity);
 
   // Create ale submodule [ale]
   py::module ale = m.def_submodule("ale", "DOLFIN ALE module");
   dolfin_wrappers::ale(ale);
-
-  // Create common submodule [common]
-  py::module common = m.def_submodule("common", "DOLFIN common module");
-  dolfin_wrappers::common(common);
 
   // Create math submodule [math]
   py::module math = m.def_submodule("math", "DOLFIN math library module");
@@ -78,11 +90,6 @@ PYBIND11_MODULE(cpp, m)
   // Create fem submodule [fem]
   py::module fem = m.def_submodule("fem", "DOLFIN FEM module");
   dolfin_wrappers::fem(fem);
-
-  // Create function submodule [function]
-  py::module function = m.def_submodule("function",
-                                        "DOLFIN function module");
-  dolfin_wrappers::function(function);
 
   // Create generation submodule [generation]
   py::module generation = m.def_submodule("generation",
