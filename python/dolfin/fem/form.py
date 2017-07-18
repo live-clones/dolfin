@@ -7,31 +7,19 @@ class Form(cpp.fem.Form):
 
         form_compiler_parameters = kwargs.pop("form_compiler_parameters", None)
 
-        print("Compile form. . . . . .", form)
         ufc_form = ffc.jit(form, form_compiler_parameters)
-        print("post jit")
-        print("jit returns: ", ufc_form)
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 
         function_spaces = [func.function_space() for func
                            in form.arguments()]
 
         # Initialize base class
-        print("--init--")
         cpp.fem.Form.__init__(self, ufc_form, function_spaces)
-        print("--end init--", type(form))
 
-        if isinstance(form, ufl.Form):
-            print("* Have a UFL form")
-        else:
-            print("* Do not have a UFL form")
-
-        print("Handle coefficients")
         original_coefficients = form.coefficients()
         self.coefficients = []
         for i in range(self.num_coefficients()):
             j = self.original_coefficient_position(i)
-            print("**** Apend")
             self.coefficients.append(original_coefficients[j].cpp_object())
 
         # Type checking coefficients
@@ -48,7 +36,4 @@ class Form(cpp.fem.Form):
 
         for i in range(self.num_coefficients()):
             if isinstance(self.coefficients[i], cpp.function.GenericFunction):
-                print("Set coeff")
                 self.set_coefficient(i, self.coefficients[i])
-
-        print("done")

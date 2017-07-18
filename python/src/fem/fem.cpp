@@ -85,6 +85,34 @@ namespace dolfin_wrappers
       (m, "FiniteElement", "DOLFIN FiniteElement object")
       .def(py::init<std::shared_ptr<const ufc::finite_element>>())
       .def("num_sub_elements", &dolfin::FiniteElement::num_sub_elements)
+      .def("evaluate_dofs_new", [](const dolfin::FiniteElement& self,
+                                   py::array_t<double> values, py::object& f,
+                                   py::array_t<double> coordinate_dofs,
+                                   int cell_orientation, const dolfin::Cell& c)
+           {
+             // FIXME: Use a return value, and do some shape checking
+             //std::cout << "***Testing get (0): " << std::endl;
+             //bool has_attr = py::hasattr(f, "XX_cpp_expressionXX");
+             //if (has_attr == true)
+             //  std::cout << "-------------- have attr" << std::endl;
+             //else
+             //  std::cout << "++++++++++++++ do not have attr" << std::endl;
+             //std::cout << "++++ Post test" << std::endl;
+
+             auto _f0 = f.attr("_cpp_expression");
+             std::cout << "Testing get (1): " << std::endl;
+             auto _f = _f0.cast<ufc::function*>();
+             if (_f)
+               std::cout << "Casting success" << std::endl;
+             else
+               std::cout << "No casting success" << std::endl;
+
+
+             ufc::cell ufc_cell;
+             c.get_cell_data(ufc_cell);
+             self.evaluate_dofs(values.mutable_data(), *_f,
+                                coordinate_dofs.data(), cell_orientation, ufc_cell);
+           })
       .def("evaluate_dofs", [](const dolfin::FiniteElement& self,
                                py::array_t<double> values, ufc::function& f,
                                py::array_t<double> coordinate_dofs,

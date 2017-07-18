@@ -25,7 +25,6 @@ import numpy
 
 class _InterfaceExpression(cpp.function.Expression):
     def __init__(self, user_expression, *args, **kwargs):
-        print("In constructor")
         self.user_expression = user_expression
 
         cpp.function.Expression.__init__(self, *args, **kwargs)
@@ -56,7 +55,6 @@ class UserExpression(ufl.Coefficient):
         #                                form_degree=None)
 
         ufl.Coefficient.__init__(self, function_space)
-        print(self.ufl_shape)
         #cpp.function.Expression.__init__(self, 1)
         #cpp.function.Expression.__init__(self, self.ufl_shape)
 
@@ -203,7 +201,6 @@ def compile_expression(statements, properties):
                                     generate=jit_generate)
 
     submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
-    print("JIT gives:", submodule, module, signature)
 
     expression = cpp.function.make_dolfin_expression(submodule)
 

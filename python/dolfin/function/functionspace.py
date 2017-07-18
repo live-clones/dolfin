@@ -159,9 +159,6 @@ class VectorFunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
     def __init__(self, mesh, family, degree, **kwargs):
         """Create finite element function space."""
 
-        print("hello boo")
-        print(mesh.ufl_id())
-
         dim = kwargs.pop("dim", None)
 
         # Add ufl_cell function to mesh
@@ -198,11 +195,9 @@ class VectorFunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         ufl.FunctionSpace.__init__(self, mesh.ufl_domain(), element)
 
         ufc_element, ufc_dofmap = ffc.jit(element, parameters=None)
-        print("JIT type:", type(ufc_element), ufc_element)
         ufc_element = cpp.fem.make_ufc_finite_element(ufc_element)
 
         dolfin_element = cpp.fem.FiniteElement(ufc_element)
-        print("Element signature:", dolfin_element.signature())
 
         ufc_dofmap = cpp.fem.make_ufc_dofmap(ufc_dofmap)
         dolfin_dofmap  = cpp.fem.DofMap(ufc_dofmap, mesh)

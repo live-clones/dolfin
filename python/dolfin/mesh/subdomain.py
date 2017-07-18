@@ -82,7 +82,6 @@ def compile_subdomain(inside_code):
                                     generate=jit_generate)
 
     submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
-    print("JIT gives:", submodule, module, signature)
 
     sub_domain = cpp.mesh.make_dolfin_subdomain(submodule)
     return sub_domain
@@ -91,4 +90,3 @@ def compile_subdomain(inside_code):
 class CompiledSubDomain(cpp.mesh.SubDomain):
     def __new__(cls, inside_code):
         return compile_subdomain(inside_code)
-
