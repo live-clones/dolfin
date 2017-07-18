@@ -31,7 +31,7 @@ from .cpp.ale import ALE
 from .cpp.common import (Variable, has_debug, has_hdf5,
                          has_hdf5_parallel, has_mpi, has_petsc,
                          has_slepc, git_commit_hash, DOLFIN_EPS,
-                         DOLFIN_PI)
+                         DOLFIN_PI, TimingClear, TimingType, timing)
 from .cpp import MPI
 from .cpp.function import Expression, Constant, Function, interpolate
 from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coordinates,
@@ -61,6 +61,8 @@ from .cpp.nls import NonlinearProblem, NewtonSolver
 from .cpp.refinement import refine
 
 # python modules
+from .common import timer
+from .common.timer import Timer, timed
 from .fem.assembling import assemble, assemble_system
 from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain

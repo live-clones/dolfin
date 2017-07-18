@@ -23,9 +23,9 @@ import gc
 import uuid
 from time import sleep
 
-from dolfin.common import timer
 from dolfin import *
 
+MPI.init()
 
 def get_random_task_name():
     return uuid.uuid4().hex
@@ -36,7 +36,7 @@ def test_context_manager_named():
     with Timer(task) as t:
         sleep(0.05)
         assert t.elapsed()[0] >= 0.05
-    t = timing(task, TimingClear_clear)
+    t = timing(task, TimingClear.clear)
     assert t[0] == 1
     assert t[1] >= 0.05
 
@@ -96,7 +96,7 @@ def test_decorator_functionality(fun, task):
     assert fun.__doc__ == "Foo"
     assert fun(1, 2, 3, four=5) == ((1, 2, 3), {'four': 5})
     assert fun(1, 2, 3, four=5) == ((1, 2, 3), {'four': 5})
-    t = timing(task, TimingClear_clear)
+    t = timing(task, TimingClear.clear)
     assert t[0] == 2
     assert t[1] >= 0.1
 
@@ -109,7 +109,7 @@ def test_decorator_timer_scope():
 
     # Delete eventual previous timing
     try:
-        timing(task, TimingClear_clear)
+        timing(task, TimingClear.clear)
     except RuntimeError:
         pass
 
@@ -124,7 +124,7 @@ def test_decorator_timer_scope():
 
     # Check that there's no timing entry
     with pytest.raises(RuntimeError):
-        timing(task, TimingClear_clear)
+        timing(task, TimingClear.clear)
 
 
 def test_decorator_timing_correctness():
@@ -139,4 +139,4 @@ def test_decorator_timing_correctness():
     sleep(0.05)
 
     # Check that sleeping above did not influence timer
-    assert timing(task, TimingClear_clear)[1] < 0.1
+    assert timing(task, TimingClear.clear)[1] < 0.1

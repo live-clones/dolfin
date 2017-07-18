@@ -26,6 +26,7 @@
 #include <dolfin/common/SubSystemsManager.h>
 #include <dolfin/common/Timer.h>
 #include <dolfin/common/Variable.h>
+#include <dolfin/common/timing.h>
 
 #include "../mpi_interface.h"
 
@@ -64,6 +65,17 @@ namespace dolfin_wrappers
       .def("stop", &dolfin::Timer::stop)
       .def("resume", &dolfin::Timer::resume)
       .def("elapsed", &dolfin::Timer::elapsed);
+
+    m.def("timing", &dolfin::timing);
+
+    py::enum_<dolfin::TimingClear>(m, "TimingClear")
+      .value("clear", dolfin::TimingClear::clear)
+      .value("keep", dolfin::TimingClear::keep);
+
+    py::enum_<dolfin::TimingType>(m, "TimingType")
+      .value("wall", dolfin::TimingType::wall)
+      .value("system", dolfin::TimingType::system)
+      .value("user", dolfin::TimingType::user);
 
   }
 
