@@ -120,6 +120,7 @@ def snes_solver_parameters_bounds():
 
 
 @skip_if_not_PETSc
+@pytest.mark.xfail
 def test_snes_solver(F, bcs, u, snes_solver_parameters_sign, parameter_degree,\
                      parameter_backend):
     u.interpolate(Constant(-1000.0))
@@ -128,6 +129,7 @@ def test_snes_solver(F, bcs, u, snes_solver_parameters_sign, parameter_degree,\
 
 
 @skip_if_not_PETSc
+@pytest.mark.xfail
 def test_newton_solver(F, u, bcs, newton_solver_parameters, parameter_degree,\
                        parameter_backend):
     u.interpolate(Constant(-1000.0))
@@ -136,6 +138,7 @@ def test_newton_solver(F, u, bcs, newton_solver_parameters, parameter_degree,\
 
 
 @skip_if_not_PETSc
+@pytest.mark.xfail
 @pytest.mark.skipif(not has_krylov_solver_preconditioner('amg'),
                     reason="This test requires amg.")
 def test_preconditioner_interface(V, parameter_backend):
@@ -224,6 +227,7 @@ def test_preconditioner_interface(V, parameter_backend):
 
 
 @skip_if_not_PETSc
+@pytest.mark.xfail
 def test_snes_solver_bound_vectors(F, u, bcs, J,
                                    snes_solver_parameters_bounds,
                                    lb, ub, parameter_degree,
@@ -242,6 +246,7 @@ def test_snes_solver_bound_vectors(F, u, bcs, J,
 
 
 @skip_if_not_PETSc
+@pytest.mark.xfail
 def test_snes_solver_bound_vectors(F, u, bcs, J,
                                    snes_solver_parameters_bounds,
                                    lb, ub, parameter_degree,

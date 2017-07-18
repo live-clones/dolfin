@@ -57,7 +57,7 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::NonlinearProblem, PyNonlinearProblem>(m, "NonlinearProblem")
       .def(py::init<>())
-//      .def("F", &dolfin::NonlinearProblem::F)
+      .def("F", &dolfin::NonlinearProblem::F)
       .def("J", &dolfin::NonlinearProblem::J)
       .def("form", (void (dolfin::NonlinearProblem::*)(dolfin::GenericMatrix&, dolfin::GenericMatrix&,
                                                        dolfin::GenericVector&, const dolfin::GenericVector&))
