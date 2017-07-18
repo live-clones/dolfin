@@ -31,6 +31,7 @@ pybind11_add_module(cpp SHARED
   src/multistage/multistage.cpp
   src/io/io.cpp
   src/la/la.cpp
+  src/nls/nls.cpp
   src/parameter/parameter.cpp
   src/refinement/refinement.cpp
   )

@@ -39,6 +39,7 @@ namespace dolfin_wrappers
   void math(py::module& m);
   void mesh(py::module& m);
   void multistage(py::module& m);
+  void nls(py::module& m);
   void parameter(py::module& m);
   void refinement(py::module& m);
 }
@@ -108,6 +109,10 @@ PYBIND11_MODULE(cpp, m)
   // Create la submodule
   py::module la = m.def_submodule("la", "DOLFIN linear algebra module");
   dolfin_wrappers::la(la);
+
+  // Create nls submodule
+  py::module nls = m.def_submodule("nls", "DOLFIN non-linear solver module");
+  dolfin_wrappers::nls(nls);
 
   // Create parameter submodule
   py::module parameter = m.def_submodule("parameter", "DOLFIN parameter module");
