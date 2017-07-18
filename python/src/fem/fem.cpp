@@ -27,6 +27,7 @@
 
 #include <dolfin/fem/fem_utils.h>
 #include <dolfin/fem/assemble.h>
+#include <dolfin/fem/assemble_local.h>
 #include <dolfin/fem/Assembler.h>
 #include <dolfin/fem/DirichletBC.h>
 #include <dolfin/fem/DiscreteOperators.h>
@@ -203,6 +204,10 @@ namespace dolfin_wrappers
                                        std::vector<std::shared_ptr<const dolfin::DirichletBC>>,
                                        const dolfin::GenericVector&))
           &dolfin::assemble_system);
+
+    m.def("assemble_local",
+          (Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(*)(const dolfin::Form&, const dolfin::Cell&))
+          &dolfin::assemble_local);
 
     // FEM utils functions
 

@@ -19,6 +19,8 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 
+#include <dolfin/la/GenericMatrix.h>
+#include <dolfin/la/GenericVector.h>
 #include <dolfin/nls/NewtonSolver.h>
 #include <dolfin/nls/PETScSNESSolver.h>
 #include <dolfin/nls/PETScTAOSolver.h>
@@ -34,11 +36,12 @@ namespace dolfin_wrappers
 
   void nls(py::module& m)
   {
-    py::class_<dolfin::PETScSNESSolver>(m, "PETScSNESSolver")
-      .def(py::init<MPI_Comm, std::string>());
-
     py::class_<dolfin::NewtonSolver>(m, "NewtonSolver")
       .def(py::init<MPI_Comm>());
+
+#ifdef HAS_PETSC
+    py::class_<dolfin::PETScSNESSolver>(m, "PETScSNESSolver")
+      .def(py::init<MPI_Comm, std::string>());
 
     py::class_<dolfin::TAOLinearBoundSolver>(m, "TAOLinearBoundSolver")
       .def(py::init<MPI_Comm>());
@@ -51,7 +54,7 @@ namespace dolfin_wrappers
          { new (&instance) dolfin::PETScTAOSolver(comm, tao_type, ksp_type, pc_type); },
          py::arg("comm"), py::arg("tao_type")="default",
          py::arg("ksp_type")="default", py::arg("pc_type")="default");
-
+#endif
 
     // dolfin::NonlinearProblem
     class PyNonlinearProblem : public dolfin::NonlinearProblem

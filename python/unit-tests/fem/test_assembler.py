@@ -38,7 +38,6 @@ def test_cell_size_assembly_1D():
     assert round(assemble(CellVolume(mesh)*dx) - 0.1, 12) == 0
 
 
-@pytest.mark.xfail
 def test_cell_assembly_1D():
     mesh = UnitIntervalMesh(48)
     V = FunctionSpace(mesh, "CG", 1)
@@ -58,7 +57,6 @@ def test_cell_assembly_1D():
     assert round(assemble(L).norm("l2") - b_l2_norm, 10) == 0
 
 
-@pytest.mark.xfail
 def test_cell_assembly():
     mesh = UnitCubeMesh(4, 4, 4)
     V = VectorFunctionSpace(mesh, "DG", 1)
@@ -81,7 +79,6 @@ def test_cell_assembly():
     assert round(assemble(L).norm("l2") - b_l2_norm, 10) == 0
 
 
-@pytest.mark.xfail
 def test_facet_assembly(pushpop_parameters):
     parameters["ghost_mode"] = "shared_facet"
     mesh = UnitSquareMesh(24, 24)
@@ -353,7 +350,6 @@ def test_nonsquare_assembly():
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_reference_assembly(filedir, pushpop_parameters):
     "Test assembly against a reference solution"
 

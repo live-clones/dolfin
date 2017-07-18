@@ -36,7 +36,7 @@ from .cpp import MPI
 from .cpp.function import Expression, Constant, Function, interpolate
 from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
-                      DiscreteOperators)
+                      DiscreteOperators, assemble_local)
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitQuadMesh, UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh)
 from .cpp.graph import GraphBuilder
@@ -48,6 +48,7 @@ from .cpp.la import (has_linear_algebra_backend,
 if has_linear_algebra_backend('PETSc'):
     from .cpp.la import PETScVector, PETScMatrix, PETScFactory
     from .cpp.fem import PETScDMCollection
+    from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
 from .cpp.la import (DefaultFactory, Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
                      LUSolver, KrylovSolver)
@@ -56,7 +57,7 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges, entities,
                        vertices, SubDomain, BoundaryMesh, MeshEditor, MultiMesh, MeshQuality,
                        SubMesh)
-from .cpp.nls import NonlinearProblem, NewtonSolver, PETScSNESSolver
+from .cpp.nls import NonlinearProblem, NewtonSolver
 from .cpp.refinement import refine
 
 # python modules
@@ -64,7 +65,7 @@ from .fem.assembling import assemble, assemble_system
 from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .function.functionspace import FunctionSpace, VectorFunctionSpace #, TensorFunctionSpace
-from .function.argument import TestFunction, TrialFunction
+from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
 from .function.constant import Constant
 from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate
 from .function.expression import CompiledExpression, UserExpression
