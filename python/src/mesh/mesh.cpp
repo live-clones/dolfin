@@ -234,7 +234,13 @@ namespace dolfin_wrappers
       .def("inradius", &dolfin::Cell::inradius)
       .def("circumradius", &dolfin::Cell::circumradius)
       .def("radius_ratio", &dolfin::Cell::radius_ratio)
-      .def("volume", &dolfin::Cell::volume);
+      .def("volume", &dolfin::Cell::volume)
+      .def("get_vertex_coordinates", [](const dolfin::Cell& self){
+          std::vector<double> x;
+          self.get_vertex_coordinates(x);
+          return x; }, "Get cell vertex coordinates")
+      .def("orientation", (std::size_t (dolfin::Cell::*)() const) &dolfin::Cell::orientation)
+      .def("orientation", (std::size_t (dolfin::Cell::*)(const dolfin::Point&) const) &dolfin::Cell::orientation);
 
     //--------------------------------------------------------------------------
     // dolfin::MeshEntityIterator class
