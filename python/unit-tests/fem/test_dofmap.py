@@ -284,7 +284,6 @@ def test_dof_to_vertex_map(mesh, reorder_dofs):
         dof_to_vertex_map(W.sub(0))
 
 
-@pytest.mark.xfail
 def test_entity_dofs(mesh):
 
     # Test that num entity dofs is correctly wrapped to
@@ -415,7 +414,6 @@ def test_block_size(mesh):
         assert V.dofmap().block_size() == mesh.geometry().dim()
 
 
-@pytest.mark.xfail
 def test_block_size_real(mesh):
     mesh = UnitIntervalMesh(12)
     V = FiniteElement('DG', mesh.ufl_cell(), 0)
@@ -455,7 +453,6 @@ def test_local_dimension(V, Q, W):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_dofs_dim(mesh, V, Q, W):
     """Test function GenericDofMap::dofs(mesh, dim)"""
     meshes = [UnitIntervalMesh(10),

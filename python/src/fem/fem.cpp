@@ -139,7 +139,14 @@ namespace dolfin_wrappers
       .def("num_entity_dofs", &dolfin::GenericDofMap::num_entity_dofs)
       .def("tabulate_local_to_global_dofs", &dolfin::GenericDofMap::tabulate_local_to_global_dofs)
       .def("clear_sub_map_data", &dolfin::GenericDofMap::clear_sub_map_data)
-      .def("tabulate_entity_dofs", &dolfin::GenericDofMap::tabulate_entity_dofs)
+      .def("tabulate_entity_dofs", [](const dolfin::GenericDofMap& instance, std::size_t entity_dim,
+                                      std::size_t cell_entity_index)
+           {
+             std::vector<std::size_t> dofs(instance.num_entity_dofs(entity_dim));
+             instance.tabulate_entity_dofs(dofs, entity_dim, cell_entity_index);
+             //return py::array_t<double>(dofs.data(), dofs.size());
+             return py::array_t<std::size_t>(dofs.size(), dofs.data());
+           })
       .def("block_size", &dolfin::GenericDofMap::block_size);
 
     // dolfin::DofMap class
