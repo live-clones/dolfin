@@ -359,7 +359,7 @@ def assemble_system(A_form,
                               b_tensor)
 
     # Check bcs
-    bcs = _wrap_in_list(bcs, 'bcs', cpp.DirichletBC)
+    bcs = _wrap_in_list(bcs, 'bcs', cpp.fem.DirichletBC)
 
     # Call C++ assemble function
     assembler = cpp.fem.SystemAssembler(A_dolfin_form, b_dolfin_form, bcs)
@@ -401,7 +401,7 @@ def _create_tensor(mpi_comm, form, rank, backend, tensor):
 
     # Create tensor
     if rank == 0:
-        tensor = cpp.Scalar(mpi_comm)
+        tensor = cpp.la.Scalar(mpi_comm)
     elif rank == 1:
         if backend:
             tensor = backend.create_vector(mpi_comm)
@@ -439,7 +439,7 @@ class SystemAssembler(cpp.fem.SystemAssembler):
         b_dolfin_form = _create_dolfin_form(b_form, form_compiler_parameters)
 
         # Check bcs
-        bcs = _wrap_in_list(bcs, 'bcs', cpp.DirichletBC)
+        bcs = _wrap_in_list(bcs, 'bcs', cpp.fem.DirichletBC)
 
         # Call C++ assemble function
         cpp.fem.SystemAssembler.__init__(self, A_dolfin_form, b_dolfin_form, bcs)

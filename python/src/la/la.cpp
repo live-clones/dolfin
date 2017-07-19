@@ -103,12 +103,13 @@ namespace dolfin_wrappers
       (m, "Matrix", "DOLFIN Matrix object")
       .def(py::init<>())
       .def(py::init<MPI_Comm>())
-      .def("norm", &dolfin::Matrix::norm)
-      .def("size", &dolfin::Matrix::size)
+      .def("init_vector", &dolfin::Matrix::init_vector)
       .def("local_range", &dolfin::Matrix::local_range)
+      .def("norm", &dolfin::Matrix::norm)
       .def("nnz", &dolfin::Matrix::nnz)
       .def("shared_instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
-           &dolfin::Matrix::shared_instance);
+           &dolfin::Matrix::shared_instance)
+      .def("size", &dolfin::Matrix::size);
 
     //-----------------------------------------------------------------------------
     // dolfin::Vector class
