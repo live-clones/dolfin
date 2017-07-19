@@ -102,6 +102,12 @@ namespace dolfin_wrappers
                throw std::range_error("Only full slices are supported");
              self = value; })
       .def("__setitem__", &dolfin::GenericVector::setitem)
+      .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
+           {
+             auto a = self.copy();
+             (*a) -= v;
+             return a;
+           })
       .def("get_local", [](const dolfin::GenericVector& instance, const std::vector<long>& rows)
            {
              std::vector<dolfin::la_index> _rows(rows.begin(), rows.end());
@@ -114,7 +120,8 @@ namespace dolfin_wrappers
              std::vector<dolfin::la_index> indices(values.size());
              std::iota(indices.begin(), indices.end(), 0);
              instance.set_local(values.data(), values.size(), indices.data());
-           });
+           })
+      .def("sum", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::sum);
 
     // dolfin::GenericLinearSolver class
     py::class_<dolfin::GenericLinearSolver, std::shared_ptr<dolfin::GenericLinearSolver>>

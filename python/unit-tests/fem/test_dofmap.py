@@ -264,9 +264,6 @@ def test_dof_to_vertex_map(mesh, reorder_dofs):
     vert_values[1::2] = 2
 
     dim = Q.dofmap().index_map().size(IndexMap.MapSize.OWNED)
-    print(vert_values[dof_to_vertex_map(Q)[:dim]].copy())
-    print(type(vert_values[dof_to_vertex_map(Q)[:dim]].copy()))
-    print(vert_values[dof_to_vertex_map(Q)[:dim]].copy().shape)
     u1.vector().set_local(vert_values[dof_to_vertex_map(Q)[:dim]].copy())
     assert round((u0.vector()-u1.vector()).sum() - 0.0, 7) == 0
 
