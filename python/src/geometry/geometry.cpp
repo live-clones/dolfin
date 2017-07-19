@@ -67,9 +67,13 @@ namespace dolfin_wrappers
       .def(py::init<double, double>())
       .def(py::init<double>())
       .def("__getitem__", [](const dolfin::Point& self, std::size_t index)
-           { return self[index]; })
+           { if (index > 2)
+               throw py::index_error("Out of range");
+             return self[index]; })
       .def("__setitem__", [](dolfin::Point& self, std::size_t index, double value)
-           { self[index] = value; })
+           { if (index > 2)
+               throw py::index_error("Out of range");
+             self[index] = value; })
       .def("__add__", [](const dolfin::Point& self, const dolfin::Point& other)
            { return self + other; })
       .def("__sub__", [](const dolfin::Point& self, const dolfin::Point& other)

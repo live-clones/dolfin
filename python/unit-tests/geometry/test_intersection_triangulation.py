@@ -28,50 +28,49 @@ from dolfin_utils.test import skip_in_parallel
 def triangulation_to_mesh_2d(triangulation):
     editor = MeshEditor()
     mesh = Mesh()
-    editor.open(mesh, 2, 2)
+    editor.open(mesh, "triangle", 2, 2)
     num_cells = len(triangulation) // 6
     num_vertices = len(triangulation) // 2
     editor.init_cells(num_cells)
     editor.init_vertices(num_vertices)
     for i in range(num_cells):
-        editor.add_cell(i, 3*i, 3*i + 1, 3*i + 2)
+        editor.add_cell(i, [3*i, 3*i + 1, 3*i + 2])
     for i in range(num_vertices):
-        editor.add_vertex(i, triangulation[2*i], triangulation[2*i + 1])
+        editor.add_vertex(i, [triangulation[2*i], triangulation[2*i + 1]])
     editor.close()
     return mesh
 
 def triangulation_to_mesh_2d_3d(triangulation):
     editor = MeshEditor()
     mesh = Mesh()
-    editor.open(mesh,2,3)
+    editor.open(mesh, "triangle", 2, 3)
     num_cells = len(triangulation) // 9
     num_vertices = len(triangulation) // 3
     editor.init_cells(num_cells)
     editor.init_vertices(num_vertices)
     for i in range(num_cells):
-        editor.add_cell(i, 3*i, 3*i+1, 3*i+2)
+        editor.add_cell(i, [3*i, 3*i+1, 3*i+2])
     for i in range(num_vertices):
-        editor.add_vertex(i, triangulation[3*i], triangulation[3*i+1], triangulation[3*i+2])
+        editor.add_vertex(i, [triangulation[3*i], triangulation[3*i+1], triangulation[3*i+2]])
     editor.close()
     return mesh
 
 def triangulation_to_mesh_3d(triangulation):
     editor = MeshEditor()
     mesh = Mesh()
-    editor.open(mesh,3,3)
+    editor.open(mesh, "tetrahedron", 3, 3)
     num_cells = len(triangulation) // 12
     num_vertices = len(triangulation) // 3
     editor.init_cells(num_cells)
     editor.init_vertices(num_vertices)
     for i in range(num_cells):
-        editor.add_cell(i, 4*i, 4*i+1, 4*i+2, 4*i+3)
+        editor.add_cell(i, [4*i, 4*i+1, 4*i+2, 4*i+3])
     for i in range(num_vertices):
-        editor.add_vertex(i, triangulation[3*i], triangulation[3*i+1], triangulation[3*i+2])
+        editor.add_vertex(i, [triangulation[3*i], triangulation[3*i+1], triangulation[3*i+2]])
     editor.close()
     return mesh
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_triangulate_intersection_2d():
 
     # Create two meshes of the unit square
@@ -90,7 +89,7 @@ def test_triangulate_intersection_2d():
     for c0 in cells(mesh_0):
         for c1 in cells(mesh_1):
             triangulation = c0.triangulate_intersection(c1)
-            if (triangulation.size>0):
+            if (len(triangulation)>0):
                 tmesh = triangulation_to_mesh_2d(triangulation)
                 for t in cells(tmesh):
                     volume += t.volume()
@@ -99,7 +98,6 @@ def test_triangulate_intersection_2d():
     assert round(volume - exactvolume, 7) == 0, errorstring
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_triangulate_intersection_2d_3d():
 
     # Note: this test will fail if the triangle mesh is aligned
@@ -111,17 +109,17 @@ def test_triangulate_intersection_2d_3d():
     # Create a 3D surface mesh
     editor = MeshEditor()
     mesh_1 = Mesh()
-    editor.open(mesh_1,2,3)
+    editor.open(mesh_1, "triangle", 2, 3)
     editor.init_cells(2)
     editor.init_vertices(4)
     # add cells
-    editor.add_cell(0,0,1,2)
-    editor.add_cell(1,1,2,3)
+    editor.add_cell(0, [0,1,2])
+    editor.add_cell(1, [1,2,3])
     # add vertices
-    editor.add_vertex(0,0,0,0.5)
-    editor.add_vertex(1,1,0,0.5)
-    editor.add_vertex(2,0,1,0.5)
-    editor.add_vertex(3,1,1,0.5)
+    editor.add_vertex(0,[0,0,0.5])
+    editor.add_vertex(1,[1,0,0.5])
+    editor.add_vertex(2,[0,1,0.5])
+    editor.add_vertex(3,[1,1,0.5])
     editor.close()
 
     # Rotate the triangle mesh around y axis a random angle in
@@ -138,7 +136,7 @@ def test_triangulate_intersection_2d_3d():
     for c0 in cells(mesh_0):
         for c1 in cells(mesh_1):
             triangulation = c0.triangulate_intersection(c1)
-            if (triangulation.size>0):
+            if (len(triangulation)>0):
                 tmesh = triangulation_to_mesh_2d_3d(triangulation)
                 for t in cells(tmesh):
                     volume += t.volume()
@@ -148,7 +146,6 @@ def test_triangulate_intersection_2d_3d():
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_triangulate_intersection_3d():
 
     # Create two meshes of the unit cube
@@ -167,7 +164,7 @@ def test_triangulate_intersection_3d():
     for c0 in cells(mesh_0):
         for c1 in cells(mesh_1):
             triangulation = c0.triangulate_intersection(c1)
-            if (triangulation.size>0):
+            if (len(triangulation)>0):
                 tmesh = triangulation_to_mesh_3d(triangulation)
                 for t in cells(tmesh):
                     volume += t.volume()
