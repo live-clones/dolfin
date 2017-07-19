@@ -56,27 +56,22 @@ def test_evaluate_dofs(W, mesh, V):
     e = CompiledExpression("x[0] + x[1]", degree=1)
     e2 = CompiledExpression(("x[0] + x[1]", "x[0] + x[1]"), degree=1)
 
-    values0 = numpy.zeros(3, dtype="d")
-    values1 = numpy.zeros(3, dtype="d")
-    values2 = numpy.zeros(3, dtype="d")
-    values3 = numpy.zeros(3, dtype="d")
-    values4 = numpy.zeros(6, dtype="d")
-
     L0 = W.sub(0)
     L1 = W.sub(1)
     L01 = L1.sub(0)
     L11 = L1.sub(1)
 
+    values0 = numpy.zeros(3, dtype="d")
     for cell in cells(mesh):
         vx = cell.get_vertex_coordinates()
         orientation = cell.orientation()
         coords = V.element().tabulate_dof_coordinates(cell)
         for i in range(coords.shape[0]):
             values0[i] = e(coords[i, :])
-        L0.element().evaluate_dofs(values1, e, vx, orientation, cell)
-        L01.element().evaluate_dofs(values2, e, vx, orientation, cell)
-        L11.element().evaluate_dofs(values3, e, vx, orientation, cell)
-        L1.element().evaluate_dofs(values4, e2, vx, orientation, cell)
+        values1 = L0.element().evaluate_dofs(e, vx, orientation, cell)
+        values2 = L01.element().evaluate_dofs(e, vx, orientation, cell)
+        values3 = L11.element().evaluate_dofs(e, vx, orientation, cell)
+        values4 = L1.element().evaluate_dofs(e2, vx, orientation, cell)
 
         for i in range(3):
             assert round(values0[i] - values1[i], 7) == 0
@@ -114,7 +109,7 @@ def test_evaluate_dofs_manifolds_affine():
             coords = V.element().tabulate_dof_coordinates(cell)
             for i in range(coords.shape[0]):
                 values0[i] = f(coords[i, :])
-            V.element().evaluate_dofs(values1, f, vx, orientation, cell)
+            values1 = V.element().evaluate_dofs(f, vx, orientation, cell)
             for i in range(sdim):
                 assert round(values0[i] - values1[i], 7) == 0
 

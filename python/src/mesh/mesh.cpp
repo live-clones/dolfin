@@ -228,6 +228,7 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::Mesh&, std::size_t>())
       .def("collides", (bool (dolfin::Cell::*)(const dolfin::Point&) const) &dolfin::Cell::collides)
       .def("collides", (bool (dolfin::Cell::*)(const dolfin::MeshEntity&) const) &dolfin::Cell::collides)
+      .def("contains", &dolfin::Cell::contains)
       .def("distance", &dolfin::Cell::distance)
       .def("facet_area", &dolfin::Cell::facet_area)
       .def("h", &dolfin::Cell::h)

@@ -52,7 +52,6 @@ def W(mesh):
 reorder_dofs = set_parameters_fixture("reorder_dofs_serial", [True, False])
 
 
-@pytest.mark.xfail
 def test_tabulate_all_coordinates(mesh, V, W):
     D = mesh.geometry().dim()
     V_dofmap = V.dofmap()
@@ -60,11 +59,11 @@ def test_tabulate_all_coordinates(mesh, V, W):
 
     all_coords_V = V.tabulate_dof_coordinates()
     all_coords_W = W.tabulate_dof_coordinates()
-    local_size_V = V_dofmap.ownership_range()[1]-V_dofmap.ownership_range()[0]
-    local_size_W = W_dofmap.ownership_range()[1]-W_dofmap.ownership_range()[0]
+    local_size_V = V_dofmap.ownership_range()[1] - V_dofmap.ownership_range()[0]
+    local_size_W = W_dofmap.ownership_range()[1] - W_dofmap.ownership_range()[0]
 
-    assert all_coords_V.shape == (D*local_size_V,)
-    assert all_coords_W.shape == (D*local_size_W,)
+    assert all_coords_V.shape == (local_size_V, D)
+    assert all_coords_W.shape == (local_size_W, D)
 
     all_coords_V = all_coords_V.reshape(local_size_V, D)
     all_coords_W = all_coords_W.reshape(local_size_W, D)

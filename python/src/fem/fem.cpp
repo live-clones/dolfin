@@ -53,7 +53,7 @@ namespace dolfin_wrappers
 {
   void fem(py::module& m)
   {
-    // ufc::foo wrappers
+    // Delcare UFC objects
     py::class_<ufc::finite_element, std::shared_ptr<ufc::finite_element>>
       (m, "ufc_finite_element", "UFC finite element object");
     py::class_<ufc::dofmap, std::shared_ptr<ufc::dofmap>>
@@ -61,6 +61,7 @@ namespace dolfin_wrappers
     py::class_<ufc::form, std::shared_ptr<ufc::form>>
       (m, "ufc_form", "UFC form object");
 
+    // Function to convert pointers (from JIT usually) to UFC objects
     m.def("make_ufc_finite_element",
           [](std::uintptr_t e)
           {
@@ -87,69 +88,40 @@ namespace dolfin_wrappers
       (m, "FiniteElement", "DOLFIN FiniteElement object")
       .def(py::init<std::shared_ptr<const ufc::finite_element>>())
       .def("num_sub_elements", &dolfin::FiniteElement::num_sub_elements)
-      .def("evaluate_dofs", [](const dolfin::FiniteElement& self,
-                                   py::array_t<double> values, py::object f,
-                                   py::array_t<double> coordinate_dofs,
-                                   int cell_orientation, const dolfin::Cell& c)
+      .def("evaluate_dofs", [](const dolfin::FiniteElement& self, py::object f,
+                               py::array_t<double> coordinate_dofs,
+                               int cell_orientation, const dolfin::Cell& c)
            {
-             /*
-             bool xhas_attr = py::hasattr(f, "XXX_cpp_expression");
-             if (xhas_attr == true)
-               std::cout << "-------------- have attr" << std::endl;
-             else
-               std::cout << "++++++++++++++ do not have attr" << std::endl;
-             std::cout << "++++ Post test" << std::endl;
-             */
-
-             /*
-             std::cout << "Testing get (1): " << std::endl;
-             auto w0 = f.attr("Xcpp_expression");
-             try
-             {
-               auto w1 = w0.cast<ufc::function*>();
-             }
-             catch(const py::cast_error& e)
-             {
-               std::cout << e.what() << std::endl;;
-             }
-             */
-
-             //if (w0.ptr())
-             //  std::cout << "Casting success" << std::endl;
-             //else
-             //  std::cout << "No casting success" << std::endl;
-
-             ufc::cell ufc_cell;
-             c.get_cell_data(ufc_cell);
-             ufc::function* _f = nullptr;
+             const ufc::function* _f = nullptr;
              if (py::hasattr(f, "_cpp_expression"))
                _f = f.attr("_cpp_expression").cast<ufc::function*>();
              else
                _f = f.cast<ufc::function*>();
 
-             self.evaluate_dofs(values.mutable_data(), *_f,
+             ufc::cell ufc_cell;
+             c.get_cell_data(ufc_cell);
+             py::array_t<double, py::array::c_style> dofs(self.space_dimension());
+             self.evaluate_dofs(dofs.mutable_data(), *_f,
                                 coordinate_dofs.data(), cell_orientation, ufc_cell);
-           })
+             return dofs;
+           }, "Evaluate degrees of freedom on element for a given function")
       .def("tabulate_dof_coordinates", [](const dolfin::FiniteElement& self, const dolfin::Cell& cell)
            {
-             // Initialize the boost::multi_array structure
-             boost::multi_array<double, 2> tmparray;
-
              // Get cell vertex coordinates
              std::vector<double> coordinate_dofs;
              cell.get_coordinate_dofs(coordinate_dofs);
 
              // Tabulate the coordinates
-             self.tabulate_dof_coordinates(tmparray, coordinate_dofs, cell);
+             boost::multi_array<double, 2> _dof_coords;
+             self.tabulate_dof_coordinates(_dof_coords, coordinate_dofs, cell);
 
-             // Copy data
-             Eigen::Array<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> x(tmparray.shape()[0], tmparray.shape()[1]);
-             for (std::size_t i = 0; i < tmparray.shape()[0]; ++i)
-               for (std::size_t j = 0; j < tmparray.shape()[1]; ++j)
-                 x(i, j) = tmparray[i][j];
-
-             return x;
-           })
+             // Copy data and return
+             typedef Eigen::Array<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> EigenArray;
+             EigenArray dof_coords = Eigen::Map<EigenArray>(_dof_coords.data(),
+                                                            _dof_coords.shape()[0],
+                                                            _dof_coords.shape()[1]);
+             return dof_coords;
+           }, "Tabulate coordinates of dofs on cell")
       .def("space_dimension", &dolfin::FiniteElement::space_dimension)
       .def("signature", &dolfin::FiniteElement::signature);
 
@@ -160,7 +132,9 @@ namespace dolfin_wrappers
     // dolfin::DofMap class
     py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>
       (m, "DofMap", "DOLFIN DofMap object")
-      .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&>());
+      .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&>())
+      .def("ownership_range", &dolfin::DofMap::ownership_range)
+      .def("cell_dofs", &dolfin::DofMap::cell_dofs);
 
     // dolfin::DirichletBC class
     py::class_<dolfin::DirichletBC, std::shared_ptr<dolfin::DirichletBC>>

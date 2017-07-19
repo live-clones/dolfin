@@ -142,6 +142,7 @@ namespace dolfin_wrappers
       .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
            &dolfin::Function::vector);
 
+    // FIXME: why is this floating here?
     m.def("interpolate", [](const dolfin::GenericFunction& f,
                           std::shared_ptr<const dolfin::FunctionSpace> V)
           {
@@ -159,9 +160,18 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::FunctionSpace&>())
       .def("element", &dolfin::FunctionSpace::element)
       .def("mesh", &dolfin::FunctionSpace::mesh)
+      .def("dofmap", &dolfin::FunctionSpace::dofmap)
       .def("sub", (std::shared_ptr<dolfin::FunctionSpace> (dolfin::FunctionSpace::*)(std::size_t) const)
-           &dolfin::FunctionSpace::sub);
+           &dolfin::FunctionSpace::sub)
+      .def("tabulate_dof_coordinates", [](const dolfin::FunctionSpace& self)
+           {
+             const std::size_t gdim = self.element()->geometric_dimension();
+             std::vector<double> coords = self.tabulate_dof_coordinates();
+             assert(coords.size() % gdim  == 0);
 
+             py::array_t<double> c({coords.size()/gdim, gdim}, coords.data() );
+             return c;
+           });
 
   }
 

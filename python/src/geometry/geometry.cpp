@@ -19,6 +19,7 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
+#include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 #include <Eigen/Dense>
 
@@ -66,6 +67,14 @@ namespace dolfin_wrappers
       .def(py::init<double, double, double>())
       .def(py::init<double, double>())
       .def(py::init<double>())
+      .def("__init__",
+           [](dolfin::Point& instance, py::array_t<double> x)
+           {
+             auto b = x.request();
+             assert(b.shape.size() == 1);
+             assert(b.shape.size()[0] <= 3);
+             new (&instance) dolfin::Point(b.shape[0], x.data());
+           })
       .def("__getitem__", [](const dolfin::Point& self, std::size_t index)
            { return self[index]; })
       .def("__setitem__", [](dolfin::Point& self, std::size_t index, double value)
