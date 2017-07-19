@@ -379,6 +379,8 @@ namespace dolfin_wrappers
            py::arg("mesh"), py::arg("type"), py::arg("tdim"), py::arg("gdim"), py::arg("degree") = 1)
       .def("init_vertices", &dolfin::MeshEditor::init_vertices)
       .def("init_cells", &dolfin::MeshEditor::init_cells)
+      .def("init_vertices_global", &dolfin::MeshEditor::init_vertices_global)
+      .def("init_cells_global", &dolfin::MeshEditor::init_cells_global)
       .def("add_vertex", (void (dolfin::MeshEditor::*)(std::size_t, const dolfin::Point&))
            &dolfin::MeshEditor::add_vertex)
       .def("add_vertex", (void (dolfin::MeshEditor::*)(std::size_t, const std::vector<double>&))
