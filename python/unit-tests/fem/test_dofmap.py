@@ -92,7 +92,6 @@ def test_tabulate_all_coordinates(mesh, V, W):
     assert all(checked_W)
 
 
-@pytest.mark.xfail
 def test_tabulate_dofs(mesh, W):
 
     L0 = W.sub(0)
@@ -117,12 +116,11 @@ def test_tabulate_dofs(mesh, W):
         assert np.array_equal(np.append(dofs1, dofs2), dofs3)
 
 
-@pytest.mark.xfail
 def test_tabulate_coord_periodic():
 
     class PeriodicBoundary2(SubDomain):
         def inside(self, x, on_boundary):
-            return x[0] < DOLFIN_EPS
+            return bool(x[0] < DOLFIN_EPS)
 
         def map(self, x, y):
             y[0] = x[0] - 1.0
@@ -159,12 +157,11 @@ def test_tabulate_coord_periodic():
         assert (coord4[3:] == coord0).all()
 
 
-@pytest.mark.xfail
 def test_tabulate_dofs_periodic():
 
     class PeriodicBoundary2(SubDomain):
         def inside(self, x, on_boundary):
-            return x[0] < DOLFIN_EPS
+            return bool(x[0] < DOLFIN_EPS)
 
         def map(self, x, y):
             y[0] = x[0] - 1.0

@@ -70,7 +70,10 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         # Create DOLFIN element and dofpa
         dolfin_element = cpp.fem.FiniteElement(ufc_element)
         ufc_dofmap = cpp.fem.make_ufc_dofmap(ufc_dofmap)
-        dolfin_dofmap  = cpp.fem.DofMap(ufc_dofmap, mesh)
+        if constrained_domain is None:
+            dolfin_dofmap = cpp.fem.DofMap(ufc_dofmap, mesh)
+        else:
+            dolfin_dofmap = cpp.fem.DofMap(ufc_dofmap, mesh, constrained_domain)
 
         # Initialize the cpp.FunctionSpace
         cpp.function.FunctionSpace.__init__(self, mesh, dolfin_element,
@@ -100,7 +103,6 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         # NOTE: This in fact performs assignment of C++ context
         #self.__dict__ = cppV.__dict__
 
-
         # Reconstruct UFL element from signature
         #ufl_element = eval(self.element().signature(), ufl.__dict__)
         ufl_element = eval(cppV.element().signature(), ufl.__dict__)
@@ -123,8 +125,7 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         element = ufl.FiniteElement(family, mesh.ufl_cell(), degree,
                                     form_degree=form_degree)
 
-        self._init_from_ufl(mesh, element,
-                            constrained_domain=constrained_domain)
+        self._init_from_ufl(mesh, element, constrained_domain=constrained_domain)
 
     def dolfin_element(self):
         "Return the DOLFIN element."

@@ -443,20 +443,22 @@ namespace dolfin_wrappers
     {
       using dolfin::SubDomain::SubDomain;
 
-      bool inside(const Eigen::Ref<Eigen::VectorXd>& x, bool on_boundary) const override
-      {
-        PYBIND11_OVERLOAD(bool, dolfin::SubDomain, inside, x, on_boundary);
-      }
+      bool inside(const Eigen::Ref<Eigen::VectorXd> x, bool on_boundary) const override
+      { PYBIND11_OVERLOAD(bool, dolfin::SubDomain, inside, x, on_boundary); }
+
+      void map(const Eigen::Ref<Eigen::VectorXd> x, Eigen::Ref<Eigen::VectorXd> y) const override
+      { PYBIND11_OVERLOAD(void, dolfin::SubDomain, map, x, y); }
     };
 
     py::class_<dolfin::SubDomain, std::shared_ptr<dolfin::SubDomain>, PySubDomain>
       (m, "SubDomain", "DOLFIN SubDomain object")
       .def(py::init<>())
-      .def("inside", (bool (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>&, bool) const)
+      .def("inside", (bool (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>, bool) const)
            &dolfin::SubDomain::inside)
+      .def("map", (void (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<Eigen::VectorXd>) const)
+           &dolfin::SubDomain::map)
       .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<std::size_t>&, std::size_t, bool) const)
            &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true);
-
 
   }
 
