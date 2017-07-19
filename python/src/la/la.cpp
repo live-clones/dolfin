@@ -30,6 +30,7 @@
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
+#include <dolfin/la/IndexMap.h>
 #include <dolfin/la/LinearAlgebraObject.h>
 #include <dolfin/la/Matrix.h>
 #include <dolfin/la/Vector.h>
@@ -55,6 +56,16 @@ namespace dolfin_wrappers
     // dolfin::GenericLinearOperator class
     //py::class_<dolfin::LinearAlgerabObject, std::shared_ptr<dolfin::LinearAlgerabObject>>
     //  (m, "LinearAlgebraObject", "DOLFIN LinearAlgebraObject object");
+
+    // dolfin::IndexMap
+    py::class_<dolfin::IndexMap, std::shared_ptr<dolfin::IndexMap>> index_map(m, "IndexMap");
+    index_map.def("size", &dolfin::IndexMap::size);
+
+    py::enum_<dolfin::IndexMap::MapSize>(index_map, "MapSize")
+      .value("ALL", dolfin::IndexMap::MapSize::ALL)
+      .value("OWNED", dolfin::IndexMap::MapSize::OWNED)
+      .value("UNOWNED", dolfin::IndexMap::MapSize::UNOWNED)
+      .value("GLOBAL", dolfin::IndexMap::MapSize::GLOBAL);
 
     // dolfin::GenericLinearOperator class
     py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
@@ -90,7 +101,20 @@ namespace dolfin_wrappers
              if (start != 0 or stop != self.size() or step != 1)
                throw std::range_error("Only full slices are supported");
              self = value; })
-      .def("__setitem__", &dolfin::GenericVector::setitem);
+      .def("__setitem__", &dolfin::GenericVector::setitem)
+      .def("get_local", [](const dolfin::GenericVector& instance, const std::vector<long>& rows)
+           {
+             std::vector<dolfin::la_index> _rows(rows.begin(), rows.end());
+             py::array_t<double> data(rows.size());
+             instance.get_local(data.mutable_data(), _rows.size(), _rows.data());
+             return data;
+           })
+      .def("set_local", [](dolfin::GenericVector& instance, std::vector<double> values)
+           {
+             std::vector<dolfin::la_index> indices(values.size());
+             std::iota(indices.begin(), indices.end(), 0);
+             instance.set_local(values.data(), values.size(), indices.data());
+           });
 
     // dolfin::GenericLinearSolver class
     py::class_<dolfin::GenericLinearSolver, std::shared_ptr<dolfin::GenericLinearSolver>>
@@ -111,7 +135,7 @@ namespace dolfin_wrappers
            &dolfin::Matrix::shared_instance)
       .def("size", &dolfin::Matrix::size);
 
-    //-----------------------------------------------------------------------------
+    // FIXME: Most (all?) of this belongs with GenericVector
     // dolfin::Vector class
     py::class_<dolfin::Vector, std::shared_ptr<dolfin::Vector>,
                dolfin::GenericVector, dolfin::GenericTensor>
@@ -184,19 +208,14 @@ namespace dolfin_wrappers
       .def("get_local", [](dolfin::Vector& self)
            {
              std::vector<double> values;
-             self.get_local(values); return values;
+             self.get_local(values);
+             return values;
            })
       .def("add_local", [](dolfin::Vector& self, const std::vector<double>& values)
            {
              std::vector<dolfin::la_index> indices(values.size());
              std::iota(indices.begin(), indices.end(), 0);
              self.add_local(values.data(), values.size(), indices.data());
-           })
-      .def("set_local", [](dolfin::Vector& self, const std::vector<double>& values)
-           {
-             std::vector<dolfin::la_index> indices(values.size());
-             std::iota(indices.begin(), indices.end(), 0);
-             self.set_local(values.data(), values.size(), indices.data());
            })
       .def("apply", &dolfin::Vector::apply)
       .def("str", &dolfin::Vector::str)
@@ -266,7 +285,8 @@ namespace dolfin_wrappers
            py::return_value_policy::reference_internal);
 
     #ifdef HAS_PETSC
-    //----------------------------------------------------------------------------
+    py::class_<dolfin::PETScObject, std::shared_ptr<dolfin::PETScObject>>(m, "PETScObject");
+
     // dolfin::PETScFactory class
     py::class_<dolfin::PETScFactory, std::shared_ptr<dolfin::PETScFactory>,
       dolfin::GenericLinearAlgebraFactory>
@@ -278,16 +298,18 @@ namespace dolfin_wrappers
     //----------------------------------------------------------------------------
     // dolfin::PETScVector class
     py::class_<dolfin::PETScVector, std::shared_ptr<dolfin::PETScVector>,
-               dolfin::GenericVector, dolfin::GenericTensor>
+               dolfin::GenericVector, dolfin::PETScObject>
       (m, "PETScVector", "DOLFIN PETScVector object")
       .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::size_t>());
 
-    //----------------------------------------------------------------------------
+    // dolfin::PETScBaseMatrix class
+    py::class_<dolfin::PETScBaseMatrix, std::shared_ptr<dolfin::PETScBaseMatrix>,
+               dolfin::PETScObject, dolfin::Variable>(m, "PETScBaseMatrix");
+
     // dolfin::PETScMatrix class
     py::class_<dolfin::PETScMatrix, std::shared_ptr<dolfin::PETScMatrix>,
-               dolfin::GenericMatrix, dolfin::GenericTensor,
-               dolfin::GenericLinearOperator>
+               dolfin::GenericMatrix, dolfin::PETScBaseMatrix>
       (m, "PETScMatrix", "DOLFIN PETScMatrix object")
       .def(py::init<>())
       .def(py::init<MPI_Comm>());

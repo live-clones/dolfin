@@ -210,7 +210,6 @@ def test_tabulate_dofs_periodic():
         assert np.array_equal(np.append(dofs1, dofs2), dofs3)
 
 
-@pytest.mark.xfail
 def test_global_dof_builder():
     mesh = UnitSquareMesh(3, 3)
 
@@ -224,8 +223,6 @@ def test_global_dof_builder():
     W = FunctionSpace(mesh, R*V)
 
 
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_dof_to_vertex_map(mesh, reorder_dofs):
 
     def _test_maps_consistency(space):
@@ -250,23 +247,26 @@ def test_dof_to_vertex_map(mesh, reorder_dofs):
 
     u = Function(V)
     e = CompiledExpression("x[0] + x[1]", degree=1)
-    u.interpolate(e)
+    u.interpolate(e._cpp_expression)
 
     vert_values = mesh.coordinates().sum(1)
     func_values = np.empty(len(vert_values))
-    u.vector().get_local(func_values, vertex_to_dof_map(V))
+    func_values = u.vector().get_local(vertex_to_dof_map(V))
     assert round(max(abs(func_values - vert_values)), 7) == 0
 
     c0 = Constant((1, 2))
     u0 = Function(Q)
-    u0.interpolate(c0)
+    u0.interpolate(c0.cpp_object())
 
     vert_values = np.zeros(mesh.num_vertices()*2)
     u1 = Function(Q)
     vert_values[::2] = 1
     vert_values[1::2] = 2
 
-    dim = Q.dofmap().index_map().size(IndexMap.MapSize_OWNED)
+    dim = Q.dofmap().index_map().size(IndexMap.MapSize.OWNED)
+    print(vert_values[dof_to_vertex_map(Q)[:dim]].copy())
+    print(type(vert_values[dof_to_vertex_map(Q)[:dim]].copy()))
+    print(vert_values[dof_to_vertex_map(Q)[:dim]].copy().shape)
     u1.vector().set_local(vert_values[dof_to_vertex_map(Q)[:dim]].copy())
     assert round((u0.vector()-u1.vector()).sum() - 0.0, 7) == 0
 

@@ -33,7 +33,7 @@ from .cpp.common import (Variable, has_debug, has_hdf5,
                          has_slepc, git_commit_hash, DOLFIN_EPS,
                          DOLFIN_PI, TimingClear, TimingType, timing)
 from .cpp import MPI
-from .cpp.function import Expression, Constant, Function, interpolate
+from .cpp.function import Expression, Constant, interpolate
 from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
                       DiscreteOperators, assemble_local)
@@ -51,7 +51,7 @@ if has_linear_algebra_backend('PETSc'):
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
-from .cpp.la import (DefaultFactory, Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
+from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
                      LUSolver, KrylovSolver, as_backend_type)
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
@@ -68,6 +68,7 @@ from .fem.assembling import assemble, assemble_system
 from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .function.functionspace import FunctionSpace, VectorFunctionSpace #, TensorFunctionSpace
+from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
 from .function.constant import Constant
 from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate
