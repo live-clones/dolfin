@@ -107,6 +107,7 @@ namespace dolfin_wrappers
       .def("num_faces", &dolfin::Mesh::num_faces, "Number of faces")
       .def("num_facets", &dolfin::Mesh::num_facets, "Number of facets")
       .def("num_cells", &dolfin::Mesh::num_cells, "Number of cells")
+      .def("size", &dolfin::Mesh::size)
       .def("rmax", &dolfin::Mesh::rmax)
       .def("rmin", &dolfin::Mesh::rmin)
       .def("rotate", (void (dolfin::Mesh::*)(double, std::size_t, const dolfin::Point&))
@@ -126,6 +127,16 @@ namespace dolfin_wrappers
              std::string gdim = std::to_string(self.geometry().dim());
              std::string cellname = self.type().description(false);
              return py::eval("Cell(\"" + cellname + "\", geometric_dimension=" + gdim + ")", scope);
+           })
+      .def("ufl_coordinate_element", [](const dolfin::Mesh& self)
+           {
+             py::object scope = py::module::import("ufl").attr("__dict__");
+             std::string gdim = std::to_string(self.geometry().dim());
+             std::string degree = std::to_string(self.geometry().degree());
+             std::string cellname = self.type().description(false);
+             return py::eval("VectorElement('Lagrange', Cell('"
+                             + cellname + "', geometric_dimension=" + gdim + "), "
+                             + degree + ", dim=" + gdim +")", scope);
            })
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
@@ -147,6 +158,9 @@ namespace dolfin_wrappers
     // dolfin::MeshConnectivity class
     py::class_<dolfin::MeshConnectivity, std::shared_ptr<dolfin::MeshConnectivity>>
       (m, "MeshConnectivity", "DOLFIN MeshConnectivity object")
+      .def("__call__", [](const dolfin::MeshConnectivity& self, std::size_t i){
+          return Eigen::Map<const Eigen::Matrix<unsigned int, Eigen::Dynamic, 1>>
+            (self(i), self.size(i));})
       .def("size", (std::size_t (dolfin::MeshConnectivity::*)() const)
            &dolfin::MeshConnectivity::size)
       .def("size", (std::size_t (dolfin::MeshConnectivity::*)(std::size_t) const)
@@ -160,7 +174,12 @@ namespace dolfin_wrappers
       .def("__call__", (const dolfin::MeshConnectivity& (dolfin::MeshTopology::*)(std::size_t, std::size_t) const)
            &dolfin::MeshTopology::operator())
       .def("size", &dolfin::MeshTopology::size)
-      .def("hash", &dolfin::MeshTopology::hash);
+      .def("hash", &dolfin::MeshTopology::hash)
+      .def("global_indices", &dolfin::MeshTopology::global_indices)
+      .def("have_shared_entities", &dolfin::MeshTopology::have_shared_entities)
+      .def("shared_entities",
+           (const std::map<std::int32_t, std::set<unsigned int> >&(dolfin::MeshTopology::*)(unsigned int) const)
+           &dolfin::MeshTopology::shared_entities);
 
     //--------------------------------------------------------------------------
     // dolfin::MeshGeometry class
@@ -189,6 +208,8 @@ namespace dolfin_wrappers
             (self.entities(dim), self.num_entities(dim));
         })
       .def("midpoint", &dolfin::MeshEntity::midpoint, "Midpoint of Entity")
+      .def("sharing_processes", &dolfin::MeshEntity::sharing_processes)
+      .def("is_shared", &dolfin::MeshEntity::is_shared)
       .def("__str__", [](dolfin::MeshEntity& self){return self.str(false);});
 
     //--------------------------------------------------------------------------
@@ -235,6 +256,7 @@ namespace dolfin_wrappers
       .def("inradius", &dolfin::Cell::inradius)
       .def("circumradius", &dolfin::Cell::circumradius)
       .def("radius_ratio", &dolfin::Cell::radius_ratio)
+      .def("triangulate_intersection", &dolfin::Cell::triangulate_intersection)
       .def("volume", &dolfin::Cell::volume)
       .def("get_vertex_coordinates", [](const dolfin::Cell& self){
           std::vector<double> x;
@@ -380,6 +402,8 @@ namespace dolfin_wrappers
            py::arg("mesh"), py::arg("type"), py::arg("tdim"), py::arg("gdim"), py::arg("degree") = 1)
       .def("init_vertices", &dolfin::MeshEditor::init_vertices)
       .def("init_cells", &dolfin::MeshEditor::init_cells)
+      .def("init_vertices_global", &dolfin::MeshEditor::init_vertices_global)
+      .def("init_cells_global", &dolfin::MeshEditor::init_cells_global)
       .def("add_vertex", (void (dolfin::MeshEditor::*)(std::size_t, const dolfin::Point&))
            &dolfin::MeshEditor::add_vertex)
       .def("add_vertex", (void (dolfin::MeshEditor::*)(std::size_t, const std::vector<double>&))

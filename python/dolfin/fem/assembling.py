@@ -359,7 +359,7 @@ def assemble_system(A_form,
                               b_tensor)
 
     # Check bcs
-    bcs = _wrap_in_list(bcs, 'bcs', cpp.DirichletBC)
+    bcs = _wrap_in_list(bcs, 'bcs', cpp.fem.DirichletBC)
 
     # Call C++ assemble function
     assembler = cpp.fem.SystemAssembler(A_dolfin_form, b_dolfin_form, bcs)
@@ -396,12 +396,12 @@ def _create_tensor(mpi_comm, form, rank, backend, tensor):
         return tensor
 
     # Check backend argument
-    if (backend is not None) and (not isinstance(backend, cpp.GenericLinearAlgebraFactory)):
+    if (backend is not None) and (not isinstance(backend, cpp.la.GenericLinearAlgebraFactory)):
         raise TypeError("Provide a GenericLinearAlgebraFactory as 'backend'")
 
     # Create tensor
     if rank == 0:
-        tensor = cpp.Scalar(mpi_comm)
+        tensor = cpp.la.Scalar(mpi_comm)
     elif rank == 1:
         if backend:
             tensor = backend.create_vector(mpi_comm)
@@ -439,7 +439,7 @@ class SystemAssembler(cpp.fem.SystemAssembler):
         b_dolfin_form = _create_dolfin_form(b_form, form_compiler_parameters)
 
         # Check bcs
-        bcs = _wrap_in_list(bcs, 'bcs', cpp.DirichletBC)
+        bcs = _wrap_in_list(bcs, 'bcs', cpp.fem.DirichletBC)
 
         # Call C++ assemble function
         cpp.fem.SystemAssembler.__init__(self, A_dolfin_form, b_dolfin_form, bcs)

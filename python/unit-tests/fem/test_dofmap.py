@@ -145,16 +145,11 @@ def test_tabulate_coord_periodic():
     L01 = L1.sub(0)
     L11 = L1.sub(1)
 
-    coord0 = np.zeros((3, 2), dtype="d")
-    coord1 = np.zeros((3, 2), dtype="d")
-    coord2 = np.zeros((3, 2), dtype="d")
-    coord3 = np.zeros((3, 2), dtype="d")
-
     for cell in cells(mesh):
-        V.element().tabulate_dof_coordinates(cell, coord0)
-        L0.element().tabulate_dof_coordinates(cell, coord1)
-        L01.element().tabulate_dof_coordinates(cell, coord2)
-        L11.element().tabulate_dof_coordinates(cell, coord3)
+        coord0 = V.element().tabulate_dof_coordinates(cell)
+        coord1 = L0.element().tabulate_dof_coordinates(cell)
+        coord2 = L01.element().tabulate_dof_coordinates(cell)
+        coord3 = L11.element().tabulate_dof_coordinates(cell)
         coord4 = L1.element().tabulate_dof_coordinates(cell)
 
         assert (coord0 == coord1).all()
@@ -237,8 +232,8 @@ def test_global_dof_builder():
 def test_dof_to_vertex_map(mesh, reorder_dofs):
 
     def _test_maps_consistency(space):
-        v2d = vertex_to_dof_map(space)
-        d2v = dof_to_vertex_map(space)
+        v2d = np.array(vertex_to_dof_map(space))
+        d2v = np.array(dof_to_vertex_map(space))
         assert len(v2d) == len(d2v)
         assert np.all(v2d[d2v] == np.arange(len(v2d)))
         assert np.all(d2v[v2d] == np.arange(len(d2v)))

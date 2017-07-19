@@ -23,6 +23,8 @@
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/mesh/Mesh.h>
 
+#include "../mpi_interface.h"
+
 namespace py = pybind11;
 
 namespace dolfin_wrappers

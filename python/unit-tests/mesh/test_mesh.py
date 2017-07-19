@@ -116,7 +116,6 @@ def f(mesh):
     return MeshFunction('int', mesh, 0)
 
 
-@pytest.mark.xfail
 def test_UFLCell(interval, square, rectangle, cube, box):
     import ufl
     assert ufl.interval == interval.ufl_cell()
@@ -478,15 +477,15 @@ def test_shared_entities():
             mesh.init_global(shared_dim)
 
             assert isinstance(mesh.topology().shared_entities(shared_dim), dict)
-            assert isinstance(mesh.topology().global_indices(shared_dim),
-                              numpy.ndarray)
+#            assert isinstance(mesh.topology().global_indices(shared_dim),
+#                              numpy.ndarray)
 
             EntityIterator = {0: vertices, 1: edges, 2: faces, 3: cells}[shared_dim]
             if mesh.topology().have_shared_entities(shared_dim):
                 for e in EntityIterator(mesh):
                     sharing = e.sharing_processes()
-                    assert isinstance(sharing, numpy.ndarray)
-                    assert (sharing.size > 0) == e.is_shared()
+#                    assert isinstance(sharing, numpy.ndarray)
+                    assert (len(sharing) > 0) == e.is_shared()
 
             n_entities = mesh.size(shared_dim)
             n_global_entities = mesh.size_global(shared_dim)

@@ -26,6 +26,7 @@
 #include <dolfin/generation/UnitSquareMesh.h>
 #include <dolfin/generation/UnitIntervalMesh.h>
 #include <dolfin/generation/UnitQuadMesh.h>
+#include <dolfin/generation/UnitHexMesh.h>
 #include <dolfin/generation/IntervalMesh.h>
 
 #include "../mpi_interface.h"
@@ -74,6 +75,13 @@ namespace dolfin_wrappers
     py::class_<dolfin::UnitQuadMesh, std::shared_ptr<dolfin::UnitQuadMesh>, dolfin::Mesh>(m, "UnitQuadMesh")
       .def_static("create", [](std::size_t nx, std::size_t ny){ return dolfin::UnitQuadMesh::create(nx, ny); })
       .def_static("create", [](MPI_Comm comm, std::size_t nx, std::size_t ny){ return dolfin::UnitQuadMesh::create(comm, nx, ny); });
+
+    // dolfin::UnitHexMesh
+    py::class_<dolfin::UnitHexMesh>(m, "UnitHexMesh")
+      .def_static("create", [](std::size_t nx, std::size_t ny, std::size_t nz)
+                  { return dolfin::UnitHexMesh::create(nx, ny, nz); })
+      .def_static("create", [](MPI_Comm comm, std::size_t nx, std::size_t ny, std::size_t nz)
+                  { return dolfin::UnitHexMesh::create(comm, nx, ny, nz); });
 
     // dolfin::BoxMesh
     py::class_<dolfin::BoxMesh, std::shared_ptr<dolfin::BoxMesh>, dolfin::Mesh>(m, "BoxMesh")

@@ -125,9 +125,25 @@ namespace dolfin_wrappers
       .def("space_dimension", &dolfin::FiniteElement::space_dimension)
       .def("signature", &dolfin::FiniteElement::signature);
 
+    // dolfin::IndexMap
+    py::class_<dolfin::IndexMap, std::shared_ptr<dolfin::IndexMap>>(m, "IndexMap");
+
     // dolfin::GenericDofMap class
     py::class_<dolfin::GenericDofMap, std::shared_ptr<dolfin::GenericDofMap>>
-      (m, "GenericDofMap", "DOLFIN DofMap object");
+      (m, "GenericDofMap", "DOLFIN DofMap object")
+      .def("index_map", &dolfin::GenericDofMap::index_map)
+      .def("cell_dofs", &dolfin::GenericDofMap::cell_dofs)
+      .def("dofs", (std::vector<dolfin::la_index>(dolfin::GenericDofMap::*)() const)
+           &dolfin::GenericDofMap::dofs)
+      .def("dofs", (std::vector<dolfin::la_index>(dolfin::GenericDofMap::*)(const dolfin::Mesh&, std::size_t) const)
+           &dolfin::GenericDofMap::dofs)
+      .def("entity_dofs", (std::vector<dolfin::la_index>(dolfin::GenericDofMap::*)(const dolfin::Mesh&, std::size_t) const)
+           &dolfin::GenericDofMap::entity_dofs)
+      .def("num_entity_dofs", &dolfin::GenericDofMap::num_entity_dofs)
+      .def("tabulate_local_to_global_dofs", &dolfin::GenericDofMap::tabulate_local_to_global_dofs)
+      .def("clear_sub_map_data", &dolfin::GenericDofMap::clear_sub_map_data)
+      .def("tabulate_entity_dofs", &dolfin::GenericDofMap::tabulate_entity_dofs)
+      .def("block_size", &dolfin::GenericDofMap::block_size);
 
     // dolfin::DofMap class
     py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>
@@ -148,18 +164,21 @@ namespace dolfin_wrappers
            &dolfin::DirichletBC::apply)
       .def("user_subdomain", &dolfin::DirichletBC::user_sub_domain);
 
-
-    // dolfin::Assembler class
-    py::class_<dolfin::Assembler, std::shared_ptr<dolfin::Assembler>>
-      (m, "Assembler", "DOLFIN Assembler object")
-      .def(py::init<>())
-      .def("assemble", &dolfin::Assembler::assemble)
+    // dolfin::AssemblerBase class
+    py::class_<dolfin::AssemblerBase, std::shared_ptr<dolfin::AssemblerBase>>
+      (m, "AssemblerBase")
       .def_readwrite("add_values", &dolfin::Assembler::add_values)
       .def_readwrite("keep_diagonal", &dolfin::Assembler::keep_diagonal)
       .def_readwrite("finalize_tensor", &dolfin::Assembler::finalize_tensor);
 
+    // dolfin::Assembler class
+    py::class_<dolfin::Assembler, std::shared_ptr<dolfin::Assembler>, dolfin::AssemblerBase>
+      (m, "Assembler", "DOLFIN Assembler object")
+      .def(py::init<>())
+      .def("assemble", &dolfin::Assembler::assemble);
+
     // dolfin::SystemAssembler class
-    py::class_<dolfin::SystemAssembler, std::shared_ptr<dolfin::SystemAssembler>>
+    py::class_<dolfin::SystemAssembler, std::shared_ptr<dolfin::SystemAssembler>, dolfin::AssemblerBase>
       (m, "SystemAssembler", "DOLFIN SystemAssembler object")
       .def(py::init<std::shared_ptr<const dolfin::Form>, std::shared_ptr<const dolfin::Form>,
            std::vector<std::shared_ptr<const dolfin::DirichletBC>>>())

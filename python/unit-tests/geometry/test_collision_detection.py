@@ -32,18 +32,17 @@ import numpy as np
 def create_triangular_mesh_3D():
     editor = MeshEditor()
     mesh = Mesh()
-    editor.open(mesh,2,3)
+    editor.open(mesh, "triangle", 2,3)
     editor.init_cells(2)
     editor.init_vertices(4)
-    editor.add_cell(0, 0,1,2)
-    editor.add_cell(1, 1,2,3)
-    editor.add_vertex(0, 0,0,0.5)
-    editor.add_vertex(1, 1,0,0.5)
-    editor.add_vertex(2, 0,1,0.5)
-    editor.add_vertex(3, 1,1,0.5)
+    editor.add_cell(0, [0,1,2])
+    editor.add_cell(1, [1,2,3])
+    editor.add_vertex(0, [0,0,0.5])
+    editor.add_vertex(1, [1,0,0.5])
+    editor.add_vertex(2, [0,1,0.5])
+    editor.add_vertex(3, [1,1,0.5])
     editor.close()
-    return mesh;
-
+    return mesh
 
 @skip_in_parallel
 def test_inteval_collides_point():
@@ -102,7 +101,6 @@ def test_tetrahedron_collides_point():
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_tetrahedron_collides_triangle():
     """Test if point collide with tetrahedron"""
 

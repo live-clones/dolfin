@@ -26,25 +26,24 @@ import pytest
 from dolfin import *
 
 
-@pytest.mark.xfail
 def test_triangle_mesh():
 
     # Create mesh object and open editor
     mesh = Mesh()
     editor = MeshEditor()
-    editor.open(mesh, 2, 2)
+    editor.open(mesh, "triangle", 2, 2)
     editor.init_vertices(3)  # test both versions of interface
     editor.init_vertices_global(3, 3)
     editor.init_cells(1)    # test both versions of interface
     editor.init_cells_global(1, 1)
 
     # Add vertices
-    editor.add_vertex(0, 0.0, 0.0)
-    editor.add_vertex(1, 1.0, 0.0)
-    editor.add_vertex(2, 0.0, 1.0)
+    editor.add_vertex(0, [0.0, 0.0])
+    editor.add_vertex(1, [1.0, 0.0])
+    editor.add_vertex(2, [0.0, 1.0])
 
     # Add cell
-    editor.add_cell(0, 0, 1, 2)
+    editor.add_cell(0, [0, 1, 2])
 
     # Close editor
     editor.close()

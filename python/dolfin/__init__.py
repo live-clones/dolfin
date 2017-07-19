@@ -38,7 +38,8 @@ from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coo
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
                       DiscreteOperators, assemble_local)
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
-from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitQuadMesh, UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh)
+from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitQuadMesh, UnitHexMesh,
+                             UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh)
 from .cpp.graph import GraphBuilder
 from .cpp.io import File, XDMFFile, VTKFile, HDF5File
 from .cpp.la import (has_linear_algebra_backend,
@@ -51,7 +52,7 @@ if has_linear_algebra_backend('PETSc'):
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
 from .cpp.la import (DefaultFactory, Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
-                     LUSolver, KrylovSolver)
+                     LUSolver, KrylovSolver, as_backend_type)
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges, entities,

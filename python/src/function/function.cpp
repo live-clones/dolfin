@@ -158,6 +158,7 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<dolfin::Mesh>, std::shared_ptr<dolfin::FiniteElement>,
            std::shared_ptr<dolfin::GenericDofMap>>())
       .def(py::init<const dolfin::FunctionSpace&>())
+      .def("dim", &dolfin::FunctionSpace::dim)
       .def("element", &dolfin::FunctionSpace::element)
       .def("mesh", &dolfin::FunctionSpace::mesh)
       .def("dofmap", &dolfin::FunctionSpace::dofmap)
