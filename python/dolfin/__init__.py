@@ -52,7 +52,7 @@ if has_linear_algebra_backend('PETSc'):
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
 from .cpp.la import (DefaultFactory, Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
-                     LUSolver, KrylovSolver)
+                     LUSolver, KrylovSolver, as_backend_type)
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges, entities,

@@ -396,7 +396,7 @@ def _create_tensor(mpi_comm, form, rank, backend, tensor):
         return tensor
 
     # Check backend argument
-    if (backend is not None) and (not isinstance(backend, cpp.GenericLinearAlgebraFactory)):
+    if (backend is not None) and (not isinstance(backend, cpp.la.GenericLinearAlgebraFactory)):
         raise TypeError("Provide a GenericLinearAlgebraFactory as 'backend'")
 
     # Create tensor

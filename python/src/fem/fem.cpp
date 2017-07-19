@@ -153,9 +153,13 @@ namespace dolfin_wrappers
       .def("space_dimension", &dolfin::FiniteElement::space_dimension)
       .def("signature", &dolfin::FiniteElement::signature);
 
+    // dolfin::IndexMap
+    py::class_<dolfin::IndexMap, std::shared_ptr<dolfin::IndexMap>>(m, "IndexMap");
+
     // dolfin::GenericDofMap class
     py::class_<dolfin::GenericDofMap, std::shared_ptr<dolfin::GenericDofMap>>
-      (m, "GenericDofMap", "DOLFIN DofMap object");
+      (m, "GenericDofMap", "DOLFIN DofMap object")
+      .def("index_map", &dolfin::GenericDofMap::index_map);
 
     // dolfin::DofMap class
     py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>

@@ -159,6 +159,7 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::FunctionSpace&>())
       .def("element", &dolfin::FunctionSpace::element)
       .def("mesh", &dolfin::FunctionSpace::mesh)
+      .def("dofmap", &dolfin::FunctionSpace::dofmap)
       .def("sub", (std::shared_ptr<dolfin::FunctionSpace> (dolfin::FunctionSpace::*)(std::size_t) const)
            &dolfin::FunctionSpace::sub);
 
