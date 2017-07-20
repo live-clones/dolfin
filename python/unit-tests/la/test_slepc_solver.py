@@ -72,7 +72,7 @@ def K_M_vec(V_vec):
 
 @skip_if_not_PETsc_or_not_slepc
 @pytest.mark.xfail
-def test_slepc_eigensolver_gen_hermitian(K_M):
+def xtest_slepc_eigensolver_gen_hermitian(K_M):
     "Test SLEPc eigen solver"
 
     K, M = K_M
@@ -113,7 +113,7 @@ def test_slepc_eigensolver_gen_hermitian(K_M):
 
 @skip_if_not_PETsc_or_not_slepc
 @pytest.mark.xfail
-def test_slepc_null_space(K_M, V):
+def xtest_slepc_null_space(K_M, V):
     "Test SLEPc eigen solver with nullspace as PETScVector"
 
     K, M = K_M
@@ -140,7 +140,7 @@ def test_slepc_null_space(K_M, V):
 
 @skip_if_not_PETsc_or_not_slepc
 @pytest.mark.xfail
-def test_slepc_vector_null_space(K_M_vec, V_vec):
+def xtest_slepc_vector_null_space(K_M_vec, V_vec):
     "Test SLEPc eigen solver with nullspace as VectorSpaceBasis"
 
     def build_nullspace(V, x):
@@ -177,4 +177,3 @@ def test_slepc_vector_null_space(K_M_vec, V_vec):
         assert near(im, 0.0)
         assert v_re.norm("l2") > 0.0
         assert near(v_im.norm("l2"), 0.0)
-

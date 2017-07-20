@@ -56,7 +56,6 @@ def invalid_fe(fe_family, fe_degree):
 
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_and_load_1d_mesh(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -134,6 +133,7 @@ def test_save_and_load_3d_mesh(tempdir, encoding):
     assert mesh.size_global(dim) == mesh2.size_global(dim)
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_1d_scalar(tempdir, encoding):
     if invalid_config(encoding):
@@ -377,6 +377,7 @@ def test_save_and_checkpoint_timeseries(tempdir, encoding):
     assert all([near(x, 0.0) for x in result.array()])
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_2d_scalar(tempdir, encoding):
     if invalid_config(encoding):
@@ -390,7 +391,7 @@ def test_save_2d_scalar(tempdir, encoding):
     with XDMFFile(mesh.mpi_comm(), filename) as file:
         file.write(u, encoding)
 
-
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_3d_scalar(tempdir, encoding):
     if invalid_config(encoding):
@@ -438,6 +439,7 @@ def test_save_3d_vector(tempdir, encoding):
         file.write(u, encoding)
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_3d_vector_series(tempdir, encoding):
     if invalid_config(encoding):
@@ -487,6 +489,7 @@ def test_save_3d_tensor(tempdir, encoding):
         file.write(u, encoding)
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_1d_mesh(tempdir, encoding):
     if invalid_config(encoding):
@@ -501,6 +504,7 @@ def test_save_1d_mesh(tempdir, encoding):
         file.write(mf, encoding)
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_2D_cell_function(tempdir, encoding, data_type):
@@ -529,6 +533,7 @@ def test_save_2D_cell_function(tempdir, encoding, data_type):
     assert diff == 0
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_3D_cell_function(tempdir, encoding, data_type):
@@ -556,6 +561,8 @@ def test_save_3D_cell_function(tempdir, encoding, data_type):
         diff += (mf_in[cell] - mf[cell])
     assert diff == 0
 
+
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_2D_facet_function(tempdir, encoding, data_type):
@@ -588,6 +595,8 @@ def test_save_2D_facet_function(tempdir, encoding, data_type):
         diff += (mf_in[facet] - mf[facet])
     assert diff == 0
 
+
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_3D_facet_function(tempdir, encoding, data_type):
@@ -620,6 +629,8 @@ def test_save_3D_facet_function(tempdir, encoding, data_type):
         diff += (mf_in[facet] - mf[facet])
     assert diff == 0
 
+
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_3D_edge_function(tempdir, encoding, data_type):
@@ -639,6 +650,7 @@ def test_save_3D_edge_function(tempdir, encoding, data_type):
         file.write(mf, encoding)
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_2D_vertex_function(tempdir, encoding, data_type):
@@ -666,6 +678,8 @@ def test_save_2D_vertex_function(tempdir, encoding, data_type):
         diff += (mf_in[v] - mf[v])
     assert diff == 0
 
+
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_3D_vertex_function(tempdir, encoding, data_type):
@@ -807,6 +821,7 @@ def test_quadratic_mesh(tempdir, encoding):
     assert (c0 - c1).sum() == 0.0
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_append_and_load_mesh_functions(tempdir, encoding, data_type):
