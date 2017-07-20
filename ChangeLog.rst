@@ -12,6 +12,8 @@ Change log
   change
 - Add new methods ``XDMFFile::write_checkpoint``, ``XDMFFile::read_checkpoint``
   to write and read (checkpoint) functions
+- Implement marking vertex and edge mesh functions by ``SubDomain::mark()``
+  using ``on_boundary`` flag
 
 2017.1.0 (2017-05-09)
 ---------------------
