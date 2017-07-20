@@ -17,7 +17,7 @@ ENV FENICS_BUILD_TYPE=Developer \
     FENICS_VERSION=master \
     CMAKE_EXTRA_ARGS="-DDOLFIN_ENABLE_PYTHON=False"
 
-RUN /bin/bash -c "FENICS_SRC_DIR=/tmp/src  /home/fenics/bin/fenics-pull && cd /tmp/src/dolfin && git checkout garth/feature-pybind11"
+RUN /bin/bash -c "FENICS_SRC_DIR=/tmp/src /home/fenics/bin/fenics-pull && cd /tmp/src/dolfin && git checkout garth/feature-pybind11 && git log  | head"
 
 COPY bin $FENICS_HOME/bin
 
