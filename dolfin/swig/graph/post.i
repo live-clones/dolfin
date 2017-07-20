@@ -9,4 +9,4 @@
 // ---------------------------------------------------------------------------
 // Instantiate template classes
 // ---------------------------------------------------------------------------
-%template(Graph) std::vector<dolfin::graph_set_type>;
+//%template(Graph) std::vector<dolfin::graph_set_type>;

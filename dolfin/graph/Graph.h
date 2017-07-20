@@ -31,12 +31,47 @@
 namespace dolfin
 {
 
-  /// Typedefs for simple graph data structures
+  /// Simple graph data structure
 
-  /// DOLFIN container for graphs
+  // Edge storage type
   typedef dolfin::Set<int> graph_set_type;
-  /// Vector of unordered Sets
-  typedef std::vector<graph_set_type> Graph;
+
+  class Graph
+  {
+
+  public:
+
+    /// Create an empty graph
+    Graph() {}
+
+    /// Create a graph with a specified number of nodes
+    explicit Graph(std::size_t size) : _graph(size) {}
+
+    std::size_t size() const
+    { return _graph.size(); }
+
+    graph_set_type& operator[] (std::size_t i)
+    { return _graph[i]; }
+
+    std::vector<graph_set_type>::iterator begin()
+    { return _graph.begin(); }
+    std::vector<graph_set_type>::iterator end()
+    { return _graph.end(); }
+
+    std::vector<graph_set_type>::const_iterator begin() const
+    { return _graph.begin(); }
+    std::vector<graph_set_type>::const_iterator end() const
+    { return _graph.end(); }
+
+    void push_back(const graph_set_type& edges)
+    { _graph.push_back(edges); }
+
+  private:
+
+    // Vector of unordered Sets
+    std::vector<graph_set_type> _graph;
+
+  };
 
 }
 

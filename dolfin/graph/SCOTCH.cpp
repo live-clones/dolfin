@@ -119,8 +119,7 @@ void SCOTCH::compute_reordering(const Graph& graph,
   // number of local edges + edges connecting to ghost vertices)
   SCOTCH_Num edgenbr = 0;
   verttab.push_back(0);
-  Graph::const_iterator vertex;
-  for (vertex = graph.begin(); vertex != graph.end(); ++vertex)
+  for (auto vertex = graph.begin(); vertex != graph.end(); ++vertex)
   {
     edgenbr += vertex->size();
     verttab.push_back(verttab.back() + vertex->size());

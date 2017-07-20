@@ -172,17 +172,15 @@ T BoostGraphOrdering::build_csr_directed_graph(const X& graph)
   Timer timer("Build Boost CSR graph");
 
   // Count number of edges
-  Graph::const_iterator vertex;
   std::size_t num_edges = 0;
-  for (vertex = graph.begin(); vertex != graph.end(); ++vertex)
+  for (auto vertex = graph.begin(); vertex != graph.end(); ++vertex)
     num_edges += vertex->size();
 
   // Build list of graph edges
   std::vector<std::pair<std::size_t, std::size_t>> edges;
   edges.reserve(num_edges);
-  graph_set_type::const_iterator edge;
-  for (vertex = graph.begin(); vertex != graph.end(); ++vertex)
-    for (edge = vertex->begin(); edge != vertex->end(); ++edge)
+  for (auto vertex = graph.begin(); vertex != graph.end(); ++vertex)
+    for (auto edge = vertex->begin(); edge != vertex->end(); ++edge)
       edges.push_back(std::make_pair(vertex - graph.begin(), *edge));
 
   // Number of vertices
