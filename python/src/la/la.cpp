@@ -241,8 +241,7 @@ namespace dolfin_wrappers
                throw py::error_already_set();
              if (start != 0 or stop != self.size() or step != 1)
                throw std::range_error("Only full slices are supported");
-             *self.instance() = value;
-           })
+             *self.instance() = value; })
       .def("sum", (double (dolfin::Vector::*)() const) &dolfin::Vector::sum)
       .def("min", &dolfin::Vector::min)
       .def("max", &dolfin::Vector::max)
