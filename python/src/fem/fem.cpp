@@ -136,6 +136,16 @@ namespace dolfin_wrappers
            &dolfin::GenericDofMap::dofs)
       .def("entity_dofs", (std::vector<dolfin::la_index>(dolfin::GenericDofMap::*)(const dolfin::Mesh&, std::size_t) const)
            &dolfin::GenericDofMap::entity_dofs)
+      .def("entity_closure_dofs", (std::vector<dolfin::la_index>(dolfin::GenericDofMap::*)(const dolfin::Mesh&, std::size_t) const)
+           &dolfin::GenericDofMap::entity_closure_dofs)
+      .def("entity_dofs", (std::vector<dolfin::la_index>(dolfin::GenericDofMap::*)(const dolfin::Mesh&,
+                                                                                   std::size_t,
+                                                                                   const std::vector<std::size_t>&) const)
+           &dolfin::GenericDofMap::entity_dofs)
+      .def("entity_closure_dofs", (std::vector<dolfin::la_index>(dolfin::GenericDofMap::*)(const dolfin::Mesh&,
+                                                                                           std::size_t,
+                                                                                           const std::vector<std::size_t>&) const)
+           &dolfin::GenericDofMap::entity_closure_dofs)
       .def("num_entity_dofs", &dolfin::GenericDofMap::num_entity_dofs)
       .def("tabulate_local_to_global_dofs", &dolfin::GenericDofMap::tabulate_local_to_global_dofs)
       .def("clear_sub_map_data", &dolfin::GenericDofMap::clear_sub_map_data)
@@ -144,25 +154,21 @@ namespace dolfin_wrappers
            {
              std::vector<std::size_t> dofs(instance.num_entity_dofs(entity_dim));
              instance.tabulate_entity_dofs(dofs, entity_dim, cell_entity_index);
-             //return py::array_t<double>(dofs.data(), dofs.size());
              return py::array_t<std::size_t>(dofs.size(), dofs.data());
            })
-      .def("block_size", &dolfin::GenericDofMap::block_size);
+      .def("block_size", &dolfin::GenericDofMap::block_size)
+      .def("tabulate_local_to_global_dofs", [](const dolfin::GenericDofMap& instance)
+           {
+             std::vector<std::size_t> dofs;
+             instance.tabulate_local_to_global_dofs(dofs);
+             return py::array_t<std::size_t>(dofs.size(), dofs.data());
+           });
 
     // dolfin::DofMap class
     py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>
       (m, "DofMap", "DOLFIN DofMap object")
       .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&>())
       .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&, std::shared_ptr<const dolfin::SubDomain>>())
-      /*
-      .def("__init__", [](dolfin::DofMap& instance, std::shared_ptr<const ufc::dofmap> dofmap, const dolfin::Mesh& mesh,
-                          std::shared_ptr<const dolfin::SubDomain> subdomain)
-           {
-             std::cout << "^^^^^ in constructor" << std::endl;
-             new (&instance) dolfin::DofMap(dofmap, mesh, subdomain);
-             std::cout << "^^^^^ end in constructor" << std::endl;
-           })
-      */
       .def("ownership_range", &dolfin::DofMap::ownership_range)
       .def("cell_dofs", &dolfin::DofMap::cell_dofs);
 

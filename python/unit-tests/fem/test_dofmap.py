@@ -329,7 +329,6 @@ def test_entity_dofs(mesh):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_entity_closure_dofs():
     mesh = UnitSquareMesh(1, 1)
     tdim = mesh.topology().dim()
@@ -358,7 +357,6 @@ def test_entity_closure_dofs():
         assert set(V.dofmap().entity_closure_dofs(mesh, d, all_cells)) == set(range(V.dim()))
 
 
-@pytest.mark.xfail
 def test_clear_sub_map_data_scalar(mesh):
     V = FunctionSpace(mesh, "CG", 2)
     with pytest.raises(ValueError):
@@ -378,7 +376,6 @@ def test_clear_sub_map_data_scalar(mesh):
         V.sub(0)
 
 
-@pytest.mark.xfail
 def test_clear_sub_map_data_vector(mesh):
     mesh = UnitSquareMesh(8, 8)
     P1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
@@ -394,7 +391,6 @@ def test_clear_sub_map_data_vector(mesh):
         W1 = W.sub(1)
 
 
-@pytest.mark.xfail
 def test_block_size(mesh):
     meshes = [UnitSquareMesh(8, 8), UnitCubeMesh(4, 4, 4)]
     for mesh in meshes:
@@ -436,15 +432,14 @@ def test_mpi_dofmap_stats(mesh):
         assert owner in neighbours
 
 
-@pytest.mark.xfail
 def test_local_dimension(V, Q, W):
     for space in [V, Q, W]:
         dofmap = space.dofmap()
         local_to_global_map = dofmap.tabulate_local_to_global_dofs()
         ownership_range = dofmap.ownership_range()
-        dim1 = dofmap.index_map().size(IndexMap.MapSize_OWNED)
-        dim2 = dofmap.index_map().size(IndexMap.MapSize_UNOWNED)
-        dim3 = dofmap.index_map().size(IndexMap.MapSize_ALL)
+        dim1 = dofmap.index_map().size(IndexMap.MapSize.OWNED)
+        dim2 = dofmap.index_map().size(IndexMap.MapSize.UNOWNED)
+        dim3 = dofmap.index_map().size(IndexMap.MapSize.ALL)
         assert dim1 == ownership_range[1] - ownership_range[0]
         assert dim3 == local_to_global_map.size
         assert dim1 + dim2 == dim3
