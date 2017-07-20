@@ -78,7 +78,31 @@ namespace dolfin_wrappers
     // dolfin::GenericMatrix class
     py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>,
                dolfin::GenericTensor, dolfin::GenericLinearOperator>
-      (m, "GenericMatrix", "DOLFIN GenericMatrix object");
+      (m, "GenericMatrix", "DOLFIN GenericMatrix object")
+      .def("get_diagonal", &dolfin::GenericMatrix::get_diagonal)
+      .def("set_diagonal", &dolfin::GenericMatrix::set_diagonal)
+      .def("array", [](const dolfin::GenericMatrix& instance)
+           {
+             // FIXME: This function is highly dubious. It assumes a
+             // particular matrix data layout.
+
+             auto m_range = instance.local_range(0);
+             std::size_t num_rows = m_range.second - m_range.first;
+             std::size_t num_cols = instance.size(1);
+
+             Eigen::MatrixXd A = Eigen::MatrixXd::Zero(num_rows, num_cols);
+             std::vector<std::size_t> columns;
+             std::vector<double> values;
+             for (std::size_t i = 0; i < num_rows; ++i)
+             {
+               const std::size_t row = i + m_range.first;
+               instance.getrow(row, columns, values);
+               for (std::size_t j = 0; j < columns.size(); ++j)
+                 A(row, columns[j]) = values[j];
+             }
+
+             return A;
+           });
 
     // dolfin::GenericVector class
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>,
@@ -127,7 +151,13 @@ namespace dolfin_wrappers
              instance.gather(values, rows);
              return py::array_t<double>(values.size(), values.data());
            })
-      .def("sum", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::sum);
+      .def("sum", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::sum)
+      .def("array", [](const dolfin::GenericVector& instance)
+           {
+             std::vector<double> values;
+             instance.get_local(values);
+             return py::array_t<double>(values.size(), values.data());
+           });
 
     // dolfin::GenericLinearSolver class
     py::class_<dolfin::GenericLinearSolver, std::shared_ptr<dolfin::GenericLinearSolver>>

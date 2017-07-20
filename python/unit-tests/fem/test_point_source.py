@@ -33,9 +33,6 @@ data = [(UnitIntervalMesh(10), Point(0.5)),
 
 
 @pytest.mark.parametrize("mesh, point", data)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_pointsource_vector_node(mesh, point):
     """Tests point source when given constructor PointSource(V, point,
     mag) with a vector and when placed at a node for 1D, 2D and
@@ -67,9 +64,6 @@ def test_pointsource_vector_node(mesh, point):
 
 
 @pytest.mark.parametrize("mesh", meshes)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_pointsource_vector(mesh):
     """Tests point source when given constructor PointSource(V, point,
     mag) with a vector that isn't placed at a node for 1D, 2D and
@@ -96,9 +90,6 @@ def test_pointsource_vector(mesh):
 
 
 @pytest.mark.parametrize("mesh, point", data)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_pointsource_vector_fs(mesh, point):
     """Tests point source when given constructor PointSource(V, point,
     mag) with a vector for a vector function space that isn't placed
@@ -132,9 +123,6 @@ def test_pointsource_vector_fs(mesh, point):
 
 
 @pytest.mark.parametrize("mesh, point", data)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_pointsource_mixed_space(mesh, point):
     """Tests point source when given constructor PointSource(V, point,
     mag) with a vector for a mixed function space that isn't placed at
@@ -162,7 +150,6 @@ def test_pointsource_mixed_space(mesh, point):
     assert round(b_sum - 10.0*value_dimension) == 0
 
 
-@pytest.mark.xfail
 def test_point_outside():
     """Tests point source fails if given a point outside the domain."""
     mesh = UnitIntervalMesh(10)
@@ -177,9 +164,6 @@ def test_point_outside():
 
 
 @pytest.mark.parametrize("mesh, point", data)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_pointsource_matrix(mesh, point):
     """Tests point source when given constructor PointSource(V, point,
     mag) with a matrix and when placed at a node for 1D, 2D and
@@ -214,9 +198,6 @@ def test_pointsource_matrix(mesh, point):
 
 # FIXME: Edit this test to have V1 != V2 when that is implemented
 @pytest.mark.parametrize("mesh, point", data)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_pointsource_matrix_second_constructor(mesh, point):
     """Tests point source when given different constructor PointSource(V1,
     V2, point, mag) with a matrix and when placed at a node for 1D, 2D
@@ -253,9 +234,6 @@ def test_pointsource_matrix_second_constructor(mesh, point):
 
 
 @pytest.mark.parametrize("mesh", meshes)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_multi_ps_vector_node(mesh):
     """Tests point source when given constructor PointSource(V, V, point,
     mag) with a matrix when points placed at 3 node for 1D, 2D and
@@ -299,9 +277,6 @@ def test_multi_ps_vector_node(mesh):
 
 
 @pytest.mark.parametrize("mesh", meshes)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_multi_ps_vector_node_local(mesh):
     """Tests point source when given constructor PointSource(V, V, point,
     mag) with a matrix when points placed at 3 node for 1D, 2D and
@@ -326,9 +301,6 @@ def test_multi_ps_vector_node_local(mesh):
 
 
 @pytest.mark.parametrize("mesh", meshes)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_multi_ps_vector(mesh):
     """Tests point source PointSource(V, source) for mulitple point
     sources applied to a vector for 1D, 2D and 3D. Global points given
@@ -357,9 +329,6 @@ def test_multi_ps_vector(mesh):
 
 
 @pytest.mark.parametrize("mesh", meshes)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_multi_ps_matrix_node(mesh):
     """Tests point source when given constructor PointSource(V, source)
     with a matrix when points placed at 3 nodes for 1D, 2D and
@@ -407,9 +376,6 @@ def test_multi_ps_matrix_node(mesh):
 
 
 @pytest.mark.parametrize("mesh", meshes)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_multi_ps_matrix_node_local(mesh):
     """Tests point source when given constructor PointSource(V, V, point,
     mag) with a matrix when points placed at 3 node for 1D, 2D and
@@ -436,9 +402,6 @@ def test_multi_ps_matrix_node_local(mesh):
 
 
 @pytest.mark.parametrize("mesh", meshes)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_multi_ps_matrix_node_vector_fs(mesh):
     """Tests point source applied to a matrix with given constructor
     PointSource(V, source) and a vector function space when points
@@ -486,9 +449,6 @@ def test_multi_ps_matrix_node_vector_fs(mesh):
 
 
 @pytest.mark.parametrize("mesh", meshes)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_multi_ps_matrix(mesh):
     """Tests point source PointSource(V, source) for mulitple point
     sources applied to a matrix for 1D, 2D and 3D. Global points given

@@ -123,6 +123,7 @@ namespace dolfin_wrappers
              return dof_coords;
            }, "Tabulate coordinates of dofs on cell")
       .def("space_dimension", &dolfin::FiniteElement::space_dimension)
+      .def("value_dimension", &dolfin::FiniteElement::value_dimension)
       .def("signature", &dolfin::FiniteElement::signature);
 
     // dolfin::GenericDofMap class
@@ -227,7 +228,14 @@ namespace dolfin_wrappers
     py::class_<dolfin::PointSource, std::shared_ptr<dolfin::PointSource>>
       (m, "PointSource")
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, const dolfin::Point&, double>(),
-           py::arg("V"), py::arg("p"), py::arg("magnitude") = 1.0);
+           py::arg("V"), py::arg("p"), py::arg("magnitude") = 1.0)
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, std::shared_ptr<const dolfin::FunctionSpace>, const dolfin::Point&, double>(),
+           py::arg("V0"), py::arg("V1"), py::arg("p"), py::arg("magnitude") = 1.0)
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, const std::vector<std::pair<const dolfin::Point*, double>>>())
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, std::shared_ptr<const dolfin::FunctionSpace>,
+           const std::vector<std::pair<const dolfin::Point*, double>>>())
+      .def("apply", (void (dolfin::PointSource::*)(dolfin::GenericVector&)) &dolfin::PointSource::apply)
+      .def("apply", (void (dolfin::PointSource::*)(dolfin::GenericMatrix&)) &dolfin::PointSource::apply);
 
 #ifdef HAS_PETSC
     // dolfin::PETScDMCollection
