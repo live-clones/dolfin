@@ -6,6 +6,9 @@ def pytest_runtest_teardown(item):
     """Collect garbage after every test to force calling
     destructors which might be collective"""
 
+    # Make sure MPI has been initialised since a barrier is used below
+    MPI.init()
+
     # Do the normal teardown
     item.teardown()
 

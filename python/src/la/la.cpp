@@ -109,22 +109,26 @@ namespace dolfin_wrappers
                dolfin::GenericTensor>
       (m, "GenericVector", "DOLFIN GenericVector object")
       .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
-           { std::size_t start, stop, step, slicelength;
+           {
+             std::size_t start, stop, step, slicelength;
              if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
                throw py::error_already_set();
              if (start != 0 or stop != self.size() or step != 1)
                throw std::range_error("Only full slices are supported");
              std::vector<double> values;
              self.get_local(values);
-             return values;})
+             return values;
+           })
       .def("__getitem__", &dolfin::GenericVector::getitem)
       .def("__setitem__", [](dolfin::GenericVector& self, py::slice slice, double value)
-           { std::size_t start, stop, step, slicelength;
+           {
+             std::size_t start, stop, step, slicelength;
              if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
                throw py::error_already_set();
              if (start != 0 or stop != self.size() or step != 1)
                throw std::range_error("Only full slices are supported");
-             self = value; })
+             self = value;
+           })
       .def("__setitem__", &dolfin::GenericVector::setitem)
       .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
            {
@@ -231,12 +235,14 @@ namespace dolfin_wrappers
       .def("__setitem__", [](dolfin::Vector& self, dolfin::la_index index, double value)
            { self.instance()->setitem(index, value); })
       .def("__setitem__", [](dolfin::Vector& self, py::slice slice, double value)
-           { std::size_t start, stop, step, slicelength;
+           {
+             std::size_t start, stop, step, slicelength;
              if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
                throw py::error_already_set();
              if (start != 0 or stop != self.size() or step != 1)
                throw std::range_error("Only full slices are supported");
-             *self.instance() = value; })
+             *self.instance() = value;
+           })
       .def("sum", (double (dolfin::Vector::*)() const) &dolfin::Vector::sum)
       .def("min", &dolfin::Vector::min)
       .def("max", &dolfin::Vector::max)

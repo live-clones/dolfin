@@ -75,14 +75,47 @@ namespace dolfin_wrappers
              assert(b.shape.size()[0] <= 3);
              new (&instance) dolfin::Point(b.shape[0], x.data());
            })
-      .def("__getitem__", [](const dolfin::Point& self, std::size_t index)
-           { if (index > 2)
+      .def("__getitem__", [](dolfin::Point& self, std::size_t index)
+           {
+             if (index > 2)
                throw py::index_error("Out of range");
-             return self[index]; })
+             return self[index];
+           })
+      .def("__getitem__", [](const dolfin::Point& instance, py::slice slice)
+           {
+             std::size_t start, stop, step, slicelength;
+             if (!slice.compute(3, &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+
+             if (start != 0 or stop != 3 or step != 1)
+               throw std::range_error("Only full slices are supported");
+
+             return py::array_t<double>(3, instance.coordinates());
+           })
       .def("__setitem__", [](dolfin::Point& self, std::size_t index, double value)
-           { if (index > 2)
+           {
+             if (index > 2)
                throw py::index_error("Out of range");
-             self[index] = value; })
+             self[index] = value;
+           })
+      .def("__setitem__", [](dolfin::Point& instance, py::slice slice, py::array_t<double> values)
+           {
+             std::size_t start, stop, step, slicelength;
+             if (!slice.compute(3, &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+
+             if (start != 0 or stop != 3 or step != 1)
+               throw std::range_error("Only full slices are supported");
+
+             auto b = values.request();
+             if (b.ndim != 1)
+               throw std::range_error("Can only assign vector to a Point");
+            if (b.shape[0] != 3)
+              throw std::range_error("Can only assign vector of length 3 to a Point");
+
+            double* x = instance.coordinates();
+            std::copy_n(values.data(), 3, x);
+           })
       .def("__add__", [](const dolfin::Point& self, const dolfin::Point& other)
            { return self + other; })
       .def("__sub__", [](const dolfin::Point& self, const dolfin::Point& other)

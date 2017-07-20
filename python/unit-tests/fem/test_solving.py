@@ -115,7 +115,10 @@ def test_calling():
 
 @pytest.mark.xfail
 def test_nonlinear_variational_solver_custom_comm():
-    "Check that nonlinear variational solver works on subset of comm_world"
+    """Check that nonlinear variational solver works on subset of
+    comm_world
+
+    """
     if MPI.rank(MPI.comm_world) == 0:
         mesh = UnitIntervalMesh(MPI.comm_self, 2)
         V = FunctionSpace(mesh, "CG", 1)

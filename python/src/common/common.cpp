@@ -89,18 +89,18 @@ namespace dolfin_wrappers
     */
 
     py::class_<dolfin::MPI>(m, "MPI", "MPI utilities")
-      #ifdef OPEN_MPI
+#ifdef OPEN_MPI
       .def_property_readonly_static("comm_world", [](py::object)
                                     { return reinterpret_cast<std::uintptr_t>(MPI_COMM_WORLD); })
       .def_property_readonly_static("comm_self", [](py::object)
                                     { return reinterpret_cast<std::uintptr_t>(MPI_COMM_SELF); })
       .def_property_readonly_static("comm_null", [](py::object)
                                     { return reinterpret_cast<std::uintptr_t>(MPI_COMM_NULL); })
-      #else
+#else
       .def_property_readonly_static("comm_world", [](py::object) { return MPI_COMM_WORLD; })
       .def_property_readonly_static("comm_self", [](py::object) { return MPI_COMM_SELF; })
       .def_property_readonly_static("comm_null", [](py::object) { return MPI_COMM_NULL; })
-      #endif
+#endif
       .def_static("init", [](){ dolfin::SubSystemsManager::init_mpi(); })
       .def_static("barrier", &dolfin::MPI::barrier)
       .def_static("rank", &dolfin::MPI::rank)
