@@ -110,7 +110,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>, dolfin::Expression>
       (m, "Constant")
       .def(py::init<double>())
-      .def(py::init<std::vector<double>>());
+      .def(py::init<std::vector<double>>())
+      .def("__float__", [](const dolfin::Constant& instance) -> double { return instance; });
 
     //-----------------------------------------------------------------------------
     // dolfin::FacetArea

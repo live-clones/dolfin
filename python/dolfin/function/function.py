@@ -26,9 +26,11 @@
 
 from six import string_types
 import types
+import numpy as np
 
 import ufl
 import dolfin.cpp as cpp
+import dolfin.la as la
 
 
 class Function(ufl.Coefficient):
@@ -55,3 +57,19 @@ class Function(ufl.Coefficient):
 
     def vector(self):
         return self._cpp_function.vector()
+
+    def __float__(self):
+        # FIXME: this could be made simple on the C++ (in particular,
+        # with dolfin::Scalar)
+        if self.ufl_shape != ():
+            raise RuntimeError("Cannot convert nonscalar function to float.")
+        elm = self.ufl_element()
+        if elm.family() != "Real":
+            raise RuntimeError("Cannot convert spatially varying function to float.")
+        # FIXME: This could be much simpler be exploiting that the
+        # vector is ghosted
+        # Gather value directly from vector in a parallel safe way
+        vec = self.vector()
+        indices = np.zeros(1, dtype=la.la_index_dtype())
+        values = vec.gather(indices)
+        return float(values[0])

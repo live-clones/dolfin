@@ -109,10 +109,9 @@ class Constant(ufl.Coefficient):
         # Overriding UFL operator in this particular case.
         if self.ufl_shape:
             raise TypeError("Cannot convert nonscalar constant to float.")
-        return cpp.Constant.__float__(self)
+        return float(self._cpp_constant)
 
     def __str__(self):
-        "x.__str__() <==> print(x)"
         return self.name()
 
     def cpp_object(self):

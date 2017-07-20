@@ -276,13 +276,11 @@ def test_call(R, V, W, mesh):
         u0([0, 0])
 
 
-@pytest.mark.xfail
 def test_constant_float_conversion():
     c = Constant(3.45)
     assert float(c) == 3.45
 
 
-@pytest.mark.xfail
 def test_real_function_float_conversion1(R):
     c = Function(R)
     assert float(c) == 0.0

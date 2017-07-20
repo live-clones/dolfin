@@ -121,6 +121,12 @@ namespace dolfin_wrappers
              std::iota(indices.begin(), indices.end(), 0);
              instance.set_local(values.data(), values.size(), indices.data());
            })
+      .def("gather", [](const dolfin::GenericVector& instance, std::vector<dolfin::la_index> rows)
+           {
+             std::vector<double> values(rows.size());
+             instance.gather(values, rows);
+             return py::array_t<double>(values.size(), values.data());
+           })
       .def("sum", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::sum);
 
     // dolfin::GenericLinearSolver class
