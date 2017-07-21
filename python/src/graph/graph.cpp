@@ -32,6 +32,7 @@ namespace dolfin_wrappers
 
   void graph(py::module& m)
   {
+    py::class_<dolfin::Set<int>>(m, "DOLFINIntSet");
     py::class_<dolfin::Graph>(m, "Graph");
 
     py::class_<dolfin::GraphBuilder>(m, "GraphBuilder")
