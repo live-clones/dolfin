@@ -22,8 +22,13 @@ VariationalProblem/Solver classes as well as the solve function.
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import ufl
+
 import dolfin.cpp as cpp
 from dolfin.function.function import Function
+
+from ufl.formoperators import extract_blocks
+
+# Local imports
 from dolfin.fem.form import Form
 import dolfin.fem.formmanipulations as formmanipulations
 from dolfin.fem.formmanipulations import derivative
@@ -32,6 +37,9 @@ from dolfin.fem.problem import LinearVariationalProblem, NonlinearVariationalPro
 
 __all__ = ["LinearVariationalProblem",
            "LinearVariationalSolver",
+           "MixedLinearVariationalProblem",
+           "MixedLinearVariationalSolver",
+           "LocalSolver",
            "NonlinearVariationalProblem",
            "NonlinearVariationalSolver",
            "solve"]
@@ -71,14 +79,52 @@ class LocalSolver(cpp.fem.LocalSolver):
             # Initialize C++ base class
             cpp.fem.LocalSolver.__init__(self, a, L, solver_type)
 
+class MixedLinearVariationalProblem(cpp.MixedLinearVariationalProblem):
+
+    # Reuse C++ doc-string
+    __doc__ = cpp.MixedLinearVariationalProblem.__doc__
+
+    def __init__(self, a, L, u, bcs=None,
+                 form_compiler_parameters=None):
+
+        # Extract and check arguments (u is a list of Function)
+        u_comps = [_extract_u(u[i]) for i in range(len(u))]
+        bcs = _extract_bcs(bcs)
+
+        # Store form compiler parameters
+        form_compiler_parameters = form_compiler_parameters or {}
+        self.form_compiler_parameters = form_compiler_parameters
+
+        # Check number of blocks in lhs, rhs are consistent
+        assert(len(a) == len(u)*len(u))
+        assert(len(L) == len(u))
+
+        # Create list of forms/blocks
+        a_list = list()
+        L_list = list()
+        for Li in L:
+            # Wrap forms (and check if linear form L is empty)
+            if Li.empty():
+                L_list.append(cpp.Form(1, 0))
+            else:
+                L_list.append(Form(Li, form_compiler_parameters=form_compiler_parameters))
+
+        for ai in a:
+            if ai == None:
+                a_list.append(cpp.Form(2, 0))
+            else:
+                a_list.append(Form(ai, form_compiler_parameters=form_compiler_parameters))
+
+        # Initialize C++ base class
+        cpp.MixedLinearVariationalProblem.__init__(self, a_list, L_list, u_comps, bcs)
 
 # FIXME: The import here are here to avoid a circular dependency
 # (ugly, should fix)
 # Solver classes are imported directly
 from dolfin.cpp.fem import LinearVariationalSolver, NonlinearVariationalSolver  # noqa
+from dolfin.cpp.fem import MixedLinearVariationalSolver
 from dolfin.fem.adaptivesolving import AdaptiveLinearVariationalSolver  # noqa
 from dolfin.fem.adaptivesolving import AdaptiveNonlinearVariationalSolver  # noqa
-
 
 # Solve function handles both linear systems and variational problems
 def solve(*args, **kwargs):
@@ -207,7 +253,6 @@ def solve(*args, **kwargs):
         solve(F == 0, u, bcs=bc, tol=tol, M=M)
 
     """
-
     assert(len(args) > 0)
 
     # Call adaptive solve if we get a tolerance
@@ -229,7 +274,6 @@ def solve(*args, **kwargs):
 
 def _solve_varproblem(*args, **kwargs):
     "Solve variational problem a == L or F == 0"
-
     # Extract arguments
     eq, u, bcs, J, tol, M, form_compiler_parameters, solver_parameters \
         = _extract_args(*args, **kwargs)
@@ -237,14 +281,30 @@ def _solve_varproblem(*args, **kwargs):
     # Solve linear variational problem
     if isinstance(eq.lhs, ufl.Form) and isinstance(eq.rhs, ufl.Form):
 
-        # Create problem
-        problem = LinearVariationalProblem(eq.lhs, eq.rhs, u, bcs,
-                                           form_compiler_parameters=form_compiler_parameters)
+        lhs_sd = eq.lhs.subdomain_data()
+        rhs_sd = eq.rhs.subdomain_data()
+        if len(lhs_sd) > 1 or len(rhs_sd) > 1:
+            # Extract blocks from the variational formulation
+            eq_lsh_forms = extract_blocks(eq.lhs)
+            eq_rsh_forms = extract_blocks(eq.rhs)
+            u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
 
-        # Create solver and call solve
-        solver = LinearVariationalSolver(problem)
-        solver.parameters.update(solver_parameters)
-        solver.solve()
+            # Create problem
+            problem = MixedLinearVariationalProblem(eq_lsh_forms, eq_rsh_forms, u_comps, bcs,
+                                                    form_compiler_parameters=form_compiler_parameters)
+
+            # Create solver and call solve
+            solver = MixedLinearVariationalSolver(problem)
+            solver.parameters.update(solver_parameters)
+            solver.solve()
+        else:
+            # Create problem
+            problem = LinearVariationalProblem(eq.lhs, eq.rhs, u, bcs,
+                                               form_compiler_parameters=form_compiler_parameters)
+            # Create solver and call solve
+            solver = LinearVariationalSolver(problem)
+            solver.parameters.update(solver_parameters)
+            solver.solve()
 
     # Solve nonlinear variational problem
     else:
