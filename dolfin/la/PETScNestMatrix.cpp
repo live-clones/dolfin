@@ -39,7 +39,7 @@ PETScNestMatrix::PETScNestMatrix()
 }
 //-----------------------------------------------------------------------------
 PETScNestMatrix::PETScNestMatrix
-(std::vector<std::shared_ptr<const GenericMatrix>> mats)
+(std::vector<std::shared_ptr<GenericMatrix>> mats)
 {
   const unsigned int n = std::sqrt(mats.size());
 
@@ -140,7 +140,7 @@ void PETScNestMatrix::mult(const GenericVector& x, GenericVector& y) const
 //-----------------------------------------------------------------------------
 void PETScNestMatrix::init_vectors
 (GenericVector& z_out,
- std::vector<std::shared_ptr<const GenericVector>> z_in) const
+ std::vector<std::shared_ptr<GenericVector>> z_in) const
 {
   dolfin_assert(_matA);
 

@@ -49,7 +49,7 @@ namespace dolfin
     /// @param mats - list of matrices
     ///
     explicit PETScNestMatrix
-      (std::vector<std::shared_ptr<const GenericMatrix>> mats);
+      (std::vector<std::shared_ptr<GenericMatrix>> mats);
 
     /// Destructor
     virtual ~PETScNestMatrix();
@@ -63,7 +63,7 @@ namespace dolfin
     /// @param z_out - Vector to initialise
     /// @param z_in - list of Vectors to nest into z_out
     void init_vectors(GenericVector& z_out,
-                      std::vector<std::shared_ptr<const GenericVector>> z_in) const;
+                      std::vector<std::shared_ptr<GenericVector>> z_in) const;
 
     /// Get dofs for each block
     /// @param dofs - return list of dof indices for a given block
