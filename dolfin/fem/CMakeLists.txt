@@ -19,6 +19,8 @@ set(HEADERS
   LinearVariationalSolver.h
   LocalAssembler.h
   LocalSolver.h
+  MixedLinearVariationalProblem.h
+  MixedLinearVariationalSolver.h
   MultiMeshAssembler.h
   MultiMeshDirichletBC.h
   MultiMeshDofMap.h
@@ -51,6 +53,8 @@ set(SOURCES
   LinearVariationalSolver.cpp
   LocalAssembler.cpp
   LocalSolver.cpp
+  MixedLinearVariationalProblem.cpp
+  MixedLinearVariationalSolver.cpp
   MultiMeshAssembler.cpp
   MultiMeshDirichletBC.cpp
   MultiMeshDofMap.cpp

@@ -24,6 +24,8 @@
 #include <dolfin/fem/SystemAssembler.h>
 #include <dolfin/fem/LinearVariationalProblem.h>
 #include <dolfin/fem/LinearVariationalSolver.h>
+#include <dolfin/fem/MixedLinearVariationalProblem.h>
+#include <dolfin/fem/MixedLinearVariationalSolver.h>
 #include <dolfin/fem/NonlinearVariationalProblem.h>
 #include <dolfin/fem/NonlinearVariationalSolver.h>
 #include <dolfin/fem/MultiMeshAssembler.h>
