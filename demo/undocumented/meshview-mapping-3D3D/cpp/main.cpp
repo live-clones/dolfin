@@ -48,19 +48,19 @@ int main()
 
   CellFunction<std::size_t> marker(mesh, 0);
   for (CellIterator cell(*mesh); !cell.end(); ++cell)
-    {
+  {
       auto x = cell->midpoint().coordinates();
       marker[cell->index()] = x[0] < 0.5;
-    }
+  }
 
   std::vector<std::size_t> vertex_map,cell_map;
   auto mapping = std::make_shared<MeshViewMapping>(mesh,vertex_map,cell_map);
-  auto submesh1 = std::make_shared<Mesh>( mapping->create_from_marker(marker,1) );
-  auto submesh2 = std::make_shared<Mesh>( mapping->create_from_marker(marker,0) );
+  auto submesh1 = std::make_shared<Mesh>(mapping->create_from_marker(marker, 1));
+  auto submesh2 = std::make_shared<Mesh>(mapping->create_from_marker(marker, 0));
 
   // Function spaces associated with each of the function spaces
-  auto V1=std::make_shared<MeshView_3D3D::FunctionSpace>( submesh1 );
-  auto V2=std::make_shared<MeshView_3D3D::FunctionSpace>( submesh2 );
+  auto V1 = std::make_shared<MeshView_3D3D::FunctionSpace>(submesh1);
+  auto V2 = std::make_shared<MeshView_3D3D::FunctionSpace>(submesh2);
 
   // Bilinear and linear forms
   MeshView_3D3D::BilinearForm a(V, V);
@@ -76,17 +76,17 @@ int main()
   auto boundary = std::make_shared<DirichletBoundary>();
   DirichletBC bc(V, zero, boundary);
 
-  auto boundarySubdomain1=std::make_shared<DirichletBoundarySubdomain1>();
-  auto boundarySubdomain2=std::make_shared<DirichletBoundarySubdomain2>();
+  auto boundarySubdomain1 = std::make_shared<DirichletBoundarySubdomain1>();
+  auto boundarySubdomain2 = std::make_shared<DirichletBoundarySubdomain2>();
   DirichletBC bc1(V1, zero, boundarySubdomain1);
   DirichletBC bc2(V2, zero, boundarySubdomain2);
 
   // Define RHS
   auto f = std::make_shared<Source>();
-  L.f=f;
+  L.f = f;
 
-  L1.f=f;
-  L2.f=f;
+  L1.f = f;
+  L2.f = f;
 
   // Compute solution
   // Global problem
@@ -99,26 +99,13 @@ int main()
   Function u2(V2);
   solve(a2 == L2, u2, bc2);
 
-  // Save solution in XDMF format if available
-  XDMFFile out_global(mesh->mpi_comm(), "meshview-mapping-3D3D-global.xdmf");
-  XDMFFile out_sub1(mesh->mpi_comm(), "meshview-mapping-3D3D-subdomain1.xdmf");
-  XDMFFile out_sub2(mesh->mpi_comm(), "meshview-mapping-3D3D-subdomain2.xdmf");
-  if( has_hdf5() )
-    {
-      out_global.write(u);
-      out_sub1.write(u1);
-      out_sub2.write(u2);
-    }
-  else
-    {
-      // Save solution in vtk format
-      File out_global("meshview-mapping-3D3D-global.pvd");
-      out_global << u;
-      File out_sub1("meshview-mapping-3D3D-subdomain1.pvd");
-      out_sub1 << u1;
-      File out_sub2("meshview-mapping-3D3D-subdomain2.pvd");
-      out_sub2 << u2;
-    }
+  // Save solution in vtk format
+  File out_global("meshview-mapping-3D3D-global.pvd");
+  out_global << u;
+  File out_sub1("meshview-mapping-3D3D-subdomain1.pvd");
+  out_sub1 << u1;
+  File out_sub2("meshview-mapping-3D3D-subdomain2.pvd");
+  out_sub2 << u2;
 }
 
 

@@ -62,20 +62,11 @@ L2 = f*v2*dx
 u2 = Function(V2)
 solve(a2 == L2, u2, bc2)
 
-# Save solution in XDMF format if available
-out_global = XDMFFile(mesh.mpi_comm(), "meshview-mapping-2D2D-global.xdmf")
-out_sub1 = XDMFFile(mesh.mpi_comm(), "meshview-mapping-2D2D-subdomain1.xdmf")
-out_sub2 = XDMFFile(mesh.mpi_comm(), "meshview-mapping-2D2D-subdomain2.xdmf")
-if has_hdf5():
-    out_global.write(u)
-    out_sub1.write(u1)
-    out_sub2.write(u2)
-else:
-    # Save solution in vtk format
-    out_global = File("meshview-mapping-2D2D-global.pvd")
-    out_global << u
-    out_sub1 = File("meshview-mapping-2D2D-subdomain1.pvd")
-    out_sub1 << u1
-    out_sub2 = File("meshview-mapping-2D2D-subdomain2.pvd")
-    out_sub2 << u2
+# Save solution in vtk format
+out_global = File("meshview-mapping-2D2D-global.pvd")
+out_global << u
+out_sub1 = File("meshview-mapping-2D2D-subdomain1.pvd")
+out_sub1 << u1
+out_sub2 = File("meshview-mapping-2D2D-subdomain2.pvd")
+out_sub2 << u2
 
