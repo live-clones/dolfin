@@ -17,7 +17,6 @@
 
 #include <iostream>
 #include <memory>
-#include <typeinfo>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -47,15 +46,16 @@
 
 #include "../mpi_interface.h"
 
+
 namespace py = pybind11;
+
 
 namespace dolfin_wrappers
 {
   void la(py::module& m)
   {
-    // dolfin::LinearAlgebraObject
-    py::class_<dolfin::LinearAlgebraObject, std::shared_ptr<dolfin::LinearAlgebraObject>, dolfin::Variable>
-      (m, "LinearAlgebraObject", "DOLFIN LinearAlgebraObject object");
+    // Note: Do not expose dolfin::LinearAlgebraObject as it has a
+    // number of templated member functions
 
     // dolfin::IndexMap
     py::class_<dolfin::IndexMap, std::shared_ptr<dolfin::IndexMap>> index_map(m, "IndexMap");
@@ -68,20 +68,23 @@ namespace dolfin_wrappers
       .value("GLOBAL", dolfin::IndexMap::MapSize::GLOBAL);
 
     // dolfin::GenericLinearOperator class
-    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>,
-               dolfin::LinearAlgebraObject>
-      (m, "GenericLinearOperator", "DOLFIN GenericLinearOperator object")
+    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
+      (m, "GenericLinearOperatqor", "DOLFIN GenericLinearOperator object")
       .def("mult", &dolfin::GenericLinearOperator::mult);
 
     // dolfin::GenericTensor class
-    py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>,
-               dolfin::LinearAlgebraObject>
+    py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>>
       (m, "GenericTensor", "DOLFIN GenericTensor object");
 
     // dolfin::GenericMatrix class
     py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>,
-               dolfin::GenericTensor, dolfin::GenericLinearOperator>
+               dolfin::GenericTensor>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object")
+      .def("init_vector", &dolfin::GenericMatrix::init_vector)
+      .def("local_range", &dolfin::GenericMatrix::local_range)
+      .def("norm", &dolfin::GenericMatrix::norm)
+      .def("nnz", &dolfin::GenericMatrix::nnz)
+      .def("size", &dolfin::GenericMatrix::size)
       .def("get_diagonal", &dolfin::GenericMatrix::get_diagonal)
       .def("set_diagonal", &dolfin::GenericMatrix::set_diagonal)
       .def("array", [](const dolfin::GenericMatrix& instance)
@@ -166,25 +169,14 @@ namespace dolfin_wrappers
              return py::array_t<double>(values.size(), values.data());
            });
 
-    // dolfin::GenericLinearSolver class
-    py::class_<dolfin::GenericLinearSolver, std::shared_ptr<dolfin::GenericLinearSolver>>
-      (m, "GenericLinearSolver", "DOLFIN GenericLinearSolver object");
-
-    //-----------------------------------------------------------------------------
     // dolfin::Matrix class
     py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>, dolfin::GenericMatrix>
-      (m, "Matrix", "DOLFIN Matrix object")
+      (m, "Matrix", "DOLFIN Matrix object", py::multiple_inheritance())
       .def(py::init<>())
       .def(py::init<MPI_Comm>())
-      .def("init_vector", &dolfin::Matrix::init_vector)
-      .def("local_range", &dolfin::Matrix::local_range)
-      .def("norm", &dolfin::Matrix::norm)
-      .def("nnz", &dolfin::Matrix::nnz)
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
-           &dolfin::Matrix::shared_instance)
-      .def("size", &dolfin::Matrix::size);
+           &dolfin::Matrix::shared_instance);
 
-    // FIXME: Most (all?) of this belongs with GenericVector
     // dolfin::Vector class
     py::class_<dolfin::Vector, std::shared_ptr<dolfin::Vector>, dolfin::GenericVector>
       (m, "Vector", "DOLFIN Vector object")
@@ -269,21 +261,7 @@ namespace dolfin_wrappers
       .def("apply", &dolfin::Vector::apply)
       .def("str", &dolfin::Vector::str)
       .def("shared_instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Vector::*)())
-           &dolfin::Vector::shared_instance)
-      .def("backend_type", [](dolfin::Vector& self)
-           {
-             // Experiment with determining backend type
-             auto instance = self.instance();
-             auto type_index = std::type_index(typeid(*instance));
-             if (type_index == std::type_index(typeid(dolfin::EigenVector)))
-               return "EigenVector";
-#ifdef HAS_PETSC
-             else if (type_index == std::type_index(typeid(dolfin::PETScVector)))
-               return "PETScVector";
-#endif
-             else
-               return "Unknown";
-           });
+           &dolfin::Vector::shared_instance);
 
     //----------------------------------------------------------------------------
     // dolfin::Scalar
@@ -366,6 +344,13 @@ namespace dolfin_wrappers
     #endif
 
     //-----------------------------------------------------------------------------
+
+    // dolfin::GenericLinearSolver class
+    py::class_<dolfin::GenericLinearSolver, std::shared_ptr<dolfin::GenericLinearSolver>,
+               dolfin::Variable>
+      (m, "GenericLinearSolver", "DOLFIN GenericLinearSolver object");
+
+
     // dolfin::LUSolver class
     py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>>
       (m, "LUSolver", "DOLFIN LUSolver object")
@@ -438,5 +423,6 @@ namespace dolfin_wrappers
     m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
     m.def("has_krylov_solver_method", &dolfin::has_krylov_solver_method);
     m.def("has_krylov_solver_preconditioner", &dolfin::has_krylov_solver_preconditioner);
+
   }
 }

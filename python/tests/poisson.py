@@ -1,8 +1,5 @@
 from dolfin import *
 
-A = Matrix()
-exit(0)
-
 
 if cpp.common.has_petsc():
     parameters['linear_algebra_backend'] = 'PETSc'
@@ -41,10 +38,7 @@ L = f*v*dx + g*v*ds
 
 assembler = Assembler()
 
-
 A = Matrix()
-exit(0)
-
 assembler.assemble(A, Form(a))
 
 b = Vector()

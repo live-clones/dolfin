@@ -72,7 +72,7 @@ namespace dolfin_wrappers
            {
              auto b = x.request();
              assert(b.shape.size() == 1);
-             assert(b.shape.size()[0] <= 3);
+             assert(b.shape[0] <= 3);
              new (&instance) dolfin::Point(b.shape[0], x.data());
            })
       .def("__getitem__", [](dolfin::Point& self, std::size_t index)
