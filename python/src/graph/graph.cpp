@@ -32,7 +32,7 @@ namespace dolfin_wrappers
 
   void graph(py::module& m)
   {
-    py::class_<dolfin::Graph, std::shared_ptr<dolfin::Graph>>(m, "Graph");
+    py::class_<dolfin::Graph>(m, "Graph");
 
     py::class_<dolfin::GraphBuilder>(m, "GraphBuilder")
       .def_static("local_graph", [](const dolfin::Mesh& mesh, const std::vector<std::size_t>& coloring)
