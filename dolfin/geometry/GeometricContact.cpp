@@ -203,7 +203,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   // Local mesh of slave 'prisms', three tetrahedra created per facet
   Mesh slave_mesh(mesh.mpi_comm());
   MeshEditor slave_ed;
-  slave_ed.open(slave_mesh, mesh.topology().dim(), mesh.geometry().dim());
+  slave_ed.open(slave_mesh, mesh.topology().dim() - 1, mesh.geometry().dim());
   nf_local = slave_facets.size();
   nf_global = MPI::sum(mesh.mpi_comm(), nf_local);
   slave_ed.init_cells_global(nf_local*cells_per_facet, nf_global*cells_per_facet);
