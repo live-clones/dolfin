@@ -1,5 +1,9 @@
 from dolfin import *
 
+A = Matrix()
+exit(0)
+
+
 if cpp.common.has_petsc():
     parameters['linear_algebra_backend'] = 'PETSc'
 
@@ -19,10 +23,10 @@ w = Function(V)
 #xdmf.write(mesh,  XDMFFile.Encoding.ASCII)
 #xdmf.write(w, XDMFFile.Encoding.ASCII)
 
-class Boundary(SubDomain):
-    def inside(self, x, on_boundary):
-        result = (x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS)
-        return bool(result)
+#class Boundary(SubDomain):
+#    def inside(self, x, on_boundary):
+#        result = (x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS)
+#        return bool(result)
 # boundary = CompiledSubDomain("x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
 
 u0 = Constant(0.0)
@@ -37,7 +41,10 @@ L = f*v*dx + g*v*ds
 
 assembler = Assembler()
 
+
 A = Matrix()
+exit(0)
+
 assembler.assemble(A, Form(a))
 
 b = Vector()

@@ -46,7 +46,6 @@
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
 
-
 namespace py = pybind11;
 
 namespace dolfin_wrappers
