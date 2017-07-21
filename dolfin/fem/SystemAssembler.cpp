@@ -124,7 +124,9 @@ void SystemAssembler::assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
       // Some matrices and/or forms may be NULL
       if (_a[k] and A[k])
       {
-        assemble(&*A[k], &*b[i], NULL, _a[k], _l[i], bcs, assemble_rhs);
+	// FIXME
+	if (i==j) // TEMPORARY : Do not assemble non-diagonal blocks for now
+	  assemble(&*A[k], &*b[i], NULL, _a[k], _l[i], bcs, assemble_rhs);
         assemble_rhs = false;
       }
       else if (i == j and bcs[0].size() > 0)
@@ -218,7 +220,8 @@ void SystemAssembler::check_forms(std::vector<std::shared_ptr<const Form>> a,
     for (std::size_t j = 0; j != ncols; ++j)
     {
       const std::size_t k = j + i*ncols;
-      if (a[k])
+      // FIXME
+      if (a[k] and i==j) // TEMPORARY : Do not consider non-diagonal blocks for now
       {
         auto fs_a = a[k]->function_space(0);
         auto fs_L = L[i]->function_space(0);
