@@ -138,6 +138,14 @@ namespace dolfin_wrappers
                              + cellname + "', geometric_dimension=" + gdim + "), "
                              + degree + ", dim=" + gdim +")", scope);
            })
+            .def("ufl_domain", [](const dolfin::Mesh& self)
+           {
+             auto ufl = py::module::import("ufl");
+             auto pyself = py::cast(&self);
+             auto f = ufl.attr("Mesh");
+             return f(pyself.attr("ufl_coordinate_element")(),
+                      pyself.attr("ufl_id")(), pyself);
+           })
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
            { return dolfin::CellType::type2string(self.type().cell_type()); }
