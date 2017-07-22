@@ -123,28 +123,22 @@ namespace dolfin_wrappers
       // UFL related
       .def("ufl_cell", [](const dolfin::Mesh& self)
            {
-             py::object scope = py::module::import("ufl").attr("__dict__");
-             std::string gdim = std::to_string(self.geometry().dim());
-             std::string cellname = self.type().description(false);
-             return py::eval("Cell(\"" + cellname + "\", geometric_dimension=" + gdim + ")", scope);
+             auto ufl_util = py::module::import("dolfin.mesh.ufl_util");
+             auto f = ufl_util.attr("ufl_cell");
+             return f(py::cast(&self));
            })
       .def("ufl_coordinate_element", [](const dolfin::Mesh& self)
            {
-             py::object scope = py::module::import("ufl").attr("__dict__");
-             std::string gdim = std::to_string(self.geometry().dim());
-             std::string degree = std::to_string(self.geometry().degree());
-             std::string cellname = self.type().description(false);
-             return py::eval("VectorElement('Lagrange', Cell('"
-                             + cellname + "', geometric_dimension=" + gdim + "), "
-                             + degree + ", dim=" + gdim +")", scope);
+             auto ufl_util = py::module::import("dolfin.mesh.ufl_util");
+             auto f = ufl_util.attr("ufl_coordinate_element");
+             return f(py::cast(&self));
+
            })
             .def("ufl_domain", [](const dolfin::Mesh& self)
            {
-             auto ufl = py::module::import("ufl");
-             auto pyself = py::cast(&self);
-             auto f = ufl.attr("Mesh");
-             return f(pyself.attr("ufl_coordinate_element")(),
-                      pyself.attr("ufl_id")(), pyself);
+             auto ufl_util = py::module::import("dolfin.mesh.ufl_util");
+             auto f = ufl_util.attr("ufl_domain");
+             return f(py::cast(&self));
            })
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
