@@ -49,7 +49,6 @@ def tempfile(tempdir, request):
     return os.path.join(tempdir, request.function.__name__)
 
 
-@pytest.mark.xfail
 def test_save_1d_meshfunctions(tempfile, mesh_functions,
                                 mesh_function_types, file_options, type_conv):
     mesh = UnitIntervalMesh(32)
@@ -64,7 +63,7 @@ def test_save_1d_meshfunctions(tempfile, mesh_functions,
             for file_option in file_options:
                 File(tempfile + "mf.pvd", file_option) << mf
 
-@pytest.mark.xfail
+
 def test_save_2d_meshfunctions(tempfile, mesh_functions,
                                 mesh_function_types, file_options, type_conv):
     mesh = UnitSquareMesh(32, 32)
@@ -78,7 +77,7 @@ def test_save_2d_meshfunctions(tempfile, mesh_functions,
             for file_option in file_options:
                 File(tempfile + "mf.pvd", file_option) << mf
 
-@pytest.mark.xfail
+
 def test_save_3d_meshfunctions(tempfile, mesh_functions,
                                 mesh_function_types, file_options, type_conv):
     mesh = UnitCubeMesh(8, 8, 8)
@@ -92,17 +91,17 @@ def test_save_3d_meshfunctions(tempfile, mesh_functions,
             for file_option in file_options:
                 File(tempfile + "mf.pvd", file_option) << mf
 
-@pytest.mark.xfail
+
 def test_save_1d_mesh(tempfile, file_options):
     mesh = UnitIntervalMesh(32)
     File(tempfile + "mesh.pvd") << mesh
     f = File(tempfile + "mesh.pvd")
-    f << (mesh, 0.)
-    f << (mesh, 1.)
+    f << (mesh, 0.0)
+    f << (mesh, 1.0)
     for file_option in file_options:
         File(tempfile + "mesh.pvd", file_option) << mesh
 
-@pytest.mark.xfail
+
 def test_save_2d_mesh(tempfile, file_options):
     mesh = UnitSquareMesh(32, 32)
     File(tempfile + "mesh.pvd") << mesh
@@ -112,7 +111,7 @@ def test_save_2d_mesh(tempfile, file_options):
     for file_option in file_options:
         File(tempfile + "mesh.pvd", file_option) << mesh
 
-@pytest.mark.xfail
+
 def test_save_3d_mesh(tempfile, file_options):
     mesh = UnitCubeMesh(8, 8, 8)
     File(tempfile + "mesh.pvd") << mesh
@@ -122,6 +121,9 @@ def test_save_3d_mesh(tempfile, file_options):
     for file_option in file_options:
         File(tempfile + "mesh.pvd", file_option) << mesh
 
+
+# Note: There is a pybind11 problem with scalars because it seems to
+# try calling __len__ on the UFL object
 @pytest.mark.xfail
 def test_save_1d_scalar(tempfile, file_options):
     mesh = UnitIntervalMesh(32)
@@ -133,6 +135,7 @@ def test_save_1d_scalar(tempfile, file_options):
     f << (u, 1.)
     for file_option in file_options:
         File(tempfile + "u.pvd", file_option) << u
+
 
 @pytest.mark.xfail
 def test_save_2d_scalar(tempfile, file_options):
@@ -146,6 +149,7 @@ def test_save_2d_scalar(tempfile, file_options):
     for file_option in file_options:
         File(tempfile + "u.pvd", file_option) << u
 
+
 @pytest.mark.xfail
 def test_save_3d_scalar(tempfile, file_options):
     mesh = UnitCubeMesh(8, 8, 8)
@@ -158,6 +162,7 @@ def test_save_3d_scalar(tempfile, file_options):
     for file_option in file_options:
         File(tempfile + "u.pvd", file_option) << u
 
+
 @pytest.mark.xfail(reason="FFC fails for tensor spaces in 1D")
 @skip_in_parallel
 def test_save_1d_vector(tempfile, file_options):
@@ -168,7 +173,7 @@ def test_save_1d_vector(tempfile, file_options):
     for file_option in file_options:
         File(tempfile + "u.pvd", file_option) << u
 
-@pytest.mark.xfail
+
 def test_save_2d_vector(tempfile, file_options):
     mesh = UnitSquareMesh(16, 16)
     u = Function(VectorFunctionSpace(mesh, "Lagrange", 2))
@@ -180,7 +185,7 @@ def test_save_2d_vector(tempfile, file_options):
     for file_option in file_options:
         File(tempfile + "u.pvd", file_option) << u
 
-@pytest.mark.xfail
+
 def test_save_3d_vector(tempfile, file_options):
     mesh = UnitCubeMesh(8, 8, 8)
     u = Function(VectorFunctionSpace(mesh, "Lagrange", 2))
@@ -192,6 +197,7 @@ def test_save_3d_vector(tempfile, file_options):
     for file_option in file_options:
         File(tempfile + "u.pvd", file_option) << u
 
+
 @pytest.mark.xfail(reason="FFC fails for tensor spaces in 1D")
 @skip_in_parallel
 def test_save_1d_tensor(tempfile, file_options):
@@ -201,6 +207,7 @@ def test_save_1d_tensor(tempfile, file_options):
     File(tempfile + "u.pvd") << u
     for file_option in file_options:
         File(tempfile + "u.pvd", file_option) << u
+
 
 @pytest.mark.xfail
 def test_save_2d_tensor(tempfile, file_options):
@@ -215,7 +222,7 @@ def test_save_2d_tensor(tempfile, file_options):
         File(tempfile + "u.pvd", file_option) << u
 
 @pytest.mark.xfail
-def test_save_3d_tensor(tempfile, file_options):
+def xtest_save_3d_tensor(tempfile, file_options):
     mesh = UnitCubeMesh(8, 8, 8)
     u = Function(TensorFunctionSpace(mesh, "Lagrange", 2))
     u.vector()[:] = 1.0

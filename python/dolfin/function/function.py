@@ -73,3 +73,6 @@ class Function(ufl.Coefficient):
         indices = np.zeros(1, dtype=la.la_index_dtype())
         values = vec.gather(indices)
         return float(values[0])
+
+    def cpp_object(self):
+        return self._cpp_object

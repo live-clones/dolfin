@@ -43,19 +43,59 @@ namespace dolfin_wrappers
     // dolfin::File
     py::class_<dolfin::File, std::shared_ptr<dolfin::File>>(m, "File")
       .def(py::init<std::string>())
+      .def(py::init<std::string, std::string>())
+      //
       .def("__lshift__", (void (dolfin::File::*)(const dolfin::Parameters&)) &dolfin::File::operator<<)
-      .def("__rshift__", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::operator>>)
+      //
       .def("__lshift__", (void (dolfin::File::*)(const dolfin::Mesh&)) &dolfin::File::operator<<)
+      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::Mesh*, double>)) &dolfin::File::operator<<)
+      //
+      .def("__lshift__", (void (dolfin::File::*)(const dolfin::Function&)) &dolfin::File::operator<<)
+      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::Function*, double>)) &dolfin::File::operator<<)
+       //
+      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<int>&)) &dolfin::File::operator<<)
+      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<int>*, double>)) &dolfin::File::operator<<)
+      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<std::size_t>&)) &dolfin::File::operator<<)
+      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<std::size_t>*, double>)) &dolfin::File::operator<<)
+      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<double>&)) &dolfin::File::operator<<)
+      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<double>*, double>)) &dolfin::File::operator<<)
+      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<bool>&)) &dolfin::File::operator<<)
+      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<bool>*, double>)) &dolfin::File::operator<<)
+      // Unpack
+      .def("__lshift__", [](dolfin::File& instance, py::tuple u)
+           {
+             std::cout << "Here I am (X)" << std::endl;
+             auto _u = u[0].attr("_cpp_object").cast<dolfin::Function*>();
+             auto _t = u[1].cast<double>();
+
+             instance << std::make_pair(_u, _t);
+             std::cout << "Here I am (1X)" << std::endl;
+           })
+      .def("__lshift__", [](dolfin::File& instance, const py::object& u)
+           {
+             std::cout << "Here I am" << std::endl;
+             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+             instance << *_u;
+             std::cout << "Here I am (1)" << std::endl;
+           })
+      //.def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::Function*, double>)) &dolfin::File::operator<<)
+      //
+      .def("__rshift__", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::operator>>)
       .def("__rshift__", (void (dolfin::File::*)(dolfin::Mesh&)) &dolfin::File::operator>>);
 
+
     // dolfin::GenericFile
-    py::class_<dolfin::GenericFile, std::shared_ptr<dolfin::GenericFile>>(m, "GenericFile")
-      .def("__lshift__", (void (dolfin::GenericFile::*)(const dolfin::Parameters&)) &dolfin::GenericFile::operator<<);
+    //py::class_<dolfin::GenericFile, std::shared_ptr<dolfin::GenericFile>>(m, "GenericFile")
+    //  .def("__lshift__", (void (dolfin::GenericFile::*)(const dolfin::Parameters&)) &dolfin::GenericFile::operator<<);
 
     // dolfin::VTKFile
     py::class_<dolfin::VTKFile, std::shared_ptr<dolfin::VTKFile>>(m, "VTKFile")
       .def(py::init<std::string, std::string>())
-      .def("__lshift__",  [](py::object& obj, const dolfin::Mesh& mesh) { dolfin::VTKFile *cls = obj.cast<dolfin::VTKFile*>(); *cls << mesh; })
+      .def("__lshift__",  [](py::object& obj, const dolfin::Mesh& mesh)
+           {
+             dolfin::VTKFile *cls = obj.cast<dolfin::VTKFile*>();
+             *cls << mesh;
+           })
       .def("write", [](py::object& obj, const dolfin::Mesh& mesh) { dolfin::VTKFile *cls = obj.cast<dolfin::VTKFile*>(); *cls << mesh; });
 
     // HDF5
