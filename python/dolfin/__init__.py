@@ -51,12 +51,15 @@ if has_linear_algebra_backend('PETSc'):
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
-from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, EigenMatrix, EigenVector, EigenFactory,
-                     LUSolver, KrylovSolver)
+from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, EigenMatrix,
+                     EigenVector, EigenFactory, LUSolver, KrylovSolver)
+from .cpp.log import info
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
-                       Cell, Facet, Face, Edge, Vertex, cells, facets, faces, edges, entities,
-                       vertices, SubDomain, BoundaryMesh, MeshEditor, MultiMesh, MeshQuality,
+                       Cell, Facet, Face, Edge, Vertex, cells,
+                       facets, faces, edges, entities,
+                       vertices, SubDomain, BoundaryMesh,
+                       MeshEditor, MultiMesh, MeshQuality,
                        SubMesh)
 from .cpp.nls import NonlinearProblem, NewtonSolver
 from .cpp.refinement import refine

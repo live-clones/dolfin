@@ -26,6 +26,9 @@ namespace dolfin_wrappers
   void common(py::module& m);
   void mpi(py::module& m);
 
+  // log
+  void log(py::module& m);
+
   void adaptivity(py::module& m);
   void ale(py::module& m);
   void experimental(py::module& m);
@@ -58,6 +61,10 @@ PYBIND11_MODULE(cpp, m)
 
   // Create MPI class [common]
   dolfin_wrappers::mpi(m);
+
+  // Create common submodule [log]
+  py::module log = m.def_submodule("log", "DOLFIN logging module");
+  dolfin_wrappers::log(log);
 
   // Create function submodule [function]
   py::module function = m.def_submodule("function",

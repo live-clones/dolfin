@@ -60,7 +60,6 @@ any_backend = set_parameters_fixture("linear_algebra_backend", any_backends)
 
 class TestVectorForAnyBackend:
 
-    @pytest.mark.xfail
     def test_create_empty_vector(self, any_backend):
         v0 = Vector()
         info(v0)
@@ -148,16 +147,12 @@ class TestVectorForAnyBackend:
         v0.set_local(data)
         data = zeros((v0.local_size()*2), dtype='d')
 
-    @pytest.mark.xfail
     def test_add_local(self, any_backend):
         from numpy import zeros
         n = 301
         v0 = Vector(MPI.comm_world, n)
         data = zeros((v0.local_size()), dtype='d')
         v0.add_local(data)
-        data = zeros((v0.local_size()*2), dtype='d')
-        with pytest.raises(TypeError):
-            v0.add_local(data[::2])
 
     @pytest.mark.xfail
     def test_gather(self, any_backend):
@@ -316,7 +311,6 @@ class TestVectorForAnyBackend:
         v0 += v1
         assert v0.sum() == n
 
-    @pytest.mark.xfail
     def test_scalar_add(self, any_backend):
         n = 301
         v0 = Vector(MPI.comm_world, n)
@@ -364,7 +358,6 @@ class TestVectorForAnyBackend:
         if MPI.size(MPI.comm_world) > 1:
             m = 301
             local_range0 = MPI.local_range(MPI.comm_world, m)
-            print("local range", local_range0[0], local_range0[1])
 
             # Shift parallel partitiong but preserve global size
             if MPI.rank(MPI.comm_world) == 0:

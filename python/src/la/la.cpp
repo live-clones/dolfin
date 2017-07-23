@@ -23,6 +23,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/common/Array.h>
 #include <dolfin/la/solve.h>
 #include <dolfin/la/GenericLinearOperator.h>
 #include <dolfin/la/GenericLinearSolver.h>
@@ -56,6 +57,7 @@ namespace dolfin_wrappers
   {
     // Note: Do not expose dolfin::LinearAlgebraObject as it has a
     // number of templated member functions
+    py::class_<dolfin::LinearAlgebraObject, std::shared_ptr<dolfin::LinearAlgebraObject>, dolfin::Variable>(m, "LinearAlgebraObject");
 
     // dolfin::IndexMap
     py::class_<dolfin::IndexMap, std::shared_ptr<dolfin::IndexMap>> index_map(m, "IndexMap");
@@ -73,7 +75,7 @@ namespace dolfin_wrappers
       .def("mult", &dolfin::GenericLinearOperator::mult);
 
     // dolfin::GenericTensor class
-    py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>>
+    py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>, dolfin::LinearAlgebraObject>
       (m, "GenericTensor", "DOLFIN GenericTensor object");
 
     // dolfin::GenericMatrix class
@@ -154,6 +156,14 @@ namespace dolfin_wrappers
              std::vector<dolfin::la_index> indices(values.size());
              std::iota(indices.begin(), indices.end(), 0);
              instance.set_local(values.data(), values.size(), indices.data());
+           })
+      .def("add_local", [](dolfin::GenericVector& self, py::array_t<double> values)
+           {
+             std::cout << "Testing shape: " << values.ndim() << ", " << values.size() << std::endl;
+             std::cout << values.shape(0) << std::endl;
+             assert(values.ndim() == 1);
+             dolfin::Array<double> _values(values.size(), values.mutable_data());
+             self.add_local(_values);
            })
       .def("gather", [](const dolfin::GenericVector& instance, std::vector<dolfin::la_index> rows)
            {
@@ -252,12 +262,6 @@ namespace dolfin_wrappers
              self.get_local(values);
              return values;
            })
-      .def("add_local", [](dolfin::Vector& self, const std::vector<double>& values)
-           {
-             std::vector<dolfin::la_index> indices(values.size());
-             std::iota(indices.begin(), indices.end(), 0);
-             self.add_local(values.data(), values.size(), indices.data());
-           })
       .def("apply", &dolfin::Vector::apply)
       .def("str", &dolfin::Vector::str)
       .def("shared_instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Vector::*)())
@@ -350,16 +354,15 @@ namespace dolfin_wrappers
                dolfin::Variable>
       (m, "GenericLinearSolver", "DOLFIN GenericLinearSolver object");
 
-
     // dolfin::LUSolver class
     py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>>
-      (m, "LUSolver", "DOLFIN LUSolver object")
-      .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>,
-           std::string>(),
-           py::arg("comm"), py::arg("A"), py::arg("method") = "default")
-      .def("solve", (std::size_t (dolfin::LUSolver::*)(dolfin::GenericVector&,
-                                                       const dolfin::GenericVector&))
-           &dolfin::LUSolver::solve);
+    (m, "LUSolver", "DOLFIN LUSolver object")
+    .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>,
+         std::string>(),
+         py::arg("comm"), py::arg("A"), py::arg("method") = "default")
+    .def("solve", (std::size_t (dolfin::LUSolver::*)(dolfin::GenericVector&,
+                                                     const dolfin::GenericVector&))
+         &dolfin::LUSolver::solve);
 
     //-----------------------------------------------------------------------------
     // dolfin::KrylovSolver class

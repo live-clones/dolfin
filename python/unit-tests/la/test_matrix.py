@@ -91,7 +91,6 @@ class TestMatrixForAnyBackend:
         return A, B
 
     @pytest.mark.xfail
-    @pytest.mark.xfail
     def test_basic_la_operations(self, use_backend, any_backend):
         # Hack to make old tests work in new framework. The original
         # setup was a bit exoteric...

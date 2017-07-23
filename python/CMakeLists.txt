@@ -27,6 +27,7 @@ pybind11_add_module(cpp SHARED
   src/generation/generation.cpp
   src/geometry/geometry.cpp
   src/graph/graph.cpp
+  src/log/log.cpp
   src/math/math.cpp
   src/mesh/mesh.cpp
   src/multistage/multistage.cpp
