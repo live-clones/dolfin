@@ -98,16 +98,15 @@ def test_iterate(tp, name, funcs):
     with pytest.raises(IndexError):
         funcs[(tp, name)].__getitem__(len(funcs[(tp, name)]))
 
+
 def test_setvalues(tp, funcs, name):
     if tp != 'bool':
         with pytest.raises(TypeError):
             funcs[(tp, name)].__setitem__(len(funcs[(tp, name)])-1, "jada")
 
 
-@pytest.mark.xfail
 def test_Create(cube):
     """Create MeshFunctions."""
-    v = MeshFunction("size_t", cube)
 
     v = MeshFunction("size_t", cube, 0)
     assert v.size() == cube.num_vertices()

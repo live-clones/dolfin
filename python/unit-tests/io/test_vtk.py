@@ -22,26 +22,32 @@ from dolfin import *
 import os
 from dolfin_utils.test import skip_in_parallel, fixture, tempdir
 
+
 # VTK file options
 @fixture
 def file_options():
     return ["ascii", "base64", "compressed"]
 
+
 @fixture
 def mesh_functions():
     return [CellFunction, FacetFunction, FaceFunction, EdgeFunction, VertexFunction]
+
 
 @fixture
 def mesh_function_types():
     return ["size_t", "int", "double", "bool"]
 
+
 @fixture
 def type_conv():
     return dict(size_t=int, int=int, double=float, bool=bool)
 
+
 @pytest.fixture(scope="function")
 def tempfile(tempdir, request):
     return os.path.join(tempdir, request.function.__name__)
+
 
 @pytest.mark.xfail
 def test_save_1d_meshfunctions(tempfile, mesh_functions,
