@@ -58,7 +58,7 @@ class UserExpression(ufl.Coefficient):
         #cpp.function.Expression.__init__(self, 1)
         #cpp.function.Expression.__init__(self, self.ufl_shape)
 
-        self._cpp_expression = _InterfaceExpression(self)
+        self._cpp_object = _InterfaceExpression(self)
 
         value_shape = tuple(self.value_dimension(i)
                             for i in range(self.value_rank()))
@@ -80,17 +80,17 @@ class UserExpression(ufl.Coefficient):
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
     def value_rank(self):
-        return self._cpp_expression.value_rank()
+        return self._cpp_object.value_rank()
 
     def value_dimension(self, i):
-        return self._cpp_expression.value_dimension(i)
+        return self._cpp_object.value_dimension(i)
 
     def id(self):
-        return self._cpp_expression.id()
+        return self._cpp_object.id()
 
     def cpp_object(self):
         """Return the underling cpp.Expression object"""
-        return self._cpp_expression
+        return self._cpp_object
 
 
 def jit_generate(class_data, module_name, signature, parameters):
@@ -223,7 +223,7 @@ class CompiledExpression(ufl.Coefficient):
             if not isinstance(properties[k], float):
                 raise ValueError("Invalid value")
 
-        self._cpp_expression = compile_expression(statements, properties)
+        self._cpp_object = compile_expression(statements, properties)
 
         if element is None:
             if (degree == 0):
@@ -235,9 +235,9 @@ class CompiledExpression(ufl.Coefficient):
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
     def __getattr__(self, name):
-        "Pass attribites through to (JIT compiled) Expression obkect"
-        if hasattr(self._cpp_expression, name):
-            return self._cpp_expression.get_property(name)
+        "Pass attribites through to (JIT compiled) Expression object"
+        if hasattr(self._cpp_object, name):
+            return self._cpp_object.get_property(name)
         else:
             raise(AttributeError)
 
@@ -245,13 +245,13 @@ class CompiledExpression(ufl.Coefficient):
         if name.startswith("_"):
             super().__setattr__(name, value)
         else:
-            self._cpp_expression.set_property(name, value)
+            self._cpp_object.set_property(name, value)
 
     def __call__(self, x):
-        return self._cpp_expression(x)
+        return self._cpp_object(x)
 
     def id(self):
-        return self._cpp_expression.id()
+        return self._cpp_object.id()
 
     def cpp_object(self):
-        return self._cpp_expression
+        return self._cpp_object

@@ -1,6 +1,5 @@
 from dolfin import *
 
-
 if cpp.common.has_petsc():
     parameters['linear_algebra_backend'] = 'PETSc'
 
@@ -11,7 +10,6 @@ mesh = refine(mesh)
 # Create function space
 V = FunctionSpace(mesh, "Lagrange", 1)
 print(V, dir(V))
-
 
 # Create a function
 w = Function(V)
@@ -53,9 +51,10 @@ solver.solve(w.vector(), b)
 
 file = XDMFFile("poisson.xdmf")
 
+print("************")
 if cpp.common.has_hdf5():
+    print("0: ************")
     file.write(w, XDMFFile.Encoding.HDF5)
+    print("1: ************")
 else:
-    file.write(w, XDMFFile.Encoding.ASCII)
-
-# plot(w, interactive=True)
+    file.write(w._cpp_function, XDMFFile.Encoding.ASCII)

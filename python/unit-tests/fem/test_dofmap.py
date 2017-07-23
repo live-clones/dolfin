@@ -247,7 +247,7 @@ def test_dof_to_vertex_map(mesh, reorder_dofs):
 
     u = Function(V)
     e = CompiledExpression("x[0] + x[1]", degree=1)
-    u.interpolate(e._cpp_expression)
+    u.interpolate(e)
 
     vert_values = mesh.coordinates().sum(1)
     func_values = np.empty(len(vert_values))

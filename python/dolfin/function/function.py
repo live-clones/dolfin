@@ -44,19 +44,19 @@ class Function(ufl.Coefficient):
             # If initialising from a FunctionSpace
             if len(args) == 1:
                 # If passing only the FunctionSpace
-                self._cpp_function = cpp.function.Function(V)
+                self._cpp_object = cpp.function.Function(V)
 
                 # Initialize the ufl.FunctionSpace
-                ufl.Coefficient.__init__(self, V.ufl_function_space(), count=self._cpp_function.id())
+                ufl.Coefficient.__init__(self, V.ufl_function_space(), count=self._cpp_object.id())
 
         else:
             raise TypeError("expected a FunctionSpace or a Function as argument 1")
 
     def interpolate(self, u):
-        self._cpp_function.interpolate(u)
+        self._cpp_object.interpolate(u)
 
     def vector(self):
-        return self._cpp_function.vector()
+        return self._cpp_object.vector()
 
     def __float__(self):
         # FIXME: this could be made simple on the C++ (in particular,

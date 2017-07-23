@@ -78,7 +78,7 @@ namespace dolfin_wrappers
 
     // dolfin::GenericMatrix class
     py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>,
-               dolfin::GenericTensor>
+               dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object")
       .def("init_vector", &dolfin::GenericMatrix::init_vector)
       .def("local_range", &dolfin::GenericMatrix::local_range)

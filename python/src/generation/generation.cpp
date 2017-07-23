@@ -23,6 +23,7 @@
 #include <dolfin/geometry/Point.h>
 #include <dolfin/generation/BoxMesh.h>
 #include <dolfin/generation/UnitCubeMesh.h>
+#include <dolfin/generation/UnitDiscMesh.h>
 #include <dolfin/generation/UnitSquareMesh.h>
 #include <dolfin/generation/UnitIntervalMesh.h>
 #include <dolfin/generation/UnitQuadMesh.h>
@@ -71,8 +72,12 @@ namespace dolfin_wrappers
       .def(py::init<std::size_t, std::size_t, std::size_t>())
       .def(py::init<MPI_Comm, std::size_t, std::size_t, std::size_t>());
 
+    // dolfin::UnitDiscMesh
+    py::class_<dolfin::UnitDiscMesh>(m, "UnitDiscMesh")
+      .def_static("create", &dolfin::UnitDiscMesh::create);
+
     // dolfin::UnitQuadMesh
-    py::class_<dolfin::UnitQuadMesh, std::shared_ptr<dolfin::UnitQuadMesh>, dolfin::Mesh>(m, "UnitQuadMesh")
+    py::class_<dolfin::UnitQuadMesh>(m, "UnitQuadMesh")
       .def_static("create", [](std::size_t nx, std::size_t ny){ return dolfin::UnitQuadMesh::create(nx, ny); })
       .def_static("create", [](MPI_Comm comm, std::size_t nx, std::size_t ny){ return dolfin::UnitQuadMesh::create(comm, nx, ny); });
 

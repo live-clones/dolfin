@@ -139,7 +139,13 @@ namespace dolfin_wrappers
             self.eval(_values, x);
             return values;
           })
-      .def("interpolate", &dolfin::Function::interpolate)
+      .def("interpolate", (void (dolfin::Function::*)(const dolfin::GenericFunction&))
+           &dolfin::Function::interpolate)
+      .def("interpolate", [](dolfin::Function& instance, const py::object v)
+           {
+             auto _v = v.attr("_cpp_object").cast<dolfin::GenericFunction*>();
+             instance.interpolate(*_v);
+           })
       .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
            &dolfin::Function::vector);
 

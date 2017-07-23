@@ -92,8 +92,8 @@ namespace dolfin_wrappers
                                int cell_orientation, const dolfin::Cell& c)
            {
              const ufc::function* _f = nullptr;
-             if (py::hasattr(f, "_cpp_expression"))
-               _f = f.attr("_cpp_expression").cast<ufc::function*>();
+             if (py::hasattr(f, "_cpp_object"))
+               _f = f.attr("_cpp_object").cast<ufc::function*>();
              else
                _f = f.cast<ufc::function*>();
 

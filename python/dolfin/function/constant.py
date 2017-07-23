@@ -77,13 +77,13 @@ class Constant(ufl.Coefficient):
         # Create UFL element and initialize constant
         if rank == 0:
             ufl_element = ufl.FiniteElement("Real", cell, 0)
-            self._cpp_constant = cpp.function.Constant(floats[0])
+            self._cpp_object = cpp.function.Constant(floats[0])
         elif rank == 1:
             ufl_element = ufl.VectorElement("Real", cell, 0, dim=len(floats))
-            self._cpp_constant = cpp.function.Constant(floats)
+            self._cpp_object = cpp.function.Constant(floats)
         else:
             ufl_element = ufl.TensorElement("Real", cell, 0, shape=array.shape)
-            self._cpp_constant = cpp.function.Constant(list(array.shape), floats)
+            self._cpp_object = cpp.function.Constant(list(array.shape), floats)
 
         # Initialize base classes
         ufl_function_space = ufl.FunctionSpace(ufl_domain, ufl_element)
@@ -97,22 +97,22 @@ class Constant(ufl.Coefficient):
         return self.ufl_element().cell()
 
     def id(self):
-        return self._cpp_constant.id()
+        return self._cpp_object.id()
 
     def name(self):
-        return self._cpp_constant.name()
+        return self._cpp_object.name()
 
     def rename(self, name, s):
-        self._cpp_constant.rename(name, s)
+        self._cpp_object.rename(name, s)
 
     def __float__(self):
         # Overriding UFL operator in this particular case.
         if self.ufl_shape:
             raise TypeError("Cannot convert nonscalar constant to float.")
-        return float(self._cpp_constant)
+        return float(self._cpp_object)
 
     def __str__(self):
         return self.name()
 
     def cpp_object(self):
-        return self._cpp_constant
+        return self._cpp_object

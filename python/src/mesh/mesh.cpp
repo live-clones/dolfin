@@ -333,7 +333,8 @@ namespace dolfin_wrappers
                              const dolfin::MeshEntity& index, SCALAR value) \
            { self.operator[](index) = value;}) \
       .def("__len__", &dolfin::MeshFunction<SCALAR>::size) \
-      .def("size", &dolfin::MeshFunction<SCALAR>::size) \
+      .def("dim", &dolfin::MeshFunction<SCALAR>::dim) \
+      .def("size", &dolfin::MeshFunction<SCALAR>::size)         \
       .def("set_all", &dolfin::MeshFunction<SCALAR>::set_all) \
       .def("where_equal", &dolfin::MeshFunction<SCALAR>::where_equal) \
       .def("array", [](dolfin::MeshFunction<SCALAR>& self) \

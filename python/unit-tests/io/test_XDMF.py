@@ -54,8 +54,8 @@ def invalid_config(encoding):
 def invalid_fe(fe_family, fe_degree):
     return (fe_family == "CG" and fe_degree == 0)
 
+
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
 def test_save_and_load_1d_mesh(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -74,8 +74,6 @@ def test_save_and_load_1d_mesh(tempdir, encoding):
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_and_load_2d_mesh(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -94,8 +92,6 @@ def test_save_and_load_2d_mesh(tempdir, encoding):
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_and_load_2d_quad_mesh(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -114,8 +110,6 @@ def test_save_and_load_2d_quad_mesh(tempdir, encoding):
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_and_load_3d_mesh(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -133,7 +127,6 @@ def test_save_and_load_3d_mesh(tempdir, encoding):
     assert mesh.size_global(dim) == mesh2.size_global(dim)
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_1d_scalar(tempdir, encoding):
     if invalid_config(encoding):
@@ -154,65 +147,6 @@ def test_save_1d_scalar(tempdir, encoding):
 @pytest.mark.parametrize("fe_family", fe_families)
 @pytest.mark.parametrize("mesh_tdim", mesh_tdims)
 @pytest.mark.parametrize("mesh_n", mesh_ns)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 @pytest.mark.xfail
 def test_save_and_checkpoint_scalar(tempdir, encoding, fe_degree, fe_family,
                                     mesh_tdim, mesh_n):
@@ -247,65 +181,6 @@ def test_save_and_checkpoint_scalar(tempdir, encoding, fe_degree, fe_family,
 @pytest.mark.parametrize("mesh_tdim", mesh_tdims)
 @pytest.mark.parametrize("mesh_n", mesh_ns)
 @pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_and_checkpoint_vector(tempdir, encoding, fe_degree, fe_family,
                                     mesh_tdim, mesh_n):
     if invalid_config(encoding):
@@ -339,7 +214,6 @@ def test_save_and_checkpoint_vector(tempdir, encoding, fe_degree, fe_family,
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
 @pytest.mark.xfail
 def test_save_and_checkpoint_timeseries(tempdir, encoding):
     if invalid_config(encoding):
@@ -377,7 +251,6 @@ def test_save_and_checkpoint_timeseries(tempdir, encoding):
     assert all([near(x, 0.0) for x in result.array()])
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_2d_scalar(tempdir, encoding):
     if invalid_config(encoding):
@@ -391,7 +264,7 @@ def test_save_2d_scalar(tempdir, encoding):
     with XDMFFile(mesh.mpi_comm(), filename) as file:
         file.write(u, encoding)
 
-@pytest.mark.xfail
+
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_3d_scalar(tempdir, encoding):
     if invalid_config(encoding):
@@ -407,8 +280,6 @@ def test_save_3d_scalar(tempdir, encoding):
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_2d_vector(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -424,8 +295,6 @@ def test_save_2d_vector(tempdir, encoding):
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_3d_vector(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -439,7 +308,6 @@ def test_save_3d_vector(tempdir, encoding):
         file.write(u, encoding)
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_3d_vector_series(tempdir, encoding):
     if invalid_config(encoding):
@@ -459,9 +327,8 @@ def test_save_3d_vector_series(tempdir, encoding):
         file.write(u, 0.3, encoding)
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_2d_tensor(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -474,9 +341,8 @@ def test_save_2d_tensor(tempdir, encoding):
         file.write(u, encoding)
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_3d_tensor(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -489,7 +355,6 @@ def test_save_3d_tensor(tempdir, encoding):
         file.write(u, encoding)
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_1d_mesh(tempdir, encoding):
     if invalid_config(encoding):
@@ -504,7 +369,6 @@ def test_save_1d_mesh(tempdir, encoding):
         file.write(mf, encoding)
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_2D_cell_function(tempdir, encoding, data_type):
@@ -533,7 +397,6 @@ def test_save_2D_cell_function(tempdir, encoding, data_type):
     assert diff == 0
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_3D_cell_function(tempdir, encoding, data_type):
@@ -562,7 +425,6 @@ def test_save_3D_cell_function(tempdir, encoding, data_type):
     assert diff == 0
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_2D_facet_function(tempdir, encoding, data_type):
@@ -596,7 +458,6 @@ def test_save_2D_facet_function(tempdir, encoding, data_type):
     assert diff == 0
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_3D_facet_function(tempdir, encoding, data_type):
@@ -630,7 +491,6 @@ def test_save_3D_facet_function(tempdir, encoding, data_type):
     assert diff == 0
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_3D_edge_function(tempdir, encoding, data_type):
@@ -650,7 +510,6 @@ def test_save_3D_edge_function(tempdir, encoding, data_type):
         file.write(mf, encoding)
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_2D_vertex_function(tempdir, encoding, data_type):
@@ -679,7 +538,6 @@ def test_save_2D_vertex_function(tempdir, encoding, data_type):
     assert diff == 0
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_save_3D_vertex_function(tempdir, encoding, data_type):
@@ -699,7 +557,6 @@ def test_save_3D_vertex_function(tempdir, encoding, data_type):
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
 @pytest.mark.xfail
 def test_save_points_2D(tempdir, encoding):
     if invalid_config(encoding):
@@ -722,7 +579,6 @@ def test_save_points_2D(tempdir, encoding):
 
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_points_3D(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -743,14 +599,6 @@ def test_save_points_3D(tempdir, encoding):
 
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_mesh_value_collection(tempdir, encoding, data_type):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -760,7 +608,7 @@ def test_save_mesh_value_collection(tempdir, encoding, data_type):
     mesh = UnitCubeMesh(4, 4, 4)
     tdim = mesh.topology().dim()
 
-    meshfn = CellFunction(dtype_str, mesh, 0)
+    meshfn = CellFunction(dtype_str, mesh, dtype(0))
     meshfn.rename("volume_marker", "Volume Markers")
     for c in cells(mesh):
         if c.midpoint().y() > 0.1:
@@ -773,7 +621,7 @@ def test_save_mesh_value_collection(tempdir, encoding, data_type):
         tag = "dim_%d_marker" % mvc_dim
         mvc.rename(tag, "BC")
         mesh.init(mvc_dim, tdim)
-        for e in cpp.entities(mesh, mvc_dim):
+        for e in entities(mesh, mvc_dim):
             if (e.midpoint().x() > 0.5):
                 mvc.set_value(e.index(), dtype(1))
 
@@ -791,8 +639,6 @@ def test_save_mesh_value_collection(tempdir, encoding, data_type):
 
 @skip_in_parallel
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_quadratic_mesh(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -821,7 +667,6 @@ def test_quadratic_mesh(tempdir, encoding):
     assert (c0 - c1).sum() == 0.0
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
 def test_append_and_load_mesh_functions(tempdir, encoding, data_type):
@@ -885,14 +730,6 @@ def test_append_and_load_mesh_functions(tempdir, encoding, data_type):
 
 @pytest.mark.parametrize("encoding", encodings)
 @pytest.mark.parametrize("data_type", data_types)
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_append_and_load_mesh_value_collections(tempdir, encoding, data_type):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")

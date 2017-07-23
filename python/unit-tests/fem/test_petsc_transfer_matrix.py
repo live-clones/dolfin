@@ -41,7 +41,7 @@ def test_scalar_p1():
     mat = PETScDMCollection.create_transfer_matrix(Vc, Vf)
     Vuc = Function(Vf)
     mat.mult(uc.vector(), Vuc.vector())
-    as_backend_type(Vuc.vector()).update_ghost_values()
+    Vuc.vector().update_ghost_values()
 
     diff = Function(Vf)
     diff.assign(Vuc - uf)
