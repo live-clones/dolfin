@@ -6,20 +6,13 @@ def la_index_dtype():
     return intc if cpp.common.sizeof_la_index() == 4 else int64
 
 
-def _unwrap_common_la(x):
-    y = x.instance()
-    return as_backend_type(y)
-
-
 def as_backend_type(x):
-    converters = [(cpp.la.has_type_vector, cpp.la.as_type_vector),
-                  (cpp.la.has_type_matrix, cpp.la.as_type_matrix),
-                  (cpp.la.has_type_eigen_vector, cpp.la.as_type_eigen_vector),
-                  (cpp.la.has_type_eigen_matrix, cpp.la.as_type_eigen_matrix)]
+    """Return Matrix and Vector backend instance. Not required for other
+    types as pybind11 automatically downcasts objects to the derived
+    type.
 
-    converters.extend([(cpp.la.has_type_petsc_vector, cpp.la.as_type_petsc_vector),
-                       (cpp.la.has_type_petsc_matrix, cpp.la.as_type_petsc_matrix)])
-
-    for type_check, converter in converters:
-        if type_check(x):
-            return converter(x)
+    """
+    if isinstance(x, cpp.la.Vector) or isinstance(x, cpp.la.Matrix):
+        return x.instance()
+    else:
+        return x

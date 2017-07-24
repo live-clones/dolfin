@@ -43,7 +43,7 @@ import dolfin.cpp as cpp
 # Local imports
 from dolfin.fem.form import Form
 # from dolfin.functions.multimeshfunction import *
-from dolfin.parameter import parameters
+from dolfin import parameter
 
 __all__ = ["assemble", "assemble_system", "assemble_multimesh",
            "SystemAssembler"]

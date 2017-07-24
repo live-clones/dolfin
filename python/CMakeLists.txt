@@ -11,9 +11,9 @@ add_subdirectory(pybind11)
 
 
 # Check for mpi4py
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(MPI4PY)
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+#  ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+#find_package(MPI4PY)
 
 # Create the binding library
 pybind11_add_module(cpp SHARED

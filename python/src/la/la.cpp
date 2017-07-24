@@ -55,10 +55,6 @@ namespace dolfin_wrappers
 {
   void la(py::module& m)
   {
-    // Note: Do not expose dolfin::LinearAlgebraObject as it has a
-    // number of templated member functions
-    py::class_<dolfin::LinearAlgebraObject, std::shared_ptr<dolfin::LinearAlgebraObject>, dolfin::Variable>(m, "LinearAlgebraObject");
-
     // dolfin::IndexMap
     py::class_<dolfin::IndexMap, std::shared_ptr<dolfin::IndexMap>> index_map(m, "IndexMap");
     index_map.def("size", &dolfin::IndexMap::size);
@@ -69,13 +65,21 @@ namespace dolfin_wrappers
       .value("UNOWNED", dolfin::IndexMap::MapSize::UNOWNED)
       .value("GLOBAL", dolfin::IndexMap::MapSize::GLOBAL);
 
+    // Note: Be careful using dolfin::LinearAlgebraObject as a base
+    // class - it can causes segfaults for matrix classes (presumably
+    // due to diamond inheritance)
+    py::class_<dolfin::LinearAlgebraObject, std::shared_ptr<dolfin::LinearAlgebraObject>,
+               dolfin::Variable>(m, "LinearAlgebraObject");
+
     // dolfin::GenericLinearOperator class
-    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
+    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>,
+               dolfin::LinearAlgebraObject>
       (m, "GenericLinearOperatqor", "DOLFIN GenericLinearOperator object")
       .def("mult", &dolfin::GenericLinearOperator::mult);
 
     // dolfin::GenericTensor class
-    py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>, dolfin::LinearAlgebraObject>
+    py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>,
+               dolfin::LinearAlgebraObject>
       (m, "GenericTensor", "DOLFIN GenericTensor object");
 
     // dolfin::GenericMatrix class
@@ -183,7 +187,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>, dolfin::GenericMatrix>
       (m, "Matrix", "DOLFIN Matrix object")
       .def(py::init<>())
-      .def(py::init<MPI_Comm>())
+      //.def(py::init<MPI_Comm>())
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
            &dolfin::Matrix::shared_instance);
 
@@ -264,7 +268,7 @@ namespace dolfin_wrappers
            })
       .def("apply", &dolfin::Vector::apply)
       .def("str", &dolfin::Vector::str)
-      .def("shared_instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Vector::*)())
+      .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Vector::*)())
            &dolfin::Vector::shared_instance);
 
     //----------------------------------------------------------------------------
@@ -379,6 +383,7 @@ namespace dolfin_wrappers
                                                            const dolfin::GenericVector&))
            &dolfin::KrylovSolver::solve);
 
+/*
     // Cast to backend type
     m.def("has_type_matrix", [](const dolfin::LinearAlgebraObject& x)
           { return dolfin::has_type<dolfin::Matrix>(x); });
@@ -421,6 +426,7 @@ namespace dolfin_wrappers
     m.def("as_type_tpetra_vector", [](std::shared_ptr<dolfin::LinearAlgebraObject> x)
           { return dolfin::as_type<dolfin::TpetraVector>(x); });
 #endif
+*/
 
     m.def("has_linear_algebra_backend", &dolfin::has_linear_algebra_backend);
     m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);

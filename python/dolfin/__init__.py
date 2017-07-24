@@ -83,9 +83,7 @@ from .la import as_backend_type
 from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
-#from .parameter
-#from .parameter.parameters import parameters
-#from .parameter.parameters import Parameters, parameters
+from . import parameter
 
 # ufl
 from ufl import (FiniteElement, VectorElement, MixedElement,
