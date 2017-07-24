@@ -379,28 +379,17 @@ class TestVectorForAnyBackend:
                     wrong_assignment(v0, v1)
 
 
-    # Test the access of the raw data through pointers
-    # This is only available for Eigen backend
-    @pytest.mark.xfail
+    # Test the access of data as NumPy array (shared data). This is
+    # only available for Eigen backend
     def test_vector_data(self, data_backend):
         # Test for ordinary Vector
         v = Vector(MPI.comm_world, 301)
         v = as_backend_type(v)
         array = v.array()
-        data = v.data()
-        assert (data == array).all()
 
-        # Test none writeable of a shallow copy of the data
-        data = v.data(False)
-        def write_data(data):
-            data[0] = 1
+        assert array.flags.owndata == False
         with pytest.raises(Exception):
-            write_data(data)
-
-        # Test for as_backend_typeed Vector
-        v = as_backend_type(v)
-        data = v.data()
-        assert (data==array).all()
+            array.resize([10])
 
 
     # xfail on TypeError
@@ -440,8 +429,10 @@ class TestVectorForAnyBackend:
 
 
     def xtest_vector_type_priority_with_numpy(self, any_backend, operand):
-        """Test that DOLFIN return types are prefered over
-        NumPy types for binary operations on NumPy objects"""
+        """Test that DOLFIN return types are prefered over NumPy types for
+        binary operations on NumPy objects
+
+        """
 
         def _test_binary_ops(v, operand):
             assert isinstance(v+operand, GenericVector)

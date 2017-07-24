@@ -181,7 +181,7 @@ namespace dolfin_wrappers
 
     // dolfin::Matrix class
     py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>, dolfin::GenericMatrix>
-      (m, "Matrix", "DOLFIN Matrix object", py::multiple_inheritance())
+      (m, "Matrix", "DOLFIN Matrix object")
       .def(py::init<>())
       .def(py::init<MPI_Comm>())
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())

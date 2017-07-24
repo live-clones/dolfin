@@ -31,6 +31,7 @@ namespace dolfin_wrappers
   void parameter(py::module& m)
   {
 
+    // dolfin::Parameters
     py::class_<dolfin::Parameters, std::shared_ptr<dolfin::Parameters>>
       (m, "Parameters")
       .def(py::init<>())
@@ -65,18 +66,21 @@ namespace dolfin_wrappers
              *param = value;
            })
       .def("copy", [](dolfin::Parameters& self) { return dolfin::Parameters(self); })
-      .def("assign", [](dolfin::Parameters& self, dolfin::Parameters& other) { self = other;}) ;
 
+      .def("assign", [](dolfin::Parameters& self, dolfin::Parameters& other) { self = other;});
 
+    // dolfin::Parameter
     py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>
       (m, "Parameter");
 
+    // dolfin::IntParameter
     py::class_<dolfin::IntParameter, std::shared_ptr<dolfin::IntParameter>,
       dolfin::Parameter>
       (m, "IntParameter")
       .def("value", [](dolfin::IntParameter& self) { return int(self); })
       .def("__str__", &dolfin::IntParameter::value_str);
 
+    // dolfin::IntParameter
     py::class_<dolfin::DoubleParameter, std::shared_ptr<dolfin::DoubleParameter>,
       dolfin::Parameter>
       (m, "DoubleParameter")
@@ -98,7 +102,9 @@ namespace dolfin_wrappers
     py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,
       dolfin::Parameters> (m, "GlobalParameters");
 
-    m.attr("parameters") = dolfin::parameters;
+    // The global parameters (return a reference because there should
+    // be only one instance)
+    m.attr("parameters") = &dolfin::parameters;
 
   }
 

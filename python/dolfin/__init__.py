@@ -64,6 +64,8 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
 from .cpp.nls import NonlinearProblem, NewtonSolver
 from .cpp.refinement import refine
 
+from .cpp.parameter import Parameters, parameters
+
 # python modules
 from .common import timer
 from .common.timer import Timer, timed
@@ -81,7 +83,9 @@ from .la import as_backend_type
 from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
-from .parameter.parameters import Parameters, parameters
+#from .parameter
+#from .parameter.parameters import parameters
+#from .parameter.parameters import Parameters, parameters
 
 # ufl
 from ufl import (FiniteElement, VectorElement, MixedElement,
