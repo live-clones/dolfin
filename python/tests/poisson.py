@@ -39,6 +39,8 @@ assembler = Assembler()
 A = Matrix()
 assembler.assemble(A, Form(a))
 
+exit(0)
+
 b = Vector()
 myform = Form(L)
 assembler.assemble(b, myform)
