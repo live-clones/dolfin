@@ -26,12 +26,16 @@ del sys
 #del sys
 
 # cpp modules
-from .cpp.adaptivity import TimeSeries
-from .cpp.ale import ALE
 from .cpp.common import (Variable, has_debug, has_hdf5,
                          has_hdf5_parallel, has_mpi, has_petsc,
                          has_slepc, git_commit_hash, DOLFIN_EPS,
                          DOLFIN_PI, TimingClear, TimingType, timing)
+
+if has_hdf5():
+    from .cpp.adaptivity import TimeSeries
+    from .cpp.io import HDF5File
+
+from .cpp.ale import ALE
 from .cpp import MPI
 from .cpp.function import Expression, Constant, interpolate
 from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coordinates,
@@ -41,7 +45,7 @@ from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, interse
 from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitDiscMesh, UnitQuadMesh, UnitHexMesh,
                              UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh)
 from .cpp.graph import GraphBuilder
-from .cpp.io import File, XDMFFile, VTKFile, HDF5File
+from .cpp.io import File, XDMFFile, VTKFile
 from .cpp.la import (has_linear_algebra_backend,
                      linear_algebra_backends, has_krylov_solver_method,
                      has_krylov_solver_preconditioner)
