@@ -27,6 +27,7 @@
 #include <utility>
 #include <vector>
 #include "dolfin/common/types.h"
+#include "dolfin/geometry/GeometricContact.h"
 
 namespace dolfin
 {
@@ -59,6 +60,22 @@ namespace dolfin
     static void
       build_multimesh_sparsity_pattern(SparsityPattern& sparsity_pattern,
                                        const MultiMeshForm& form);
+
+
+    /// Build sparsity pattern for assembly including entries for contact
+    /// boundary
+    static void
+    build_contact_sparsity_pattern(SparsityPattern& sparsity_pattern,
+                                   const Mesh& mesh,
+                                   const std::vector<const GenericDofMap*> dofmaps,
+                                   const GeometricContact& gc,
+                                   bool cells,
+                                   bool interior_facets,
+                                   bool exterior_facets,
+                                   bool vertices,
+                                   bool diagonal,
+                                   bool init=true,
+                                   bool finalize=true);
 
   private:
 
