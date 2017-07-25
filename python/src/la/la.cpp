@@ -71,15 +71,14 @@ namespace dolfin_wrappers
                dolfin::Variable>(m, "LinearAlgebraObject");
 
     // dolfin::GenericLinearOperator class
-    //py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>,
-    //           dolfin::LinearAlgebraObject>
-    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>>
+    py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>,
+               dolfin::LinearAlgebraObject>
       (m, "GenericLinearOperatqor", "DOLFIN GenericLinearOperator object")
       .def("mult", &dolfin::GenericLinearOperator::mult);
 
     // dolfin::GenericTensor class
     py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>,
-                dolfin::LinearAlgebraObject>
+               dolfin::LinearAlgebraObject>
       (m, "GenericTensor", "DOLFIN GenericTensor object");
 
     // dolfin::GenericMatrix class
