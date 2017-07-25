@@ -66,7 +66,10 @@ from .cpp.refinement import refine
 
 from .cpp.parameter import Parameters, parameters
 
-# python modules
+# Python modules
+from . import mesh
+from . import parameter
+
 from .common import timer
 from .common.timer import Timer, timed
 from .fem.assembling import assemble, assemble_system
@@ -83,7 +86,7 @@ from .la import as_backend_type
 from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
-from . import parameter
+
 
 # ufl
 from ufl import (FiniteElement, VectorElement, MixedElement,

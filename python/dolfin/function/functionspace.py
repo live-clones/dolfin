@@ -4,36 +4,6 @@ import types
 import dolfin.cpp as cpp
 
 
-def _add_ufl_mesh_data(mesh):
-    """Add UFL domain data to DOLFIN mesh"""
-
-    def ufl_cell(self):
-        return ufl.Cell(self.cell_name(),
-                        geometric_dimension=self.geometry().dim())
-    mesh.ufl_cell = types.MethodType(ufl_cell, mesh)
-
-    def ufl_coordinate_element(self):
-        """Return the finite element of the coordinate vector field of this
-            domain.
-
-        """
-        cell = self.ufl_cell()
-        degree = self.geometry().degree()
-        return ufl.VectorElement("Lagrange", cell, degree,
-                                 dim=cell.geometric_dimension())
-    mesh.ufl_coordinate_element = types.MethodType(ufl_coordinate_element, mesh)
-
-    def ufl_domain(self):
-        """Returns the ufl domain corresponding to the mesh."""
-        # Cache object to avoid recreating it a lot
-        if not hasattr(self, "_ufl_domain"):
-            self._ufl_domain = ufl.Mesh(self.ufl_coordinate_element(),
-                                        ufl_id=self.ufl_id(),
-                                        cargo=self)
-        return self._ufl_domain
-    mesh.ufl_domain = types.MethodType(ufl_domain, mesh)
-
-
 class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
 
     def __init__(self,  *args, **kwargs):
@@ -56,8 +26,6 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
                 self._init_convenience(*args, **kwargs)
 
     def _init_from_ufl(self, mesh, element, constrained_domain=None):
-
-        _add_ufl_mesh_data(mesh)
 
         # Initialize the ufl.FunctionSpace first to check for good
         # meaning
@@ -119,8 +87,6 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
     def _init_convenience(self, mesh, family, degree, form_degree=None,
                           constrained_domain=None, restriction=None):
 
-        _add_ufl_mesh_data(mesh)
-
         # Create UFL element
         element = ufl.FiniteElement(family, mesh.ufl_cell(), degree,
                                     form_degree=form_degree)
@@ -157,8 +123,6 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
 def VectorFunctionSpace(mesh, family, degree, dim=None, form_degree=None,
                         constrained_domain=None, restriction=None):
     """Create finite element function space."""
-
-    _add_ufl_mesh_data(mesh)
 
     # Create UFL element
     element = ufl.VectorElement(family, mesh.ufl_cell(), degree,

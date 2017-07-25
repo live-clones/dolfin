@@ -120,26 +120,6 @@ namespace dolfin_wrappers
       .def("translate", &dolfin::Mesh::translate)
       .def("type", (const dolfin::CellType& (dolfin::Mesh::*)() const) &dolfin::Mesh::type,
            py::return_value_policy::reference)
-      // UFL related
-      .def("ufl_cell", [](const dolfin::Mesh& self)
-           {
-             auto ufl_util = py::module::import("dolfin.mesh.ufl_util");
-             auto f = ufl_util.attr("ufl_cell");
-             return f(py::cast(&self));
-           })
-      .def("ufl_coordinate_element", [](const dolfin::Mesh& self)
-           {
-             auto ufl_util = py::module::import("dolfin.mesh.ufl_util");
-             auto f = ufl_util.attr("ufl_coordinate_element");
-             return f(py::cast(&self));
-
-           })
-            .def("ufl_domain", [](const dolfin::Mesh& self)
-           {
-             auto ufl_util = py::module::import("dolfin.mesh.ufl_util");
-             auto f = ufl_util.attr("ufl_domain");
-             return f(py::cast(&self));
-           })
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
            { return dolfin::CellType::type2string(self.type().cell_type()); }
