@@ -22,9 +22,9 @@
 #include <mpi.h>
 #include <pybind11/pybind11.h>
 
-#ifdef HAS_MPI4PY
-#include <mpi4py/mpi4py.h>
-#endif
+//#ifdef HAS_MPI4PY
+//#include <mpi4py/mpi4py.h>
+//#endif
 
 // Tools for managing MPI communicators
 
@@ -34,10 +34,10 @@ namespace dolfin_wrappers
 {
   // Helper struct for transforming unwrapped DOLFIN MPI communicators
   // in mpi4py communicators
-  struct mpi_communicator
-  {
-    MPI_Comm comm;
-  };
+  //struct mpi_communicator
+  //{
+  //  MPI_Comm comm;
+  //};
 }
 
 namespace pybind11
@@ -88,53 +88,27 @@ namespace pybind11
     public:
       PYBIND11_TYPE_CASTER(MPI_Comm, _("ompi_communicator_t"));
 
-      // Pass communicator from Python to C++. If communicator as a
-      // mpi4py communicator, it is unwrapped
+      // Pass communicator from Python to C++
       bool load(handle src, bool)
       {
-        //std::cout << "**ompi load (mpi4py)" << std::endl;
         PyObject* obj = src.ptr();
-        #ifdef HAS_MPI4PY
-        if (PyObject_TypeCheck(obj, &PyMPIComm_Type))
-        {
-          //std::cout << "  Working with mpi4py object" << std::endl;
-          const MPI_Comm *comm_p = PyMPIComm_Get(obj);
-          value = *comm_p;
-          if (PyErr_Occurred())
-            return false;
-        }
-        else
-        {
-          //std::cout << "**ompi load (plain)" << std::endl;
-          void* v = PyLong_AsVoidPtr(obj);
-          value = reinterpret_cast<MPI_Comm>(v);
-          if (PyErr_Occurred())
-            return false;
-        }
-        #else
-        //std::cout << "  Shouldn't be here" << std::endl;
-        // mpi4py is not available, cast int to pointer
         void* v = PyLong_AsVoidPtr(obj);
         value = reinterpret_cast<MPI_Comm>(v);
         if (PyErr_Occurred())
           return false;
-        #endif
 
         return true;
       }
 
       // Cast from C++ to Python (cast to pointer)
-      static handle cast(const MPI_Comm &src, return_value_policy, handle)
+      static handle cast(MPI_Comm src, py::return_value_policy policy, handle parent)
       {
-        //std::cout << "!!!!ompi cast" << std::endl;
-        return py::cast(reinterpret_cast<std::uintptr_t>(src));
+        // Return a py::handle (rather than a py::object)
+        return py::cast(reinterpret_cast<std::uintptr_t>(src)).release();
       }
 
       operator MPI_Comm()
-      {
-        //std::cout << "**ompi op" << std::endl;
-        return value;
-      }
+      { return value; }
     };
 //     #else
 

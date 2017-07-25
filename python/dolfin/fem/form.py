@@ -5,15 +5,16 @@ import ffc
 class Form(cpp.fem.Form):
     def __init__(self, form, **kwargs):
 
+        # Check form argument
+        if not isinstance(form, ufl.Form):
+            raise RuntimeError("Expected a ufl.Form.")
+
         form_compiler_parameters = kwargs.pop("form_compiler_parameters", None)
 
         ufc_form = ffc.jit(form, form_compiler_parameters)
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
-
         function_spaces = [func.function_space() for func
                            in form.arguments()]
-
-        # Initialize base class
         cpp.fem.Form.__init__(self, ufc_form, function_spaces)
 
         original_coefficients = form.coefficients()

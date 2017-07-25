@@ -73,7 +73,7 @@ namespace dolfin_wrappers
     // dolfin::GenericLinearOperator class
     py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>,
                dolfin::LinearAlgebraObject>
-      (m, "GenericLinearOperatqor", "DOLFIN GenericLinearOperator object")
+      (m, "GenericLinearOperator", "DOLFIN GenericLinearOperator object")
       .def("mult", &dolfin::GenericLinearOperator::mult);
 
     // dolfin::GenericTensor class
@@ -184,7 +184,9 @@ namespace dolfin_wrappers
     py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>, dolfin::GenericMatrix>
       (m, "Matrix", "DOLFIN Matrix object")
       .def(py::init<>())
-      .def(py::init<MPI_Comm>())
+      .def(py::init<const dolfin::Matrix&>())  // Remove? (use copy instead)
+      .def(py::init<const dolfin::GenericMatrix&>())  // Remove? (use copy instead)
+      .def(py::init<MPI_Comm>()) // This comes last of constructors so pybind11 attempts it lasts (avoid OpenMPI comm casting problems)
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
            &dolfin::Matrix::shared_instance);
 
@@ -358,7 +360,7 @@ namespace dolfin_wrappers
     // dolfin::LUSolver class
     py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>>
     (m, "LUSolver", "DOLFIN LUSolver object")
-    .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>,
+      .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>,
          std::string>(),
          py::arg("comm"), py::arg("A"), py::arg("method") = "default")
     .def("solve", (std::size_t (dolfin::LUSolver::*)(dolfin::GenericVector&,

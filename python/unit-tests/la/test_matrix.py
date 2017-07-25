@@ -91,7 +91,7 @@ class TestMatrixForAnyBackend:
         return A, B
 
     @pytest.mark.xfail
-    def xtest_basic_la_operations(self, use_backend, any_backend):
+    def test_basic_la_operations(self, use_backend, any_backend):
         # Hack to make old tests work in new framework. The original
         # setup was a bit exoteric...
         # TODO: Removing use of self in this class will make it
@@ -161,7 +161,7 @@ class TestMatrixForAnyBackend:
 
     @skip_in_parallel
     @pytest.mark.xfail
-    def xtest_numpy_array(self, use_backend, any_backend):
+    def test_numpy_array(self, use_backend, any_backend):
         self.backend, self.sub_backend = any_backend
 
         from numpy import ndarray, array, ones, sum
@@ -192,23 +192,20 @@ class TestMatrixForAnyBackend:
             except ImportError:
                 pass
 
-    @pytest.mark.xfail
-    def xtest_create_empty_matrix(self, any_backend):
+    def test_create_empty_matrix(self, any_backend):
         A = Matrix()
         assert A.size(0) == 0
         assert A.size(1) == 0
         info(A)
         info(A, True)
 
-    @pytest.mark.xfail
-    def xtest_copy_empty_matrix(self, any_backend):
+    def test_copy_empty_matrix(self, any_backend):
         A = Matrix()
         B = Matrix(A)
         assert B.size(0) == 0
         assert B.size(1) == 0
 
-    @pytest.mark.xfail
-    def xtest_copy_matrix(self, any_backend):
+    def test_copy_matrix(self, any_backend):
         A0, B0 = self.assemble_matrices()
 
         A1 = Matrix(A0)
@@ -222,7 +219,7 @@ class TestMatrixForAnyBackend:
         assert round(B0.norm("frobenius") - B1.norm("frobenius"), 7) == 0
 
     @pytest.mark.xfail
-    def xtest_ident_zeros(self, use_backend, any_backend):
+    def test_ident_zeros(self, use_backend, any_backend):
         self.backend, self.sub_backend = any_backend
 
         # Check that PETScMatrix::ident_zeros() rethrows PETSc error
@@ -274,7 +271,7 @@ class TestMatrixForAnyBackend:
             assert round(sum(abs(row)) - 1.0, 7) == 0
 
     @pytest.mark.xfail
-    def xtest_setting_getting_diagonal(self, use_backend, any_backend):
+    def test_setting_getting_diagonal(self, use_backend, any_backend):
         self.backend, self.sub_backend = any_backend
 
         mesh = UnitSquareMesh(21, 23)
@@ -330,7 +327,7 @@ class TestMatrixForAnyBackend:
     # Test the access of the raw data through pointers
     # This is only available for the Eigen backend
     @pytest.mark.xfail
-    def xtest_matrix_data(self, use_backend, data_backend):
+    def test_matrix_data(self, use_backend, data_backend):
         """ Test for ordinary Matrix"""
         self.backend, self.sub_backend = data_backend
 
@@ -364,15 +361,13 @@ class TestMatrixForAnyBackend:
             for k in range(rows[row], rows[row+1]):
                 assert array[row,cols[k]] == values[k]
 
-
-    #@pytest.mark.xfail
     def test_matrix_nnz(self, any_backend):
         A, B = self.assemble_matrices()
-        #assert A.nnz() == 2992
-        #assert B.nnz() == 9398
+        assert A.nnz() == 2992
+        assert B.nnz() == 9398
 
-        #A, B = self.assemble_matrices(keep_diagonal=True)
-        #assert A.nnz() == 4589
+        A, B = self.assemble_matrices(keep_diagonal=True)
+        assert A.nnz() == 4589
         # NOTE: Following should never be tested because diagonal is not
         #       invariant w.r.t. different row and column dof reordering!
         #assert B.nnz() == ??

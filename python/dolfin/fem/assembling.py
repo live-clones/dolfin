@@ -43,20 +43,20 @@ import dolfin.cpp as cpp
 # Local imports
 from dolfin.fem.form import Form
 # from dolfin.functions.multimeshfunction import *
-from dolfin import parameter
 
 __all__ = ["assemble", "assemble_system", "assemble_multimesh",
            "SystemAssembler"]
 
 
-def _create_dolfin_form(form,
-                        form_compiler_parameters=None,
+def _create_dolfin_form(form, form_compiler_parameters=None,
                         function_spaces=None):
     # First check if we got a cpp.Form
     if isinstance(form, cpp.fem.Form):
+
         # Check that jit compilation has already happened
         if not hasattr(form, "_compiled_form"):
             raise TypeError("Expected a dolfin form to have a _compiled_form attribute.")
+
         # Warn that we don't use the parameters if we get any
         if form_compiler_parameters is not None:
             cpp.warning("Ignoring form_compiler_parameters when passed a dolfin Form!")
@@ -189,19 +189,25 @@ def assemble(form,
 
     """
 
-    # Create dolfin Form object referencing all data needed by
-    # assembler
-    dolfin_form = _create_dolfin_form(form, form_compiler_parameters)
+    # Create dolfin Form object
+    if isinstance(form, cpp.fem.Form):
+        dolfin_form = form
+    else:
+        dolfin_form = _create_dolfin_form(form, form_compiler_parameters)
 
     # Create tensor
     comm = dolfin_form.mesh().mpi_comm()
     tensor = _create_tensor(comm, form, dolfin_form.rank(), backend, tensor)
 
-    # Call C++ assemble function
+    # Create C++ assembler
     assembler = cpp.fem.Assembler()
+
+    # Set assembler options
     assembler.add_values = add_values
     assembler.finalize_tensor = finalize_tensor
     assembler.keep_diagonal = keep_diagonal
+
+    # Call C++ assemble
     assembler.assemble(tensor, dolfin_form)
 
     # Convert to float for scalars
@@ -390,7 +396,7 @@ def _wrap_in_list(obj, name, types=type):
 
 
 def _create_tensor(mpi_comm, form, rank, backend, tensor):
-    "Create tensor for form"
+    """Create tensor for form"""
 
     # Check if tensor is supplied by user
     if tensor is not None:
