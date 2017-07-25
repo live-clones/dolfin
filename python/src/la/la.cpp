@@ -59,15 +59,14 @@ namespace dolfin_wrappers
     py::class_<dolfin::IndexMap, std::shared_ptr<dolfin::IndexMap>> index_map(m, "IndexMap");
     index_map.def("size", &dolfin::IndexMap::size);
 
+    // dolfin::IndexMap enums
     py::enum_<dolfin::IndexMap::MapSize>(index_map, "MapSize")
       .value("ALL", dolfin::IndexMap::MapSize::ALL)
       .value("OWNED", dolfin::IndexMap::MapSize::OWNED)
       .value("UNOWNED", dolfin::IndexMap::MapSize::UNOWNED)
       .value("GLOBAL", dolfin::IndexMap::MapSize::GLOBAL);
 
-    // Note: Be careful using dolfin::LinearAlgebraObject as a base
-    // class - it can causes segfaults for matrix classes (presumably
-    // due to diamond inheritance)
+    // dolfin::LinearAlgebraObject
     py::class_<dolfin::LinearAlgebraObject, std::shared_ptr<dolfin::LinearAlgebraObject>,
                dolfin::Variable>(m, "LinearAlgebraObject");
 
@@ -79,7 +78,7 @@ namespace dolfin_wrappers
 
     // dolfin::GenericTensor class
     py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>,
-               dolfin::LinearAlgebraObject>
+                dolfin::LinearAlgebraObject>
       (m, "GenericTensor", "DOLFIN GenericTensor object");
 
     // dolfin::GenericMatrix class
@@ -163,8 +162,6 @@ namespace dolfin_wrappers
            })
       .def("add_local", [](dolfin::GenericVector& self, py::array_t<double> values)
            {
-             std::cout << "Testing shape: " << values.ndim() << ", " << values.size() << std::endl;
-             std::cout << values.shape(0) << std::endl;
              assert(values.ndim() == 1);
              dolfin::Array<double> _values(values.size(), values.mutable_data());
              self.add_local(_values);
@@ -187,9 +184,9 @@ namespace dolfin_wrappers
     py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>, dolfin::GenericMatrix>
       (m, "Matrix", "DOLFIN Matrix object")
       .def(py::init<>())
-      //.def(py::init<MPI_Comm>())
-      .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
-           &dolfin::Matrix::shared_instance);
+      .def(py::init<MPI_Comm>());
+      //.def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
+      //     &dolfin::Matrix::shared_instance);
 
     // dolfin::Vector class
     py::class_<dolfin::Vector, std::shared_ptr<dolfin::Vector>, dolfin::GenericVector>

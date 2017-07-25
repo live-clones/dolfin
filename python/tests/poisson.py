@@ -3,6 +3,10 @@ from dolfin import *
 if cpp.common.has_petsc():
     parameters['linear_algebra_backend'] = 'PETSc'
 
+print("test 1")
+A = Matrix(mpi_comm_world())
+print("test 2")
+
 # Create mesh and refine
 mesh = UnitSquareMesh(12, 12)
 mesh = refine(mesh)
