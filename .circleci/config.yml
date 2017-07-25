@@ -10,8 +10,20 @@ jobs:
           command: git lfs clone https://bitbucket.org/"${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}".git .
       - checkout
       - run:
-          name: Build pybind11
-          command: source /usr/local/share/dolfin/dolfin.conf && cd python && git clone https://github.com/pybind/pybind11.git && python3 setup.py build
+          name: Checkout pybind11
+          command: |
+            cd python
+            git clone https://github.com/pybind/pybind11.git
+            git fetch origin pull/960/head:registered-type-fixes
+            git checkout registered-type-fixes
       - run:
-          name: Test pybind11
-          command: export PYTHONPATH=/usr/local/lib/python3.5/site-packages:$PWD/python/build/lib.linux-x86_64-3.5 && python3 -m pytest python/unit-tests
+          name: Build Python interface
+          command: |
+            source /usr/local/share/dolfin/dolfin.conf
+            cd python
+            python3 setup.py build
+      - run:
+          name: Run tests
+          command: |
+            export PYTHONPATH=/usr/local/lib/python3.5/site-packages:$PWD/python/build/lib.linux-x86_64-3.5
+            python3 -m pytest python/unit-tests
