@@ -86,9 +86,9 @@ class TestMatrixForAnyBackend:
         A = assemble(a, backend=backend, keep_diagonal=keep_diagonal)
 
         # Build non-square matrix
-        #B = assemble(b, backend=backend, keep_diagonal=keep_diagonal)
+        B = assemble(b, backend=backend, keep_diagonal=keep_diagonal)
 
-        #return A, B
+        return A, B
 
     @pytest.mark.xfail
     def xtest_basic_la_operations(self, use_backend, any_backend):
