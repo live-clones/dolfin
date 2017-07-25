@@ -31,7 +31,8 @@ namespace dolfin_wrappers
 {
   void adaptivity(py::module& m)
   {
-     // Wrap TimesSeries
+#ifdef HAS_HDF5
+    // Wrap TimesSeries
     py::class_<dolfin::TimeSeries, std::shared_ptr<dolfin::TimeSeries>>(m, "TimeSeries")
       .def(py::init<std::string>())
       .def(py::init<MPI_Comm, std::string>())
@@ -42,6 +43,7 @@ namespace dolfin_wrappers
       .def("retrieve", (void (dolfin::TimeSeries::*)(dolfin::Mesh&, double) const) &dolfin::TimeSeries::retrieve)
       .def("vector_times", &dolfin::TimeSeries::vector_times)
       .def("mesh_times", &dolfin::TimeSeries::mesh_times);
+#endif
   }
 
 }

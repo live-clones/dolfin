@@ -85,6 +85,7 @@ namespace dolfin_wrappers
       .def("write", [](dolfin::VTKFile& instance, const dolfin::Mesh& mesh)
            { instance << mesh; });
 
+#ifdef HAS_HDF5
     // HDF5
     py::class_<dolfin::HDF5Attribute, std::shared_ptr<dolfin::HDF5Attribute>>(m, "HDF5Attribute")
       //.def("__getitem__", [](const dolfin::HDF5Attribute& instance, std::string name){ return instance[name]; })
@@ -188,6 +189,8 @@ namespace dolfin_wrappers
       .def("read", (void (dolfin::HDF5File::*)(dolfin::GenericVector&, std::string, bool) const)
            &dolfin::HDF5File::read, py::arg("vector"), py::arg("name"), py::arg("use_partitioning"))
       .def("attributes", &dolfin::HDF5File::attributes);
+
+#endif
 
     // dolfin::XDMFFile
     py::class_<dolfin::XDMFFile, std::shared_ptr<dolfin::XDMFFile>> xdmf_file(m, "XDMFFile");
