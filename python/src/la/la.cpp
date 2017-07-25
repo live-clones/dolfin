@@ -185,8 +185,8 @@ namespace dolfin_wrappers
       (m, "Matrix", "DOLFIN Matrix object")
       .def(py::init<>())
       .def(py::init<MPI_Comm>());
-      //.def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
-      //     &dolfin::Matrix::shared_instance);
+      .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
+           &dolfin::Matrix::shared_instance);
 
     // dolfin::Vector class
     py::class_<dolfin::Vector, std::shared_ptr<dolfin::Vector>, dolfin::GenericVector>
@@ -379,51 +379,6 @@ namespace dolfin_wrappers
       .def("solve", (std::size_t (dolfin::KrylovSolver::*)(dolfin::GenericVector&,
                                                            const dolfin::GenericVector&))
            &dolfin::KrylovSolver::solve);
-
-/*
-    // Cast to backend type
-    m.def("has_type_matrix", [](const dolfin::LinearAlgebraObject& x)
-          { return dolfin::has_type<dolfin::Matrix>(x); });
-    m.def("as_type_matrix", [](std::shared_ptr<dolfin::LinearAlgebraObject> x)
-          { return dolfin::as_type<dolfin::Matrix>(x); });
-
-    m.def("has_type_vector", [](const dolfin::LinearAlgebraObject& x)
-          { return dolfin::has_type<dolfin::Vector>(x); });
-    m.def("as_type_vector", [](std::shared_ptr<dolfin::LinearAlgebraObject> x)
-          { return dolfin::as_type<dolfin::Vector>(x); });
-
-    m.def("has_type_eigen_matrix", [](const dolfin::LinearAlgebraObject& x)
-          { return dolfin::has_type<dolfin::EigenMatrix>(x); });
-    m.def("as_type_eigen_matrix", [](std::shared_ptr<dolfin::LinearAlgebraObject> x)
-          { return dolfin::as_type<dolfin::EigenMatrix>(x); });
-
-    m.def("has_type_eigen_vector", [](const dolfin::LinearAlgebraObject& x)
-          { return dolfin::has_type<dolfin::EigenVector>(x); });
-    m.def("as_type_eigen_vector", [](std::shared_ptr<dolfin::LinearAlgebraObject> x)
-          { return dolfin::as_type<dolfin::EigenVector>(x); });
-#ifdef HAS_PETSC
-    m.def("has_type_petsc_matrix", [](const dolfin::LinearAlgebraObject& x)
-          { return dolfin::has_type<dolfin::PETScMatrix>(x); });
-    m.def("as_type_petsc_matrix", [](std::shared_ptr<dolfin::LinearAlgebraObject> x)
-          { return dolfin::as_type<dolfin::PETScMatrix>(x); });
-
-    m.def("has_type_petsc_vector", [](const dolfin::LinearAlgebraObject& x)
-          { return dolfin::has_type<dolfin::PETScVector>(x); });
-    m.def("as_type_petsc_vector", [](std::shared_ptr<dolfin::LinearAlgebraObject> x)
-          { return dolfin::as_type<dolfin::PETScVector>(x); });
-#endif
-#ifdef HAS_TRILINOS
-    m.def("has_type_tpetra_matrix", [](const dolfin::LinearAlgebraObject& x)
-          { return dolfin::has_type<dolfin::TpetraMatrix>(x); });
-    m.def("as_type_tpetra_matrix", [](std::shared_ptr<dolfin::LinearAlgebraObject> x)
-          { return dolfin::as_type<dolfin::TpetraMatrix>(x); });
-
-    m.def("has_type_tpetra_vector", [](const dolfin::LinearAlgebraObject& x)
-          { return dolfin::has_type<dolfin::TpetraVector>(x); });
-    m.def("as_type_tpetra_vector", [](std::shared_ptr<dolfin::LinearAlgebraObject> x)
-          { return dolfin::as_type<dolfin::TpetraVector>(x); });
-#endif
-*/
 
     m.def("has_linear_algebra_backend", &dolfin::has_linear_algebra_backend);
     m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
