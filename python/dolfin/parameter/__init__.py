@@ -8,7 +8,7 @@ def __getitem__(self, key):
         return p.value()
     elif self.has_parameter_set(key):
         p = self._get_parameter_set(key)
-        np = Parameters(p)
+        np = cpp.parameter.Parameters(p)
         return np
     else:
         raise RuntimeError("invalid parameter")
