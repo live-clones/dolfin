@@ -2,6 +2,7 @@
 import types
 from six import string_types
 
+import ufl
 import dolfin.cpp as cpp
 from dolfin.mesh.subdomain import CompiledSubDomain
 
@@ -15,19 +16,24 @@ class DirichletBC(cpp.fem.DirichletBC):
 
         if not isinstance(args[0], cpp.function.FunctionSpace):
             raise RuntimeError("First argument must be of type FunctionSpace")
-        function_space = args[0]
+
+        V = args[0]
 
         if isinstance(args[1], float) or isinstance(args[1], int):
-            function = cpp.function.Constant(float(args[1]))
+             u = cpp.function.Constant(float(args[1]))
+        elif isinstance(args[1], ufl.Coefficient):
+            # Extract cpp object
+             u = args[1].cpp_object()
+        elif isinstance(args[1], cpp.function.GenericFunction):
+             u = args[1]
         elif not isinstance(args[1], cpp.function.GenericFunction):
             raise RuntimeError("Second argument must be of type GenericFunction")
-        function = args[1]
 
         if isinstance(args[2], cpp.mesh.SubDomain):
-            subdomain = args[2]
+             subdomain = args[2]
         elif isinstance(args[2], string_types):
-            subdomain = CompiledSubDomain(args[2])
+             subdomain = CompiledSubDomain(args[2])
         else:
             raise RuntimeError("Third argument must be of type SubDomain or string")
 
-        super().__init__(function_space, function, subdomain)
+        super().__init__(V, u, subdomain)

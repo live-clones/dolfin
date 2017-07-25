@@ -24,7 +24,7 @@ w = Function(V)
 # boundary = CompiledSubDomain("x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
 
 u0 = Constant(0.0)
-bc = DirichletBC(V, u0.cpp_object(), "x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
+bc = DirichletBC(V, u0, "x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS")
 
 u = TrialFunction(V)
 v = TestFunction(V)
@@ -49,11 +49,7 @@ solver = KrylovSolver(A)
 solver.solve(w.vector(), b)
 
 file = XDMFFile("poisson.xdmf")
-
-print("************")
 if cpp.common.has_hdf5():
-    print("0: ************")
     file.write(w, XDMFFile.Encoding.HDF5)
-    print("1: ************")
 else:
-    file.write(w._cpp_function, XDMFFile.Encoding.ASCII)
+    file.write(w, XDMFFile.Encoding.ASCII)
