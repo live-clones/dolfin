@@ -189,29 +189,20 @@ def assemble(form,
 
     """
 
-    # Create dolfin Form object referencing all data needed by assembler
-    print("Create form")
+    # Create dolfin Form object referencing all data needed by
+    # assembler
     dolfin_form = _create_dolfin_form(form, form_compiler_parameters)
 
     # Create tensor
-    print("Create tensor (0)")
     comm = dolfin_form.mesh().mpi_comm()
-    print("Create tensor (1)")
     tensor = _create_tensor(comm, form, dolfin_form.rank(), backend, tensor)
-    print("Post Create tensor (1)")
 
     # Call C++ assemble function
-    print("Assembler (0)")
     assembler = cpp.fem.Assembler()
-    print("Assembler (1)")
     assembler.add_values = add_values
-    print("Assembler (2)")
     assembler.finalize_tensor = finalize_tensor
-    print("Assembler (3)")
     assembler.keep_diagonal = keep_diagonal
-    print("Assemble")
     assembler.assemble(tensor, dolfin_form)
-
 
     # Convert to float for scalars
     if dolfin_form.rank() == 0:
@@ -406,12 +397,10 @@ def _create_tensor(mpi_comm, form, rank, backend, tensor):
         return tensor
 
     # Check backend argument
-    print("backend:", backend)
     if (backend is not None) and (not isinstance(backend, cpp.la.GenericLinearAlgebraFactory)):
         raise TypeError("Provide a GenericLinearAlgebraFactory as 'backend'")
 
     # Create tensor
-    print("Rank:", rank)
     if rank == 0:
         tensor = cpp.la.Scalar(mpi_comm)
     elif rank == 1:
@@ -423,9 +412,7 @@ def _create_tensor(mpi_comm, form, rank, backend, tensor):
         if backend:
             tensor = backend.create_matrix(mpi_comm)
         else:
-            print("Create matrix")
             tensor = cpp.la.Matrix(mpi_comm)
-            print("End Create matrix")
     else:
         raise RuntimeError("Unable to create tensors of rank %d." % rank)
 
