@@ -6,6 +6,9 @@ In the directory `python/`
 1. Get pybind11 development version::
 
    git clone https://github.com/pybind/pybind11.git
+   cd pybind11
+   git fetch origin pull/960/head:registered-type-fixes
+   git checkout registered-type-fixes
 
 2. Build bindings::
 
