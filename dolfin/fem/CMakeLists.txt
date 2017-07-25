@@ -4,6 +4,7 @@ set(HEADERS
   AssemblerBase.h
   Assembler.h
   BasisFunction.h
+  ContactAssembler.h
   DirichletBC.h
   DiscreteOperators.h
   DofMapBuilder.h
@@ -38,6 +39,7 @@ set(SOURCES
   assemble_local.cpp
   AssemblerBase.cpp
   Assembler.cpp
+  ContactAssembler.cpp
   DirichletBC.cpp
   DiscreteOperators.cpp
   DofMapBuilder.cpp

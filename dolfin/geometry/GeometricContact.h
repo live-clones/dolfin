@@ -53,7 +53,7 @@ namespace dolfin
                                           const std::vector<std::size_t>& slave_facets);
 
     /// Get mapping
-    const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave()
+    const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave() const
     {
       return _master_to_slave;
     }
