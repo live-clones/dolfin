@@ -45,7 +45,6 @@ L = f*v1*dx + f*v2*dx
 
 # Solve the problem
 sol = Function(V)
-solver = PETScKrylovSolver("minres")
 solve(a == L, sol, bcs)
 
 # extract components of the solution

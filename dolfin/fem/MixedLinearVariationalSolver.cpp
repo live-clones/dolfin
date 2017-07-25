@@ -97,8 +97,7 @@ void MixedLinearVariationalSolver::solve()
   }
 
   // Different assembly depending on whether or not the system is symmetric
-  //if (symmetric)
-  if(1)
+  if (symmetric)
   {
     // Check that rhs (L) is not empty
     for (int i=0; i<L.size(); ++i)
