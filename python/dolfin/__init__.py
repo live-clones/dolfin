@@ -37,7 +37,7 @@ if has_hdf5():
 
 from .cpp.ale import ALE
 from .cpp import MPI
-from .cpp.function import Expression, Constant, interpolate
+from .cpp.function import Expression, Constant #, interpolate
 from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
                       DiscreteOperators, assemble_local)
@@ -79,6 +79,7 @@ from .common.timer import Timer, timed
 from .fem.assembling import assemble, assemble_system
 from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
+from .fem.interpolation import interpolate
 from .function.functionspace import FunctionSpace, VectorFunctionSpace #, TensorFunctionSpace
 from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions

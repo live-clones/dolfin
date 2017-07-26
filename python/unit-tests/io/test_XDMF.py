@@ -227,7 +227,7 @@ def test_save_and_checkpoint_timeseries(tempdir, encoding):
 
     with XDMFFile(mesh.mpi_comm(), filename) as file:
         for i, p in enumerate(times):
-            u_out[i] = interpolate(Expression("x[0]*p", p=p, degree=1), V)
+            u_out[i] = interpolate(CompiledExpression("x[0]*p", p=p, degree=1), V)
             file.write_checkpoint(u_out[i], "u_out", p, encoding)
 
     with XDMFFile(mesh.mpi_comm(), filename) as file:
