@@ -4,13 +4,12 @@ from __future__ import print_function
 __all__ = ["CompiledExpression", "UserExpression"]
 
 # Python imports
-import types
-from six import add_metaclass
-from six import string_types
-from six.moves import xrange as range
-from functools import reduce
-import weakref
 import hashlib
+from functools import reduce
+from six import add_metaclass, string_types
+from six.moves import xrange as range
+import types
+import weakref
 
 import dijitso
 
@@ -22,6 +21,7 @@ import dolfin.cpp as cpp
 import numpy
 
 #from dolfin import warning, error
+
 
 class _InterfaceExpression(cpp.function.Expression):
     def __init__(self, user_expression, *args, **kwargs):
@@ -140,8 +140,12 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
 
     statements = class_data["statements"]
     statement = ""
-    for i, val in enumerate(statements):
-        statement += "          values[" + str(i) + "] = " + val + ";\n"
+    print("Statemnets:", statements)
+    if isinstance(statements, string_types):
+        statement += "          values[0] = " + statements + ";\n"
+    else:
+        for i, val in enumerate(statements):
+            statement += "          values[" + str(i) + "] = " + val + ";\n"
 
     constructor = ""
     members = ""
@@ -186,10 +190,7 @@ def compile_expression(statements, properties):
     params['build']['libs'] = d["libraries"]
     params['build']['lib_dirs'] = d["library_dirs"]
 
-    #if isinstance(statements, string_types):
-    #    statements = tuple((statements,))
-
-    if not isinstance(statements, tuple):
+    if not isinstance(statements, (string_types, tuple)):
         raise RuntimeError("Expression must be a string, or a tuple of strings")
 
     class_data = {'statements': statements, 'properties': properties}
