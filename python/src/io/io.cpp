@@ -243,7 +243,23 @@ namespace dolfin_wrappers
            {
              auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
              instance.write(*_u, t, encoding);
-           }, py::arg("u"), py::arg("t"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5);
+           }, py::arg("u"), py::arg("t"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
+      //
+      .def("write_checkpoint", [](dolfin::XDMFFile& instance, const dolfin::Function& u,
+                                  std::string function_name,
+                                  double time_step, dolfin::XDMFFile::Encoding encoding)
+           { instance.write_checkpoint(u, function_name, time_step, encoding); },
+           py::arg("u"), py::arg("function_name"), py::arg("time_step")=0.0,
+           py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
+      .def("write_checkpoint", [](dolfin::XDMFFile& instance, const py::object u, std::string function_name,
+                                  double time_step, dolfin::XDMFFile::Encoding encoding)
+           {
+             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+             instance.write_checkpoint(*_u, function_name, time_step, encoding);
+           },
+           py::arg("u"), py::arg("function_name"), py::arg("time_step")=0.0,
+           py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5);
+
 
     // XDFMFile::read
     xdmf_file
@@ -266,7 +282,16 @@ namespace dolfin_wrappers
       .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshValueCollection<int>&, std::string))
            &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "")
       .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshValueCollection<double>&, std::string))
-           &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "");
+           &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "")
+      //
+      .def("read_checkpoint", &dolfin::XDMFFile::read_checkpoint, py::arg("u"), py::arg("name"),
+           py::arg("counter")=-1)
+      .def("read_checkpoint", [](dolfin::XDMFFile& instance, py::object u, std::string name, std::int64_t counter)
+           {
+             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+             instance.read_checkpoint(*_u, name, counter);
+           },
+           py::arg("u"), py::arg("name"), py::arg("counter")=-1);
 
   }
 

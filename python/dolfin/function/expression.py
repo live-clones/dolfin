@@ -59,7 +59,6 @@ class UserExpression(ufl.Coefficient):
         #cpp.function.Expression.__init__(self, self.ufl_shape)
 
         self._cpp_object = _InterfaceExpression(self)
-
         value_shape = tuple(self.value_dimension(i)
                             for i in range(self.value_rank()))
 
@@ -158,7 +157,7 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
         get_props += _get_props.format(name=k)
 
     # Set the value_shape
-    if len(statements) > 1:
+    if isinstance(statements, tuple):
         constructor += "_value_shape.push_back(" + str(len(statements)) + ");"
 
     classname = signature
@@ -187,8 +186,8 @@ def compile_expression(statements, properties):
     params['build']['libs'] = d["libraries"]
     params['build']['lib_dirs'] = d["library_dirs"]
 
-    if isinstance(statements, string_types):
-        statements = tuple((statements,))
+    #if isinstance(statements, string_types):
+    #    statements = tuple((statements,))
 
     if not isinstance(statements, tuple):
         raise RuntimeError("Expression must be a string, or a tuple of strings")

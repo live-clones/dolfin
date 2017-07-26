@@ -180,7 +180,6 @@ def test_save_and_checkpoint_scalar(tempdir, encoding, fe_degree, fe_family,
 @pytest.mark.parametrize("fe_family", fe_families)
 @pytest.mark.parametrize("mesh_tdim", mesh_tdims)
 @pytest.mark.parametrize("mesh_n", mesh_ns)
-@pytest.mark.xfail
 def test_save_and_checkpoint_vector(tempdir, encoding, fe_degree, fe_family,
                                     mesh_tdim, mesh_n):
     if invalid_config(encoding):
@@ -197,11 +196,11 @@ def test_save_and_checkpoint_vector(tempdir, encoding, fe_degree, fe_family,
     u_out = Function(V)
 
     if mesh.geometry().dim() == 1:
-        u_out.interpolate(Expression(("x[0]", ), degree=1))
+        u_out.interpolate(CompiledExpression(("x[0]", ), degree=1))
     elif mesh.geometry().dim() == 2:
-        u_out.interpolate(Expression(("x[0]*x[1]", "x[0]"), degree=2))
+        u_out.interpolate(CompiledExpression(("x[0]*x[1]", "x[0]"), degree=2))
     elif mesh.geometry().dim() == 3:
-        u_out.interpolate(Expression(("x[0]*x[1]", "x[0]", "x[2]"), degree=2))
+        u_out.interpolate(CompiledExpression(("x[0]*x[1]", "x[0]", "x[2]"), degree=2))
 
     with XDMFFile(mesh.mpi_comm(), filename) as file:
         file.write_checkpoint(u_out, "u_out", 0, encoding)
