@@ -183,8 +183,8 @@ class TestMatrixForAnyBackend:
                 assert isinstance(A3, scipy.sparse.csr_matrix)
                 assert round(numpy.linalg.norm(A3.todense() - A2) - 0.0, 7) == 0
 
-                row, col, val, nnz = A.data()
-                print(type(row), type(col), type(val))
+                row, col, val = A.data()
+                row, col, val = A.data_view()
                 A_scipy = scipy.sparse.csr_matrix((val, col, row))
                 assert round(numpy.linalg.norm(A_scipy.todense(), 'fro') \
                              - A.norm("frobenius"), 7) == 0.0

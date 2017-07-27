@@ -317,20 +317,33 @@ namespace dolfin_wrappers
       .def(py::init<std::size_t, std::size_t>())
       .def("sparray", (dolfin::EigenMatrix::eigen_matrix_type& (dolfin::EigenMatrix::*)()) &dolfin::EigenMatrix::mat,
            py::return_value_policy::reference_internal)
+      .def("data_view", [](dolfin::EigenMatrix& instance)
+           {
+             auto _data = instance.data();
+             std::size_t nnz = std::get<3>(_data);
+
+             Eigen::Map<const Eigen::VectorXi> rows(std::get<0>(_data), instance.size(0) + 1);
+             Eigen::Map<const Eigen::VectorXi> cols(std::get<1>(_data), nnz);
+             Eigen::Map<const Eigen::VectorXd> values(std::get<2>(_data), nnz);
+
+             return py::make_tuple(rows, cols, values);
+
+             //return std::tuple<Eigen::Map<const Eigen::VectorXi>, Eigen::Map<const Eigen::VectorXi>,
+              //                 Eigen::Map<const Eigen::VectorXd>>(rows, cols, values);
+           },
+           py::return_value_policy::reference_internal)
       .def("data", [](dolfin::EigenMatrix& instance)
            {
              auto _data = instance.data();
              std::size_t nnz = std::get<3>(_data);
 
-             Eigen::Map<const Eigen::VectorXi> rows(std::get<0>(_data), instance.size(0));
+             Eigen::Map<const Eigen::VectorXi> rows(std::get<0>(_data), instance.size(0) + 1);
              Eigen::Map<const Eigen::VectorXi> cols(std::get<1>(_data), nnz);
              Eigen::Map<const Eigen::VectorXd> values(std::get<2>(_data), nnz);
 
-             return std::tuple<Eigen::Map<const Eigen::VectorXi>, Eigen::Map<const Eigen::VectorXi>,
-                               Eigen::Map<const Eigen::VectorXd>>(rows, cols, values);
-           }
-        )
-      .def("data_view", &dolfin::EigenMatrix::data);
+             return std::tuple<Eigen::VectorXi, Eigen::VectorXi, Eigen::VectorXd>(rows, cols, values);
+           });
+
 
     #ifdef HAS_PETSC
     py::class_<dolfin::PETScObject, std::shared_ptr<dolfin::PETScObject>>(m, "PETScObject");
