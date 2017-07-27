@@ -140,7 +140,6 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
 
     statements = class_data["statements"]
     statement = ""
-    print("Statemnets:", statements)
     if isinstance(statements, string_types):
         statement += "          values[0] = " + statements + ";\n"
     else:
@@ -195,7 +194,8 @@ def compile_expression(statements, properties):
 
     class_data = {'statements': statements, 'properties': properties}
 
-    module_hash = hashlib.md5("".join(statements).encode('utf-8')).hexdigest()
+    hash_str = str(statements)
+    module_hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
     module_name = "dolfin_expression_" + module_hash
     module, signature = dijitso.jit(class_data, module_name, params,
                                     generate=jit_generate)
