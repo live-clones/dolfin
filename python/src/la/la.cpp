@@ -315,8 +315,22 @@ namespace dolfin_wrappers
       (m, "EigenMatrix", "DOLFIN EigenMatrix object")
       .def(py::init<>())
       .def(py::init<std::size_t, std::size_t>())
-      .def("array", (dolfin::EigenMatrix::eigen_matrix_type& (dolfin::EigenMatrix::*)()) &dolfin::EigenMatrix::mat,
-           py::return_value_policy::reference_internal);
+      .def("sparray", (dolfin::EigenMatrix::eigen_matrix_type& (dolfin::EigenMatrix::*)()) &dolfin::EigenMatrix::mat,
+           py::return_value_policy::reference_internal)
+      .def("data", [](dolfin::EigenMatrix& instance)
+           {
+             auto _data = instance.data();
+             std::size_t nnz = std::get<3>(_data);
+
+             Eigen::Map<const Eigen::VectorXi> rows(std::get<0>(_data), instance.size(0));
+             Eigen::Map<const Eigen::VectorXi> cols(std::get<1>(_data), nnz);
+             Eigen::Map<const Eigen::VectorXd> values(std::get<2>(_data), nnz);
+
+             return std::tuple<Eigen::Map<const Eigen::VectorXi>, Eigen::Map<const Eigen::VectorXi>,
+                               Eigen::Map<const Eigen::VectorXd>>(rows, cols, values);
+           }
+        )
+      .def("data_view", &dolfin::EigenMatrix::data);
 
     #ifdef HAS_PETSC
     py::class_<dolfin::PETScObject, std::shared_ptr<dolfin::PETScObject>>(m, "PETScObject");

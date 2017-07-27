@@ -160,18 +160,17 @@ class TestMatrixForAnyBackend:
         #assert A[5,5] == 15
 
     @skip_in_parallel
-    @pytest.mark.xfail
     def test_numpy_array(self, use_backend, any_backend):
         self.backend, self.sub_backend = any_backend
 
-        from numpy import ndarray, array, ones, sum
+        from numpy import ndarray, array, ones, sum, sqrt
 
         # Assemble matrices
         A, B = self.assemble_matrices(use_backend)
 
         # Test to NumPy array
         A2 = A.array()
-        assert isinstance(A2,ndarray)
+        assert isinstance(A2, ndarray)
         assert A2.shape == (2021, 2021)
         assert round(sqrt(sum(A2**2)) - A.norm('frobenius'), 7) == 0
 
@@ -184,7 +183,8 @@ class TestMatrixForAnyBackend:
                 assert isinstance(A3, scipy.sparse.csr_matrix)
                 assert round(numpy.linalg.norm(A3.todense() - A2) - 0.0, 7) == 0
 
-                row, col, val = A.data()
+                row, col, val, nnz = A.data()
+                print(type(row), type(col), type(val))
                 A_scipy = scipy.sparse.csr_matrix((val, col, row))
                 assert round(numpy.linalg.norm(A_scipy.todense(), 'fro') \
                              - A.norm("frobenius"), 7) == 0.0
