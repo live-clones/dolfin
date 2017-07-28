@@ -94,6 +94,13 @@ namespace dolfin_wrappers
       .def("size", &dolfin::GenericMatrix::size)
       .def("get_diagonal", &dolfin::GenericMatrix::get_diagonal)
       .def("set_diagonal", &dolfin::GenericMatrix::set_diagonal)
+      .def("getrow", [](const dolfin::GenericMatrix& instance, std::size_t row)
+           {
+             std::vector<double> values;
+             std::vector<std::size_t> columns;
+             instance.getrow(row, columns, values);
+             return std::make_pair(columns, values);
+           })
       .def("array", [](const dolfin::GenericMatrix& instance)
            {
              // FIXME: This function is highly dubious. It assumes a

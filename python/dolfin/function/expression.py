@@ -255,3 +255,6 @@ class CompiledExpression(ufl.Coefficient):
 
     def cpp_object(self):
         return self._cpp_object
+
+    def compute_vertex_values(self, mesh):
+        return self._cpp_object.compute_vertex_values(mesh)

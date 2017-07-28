@@ -178,6 +178,15 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
            std::shared_ptr<const dolfin::GenericFunction>,
            std::shared_ptr<const dolfin::SubDomain>>())
+      .def("zero", &dolfin::DirichletBC::zero)
+      .def("zero_columns", &dolfin::DirichletBC::zero_columns,
+           py::arg("A"), py::arg("b"), py::arg("diagonal_value")=0.0)
+      .def("get_boundary_values", [](const dolfin::DirichletBC& instance)
+           {
+             dolfin::DirichletBC::Map map;
+             instance.get_boundary_values(map);
+             return map;
+           })
       .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericVector&) const)
            &dolfin::DirichletBC::apply)
       .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericMatrix&) const)
@@ -227,9 +236,9 @@ namespace dolfin_wrappers
     py::class_<dolfin::PointSource, std::shared_ptr<dolfin::PointSource>>
       (m, "PointSource")
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, const dolfin::Point&, double>(),
-           py::arg("V"), py::arg("p"), py::arg("magnitude") = 1.0)
+           py::arg("V"), py::arg("p"), py::arg("magnitude")=1.0)
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, std::shared_ptr<const dolfin::FunctionSpace>, const dolfin::Point&, double>(),
-           py::arg("V0"), py::arg("V1"), py::arg("p"), py::arg("magnitude") = 1.0)
+           py::arg("V0"), py::arg("V1"), py::arg("p"), py::arg("magnitude")=1.0)
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, const std::vector<std::pair<const dolfin::Point*, double>>>())
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, std::shared_ptr<const dolfin::FunctionSpace>,
            const std::vector<std::pair<const dolfin::Point*, double>>>())

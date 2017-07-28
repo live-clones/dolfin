@@ -223,12 +223,12 @@ def test_vector_valued_expression_member_function(mesh):
     V = FunctionSpace(mesh,'CG',1)
     W = VectorFunctionSpace(mesh,'CG',1, dim=3)
     fs = [
-        Expression(("1", "2", "3"), degree=1),
+        CompiledExpression(("1", "2", "3"), degree=1),
         Constant((1, 2, 3)),
         interpolate(Constant((1, 2, 3)), W),
     ]
     for f in fs:
-        u = Expression("f[0] + f[1] + f[2]", f=f, degree=1)
+        u = CompiledExpression("f[0] + f[1] + f[2]", f=f, degree=1)
         v = interpolate(u, V)
         assert np.allclose(v.vector().array(), 6.0)
         for g in fs:
@@ -303,12 +303,11 @@ def test_no_write_to_const_array():
         assemble(f1*dx(mesh))
 
 
-@pytest.mark.xfail
 def test_compute_vertex_values(mesh):
     from numpy import zeros, all, array
 
-    e0 = Expression("1", degree=0)
-    e1 = Expression(("1", "2", "3"), degree=0)
+    e0 = CompiledExpression("1", degree=0)
+    e1 = CompiledExpression(("1", "2", "3"), degree=0)
 
     e0_values = e0.compute_vertex_values(mesh)
     e1_values = e1.compute_vertex_values(mesh)
@@ -399,7 +398,7 @@ def test_fail_expression_compilation():
     # This tests that a failure can be caught without deadlock.
 
     def invalidCppExpression():
-        Expression("/", degree=0)
+        CompiledExpression("/", degree=0)
 
     with pytest.raises(RuntimeError):
         invalidCppExpression()
@@ -462,31 +461,30 @@ def test_element_instantiation():
 
 @pytest.mark.xfail
 def test_num_literal():
-    e0 = Expression("1e10", degree=0)
+    e0 = CompiledExpression("1e10", degree=0)
     assert e0(0, 0, 0) == 1e10
 
-    e1 = Expression("1e-10", degree=0)
+    e1 = CompiledExpression("1e-10", degree=0)
     assert e1(0, 0, 0) == 1e-10
 
-    e2 = Expression("1e+10", degree=0)
+    e2 = CompiledExpression("1e+10", degree=0)
     assert e2(0, 0, 0) == 1e+10
 
-    e3 = Expression(".5", degree=0)
+    e3 = CompiledExpression(".5", degree=0)
     assert e3(0, 0, 0) == 0.5
 
-    e4 = Expression("x[0] * sin(.5)", degree=2)
+    e4 = CompiledExpression("x[0] * sin(.5)", degree=2)
     assert e4(0, 0, 0) == 0.
 
-    e5 = Expression(["2*t0", "-t0"], t0=1.0, degree=0)
+    e5 = CompiledExpression(["2*t0", "-t0"], t0=1.0, degree=0)
     values = e5(0, 0, 0)
     assert values[0] == 2.
     assert values[1] == -1.
 
-
 @pytest.mark.xfail
 def test_name_space_usage(mesh):
-    e0 = Expression("std::sin(x[0])*cos(x[1])", degree=2)
-    e1 = Expression("sin(x[0])*std::cos(x[1])", degree=2)
+    e0 = CompiledExpression("std::sin(x[0])*cos(x[1])", degree=2)
+    e1 = CompiledExpression("sin(x[0])*std::cos(x[1])", degree=2)
     assert round(assemble(e0*dx(mesh)) - assemble(e1*dx(mesh)), 7) == 0
 
 
