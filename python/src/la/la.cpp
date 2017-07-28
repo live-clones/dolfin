@@ -327,22 +327,22 @@ namespace dolfin_wrappers
              Eigen::Map<const Eigen::VectorXd> values(std::get<2>(_data), nnz);
 
              return py::make_tuple(rows, cols, values);
-
-             //return std::tuple<Eigen::Map<const Eigen::VectorXi>, Eigen::Map<const Eigen::VectorXi>,
-              //                 Eigen::Map<const Eigen::VectorXd>>(rows, cols, values);
            },
-           py::return_value_policy::reference_internal)
+           py::return_value_policy::reference_internal, "Return CSR matrix data as NumPy arrays (shared data)")
       .def("data", [](dolfin::EigenMatrix& instance)
            {
              auto _data = instance.data();
              std::size_t nnz = std::get<3>(_data);
 
-             Eigen::Map<const Eigen::VectorXi> rows(std::get<0>(_data), instance.size(0) + 1);
-             Eigen::Map<const Eigen::VectorXi> cols(std::get<1>(_data), nnz);
-             Eigen::Map<const Eigen::VectorXd> values(std::get<2>(_data), nnz);
+             Eigen::VectorXi rows = Eigen::Map<const Eigen::VectorXi>(std::get<0>(_data), instance.size(0) + 1);
+             Eigen::VectorXi cols = Eigen::Map<const Eigen::VectorXi>(std::get<1>(_data), nnz);
+             Eigen::VectorXd values  = Eigen::Map<const Eigen::VectorXd>(std::get<2>(_data), nnz);
 
-             return std::tuple<Eigen::VectorXi, Eigen::VectorXi, Eigen::VectorXd>(rows, cols, values);
-           });
+             return py::make_tuple(rows, cols, values);
+             //return std::tuple<Eigen::VectorXi, Eigen::VectorXi, Eigen::VectorXd>(rows, cols, values);
+           },
+           py::return_value_policy::copy,
+           "Return copy of CSR matrix data as NumPy arrays");
 
 
     #ifdef HAS_PETSC
