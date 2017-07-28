@@ -120,6 +120,7 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
     def ufl_function_space(self):
         return self
 
+
 def VectorFunctionSpace(mesh, family, degree, dim=None, form_degree=None,
                         constrained_domain=None, restriction=None):
     """Create finite element function space."""
@@ -127,6 +128,18 @@ def VectorFunctionSpace(mesh, family, degree, dim=None, form_degree=None,
     # Create UFL element
     element = ufl.VectorElement(family, mesh.ufl_cell(), degree,
                                 form_degree=form_degree, dim=dim)
+
+    # Return (Py)DOLFIN FunctionSpace
+    return FunctionSpace(mesh, element, constrained_domain=constrained_domain)
+
+
+def TensorFunctionSpace(mesh, family, degree, shape=None, symmetry=None,
+                        constrained_domain=None, restriction=None):
+    """Create finite element function space."""
+
+    # Create UFL element
+    element = ufl.TensorElement(family, mesh.ufl_cell(), degree,
+                                shape, symmetry)
 
     # Return (Py)DOLFIN FunctionSpace
     return FunctionSpace(mesh, element, constrained_domain=constrained_domain)

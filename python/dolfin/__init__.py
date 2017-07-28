@@ -82,7 +82,7 @@ from .fem.assembling import assemble, assemble_system
 from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .fem.interpolation import interpolate
-from .function.functionspace import FunctionSpace, VectorFunctionSpace #, TensorFunctionSpace
+from .function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
 from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
 from .function.constant import Constant
