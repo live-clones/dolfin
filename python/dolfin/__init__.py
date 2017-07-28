@@ -97,6 +97,7 @@ from .mesh.meshvaluecollection import MeshValueCollection
 from ufl import (FiniteElement, VectorElement, MixedElement,
                  inner, dot, grad, dx, div,
                  ds, dS, triangle, tetrahedron, avg, jump)
+from ufl.formoperators import action
 
 # FIXME
 def has_petsc4py():

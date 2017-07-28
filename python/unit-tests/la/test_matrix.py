@@ -334,7 +334,6 @@ class TestMatrixForAnyBackend:
 
     # Test the access of the raw data through pointers
     # This is only available for the Eigen backend
-    @pytest.mark.xfail
     def test_matrix_data(self, use_backend, data_backend):
         """ Test for ordinary Matrix"""
         self.backend, self.sub_backend = data_backend
@@ -351,16 +350,17 @@ class TestMatrixForAnyBackend:
                 assert array[row, cols[col]] == values[i]
                 i += 1
 
+        # pybind11 transition: Not Pythonic to make read-only
         # Test none writeable of a shallow copy of the data
-        rows, cols, values = A.data(False)
-        def write_data(data):
-            data[0] = 1
-        with pytest.raises(Exception):
-            write_data(rows)
-        with pytest.raises(Exception):
-            write_data(cols)
-        with pytest.raises(Exception):
-            write_data(values)
+        #rows, cols, values = A.data(False)
+        #def write_data(data):
+        #    data[0] = 1
+        #with pytest.raises(Exception):
+        #    write_data(rows)
+        #with pytest.raises(Exception):
+        #    write_data(cols)
+        #with pytest.raises(Exception):
+        #    write_data(values)
 
         # Test for as_backend_typeed Matrix
         A = as_backend_type(A)

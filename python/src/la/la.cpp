@@ -79,13 +79,15 @@ namespace dolfin_wrappers
     // dolfin::GenericTensor class
     py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>,
                dolfin::LinearAlgebraObject>
-      (m, "GenericTensor", "DOLFIN GenericTensor object");
+      (m, "GenericTensor", "DOLFIN GenericTensor object")
+      .def("zero", &dolfin::GenericTensor::zero);
 
     // dolfin::GenericMatrix class
     py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>,
                dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object")
       .def("init_vector", &dolfin::GenericMatrix::init_vector)
+      .def("copy", &dolfin::GenericMatrix::copy)
       .def("local_range", &dolfin::GenericMatrix::local_range)
       .def("norm", &dolfin::GenericMatrix::norm)
       .def("nnz", &dolfin::GenericMatrix::nnz)
@@ -119,6 +121,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>,
                dolfin::GenericTensor>
       (m, "GenericVector", "DOLFIN GenericVector object")
+      .def("copy", &dolfin::GenericVector::copy)
       .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
            {
              std::size_t start, stop, step, slicelength;
