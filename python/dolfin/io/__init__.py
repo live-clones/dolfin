@@ -21,6 +21,16 @@ def __lshift__(self, u):
         self.write(u)
 
 
+def __rshift__(self, u):
+    """Support for the legacy '>>' read from file syntax"""
+
+    # Note: __rshift__ notation for IO will be deprecated, see
+    # https://bitbucket.org/fenics-project/dolfin/issues/895.
+
+    self.read(u)
+
+
 # Extend cpp.io.File class, and clean-up
 cpp.io.File.__lshift__ = __lshift__
-del __lshift__
+cpp.io.File.__rshift__ = __rshift__
+del __lshift__, __rshift__
