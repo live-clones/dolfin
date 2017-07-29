@@ -324,7 +324,6 @@ def test_save_3d_vector_series(tempdir, encoding):
         file.write(u, 0.3, encoding)
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_2d_tensor(tempdir, encoding):
     if invalid_config(encoding):
@@ -338,7 +337,6 @@ def test_save_2d_tensor(tempdir, encoding):
         file.write(u, encoding)
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("encoding", encodings)
 def test_save_3d_tensor(tempdir, encoding):
     if invalid_config(encoding):
@@ -554,7 +552,6 @@ def test_save_3D_vertex_function(tempdir, encoding, data_type):
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
 def test_save_points_2D(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -575,7 +572,6 @@ def test_save_points_2D(tempdir, encoding):
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
 def test_save_points_3D(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")

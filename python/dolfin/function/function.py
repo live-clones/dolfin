@@ -52,6 +52,18 @@ class Function(ufl.Coefficient):
         else:
             raise TypeError("expected a FunctionSpace or a Function as argument 1")
 
+    # The is a hack that overirdes ufl.Arg.__len__ because when using
+    # the '<<' (__lshift__) notation for file IO in DOLFIN, somewhere
+    # in the layer 'len()' gets called. The proper fix is to remove
+    # the syntax from DOFLIN. This hack may have some unintended
+    # consequences.
+    #def __len__(self):
+    #    s = self.ufl_shape
+    #    if len(s) == 0:
+    #        return 1
+    #    else:
+    #        return np.prod(s)
+
     def interpolate(self, u):
         if isinstance(u, ufl.Coefficient):
             self._cpp_object.interpolate(u._cpp_object)

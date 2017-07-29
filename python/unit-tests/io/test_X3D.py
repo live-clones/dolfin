@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 # Copyright (C) 2013 Garth N. Wells
 #
 # This file is part of DOLFIN.
@@ -28,19 +26,19 @@ def test_save_mesh1D(cd_tempdir):
     file = File("mesh1D.x3d")
     #self.assertRaises(RuntimeError, file << mesh)
 
-@pytest.mark.xfail
+
 def test_save_mesh2D(cd_tempdir):
     mesh = UnitSquareMesh(16, 16)
     file = File("mesh2D.x3d")
     file << mesh
 
-@pytest.mark.xfail
+
 def test_save_mesh3D(cd_tempdir):
     mesh = UnitCubeMesh(16, 16, 16)
     file = File("mesh3D.x3d")
     file << mesh
 
-@pytest.mark.xfail
+
 def test_save_cell_meshfunction2D(cd_tempdir):
     mesh = UnitSquareMesh(16, 16)
     mf = CellFunction("size_t", mesh, 12)
@@ -55,7 +53,6 @@ def test_save_facet_meshfunction2D(cd_tempdir):
     #    file << mf
 
 
-@pytest.mark.xfail
 def test_save_cell_meshfunctio22D(cd_tempdir):
     mesh = UnitCubeMesh(16, 16, 16)
     mf = CellFunction("size_t", mesh, 12)
@@ -71,7 +68,6 @@ def test_save_facet_meshfunction3D(cd_tempdir):
     #    file << mf
 
 
-@pytest.mark.xfail
 def test_mesh_str():
     mesh = UnitCubeMesh(2, 2, 2)
     str = X3DOM.str(mesh)
@@ -79,7 +75,6 @@ def test_mesh_str():
     str = X3DOM.str(mesh)
 
 
-@pytest.mark.xfail
 def test_mesh_html():
     mesh = UnitCubeMesh(2, 2, 2)
     str = X3DOM.html(mesh)

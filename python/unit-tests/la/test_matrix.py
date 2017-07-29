@@ -160,18 +160,17 @@ class TestMatrixForAnyBackend:
         #assert A[5,5] == 15
 
     @skip_in_parallel
-    @pytest.mark.xfail
     def test_numpy_array(self, use_backend, any_backend):
         self.backend, self.sub_backend = any_backend
 
-        from numpy import ndarray, array, ones, sum
+        from numpy import ndarray, array, ones, sum, sqrt
 
         # Assemble matrices
         A, B = self.assemble_matrices(use_backend)
 
         # Test to NumPy array
         A2 = A.array()
-        assert isinstance(A2,ndarray)
+        assert isinstance(A2, ndarray)
         assert A2.shape == (2021, 2021)
         assert round(sqrt(sum(A2**2)) - A.norm('frobenius'), 7) == 0
 
@@ -185,6 +184,15 @@ class TestMatrixForAnyBackend:
                 assert round(numpy.linalg.norm(A3.todense() - A2) - 0.0, 7) == 0
 
                 row, col, val = A.data()
+                assert row.flags.owndata == True
+                assert col.flags.owndata == True
+                assert val.flags.owndata == True
+
+                row, col, val = A.data_view()
+                assert row.flags.owndata == False
+                assert col.flags.owndata == False
+                assert val.flags.owndata == False
+
                 A_scipy = scipy.sparse.csr_matrix((val, col, row))
                 assert round(numpy.linalg.norm(A_scipy.todense(), 'fro') \
                              - A.norm("frobenius"), 7) == 0.0
@@ -326,7 +334,6 @@ class TestMatrixForAnyBackend:
 
     # Test the access of the raw data through pointers
     # This is only available for the Eigen backend
-    @pytest.mark.xfail
     def test_matrix_data(self, use_backend, data_backend):
         """ Test for ordinary Matrix"""
         self.backend, self.sub_backend = data_backend
@@ -343,16 +350,17 @@ class TestMatrixForAnyBackend:
                 assert array[row, cols[col]] == values[i]
                 i += 1
 
+        # pybind11 transition: Not Pythonic to make read-only
         # Test none writeable of a shallow copy of the data
-        rows, cols, values = A.data(False)
-        def write_data(data):
-            data[0] = 1
-        with pytest.raises(Exception):
-            write_data(rows)
-        with pytest.raises(Exception):
-            write_data(cols)
-        with pytest.raises(Exception):
-            write_data(values)
+        #rows, cols, values = A.data(False)
+        #def write_data(data):
+        #    data[0] = 1
+        #with pytest.raises(Exception):
+        #    write_data(rows)
+        #with pytest.raises(Exception):
+        #    write_data(cols)
+        #with pytest.raises(Exception):
+        #    write_data(values)
 
         # Test for as_backend_typeed Matrix
         A = as_backend_type(A)

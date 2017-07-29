@@ -64,11 +64,13 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        facets, faces, edges, entities,
                        vertices, SubDomain, BoundaryMesh,
                        MeshEditor, MultiMesh, MeshQuality,
-                       SubMesh)
+                       SubMesh, DomainBoundary)
 from .cpp.nls import NonlinearProblem, NewtonSolver
 from .cpp.refinement import refine
 
 from .cpp.parameter import Parameters, parameters
+
+from .cpp.io import X3DOM, X3DOMParameters
 
 # Python modules
 from . import mesh
@@ -81,7 +83,8 @@ from .fem.form import Form
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .fem.interpolation import interpolate
 from .fem.solving import solve, LocalSolver
-from .function.functionspace import FunctionSpace, VectorFunctionSpace #, TensorFunctionSpace
+from .fem.formmanipulations import derivative, adjoint, increase_order, tear
+from .function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
 from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
 from .function.constant import Constant
@@ -98,6 +101,7 @@ from .mesh.meshvaluecollection import MeshValueCollection
 from ufl import (FiniteElement, VectorElement, MixedElement,
                  inner, dot, grad, dx, div, Measure,
                  ds, dS, triangle, tetrahedron, avg, jump)
+from ufl.formoperators import action
 
 # FIXME
 def has_petsc4py():

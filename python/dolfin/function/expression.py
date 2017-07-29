@@ -96,11 +96,13 @@ def jit_generate(class_data, module_name, signature, parameters):
 
     template_code = """
 
+#include <dolfin/common/constants.h>
 #include <dolfin/function/Expression.h>
 #include <Eigen/Dense>
 
 namespace dolfin
 {{
+  const double pi=DOLFIN_PI;
   class {classname} : public Expression
   {{
      public:
@@ -255,3 +257,6 @@ class CompiledExpression(ufl.Coefficient):
 
     def cpp_object(self):
         return self._cpp_object
+
+    def compute_vertex_values(self, mesh):
+        return self._cpp_object.compute_vertex_values(mesh)

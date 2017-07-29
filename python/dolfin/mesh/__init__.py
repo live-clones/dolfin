@@ -2,7 +2,8 @@ import ufl
 import dolfin.cpp as cpp
 
 
-# Function to extend cpp.mesh.Mesh with
+# Functions to extend cpp.mesh.Mesh with
+
 def ufl_cell(self):
     return ufl.Cell(self.cell_name(),
                     geometric_dimension=self.geometry().dim())
@@ -27,8 +28,15 @@ def ufl_domain(self):
                                     cargo=self)
     return self._ufl_domain
 
+
+def _repr_html_(self):
+    return cpp.io.X3DOM.html(self)
+
 # Extend cpp.mesh.Mesh class, and clean-up
 cpp.mesh.Mesh.ufl_cell = ufl_cell
 cpp.mesh.Mesh.ufl_coordinate_element = ufl_coordinate_element
 cpp.mesh.Mesh.ufl_domain = ufl_domain
-del ufl_cell, ufl_coordinate_element, ufl_domain
+
+cpp.mesh.Mesh._repr_html_ = _repr_html_
+
+del ufl_cell, ufl_coordinate_element, ufl_domain, _repr_html_

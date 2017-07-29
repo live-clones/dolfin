@@ -54,7 +54,8 @@ def test_director_lifetime():
         def inside(self, x, on_boundary): return on_boundary
 
     class BoundaryFunction(Expression):
-        def eval(self, values, x): values[0] = 1.0
+        def eval(self, values, x):
+            values[0] = 1.0
 
     mesh = UnitSquareMesh(8, 8)
     V = FunctionSpace(mesh, "Lagrange", 1)

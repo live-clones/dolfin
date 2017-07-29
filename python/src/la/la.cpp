@@ -79,19 +79,28 @@ namespace dolfin_wrappers
     // dolfin::GenericTensor class
     py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>,
                dolfin::LinearAlgebraObject>
-      (m, "GenericTensor", "DOLFIN GenericTensor object");
+      (m, "GenericTensor", "DOLFIN GenericTensor object")
+      .def("zero", &dolfin::GenericTensor::zero);
 
     // dolfin::GenericMatrix class
     py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>,
                dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object")
       .def("init_vector", &dolfin::GenericMatrix::init_vector)
+      .def("copy", &dolfin::GenericMatrix::copy)
       .def("local_range", &dolfin::GenericMatrix::local_range)
       .def("norm", &dolfin::GenericMatrix::norm)
       .def("nnz", &dolfin::GenericMatrix::nnz)
       .def("size", &dolfin::GenericMatrix::size)
       .def("get_diagonal", &dolfin::GenericMatrix::get_diagonal)
       .def("set_diagonal", &dolfin::GenericMatrix::set_diagonal)
+      .def("getrow", [](const dolfin::GenericMatrix& instance, std::size_t row)
+           {
+             std::vector<double> values;
+             std::vector<std::size_t> columns;
+             instance.getrow(row, columns, values);
+             return std::make_pair(columns, values);
+           })
       .def("array", [](const dolfin::GenericMatrix& instance)
            {
              // FIXME: This function is highly dubious. It assumes a
@@ -119,6 +128,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>,
                dolfin::GenericTensor>
       (m, "GenericVector", "DOLFIN GenericVector object")
+      .def("copy", &dolfin::GenericVector::copy)
       .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
            {
              std::size_t start, stop, step, slicelength;
@@ -315,8 +325,35 @@ namespace dolfin_wrappers
       (m, "EigenMatrix", "DOLFIN EigenMatrix object")
       .def(py::init<>())
       .def(py::init<std::size_t, std::size_t>())
-      .def("array", (dolfin::EigenMatrix::eigen_matrix_type& (dolfin::EigenMatrix::*)()) &dolfin::EigenMatrix::mat,
-           py::return_value_policy::reference_internal);
+      .def("sparray", (dolfin::EigenMatrix::eigen_matrix_type& (dolfin::EigenMatrix::*)()) &dolfin::EigenMatrix::mat,
+           py::return_value_policy::reference_internal)
+      .def("data_view", [](dolfin::EigenMatrix& instance)
+           {
+             auto _data = instance.data();
+             std::size_t nnz = std::get<3>(_data);
+
+             Eigen::Map<const Eigen::VectorXi> rows(std::get<0>(_data), instance.size(0) + 1);
+             Eigen::Map<const Eigen::VectorXi> cols(std::get<1>(_data), nnz);
+             Eigen::Map<const Eigen::VectorXd> values(std::get<2>(_data), nnz);
+
+             return py::make_tuple(rows, cols, values);
+           },
+           py::return_value_policy::reference_internal, "Return CSR matrix data as NumPy arrays (shared data)")
+      .def("data", [](dolfin::EigenMatrix& instance)
+           {
+             auto _data = instance.data();
+             std::size_t nnz = std::get<3>(_data);
+
+             Eigen::VectorXi rows = Eigen::Map<const Eigen::VectorXi>(std::get<0>(_data), instance.size(0) + 1);
+             Eigen::VectorXi cols = Eigen::Map<const Eigen::VectorXi>(std::get<1>(_data), nnz);
+             Eigen::VectorXd values  = Eigen::Map<const Eigen::VectorXd>(std::get<2>(_data), nnz);
+
+             return py::make_tuple(rows, cols, values);
+             //return std::tuple<Eigen::VectorXi, Eigen::VectorXi, Eigen::VectorXd>(rows, cols, values);
+           },
+           py::return_value_policy::copy,
+           "Return copy of CSR matrix data as NumPy arrays");
+
 
     #ifdef HAS_PETSC
     py::class_<dolfin::PETScObject, std::shared_ptr<dolfin::PETScObject>>(m, "PETScObject");

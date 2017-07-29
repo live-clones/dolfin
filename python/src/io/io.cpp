@@ -26,6 +26,7 @@
 #include <dolfin/io/HDF5File.h>
 #include <dolfin/io/VTKFile.h>
 #include <dolfin/io/XDMFFile.h>
+#include <dolfin/io/X3DOM.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MeshFunction.h>
@@ -232,6 +233,13 @@ namespace dolfin_wrappers
            &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
       .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshValueCollection<double>&, dolfin::XDMFFile::Encoding))
            &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
+      // Points
+      .def("write", (void (dolfin::XDMFFile::*)(const std::vector<dolfin::Point>&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("points"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
+      .def("write", (void (dolfin::XDMFFile::*)(const std::vector<dolfin::Point>&, const std::vector<double>&,
+                                                dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write,
+           py::arg("u"), py::arg("values"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       // py:object / dolfin.function.Function (these function are
       // registered last so the the specialised version are prefered.
       .def("write", [](dolfin::XDMFFile& instance, const py::object u, dolfin::XDMFFile::Encoding encoding)
@@ -274,8 +282,8 @@ namespace dolfin_wrappers
            &dolfin::XDMFFile::read, py::arg("mf"), py::arg("name") = "")
       .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshFunction<double>&, std::string))
            &dolfin::XDMFFile::read, py::arg("mf"), py::arg("name") = "")
-    // MeshValueCollection
-    .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshValueCollection<bool>&, std::string))
+      // MeshValueCollection
+      .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshValueCollection<bool>&, std::string))
            &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "")
       .def("read", (void (dolfin::XDMFFile::*)(dolfin::MeshValueCollection<std::size_t>&, std::string))
            &dolfin::XDMFFile::read, py::arg("mvc"), py::arg("name") = "")
@@ -292,6 +300,24 @@ namespace dolfin_wrappers
              instance.read_checkpoint(*_u, name, counter);
            },
            py::arg("u"), py::arg("name"), py::arg("counter")=-1);
+
+
+    py::class_<dolfin::X3DOMParameters>(m, "X3DOMParameters")
+      .def(py::init<>())
+      .def("get_diffuse_color", &dolfin::X3DOMParameters::get_diffuse_color)
+      .def("set_diffuse_color", &dolfin::X3DOMParameters::set_diffuse_color);
+
+    // dolfin::X3DOM
+    py::class_<dolfin::X3DOM>(m, "X3DOM")
+      .def_static("str", (std::string (*)(const dolfin::Mesh&, dolfin::X3DOMParameters)) &dolfin::X3DOM::str,
+                  py::arg("mesh"), py::arg("parameters")=dolfin::X3DOMParameters())
+      .def_static("str", (std::string (*)(const dolfin::Function&, dolfin::X3DOMParameters)) &dolfin::X3DOM::str,
+                  py::arg("u"), py::arg("parameters")=dolfin::X3DOMParameters())
+      .def_static("html", (std::string (*)(const dolfin::Mesh&, dolfin::X3DOMParameters)) &dolfin::X3DOM::html,
+                  py::arg("mesh"), py::arg("parameters")=dolfin::X3DOMParameters())
+      .def_static("html", (std::string (*)(const dolfin::Function&, dolfin::X3DOMParameters)) &dolfin::X3DOM::html,
+                  py::arg("u"), py::arg("parameters")=dolfin::X3DOMParameters());
+
 
   }
 
