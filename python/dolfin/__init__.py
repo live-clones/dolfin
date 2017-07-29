@@ -73,6 +73,7 @@ from .cpp.parameter import Parameters, parameters
 from .cpp.io import X3DOM, X3DOMParameters
 
 # Python modules
+from . import io
 from . import mesh
 from . import parameter
 

@@ -46,45 +46,42 @@ namespace dolfin_wrappers
       .def(py::init<std::string>())
       .def(py::init<std::string, std::string>())
       //
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::Parameters&)) &dolfin::File::operator<<)
+      .def("write", (void (dolfin::File::*)(const dolfin::Parameters&)) &dolfin::File::write)
       //
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::Mesh&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::Mesh*, double>)) &dolfin::File::operator<<)
+      .def("write", (void (dolfin::File::*)(const dolfin::Mesh&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::Mesh&, double)) &dolfin::File::write)
       //
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::Function&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::Function*, double>)) &dolfin::File::operator<<)
+      .def("write", (void (dolfin::File::*)(const dolfin::Function&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::Function&, double)) &dolfin::File::write)
        //
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<int>&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<int>*, double>)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<std::size_t>&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<std::size_t>*, double>)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<double>&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<double>*, double>)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<bool>&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<bool>*, double>)) &dolfin::File::operator<<)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<int>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<int>&, double)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<std::size_t>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<std::size_t>&, double)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<double>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<double>&, double)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<bool>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<bool>&, double)) &dolfin::File::write)
       // Unpack
-      .def("__lshift__", [](dolfin::File& instance, py::tuple u)
-           {
-             auto _u = u[0].attr("_cpp_object").cast<dolfin::Function*>();
-             auto _t = u[1].cast<double>();
-             instance << std::make_pair(_u, _t);
-           })
-      .def("__lshift__", [](dolfin::File& instance, py::object u)
+      .def("write", [](dolfin::File& instance, py::object u)
            {
              auto _u = u.attr("_cpp_object").cast<dolfin::Function&>();
-             instance << _u;
+             instance.write(_u);
+           })
+      .def("write", [](dolfin::File& instance, py::object u, double t)
+           {
+             auto _u = u.attr("_cpp_object").cast<dolfin::Function&>();
+             instance.write(_u, t);
            })
       // Read
-      .def("__rshift__", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::operator>>)
-      .def("__rshift__", (void (dolfin::File::*)(dolfin::Mesh&)) &dolfin::File::operator>>);
+      .def("read", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::Mesh&)) &dolfin::File::read);
 
     // dolfin::VTKFile
     py::class_<dolfin::VTKFile, std::shared_ptr<dolfin::VTKFile>>(m, "VTKFile")
       .def(py::init<std::string, std::string>())
-      .def("__lshift__",  [](dolfin::VTKFile& instance, const dolfin::Mesh& mesh)
-           { instance << mesh; })
       .def("write", [](dolfin::VTKFile& instance, const dolfin::Mesh& mesh)
-           { instance << mesh; });
+           { instance.write(mesh); });
 
 #ifdef HAS_HDF5
     // HDF5
