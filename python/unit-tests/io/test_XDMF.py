@@ -257,7 +257,6 @@ def test_save_2d_scalar(tempdir, encoding):
     V = FunctionSpace(mesh, "Lagrange", 2)  # FIXME: This randomly hangs in parallel
     u = Function(V)
     u.vector()[:] = 1.0
-
     with XDMFFile(mesh.mpi_comm(), filename) as file:
         file.write(u, encoding)
 
@@ -271,7 +270,6 @@ def test_save_3d_scalar(tempdir, encoding):
     V = FunctionSpace(mesh, "Lagrange", 2)
     u = Function(V)
     u.vector()[:] = 1.0
-
     with XDMFFile(mesh.mpi_comm(), filename) as file:
         file.write(u, encoding)
 
