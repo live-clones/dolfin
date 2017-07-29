@@ -233,6 +233,13 @@ namespace dolfin_wrappers
            &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
       .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshValueCollection<double>&, dolfin::XDMFFile::Encoding))
            &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
+      // Points
+      .def("write", (void (dolfin::XDMFFile::*)(const std::vector<dolfin::Point>&, dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write, py::arg("points"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
+      .def("write", (void (dolfin::XDMFFile::*)(const std::vector<dolfin::Point>&, const std::vector<double>&,
+                                                dolfin::XDMFFile::Encoding))
+           &dolfin::XDMFFile::write,
+           py::arg("u"), py::arg("values"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       // py:object / dolfin.function.Function (these function are
       // registered last so the the specialised version are prefered.
       .def("write", [](dolfin::XDMFFile& instance, const py::object u, dolfin::XDMFFile::Encoding encoding)

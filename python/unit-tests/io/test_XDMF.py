@@ -552,7 +552,6 @@ def test_save_3D_vertex_function(tempdir, encoding, data_type):
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
 def test_save_points_2D(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
@@ -573,7 +572,6 @@ def test_save_points_2D(tempdir, encoding):
 
 
 @pytest.mark.parametrize("encoding", encodings)
-@pytest.mark.xfail
 def test_save_points_3D(tempdir, encoding):
     if invalid_config(encoding):
         pytest.skip("XDMF unsupported in current configuration")
