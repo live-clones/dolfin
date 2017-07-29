@@ -122,6 +122,7 @@ def test_save_3d_mesh(tempfile, file_options):
         File(tempfile + "mesh.pvd", file_option) << mesh
 
 
+@pytest.mark.xfail
 def test_save_1d_scalar(tempfile, file_options):
     mesh = UnitIntervalMesh(32)
     u = Function(FunctionSpace(mesh, "Lagrange", 2))
@@ -134,6 +135,7 @@ def test_save_1d_scalar(tempfile, file_options):
         File(tempfile + "u.pvd", file_option) << u
 
 
+@pytest.mark.xfail
 def test_save_2d_scalar(tempfile, file_options):
     mesh = UnitSquareMesh(16, 16)
     u = Function(FunctionSpace(mesh, "Lagrange", 2))
@@ -146,6 +148,7 @@ def test_save_2d_scalar(tempfile, file_options):
         File(tempfile + "u.pvd", file_option) << u
 
 
+@pytest.mark.xfail
 def test_save_3d_scalar(tempfile, file_options):
     mesh = UnitCubeMesh(8, 8, 8)
     u = Function(FunctionSpace(mesh, "Lagrange", 2))
@@ -203,6 +206,7 @@ def test_save_1d_tensor(tempfile, file_options):
         File(tempfile + "u.pvd", file_option) << u
 
 
+@pytest.mark.xfail
 def test_save_2d_tensor(tempfile, file_options):
     mesh = UnitSquareMesh(16, 16)
     u = Function(TensorFunctionSpace(mesh, "Lagrange", 2))
@@ -215,6 +219,7 @@ def test_save_2d_tensor(tempfile, file_options):
         File(tempfile + "u.pvd", file_option) << u
 
 
+@pytest.mark.xfail
 def test_save_3d_tensor(tempfile, file_options):
     mesh = UnitCubeMesh(8, 8, 8)
     u = Function(TensorFunctionSpace(mesh, "Lagrange", 2))

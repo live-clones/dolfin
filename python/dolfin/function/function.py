@@ -57,12 +57,12 @@ class Function(ufl.Coefficient):
     # in the layer 'len()' gets called. The proper fix is to remove
     # the syntax from DOFLIN. This hack may have some unintended
     # consequences.
-    def __len__(self):
-        s = self.ufl_shape
-        if len(s) == 0:
-            return 1
-        else:
-            return np.prod(s)
+    #def __len__(self):
+    #    s = self.ufl_shape
+    #    if len(s) == 0:
+    #        return 1
+    #    else:
+    #        return np.prod(s)
 
     def interpolate(self, u):
         if isinstance(u, ufl.Coefficient):
