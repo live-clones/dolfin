@@ -40,7 +40,7 @@ void ContactAssembler::assemble(GenericTensor& A, const Form& a)
   // Initialize global tensor
   _init_global_tensor(A, a);
 
-  Assembler::assemble(A, a);
+//  Assembler::assemble(A, a);
 }
 
 //-----------------------------------------------------------------------------
