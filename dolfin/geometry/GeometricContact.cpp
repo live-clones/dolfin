@@ -318,7 +318,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
     std::vector<std::vector<double>> recv_coordinates(mpi_size);
     MPI::all_to_all(mesh.mpi_comm(), send_coordinates, recv_coordinates);
 
-    for (unsigned int proc = 0; proc != mpi_size; ++proc)
+    for (std::size_t proc = 0; proc != mpi_size; ++proc)
     {
       auto& rfacet = recv_facets[proc];
       auto& coord = recv_coordinates[proc];
@@ -330,7 +330,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
         // so create a small Mesh for each received prism
         Mesh prism_mesh(MPI_COMM_SELF);
         MeshEditor m_ed;
-        m_ed.open(prism_mesh, tdim, gdim);
+        m_ed.open(prism_mesh, tdim - 1, gdim);
         m_ed.init_cells(cells_per_facet);
         if (tdim == 3)
         {
@@ -344,8 +344,8 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
         }
 
         m_ed.init_vertices(vertices_per_facet);
-        for (unsigned int v = 0; v < vertices_per_facet; ++v)
-          m_ed.add_vertex(v, Point(gdim, coord.data() + (j*vertices_per_facet + v)*gdim));
+        for (unsigned int vert = 0; vert < vertices_per_facet; ++vert)
+          m_ed.add_vertex(vert, Point(gdim, coord.data() + (j*vertices_per_facet + vert)*gdim));
         m_ed.close();
 
         // Check all local master facets against received slave data
