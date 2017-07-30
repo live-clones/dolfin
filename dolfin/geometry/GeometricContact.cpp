@@ -369,3 +369,11 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
 
   }
 }
+//-----------------------------------------------------------------------------
+void
+tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function& u,
+                                     const std::vector<std::size_t>& master_facets,
+                                     const std::vector<std::size_t>& slave_facets)
+{
+  
+}
