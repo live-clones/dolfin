@@ -39,12 +39,14 @@
 #include <dolfin/fem/PointSource.h>
 #include <dolfin/fem/SystemAssembler.h>
 #include <dolfin/fem/PETScDMCollection.h>
+#include <dolfin/fem/SparsityPatternBuilder.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/GenericFunction.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
+#include <dolfin/la/SparsityPattern.h>
 
 namespace py = pybind11;
 
@@ -171,6 +173,15 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&, std::shared_ptr<const dolfin::SubDomain>>())
       .def("ownership_range", &dolfin::DofMap::ownership_range)
       .def("cell_dofs", &dolfin::DofMap::cell_dofs);
+
+    // dolfin::SparsityPatternBuilder
+    py::class_<dolfin::SparsityPatternBuilder>(m, "SparsityPatternBuilder")
+      .def_static("build", &dolfin::SparsityPatternBuilder::build,
+                  py::arg("sparsity_pattern"),py::arg("mesh"),
+                  py::arg("dofmaps"), py::arg("cells"),
+                  py::arg("interior_facets"), py::arg("exterior_facets"),
+                  py::arg("vertices"), py::arg("diagonal"),
+                  py::arg("init")=true, py::arg("finalize")=true);
 
     // dolfin::DirichletBC class
     py::class_<dolfin::DirichletBC, std::shared_ptr<dolfin::DirichletBC>>

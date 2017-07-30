@@ -40,7 +40,7 @@ from .cpp import MPI
 from .cpp.function import Expression, Constant #, interpolate
 from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
-                      DiscreteOperators, assemble_local)
+                      DiscreteOperators, assemble_local, SparsityPatternBuilder)
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitDiscMesh, UnitQuadMesh, UnitHexMesh,
                              UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh)
@@ -56,7 +56,7 @@ if has_linear_algebra_backend('PETSc'):
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
 from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, EigenMatrix,
-                     EigenVector, EigenFactory, LUSolver, KrylovSolver)
+                     EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout)
 from .cpp.log import info
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,

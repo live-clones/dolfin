@@ -262,10 +262,10 @@ namespace dolfin_wrappers
            }, py::arg("u"), py::arg("t"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       // Points
       .def("write", (void (dolfin::XDMFFile::*)(const std::vector<dolfin::Point>&, dolfin::XDMFFile::Encoding))
-           &dolfin::XDMFFile::write, py::arg("points").noconvert(), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
+           &dolfin::XDMFFile::write, py::arg("points"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       .def("write", (void (dolfin::XDMFFile::*)(const std::vector<dolfin::Point>&, const std::vector<double>&,
                                                 dolfin::XDMFFile::Encoding)) &dolfin::XDMFFile::write,
-           py::arg("points").noconvert(), py::arg("values").noconvert(), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
+           py::arg("points"), py::arg("values"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       // Check points
       .def("write_checkpoint", [](dolfin::XDMFFile& instance, const dolfin::Function& u,
                                   std::string function_name,

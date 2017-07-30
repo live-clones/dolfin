@@ -160,7 +160,7 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
         get_props += _get_props.format(name=k)
 
     # Set the value_shape
-    if isinstance(statements, tuple):
+    if isinstance(statements, (tuple, list)):
         constructor += "_value_shape.push_back(" + str(len(statements)) + ");"
 
     classname = signature
@@ -189,8 +189,8 @@ def compile_expression(statements, properties):
     params['build']['libs'] = d["libraries"]
     params['build']['lib_dirs'] = d["library_dirs"]
 
-    if not isinstance(statements, (string_types, tuple)):
-        raise RuntimeError("Expression must be a string, or a tuple of strings")
+    if not isinstance(statements, (string_types, tuple, list)):
+        raise RuntimeError("Expression must be a string, or a list or tuple of strings")
 
     class_data = {'statements': statements, 'properties': properties}
 
@@ -226,10 +226,19 @@ class CompiledExpression(ufl.Coefficient):
         self._cpp_object = compile_expression(statements, properties)
 
         if element is None:
-            if (degree == 0):
-                element = ufl.FiniteElement("DG", None, 0)
+            value_shape = tuple(self.value_dimension(i)
+                                for i in range(self.value_rank()))
+            if degree == 0:
+                family = "Discontinuous Lagrange"
             else:
-                element = ufl.FiniteElement("Lagrange", None, degree)
+                family = "Lagrange"
+
+            if len(value_shape) == 0:
+                element = ufl.FiniteElement(family, None, degree)
+            elif len(value_shape) == 1:
+                element = ufl.VectorElement(family, None, degree, dim=value_shape[0])
+            else:
+                element = ufl.TensorElement(family, None, degree, shape=value_shape)
 
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
@@ -252,6 +261,12 @@ class CompiledExpression(ufl.Coefficient):
 
     def id(self):
         return self._cpp_object.id()
+
+    def value_rank(self):
+        return self._cpp_object.value_rank()
+
+    def value_dimension(self, i):
+        return self._cpp_object.value_dimension(i)
 
     def cpp_object(self):
         return self._cpp_object
