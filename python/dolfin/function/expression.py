@@ -4,6 +4,7 @@ from __future__ import print_function
 __all__ = ["CompiledExpression", "UserExpression"]
 
 # Python imports
+import abc
 import hashlib
 from functools import reduce
 from six import add_metaclass, string_types
@@ -50,11 +51,11 @@ class _InterfaceExpression(cpp.function.Expression):
 
     """
 
-    def __init__(self, user_expression, *args, **kwargs):
+    def __init__(self, user_expression):
         self.user_expression = user_expression
 
         # Create C++ Expression object
-        cpp.function.Expression.__init__(self, *args, **kwargs)
+        cpp.function.Expression.__init__(self)
 
         # Wrap eval functions
         def wrapped_eval(self, values, x):
@@ -70,66 +71,20 @@ class _InterfaceExpression(cpp.function.Expression):
             self.eval_cell = types.MethodType(wrapped_eval_cell, self)
 
 
-class CompiledExpression(ufl.Coefficient):
-
-    def __init__(self, cpp_code=None, *args, **kwargs):
-
-        # Extract data
-        degree = kwargs.pop("degree", None)
-        element = kwargs.pop("element", None)
-
-        # User expression with overloaded eval functions
-        if not isinstance(cpp_code, (string_types, list, tuple)):
-
-            # Create C++ object and attach user provided eval
-            # functions
-            self._cpp_object = _InterfaceExpression(self)
-
-        else:
-
-            properties = kwargs
-            for k in properties:
-                if not isinstance(k, string_types):
-                    raise KeyError("Invalid key")
-                if not isinstance(properties[k], float):
-                    raise ValueError("Invalid value")
-
-            self._cpp_object = jit.compile_expression(cpp_code, properties)
-
-
-            def getattr_f(self, name):
-                "Pass attributes through to (JIT compiled) Expression object"
-                if hasattr(self._cpp_object, name):
-                    return self._cpp_object.get_property(name)
-                else:
-                    raise(AttributeError)
-
-            self.__getattr__ = types.MethodType(getattr_f, self)
-
-        # Deduce element type if not provided
-        if element is None:
-            value_shape = tuple(self.value_dimension(i)
-                                for i in range(self.value_rank()))
-            element = _select_element(family=None, cell=None, degree=2,
-                                      value_shape=value_shape)
+class BaseExpression(ufl.Coefficient):
+    def __init__(self, cell=None, element=None):
 
         # Initialise base class
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
+        #name = name or "f_" + str(ufl.Coefficient.count(self))
+        #label = label or "User defined expression"
+        #self._cpp_object.rename(name, label)
 
-    #def __getattr__(self, name):
-    #    "Pass attributes through to (JIT compiled) Expression object"
-    #    if hasattr(self._cpp_object, name):
-    #        return self._cpp_object.get_property(name)
-    #    else:
-    #        raise(AttributeError)
-
-    def __setattr__(self, name, value):
-        if name.startswith("_"):
-            super().__setattr__(name, value)
-        else:
-            self._cpp_object.set_property(name, value)
+    #@abc.abstractproperty
+    #def value(self):
+    #    return 'Should never get here'
 
     def __call__(self, x):
         return self._cpp_object(x)
@@ -143,8 +98,104 @@ class CompiledExpression(ufl.Coefficient):
     def value_dimension(self, i):
         return self._cpp_object.value_dimension(i)
 
+    def name(self):
+        return self._cpp_object.name()
+
+    def label(self):
+        return self._cpp_object.label()
+
+    def __str__(self):
+        return self._cpp_object.name()
+
     def cpp_object(self):
         return self._cpp_object
 
     def compute_vertex_values(self, mesh):
         return self._cpp_object.compute_vertex_values(mesh)
+
+
+class UserExpression(BaseExpression):
+    """Base class for user-defined Python Expression classes, wherer the
+    user overload eval or eval_cell
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        self._cpp_object = _InterfaceExpression(self)
+
+        # Extract data
+        arguments = ("element", "degree", "cell", "domain", "name", "label", "mpi_comm")
+        element = kwargs.get("element", None)
+        degree = kwargs.get("degree", None)
+        cell = kwargs.get("cell", None)
+        domain = kwargs.get("domain", None)
+        name = kwargs.get("name", None)
+        label = kwargs.get("label", None)
+        mpi_comm = kwargs.get("mpi_comm", None)
+
+        self._cpp_object = _InterfaceExpression(self)
+
+        # Deduce element type if not provided
+        if element is None:
+            value_shape = tuple(self.value_dimension(i)
+                                for i in range(self.value_rank()))
+            element = _select_element(family=None, cell=None, degree=2,
+                                      value_shape=value_shape)
+
+        BaseExpression.__init__(self, cell=None, element=element)
+
+
+class Expression(BaseExpression):
+    """JIT Expressions"""
+    def __init__(self, cpp_code=None, *args, **kwargs):
+
+        # Extract data
+        arguments = ("element", "degree", "cell", "domain", "name", "label", "mpi_comm")
+        element = kwargs.get("element", None)
+        degree = kwargs.get("degree", None)
+        cell = kwargs.get("cell", None)
+        domain = kwargs.get("domain", None)
+        name = kwargs.get("name", None)
+        label = kwargs.get("label", None)
+        mpi_comm = kwargs.get("mpi_comm", None)
+
+        # Remove arguments that are used in Expression creation
+        properties = dict(item for item in kwargs.items() if item[0]  not in arguments)
+        for k in properties:
+            if not isinstance(k, string_types):
+                raise KeyError("Invalid key")
+            if not isinstance(properties[k], float):
+                raise ValueError("Invalid value")
+
+        self._cpp_object = jit.compile_expression(cpp_code, properties)
+
+
+        # Deduce element type if not provided
+        if element is None:
+            value_shape = tuple(self.value_dimension(i)
+                                for i in range(self.value_rank()))
+            element = _select_element(family=None, cell=None, degree=2,
+                                      value_shape=value_shape)
+
+
+        BaseExpression.__init__(self, cell=None, element=element)
+
+    # This is added dynamically in the intialiser to allow checking of
+    # eval in user classes.
+    def __getattr__(self, name):
+        "Pass attributes through to (JIT compiled) Expression object"
+        if hasattr(self._cpp_object, name):
+            return self._cpp_object.get_property(name)
+        else:
+            raise(AttributeError)
+
+    def __setattr__(self, name, value):
+        if name.startswith("_"):
+            super().__setattr__(name, value)
+        else:
+            self._cpp_object.set_property(name, value)
+
+
+class CompiledExpression(Expression):
+    def __init__(self, *args, **kwargs):
+        super(CompiledExpression, self).__init__(*args, **kwargs)

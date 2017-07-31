@@ -2,7 +2,7 @@ from dolfin import *
 import numpy as np
 
 #class MyNewExpression(dolfin.function.expression.UserExpression):
-class MyNewExpression(CompiledExpression):
+class MyNewExpression(UserExpression):
     #def eval_cell(self, values, x, cell):
     #    print("in eval")
     #    values[0] = 40.0
@@ -39,7 +39,7 @@ assembler.assemble(b, Form(L))
 #print(b.array())
 
 
-#f = CompiledExpression("2.0", degree=1);
+f = Expression("2.0", degree=1);
 #print(dir(f))
 
 
