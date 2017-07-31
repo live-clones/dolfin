@@ -96,7 +96,6 @@ namespace dolfin
     // Make a mesh of a communicated facet
     static bool create_communicated_prism_mesh(Mesh& prism_mesh,
                                                const Mesh& mesh,
-                                               const std::vector<std::size_t>& facet,
                                                const std::vector<double>& coord,
                                                std::size_t local_facet_idx);
 

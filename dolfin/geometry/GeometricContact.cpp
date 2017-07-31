@@ -182,7 +182,6 @@ bool GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
 //-----------------------------------------------------------------------------
 bool GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
                                                       const Mesh& mesh,
-                                                      const std::vector<std::size_t>& facet,
                                                       const std::vector<double>& coord,
                                                       std::size_t local_facet_idx)
 {
@@ -340,7 +339,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
       std::vector<double>& coords_p = send_coordinates[p];
       for (auto& q : send_facets[p])
       {
-        const double *coord_vals = slave_mesh.geometry().vertex_coordinates(q*v_per_f);
+        const double* coord_vals = slave_mesh.geometry().vertex_coordinates(q*v_per_f);
         coords_p.insert(coords_p.end(), coord_vals, coord_vals + gdim*v_per_f);
         // Convert back to main mesh indexing
         q = slave_facets[q];
@@ -364,7 +363,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
         // FIXME: inefficient? but difficult to use BBT with primitives
         // so create a small Mesh for each received prism
         Mesh prism_mesh(MPI_COMM_SELF);
-        GeometricContact::create_communicated_prism_mesh(prism_mesh, mesh, rfacet, coord, j);
+        GeometricContact::create_communicated_prism_mesh(prism_mesh, mesh, coord, j);
 
         // Check all local master facets against received slave data
         for (std::size_t i = 0; i < master_facets.size(); ++i)
