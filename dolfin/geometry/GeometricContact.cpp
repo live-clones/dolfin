@@ -123,36 +123,20 @@ bool GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
   const std::size_t tdim = mesh.topology().dim();
 
   // Find number of cells/vertices in projected prism in 2D or 3D
-  const std::size_t cells_per_facet = (tdim - 1)*4;
-  const std::size_t vertices_per_facet = tdim*2;
+  const std::size_t c_per_f = GeometricContact::cells_per_facet(tdim);
+  const std::size_t v_per_f = GeometricContact::vertices_per_facet(tdim);
 
   // Local mesh of master 'prisms', eight triangles are created per facet in 3D
   // Four edges in 2D
-  MeshEditor mesh_editor;
-  mesh_editor.open(displacement_mesh, mesh.topology().dim() - 1, mesh.geometry().dim());
+  MeshEditor mesh_ed;
+  mesh_ed.open(displacement_mesh, mesh.topology().dim() - 1, mesh.geometry().dim());
   std::size_t nf_local = contact_facets.size();
   std::size_t nf_global = MPI::sum(mesh.mpi_comm(), nf_local);
-  mesh_editor.init_cells_global(nf_local*cells_per_facet, nf_global*cells_per_facet);
-  mesh_editor.init_vertices_global(nf_local*vertices_per_facet, nf_global*vertices_per_facet);
-  int c = 0;
+  mesh_ed.init_cells_global(nf_local*c_per_f, nf_global*c_per_f);
+  mesh_ed.init_vertices_global(nf_local*v_per_f, nf_global*v_per_f);
+
+  std::size_t c = 0;
   std::size_t v = 0;
-
-  // Precalculate triangles making the surface of a prism
-  static const std::size_t triangles[8][3] = {{0, 1, 2},
-                                              {0, 1, 3},
-                                              {1, 4, 3},
-                                              {1, 2, 4},
-                                              {2, 5, 4},
-                                              {2, 0, 5},
-                                              {0, 3, 5},
-                                              {3, 4, 5}};
-
-  // Edges of surface of prism in 2D
-  static const std::size_t edges[4][2] = {{0, 1},
-                                          {1, 2},
-                                          {2, 3},
-                                          {3, 0}};
-
 
   for (const auto& mf : contact_facets)
   {
@@ -161,24 +145,24 @@ bool GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
     if (tdim == 3)
     {
       // Add eight triangles
-      for (unsigned int i = 0; i < cells_per_facet; ++i)
-        mesh_editor.add_cell(c + i, v + triangles[i][0],
-                           v + triangles[i][1],
-                           v + triangles[i][2]);
+      for (unsigned int i = 0; i < c_per_f; ++i)
+        mesh_ed.add_cell(c + i, v + triangles[i][0],
+                         v + triangles[i][1],
+                         v + triangles[i][2]);
     }
     else
     {
       // Add four edges
-      for (unsigned int i = 0; i < cells_per_facet; ++i)
-        mesh_editor.add_cell(c + i, v + edges[i][0],
-                           v + edges[i][1]);
+      for (unsigned int i = 0; i < c_per_f; ++i)
+        mesh_ed.add_cell(c + i, v + edges[i][0],
+                         v + edges[i][1]);
     }
-    c += cells_per_facet;
-    for (unsigned int i = 0; i < vertices_per_facet; ++i)
-      mesh_editor.add_vertex(v + i, master_point_set[i]);
-    v += vertices_per_facet;
+    c += c_per_f;
+    for (unsigned int i = 0; i < v_per_f; ++i)
+      mesh_ed.add_vertex(v + i, master_point_set[i]);
+    v += v_per_f;
   }
-  mesh_editor.close();
+  mesh_ed.close();
 }
 //-----------------------------------------------------------------------------
 bool GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
@@ -191,42 +175,26 @@ bool GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
   const std::size_t gdim = mesh.geometry().dim();
 
   // Find number of cells/vertices in projected prism in 2D or 3D
-  const std::size_t cells_per_facet = (tdim - 1)*4;
-  const std::size_t vertices_per_facet = tdim*2;
-
-  // Precalculate triangles making the surface of a prism
-  static const std::size_t triangles[8][3] = {{0, 1, 2},
-                                              {0, 1, 3},
-                                              {1, 4, 3},
-                                              {1, 2, 4},
-                                              {2, 5, 4},
-                                              {2, 0, 5},
-                                              {0, 3, 5},
-                                              {3, 4, 5}};
-
-  // Edges of surface of prism in 2D
-  static const std::size_t edges[4][2] = {{0, 1},
-                                          {1, 2},
-                                          {2, 3},
-                                          {3, 0}};
+  const std::size_t c_per_f = GeometricContact::cells_per_facet(tdim);
+  const std::size_t v_per_f = GeometricContact::vertices_per_facet(tdim);
 
   MeshEditor m_ed;
   m_ed.open(prism_mesh, tdim - 1, gdim);
-  m_ed.init_cells(cells_per_facet);
+  m_ed.init_cells(c_per_f);
   if (tdim == 3)
   {
-    for (unsigned int i = 0; i < cells_per_facet; ++i)
+    for (unsigned int i = 0; i < c_per_f; ++i)
       m_ed.add_cell(i, triangles[i][0], triangles[i][1], triangles[i][2]);
   }
   else
   {
-    for (unsigned int i = 0; i < cells_per_facet; ++i)
+    for (unsigned int i = 0; i < c_per_f; ++i)
       m_ed.add_cell(i, edges[i][0], edges[i][1]);
   }
 
-  m_ed.init_vertices(vertices_per_facet);
-  for (unsigned int vert = 0; vert < vertices_per_facet; ++vert)
-    m_ed.add_vertex(vert, Point(gdim, coord.data() + (local_facet_idx*vertices_per_facet + vert)*gdim));
+  m_ed.init_vertices(v_per_f);
+  for (unsigned int vert = 0; vert < v_per_f; ++vert)
+    m_ed.add_vertex(vert, Point(gdim, coord.data() + (local_facet_idx*v_per_f + vert)*gdim));
   m_ed.close();
 }
 //-----------------------------------------------------------------------------
