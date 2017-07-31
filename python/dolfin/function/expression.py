@@ -54,21 +54,24 @@ class _InterfaceExpression(cpp.function.Expression):
     def __init__(self, user_expression):
         self.user_expression = user_expression
 
-        # Create C++ Expression object
-        cpp.function.Expression.__init__(self)
-
         # Wrap eval functions
         def wrapped_eval(self, values, x):
             self.user_expression.eval(values, x)
         def wrapped_eval_cell(self, values, x, cell):
-            self.user_expression.eval(values, x, cell)
+            self.user_expression.eval_cell(values, x, cell)
 
         # Attach user-provied Python eval functions (if they exist in
         # the user expression class) to the C++ class
         if hasattr(user_expression, 'eval'):
+            print("*** Attaching eval")
             self.eval = types.MethodType(wrapped_eval, self)
-        if hasattr(user_expression, 'eval_cell'):
+        elif hasattr(user_expression, 'eval_cell'):
+            print("*** Attaching eval_cell")
             self.eval_cell = types.MethodType(wrapped_eval_cell, self)
+
+        # Create C++ Expression object
+        cpp.function.Expression.__init__(self)
+
 
 
 class BaseExpression(ufl.Coefficient):
@@ -121,6 +124,7 @@ class UserExpression(BaseExpression):
     """
 
     def __init__(self, *args, **kwargs):
+
         self._cpp_object = _InterfaceExpression(self)
 
         # Extract data
@@ -132,8 +136,6 @@ class UserExpression(BaseExpression):
         name = kwargs.get("name", None)
         label = kwargs.get("label", None)
         mpi_comm = kwargs.get("mpi_comm", None)
-
-        self._cpp_object = _InterfaceExpression(self)
 
         # Deduce element type if not provided
         if element is None:
@@ -147,6 +149,7 @@ class UserExpression(BaseExpression):
 
 class Expression(BaseExpression):
     """JIT Expressions"""
+
     def __init__(self, cpp_code=None, *args, **kwargs):
 
         # Extract data
@@ -196,6 +199,7 @@ class Expression(BaseExpression):
             self._cpp_object.set_property(name, value)
 
 
+# Temporary alias for CompiledExpression name
 class CompiledExpression(Expression):
     def __init__(self, *args, **kwargs):
         super(CompiledExpression, self).__init__(*args, **kwargs)

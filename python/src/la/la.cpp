@@ -326,12 +326,13 @@ namespace dolfin_wrappers
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Vector::*)())
            &dolfin::Vector::shared_instance);
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // dolfin::Scalar
     py::class_<dolfin::Scalar, std::shared_ptr<dolfin::Scalar>, dolfin::GenericTensor>
       (m, "Scalar")
       .def(py::init<>())
-      .def(py::init<MPI_Comm>());
+      .def(py::init<MPI_Comm>())
+      .def("get_scalar_value", &dolfin::Scalar::get_scalar_value);
 
     //----------------------------------------------------------------------------
     // dolfin::GenericLinearAlgebraFactory class

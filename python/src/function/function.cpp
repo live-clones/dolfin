@@ -42,6 +42,10 @@ namespace dolfin_wrappers
 
   void function(py::module& m)
   {
+    // Delcare ufc::cell
+    py::class_<ufc::cell, std::shared_ptr<ufc::cell>>(m, "ufc_cell")
+      .def_readonly("index", &ufc::cell::index);
+
     // Delcare ufc::function
     py::class_<ufc::function, std::shared_ptr<ufc::function>>(m, "ufc_function");
 
@@ -53,7 +57,8 @@ namespace dolfin_wrappers
            { std::vector<double> values;
              self.compute_vertex_values(values, mesh);
              return py::array_t<double>(values.size(), values.data());
-           });
+           })
+      .def("function_space", &dolfin::GenericFunction::function_space);
 
     // dolfin::MultiMeshFunction
     py::class_<dolfin::MultiMeshFunction, std::shared_ptr<dolfin::MultiMeshFunction>>
@@ -103,12 +108,12 @@ namespace dolfin_wrappers
              self.eval(f, x);
              return f;
            })
+      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>,
+                                                      const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
+           &dolfin::Expression::eval,
+           "Evaluate Expression (cell version)")
       .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>) const)
            &dolfin::Expression::eval, py::arg("values"), py::arg("x"), "Evaluate Expression")
-      .def("eval_cell", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>,
-                                                      const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
-           &dolfin::Expression::eval, py::arg("values"), py::arg("x"), py::arg("cell"),
-           "Evaluate Expression (cell version)")
       .def("value_rank", &dolfin::Expression::value_rank)
       .def("value_dimension", &dolfin::Expression::value_dimension)
       .def("get_property", &dolfin::Expression::get_property)

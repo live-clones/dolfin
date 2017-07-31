@@ -159,15 +159,15 @@ def test_ufl_eval():
     assert dot(v0, v0)(x) == 98
 
 
-@pytest.mark.xfail
 def test_overload_and_call_back(V, mesh):
-    class F0(Expression):
+    class F0(UserExpression):
         def eval(self, values, x):
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
 
-    class F1(Expression):
+    class F1(UserExpression):
         def __init__(self, mesh, *arg, **kwargs):
             self.mesh = mesh
+            UserExpression.__init__(self, arg, kwargs)
 
         def eval_cell(self, values, x, cell):
             c = Cell(self.mesh, cell.index)
@@ -390,7 +390,6 @@ def test_wrong_sub_classing():
         wrongParameterNames1()
 
 
-@pytest.mark.xfail
 def test_fail_expression_compilation():
     # Compilation failure only happens on one process,
     # and involves a barrier to let the compilation finish
@@ -480,6 +479,7 @@ def test_num_literal():
     values = e5(0, 0, 0)
     assert values[0] == 2.
     assert values[1] == -1.
+
 
 @pytest.mark.xfail
 def test_name_space_usage(mesh):

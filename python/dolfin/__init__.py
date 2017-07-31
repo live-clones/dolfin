@@ -81,6 +81,7 @@ from .common import timer
 from .common.timer import Timer, timed
 from .fem.assembling import assemble, assemble_system
 from .fem.form import Form
+from .fem.norms import norm
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .fem.interpolation import interpolate
 from .function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
