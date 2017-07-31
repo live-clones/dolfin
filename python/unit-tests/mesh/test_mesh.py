@@ -125,7 +125,6 @@ def test_UFLCell(interval, square, rectangle, cube, box):
     assert ufl.tetrahedron == box.ufl_cell()
 
 
-@pytest.mark.xfail
 def test_UFLDomain(interval, square, rectangle, cube, box):
     import ufl
 
@@ -201,7 +200,6 @@ def test_UnitQuadMesh():
     assert mesh.size_global(2) == 35
 
 
-@pytest.mark.xfail
 def test_UnitHexMesh():
     mesh = UnitHexMesh.create(MPI.comm_world, 5, 7, 9)
     assert mesh.size_global(0) == 480
@@ -263,7 +261,6 @@ def test_Assign(mesh, f):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_Write(cd_tempdir, f):
     """Construct and save a simple meshfunction."""
     f = f
@@ -314,7 +311,6 @@ def test_SubsetIterators(mesh):
 
 # FIXME: Mesh IO tests should be in io test directory
 @skip_in_parallel
-@pytest.mark.xfail
 def test_MeshXML2D(cd_tempdir):
     """Write and read 2D mesh to/from file"""
     mesh_out = UnitSquareMesh(3, 3)
@@ -326,7 +322,6 @@ def test_MeshXML2D(cd_tempdir):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_MeshXML3D(cd_tempdir):
     """Write and read 3D mesh to/from file"""
     mesh_out = UnitCubeMesh(3, 3, 3)
