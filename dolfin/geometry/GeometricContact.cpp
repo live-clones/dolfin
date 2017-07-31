@@ -18,6 +18,8 @@
 
 #include <dolfin/common/ArrayView.h>
 #include <dolfin/function/Function.h>
+#include <dolfin/function/FunctionSpace.h>
+#include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/Facet.h>
@@ -387,10 +389,96 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   }
 }
 //-----------------------------------------------------------------------------
-//void
-//tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function& u,
-//                                     const std::vector<std::size_t>& master_facets,
-//                                     const std::vector<std::size_t>& slave_facets)
-//{
-//
-//}
+void GeometricContact::tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function& u,
+                                                            const std::vector<std::size_t>& master_facets,
+                                                            const std::vector<std::size_t>& slave_facets)
+{
+  const std::size_t tdim = mesh.topology().dim();
+  const std::size_t gdim = mesh.geometry().dim();
+
+  const std::size_t mpi_rank = MPI::rank(mesh.mpi_comm());
+  const std::size_t mpi_size = MPI::size(mesh.mpi_comm());
+
+  const auto V = u.function_space();
+  const auto dofmap = V->dofmap();
+
+  std::vector<std::size_t> local_to_global_dofs;
+  dofmap->tabulate_local_to_global_dofs(local_to_global_dofs);
+
+  // Start from fresh
+  _local_cell_to_contact_dofs.clear();
+
+  // Send the master cell's dofs to the slave.
+  // [proc: [local_slave, contact master dofs, local slave, contact master dofs, ...]]
+  std::vector<std::vector<std::size_t>> send_master_dofs(mpi_size);
+
+  for (const auto& m2s : _master_to_slave)
+  {
+    const std::size_t mi = m2s.first;  // master facet indices
+    const std::vector<std::size_t> sis = m2s.second;  // [proc, slave facet idx, proc, slave facet idx, ...]
+
+    // Cell to which the master facet belongs and its DoFs
+    const Cell m_cell(mesh, Facet(mesh, mi).entities(tdim)[0]);
+    const ArrayView<const dolfin::la_index> m_cell_dofs
+        = dofmap->cell_dofs(m_cell.index());
+
+    for (std::size_t j=0; j<sis.size(); j+=2)
+    {
+      const std::size_t& slave_proc = sis[j];
+      const std::size_t& si = sis[j+1];
+
+      // If the slave is on the current process, then append the dofs.
+      if (mpi_rank == slave_proc)
+      {
+        // Cell to which the slave facet belongs and its DoFs
+        const Cell s_cell(mesh, Facet(mesh, si).entities(tdim)[0]);
+        const ArrayView<const dolfin::la_index> s_cell_dofs
+            = dofmap->cell_dofs(s_cell.index());
+
+        // Insert slave dofs into the map
+        _local_cell_to_contact_dofs[mi].insert(std::end(_local_cell_to_contact_dofs[mi]),
+                                               std::begin(s_cell_dofs),
+                                               std::end(s_cell_dofs));
+
+        _local_cell_to_contact_dofs[si].insert(std::end(_local_cell_to_contact_dofs[si]),
+                                               std::begin(m_cell_dofs),
+                                               std::end(m_cell_dofs));
+      }
+      else // schedule master dofs to be dispatched to the slaves
+      {
+        // Convert to global dofs for column dof entry
+        std::vector<std::size_t> global_master_dofs(std::begin(m_cell_dofs),
+                                                    std::end(m_cell_dofs));
+        for (auto& dof : global_master_dofs)
+          dof = local_to_global_dofs[dof];
+
+        send_master_dofs[slave_proc].push_back(si);
+        send_master_dofs[slave_proc].insert(std::end(send_master_dofs[slave_proc]),
+                                            std::begin(global_master_dofs),
+                                            std::end(global_master_dofs));
+      }
+    }
+
+  }
+
+  // Running in serial. So we're done.
+  if (mpi_size == 1)
+    return;
+
+  std::vector<std::vector<std::size_t>> recv_master_dofs;
+  MPI::all_to_all(mesh.mpi_comm(), send_master_dofs, recv_master_dofs);
+
+  const std::size_t num_dofs_per_cell = dofmap->max_element_dofs();
+  for (const auto& global_master_dofs : recv_master_dofs)
+  {
+    if (global_master_dofs.empty())
+      continue;
+
+    for (std::size_t j = 0; j < global_master_dofs.size(); j += num_dofs_per_cell + 1)
+    {
+      std::vector<std::size_t>& dof_list = _local_cell_to_off_proc_contact_dofs[global_master_dofs[j]];
+      for (std::size_t i = 0; i < num_dofs_per_cell; ++i)
+        dof_list.push_back(global_master_dofs[j + i + 1]);
+    }
+  }
+}
