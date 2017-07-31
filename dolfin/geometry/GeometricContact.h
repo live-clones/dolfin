@@ -52,12 +52,12 @@ namespace dolfin
                                           const std::vector<std::size_t>& master_facets,
                                           const std::vector<std::size_t>& slave_facets);
 
-    /// For each of the local cells on this process. Compute the DoFs of the cells on the
-    /// contact process.
-    void
-    tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function& u,
-                                         const std::vector<std::size_t>& master_facets,
-                                         const std::vector<std::size_t>& slave_facets);
+//    /// For each of the local cells on this process. Compute the DoFs of the cells on the
+//    /// contact process.
+//    void
+//    tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function& u,
+//                                         const std::vector<std::size_t>& master_facets,
+//                                         const std::vector<std::size_t>& slave_facets);
 
     /// Get mapping
     const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave() const
@@ -82,8 +82,23 @@ namespace dolfin
                                         const Mesh& smesh, std::size_t si);
 
     // Project surface forward from a facet using 'u', creating a prismoidal volume in 2D or 3D
-    static std::vector<Point> create_deformed_segment_volume(Mesh& mesh, std::size_t facet_index, const Function& u,
+    static std::vector<Point> create_deformed_segment_volume(const Mesh& mesh,
+                                                             std::size_t facet_index,
+                                                             const Function& u,
                                                              std::size_t gdim);
+
+    // Make a mesh of the displacement volume
+    static bool create_displacement_volume_mesh(Mesh& displacement_mesh,
+                                                const Mesh& mesh,
+                                                const std::vector<std::size_t> contact_facets,
+                                                const Function& u);
+
+    // Make a mesh of a communicated facet
+    static bool create_communicated_prism_mesh(Mesh& prism_mesh,
+                                               const Mesh& mesh,
+                                               const std::vector<std::size_t>& facet,
+                                               const std::vector<double>& coord,
+                                               std::size_t local_facet_idx);
 
     std::map<std::size_t, std::vector<std::size_t>> _master_to_slave;
     std::map<std::size_t, std::vector<std::size_t>> _local_cell_to_contact_dofs;
