@@ -82,8 +82,8 @@ bool GeometricContact::check_tri_set_collision(const Mesh& master_mesh, std::siz
                                                const Mesh& slave_mesh, std::size_t sindex)
 {
 
-  for (unsigned int i = mindex; i < mindex + 8; ++i)
-    for (unsigned int j = sindex; j < sindex + 8; ++j)
+  for (std::size_t i = mindex; i < mindex + 8; ++i)
+    for (std::size_t j = sindex; j < sindex + 8; ++j)
     {
       if (CollisionDetection::collides_triangle_triangle(Cell(master_mesh, i),
                                                          Cell(slave_mesh, j)))
@@ -99,8 +99,8 @@ bool GeometricContact::check_edge_set_collision(const Mesh& master_mesh, std::si
   const auto mconn = master_mesh.topology()(1, 0);
   const auto sconn = slave_mesh.topology()(1, 0);
 
-  for (unsigned int i = mindex; i < mindex + 4; ++i)
-    for (unsigned int j = sindex; j < sindex + 4; ++j)
+  for (std::size_t i = mindex; i < mindex + 4; ++i)
+    for (std::size_t j = sindex; j < sindex + 4; ++j)
     {
       const Point p0 = Vertex(master_mesh, mconn(i)[0]).point();
       const Point p1 = Vertex(master_mesh, mconn(i)[1]).point();
@@ -160,7 +160,7 @@ bool GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
     if (tdim == 3)
     {
       // Add eight triangles
-      for (unsigned int i = 0; i < c_per_f; ++i)
+      for (std::size_t i = 0; i < c_per_f; ++i)
         mesh_ed.add_cell(c + i, v + triangles[i][0],
                          v + triangles[i][1],
                          v + triangles[i][2]);
@@ -168,12 +168,12 @@ bool GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
     else
     {
       // Add four edges
-      for (unsigned int i = 0; i < c_per_f; ++i)
+      for (std::size_t i = 0; i < c_per_f; ++i)
         mesh_ed.add_cell(c + i, v + edges[i][0],
                          v + edges[i][1]);
     }
     c += c_per_f;
-    for (unsigned int i = 0; i < v_per_f; ++i)
+    for (std::size_t i = 0; i < v_per_f; ++i)
       mesh_ed.add_vertex(v + i, master_point_set[i]);
     v += v_per_f;
   }
@@ -214,17 +214,17 @@ bool GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
   m_ed.init_cells(c_per_f);
   if (tdim == 3)
   {
-    for (unsigned int i = 0; i < c_per_f; ++i)
+    for (std::size_t i = 0; i < c_per_f; ++i)
       m_ed.add_cell(i, triangles[i][0], triangles[i][1], triangles[i][2]);
   }
   else
   {
-    for (unsigned int i = 0; i < c_per_f; ++i)
+    for (std::size_t i = 0; i < c_per_f; ++i)
       m_ed.add_cell(i, edges[i][0], edges[i][1]);
   }
 
   m_ed.init_vertices(v_per_f);
-  for (unsigned int vert = 0; vert < v_per_f; ++vert)
+  for (std::size_t vert = 0; vert < v_per_f; ++vert)
     m_ed.add_vertex(vert, Point(gdim, coord.data() + (local_facet_idx*v_per_f + vert)*gdim));
   m_ed.close();
 }
@@ -276,8 +276,8 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   // Check each master 'prism' against each slave 'prism'
   // Map is stored as local_master_facet -> [mpi_rank, local_index, mpi_rank, local_index ...]
   // First check locally
-  for (unsigned int i = 0; i < master_facets.size(); ++i)
-    for (unsigned int j = 0; j < slave_facets.size(); ++j)
+  for (std::size_t i = 0; i < master_facets.size(); ++i)
+    for (std::size_t j = 0; j < slave_facets.size(); ++j)
     {
       // FIXME: for efficiency, use BBT here
       bool collision;
@@ -309,20 +309,20 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
     // can be obtained by integer division of the cell index.
     // Each prism corresponds to a slave facet of the original mesh
     std::vector<std::vector<std::size_t>> send_facets(mpi_size);
-    for (unsigned int i = 0; i < master_procs.size(); ++i)
+    for (std::size_t i = 0; i < master_procs.size(); ++i)
     {
-      const unsigned int master_rank = master_procs[i];
+      const std::size_t master_rank = master_procs[i];
       // Ignore local (already done)
       if (master_rank != mpi_rank)
       {
         // Get facet from cell index (eight triangles per prism)
-        unsigned int facet = slave_cells[i]/cells_per_facet;
+        std::size_t facet = slave_cells[i]/cells_per_facet;
         send_facets[master_rank].push_back(facet);
       }
     }
 
     // Get unique set of facets to send to each process
-    for (unsigned int p = 0; p != mpi_size; ++p)
+    for (std::size_t p = 0; p != mpi_size; ++p)
     {
       std::vector<std::size_t>& v = send_facets[p];
       std::sort(v.begin(), v.end());
@@ -333,7 +333,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
     // Get coordinates of prism (18 doubles in 3D, 8 in 2D)
     // and convert index of slave mesh back to index of main mesh
     std::vector<std::vector<double>> send_coordinates(mpi_size);
-    for (unsigned int p = 0; p != mpi_size; ++p)
+    for (std::size_t p = 0; p != mpi_size; ++p)
     {
       std::vector<double>& coords_p = send_coordinates[p];
       for (auto& q : send_facets[p])
@@ -357,7 +357,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
       auto& coord = recv_coordinates[proc];
       dolfin_assert(coord.size() == gdim*vertices_per_facet*rfacet.size());
 
-      for (unsigned int j = 0; j < rfacet.size(); ++j)
+      for (std::size_t j = 0; j < rfacet.size(); ++j)
       {
         // FIXME: inefficient? but difficult to use BBT with primitives
         // so create a small Mesh for each received prism
@@ -365,7 +365,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
         GeometricContact::create_communicated_prism_mesh(prism_mesh, mesh, rfacet, coord, j);
 
         // Check all local master facets against received slave data
-        for (unsigned int i = 0; i < master_facets.size(); ++i)
+        for (std::size_t i = 0; i < master_facets.size(); ++i)
         {
           bool collision;
           if (tdim == 3)
