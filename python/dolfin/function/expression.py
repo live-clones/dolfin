@@ -46,102 +46,84 @@ def _select_element(family, cell, degree, value_shape):
 
 
 class _InterfaceExpression(cpp.function.Expression):
-    """A DOLFIN C++ Expression . . . . ."""
+    """A DOLFIN C++ Expression to which user eval functions are attached.
+
+    """
 
     def __init__(self, user_expression, *args, **kwargs):
         self.user_expression = user_expression
 
+        # Create C++ Expression object
         cpp.function.Expression.__init__(self, *args, **kwargs)
 
-        def eval(self, values, x):
+        # Wrap eval functions
+        def wrapped_eval(self, values, x):
             self.user_expression.eval(values, x)
-        def eval_cell(self, values, x, cell):
+        def wrapped_eval_cell(self, values, x, cell):
             self.user_expression.eval(values, x, cell)
 
-        # Attach eval functions if they exists in the user expression
-        # class
+        # Attach user-provied Python eval functions (if they exist in
+        # the user expression class) to the C++ class
         if hasattr(user_expression, 'eval'):
-            self.eval = types.MethodType(eval, self)
+            self.eval = types.MethodType(wrapped_eval, self)
         if hasattr(user_expression, 'eval_cell'):
-            self.eval_cell = types.MethodType(eval_cell, self)
-
-
-class UserExpression(ufl.Coefficient):
-    def __init__(self, function_space=None, element=None, degree=None):
-        """Create an Expression."""
-
-        #if element is None and degree is None:
-        #    raise RuntimeError('UserExpression must specific a FiniteElement or a dgeree')
-
-        #if element is None:
-        #    # Create UFL element
-        #    element = ufl.FiniteElement(family, mesh.ufl_cell(), degree,
-        #                                form_degree=None)
-
-        #ufl.Coefficient.__init__(self, function_space)
-        #cpp.function.Expression.__init__(self, 1)
-        #cpp.function.Expression.__init__(self, self.ufl_shape)
-
-        self._cpp_object = _InterfaceExpression(self)
-        value_shape = tuple(self.value_dimension(i)
-                            for i in range(self.value_rank()))
-        if element is None:
-            element = _select_element(family=None, cell=None, degree=2,
-                                      value_shape=value_shape)
-
-        # Initialize UFL base class
-        ufl_function_space = ufl.FunctionSpace(None, element)
-        ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
-
-    def value_rank(self):
-        return self._cpp_object.value_rank()
-
-    def value_dimension(self, i):
-        return self._cpp_object.value_dimension(i)
-
-    def id(self):
-        return self._cpp_object.id()
-
-    def cpp_object(self):
-        """Return the underling cpp.Expression object"""
-        return self._cpp_object
+            self.eval_cell = types.MethodType(wrapped_eval_cell, self)
 
 
 class CompiledExpression(ufl.Coefficient):
-    def __init__(self, statements, **kwargs):
+
+    def __init__(self, cpp_code=None, *args, **kwargs):
 
         # Extract data
         degree = kwargs.pop("degree", None)
         element = kwargs.pop("element", None)
 
-        # Determine Expression type (JIT or user overlaoded)
+        # User expression with overloaded eval functions
+        if not isinstance(cpp_code, (string_types, list, tuple)):
 
-        # Deduce underlying element is not explicitly provided
+            # Create C++ object and attach user provided eval
+            # functions
+            self._cpp_object = _InterfaceExpression(self)
 
-        properties = kwargs
-        for k in properties:
-            if not isinstance(k, string_types):
-                raise KeyError("Invalid key")
-            if not isinstance(properties[k], float):
-                raise ValueError("Invalid value")
+        else:
 
-        self._cpp_object = jit.compile_expression(statements, properties)
+            properties = kwargs
+            for k in properties:
+                if not isinstance(k, string_types):
+                    raise KeyError("Invalid key")
+                if not isinstance(properties[k], float):
+                    raise ValueError("Invalid value")
 
+            self._cpp_object = jit.compile_expression(cpp_code, properties)
+
+
+            def getattr_f(self, name):
+                "Pass attributes through to (JIT compiled) Expression object"
+                if hasattr(self._cpp_object, name):
+                    return self._cpp_object.get_property(name)
+                else:
+                    raise(AttributeError)
+
+            self.__getattr__ = types.MethodType(getattr_f, self)
+
+        # Deduce element type if not provided
         if element is None:
             value_shape = tuple(self.value_dimension(i)
                                 for i in range(self.value_rank()))
             element = _select_element(family=None, cell=None, degree=2,
                                       value_shape=value_shape)
 
+        # Initialise base class
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
-    def __getattr__(self, name):
-        "Pass attributes through to (JIT compiled) Expression object"
-        if hasattr(self._cpp_object, name):
-            return self._cpp_object.get_property(name)
-        else:
-            raise(AttributeError)
+
+    #def __getattr__(self, name):
+    #    "Pass attributes through to (JIT compiled) Expression object"
+    #    if hasattr(self._cpp_object, name):
+    #        return self._cpp_object.get_property(name)
+    #    else:
+    #        raise(AttributeError)
 
     def __setattr__(self, name, value):
         if name.startswith("_"):

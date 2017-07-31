@@ -1,21 +1,8 @@
+from dolfin import *
 import numpy as np
 
-from ufl import TestFunction, dx
-
-import dolfin.cpp.function
-import dolfin.function.expression
-import dolfin.cpp.generation
-import dolfin.function.functionspace
-
-from dolfin.cpp.la import EigenVector
-from dolfin.cpp import MPI
-from dolfin.cpp.fem import Assembler
-from dolfin.fem.form import Form
-from dolfin.function.constant import Constant
-from dolfin.function.expression import CompiledExpression
-
 #class MyNewExpression(dolfin.function.expression.UserExpression):
-class MyNewExpression(dolfin.function.expression.UserExpression):
+class MyNewExpression(CompiledExpression):
     #def eval_cell(self, values, x, cell):
     #    print("in eval")
     #    values[0] = 40.0
@@ -23,8 +10,8 @@ class MyNewExpression(dolfin.function.expression.UserExpression):
         print("in my eval")
         values[0] = 20.0
 
-mesh0 = dolfin.cpp.generation.UnitSquareMesh(1, 1)
-V0 = dolfin.function.functionspace.FunctionSpace(mesh0, "Lagrange", 1)
+mesh0 = UnitSquareMesh(1, 1)
+V0 = FunctionSpace(mesh0, "Lagrange", 1)
 e0 = MyNewExpression(V0)
 print(e0.value_rank())
 
@@ -39,7 +26,7 @@ print("---------------------")
 #print(e.value_dimension(0))
 
 #e0 = Constant(1.0)
-e0 = MyNewExpression(V0)
+#e0 = MyNewExpression(V0)
 v = TestFunction(V0)
 L = e0*v*dx
 assembler = Assembler()
@@ -47,7 +34,7 @@ b = EigenVector(MPI.comm_world, 0)
 
 #form = Form(L)
 #print(type(b), type(form))
-assembler.assemble(b, form)
+assembler.assemble(b, Form(L))
 
 #print(b.array())
 

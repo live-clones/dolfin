@@ -88,7 +88,7 @@ from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
 from .function.constant import Constant
 from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate
-from .function.expression import CompiledExpression, UserExpression
+from .function.expression import CompiledExpression
 # from .mesh.mesh import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh
 from .la import as_backend_type
 from .mesh.meshfunction import (MeshFunction, CellFunction,
