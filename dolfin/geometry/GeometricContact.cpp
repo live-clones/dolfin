@@ -50,9 +50,8 @@ std::vector<Point> GeometricContact::create_deformed_segment_volume(const Mesh& 
   std::size_t id = facet.entities(mesh.topology().dim())[0];
 
   // Vector value of Function
-  Array<double> uval(3);
-  // make sure z-component is zero, for 2D
-  uval[2] = 0.0;
+  // FIXME: if gdim == 2 then does Point have it's z component set to 0?
+  Array<double> uval(u.value_size());
 
   const Cell cell(mesh, id);
   ufc::cell ufc_cell;
