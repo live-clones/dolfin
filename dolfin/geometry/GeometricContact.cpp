@@ -256,10 +256,12 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   // Make sure facet->cell connections are made
   mesh.init(tdim - 1, tdim);
 
+  // Make the displacement volume mesh of the master facets
   Mesh master_mesh(mesh.mpi_comm());
   GeometricContact::create_displacement_volume_mesh(master_mesh, mesh, master_facets, u);
   auto master_bb = master_mesh.bounding_box_tree();
 
+  // Make the displacement volume mesh of the slave facets
   Mesh slave_mesh(mesh.mpi_comm());
   GeometricContact::create_displacement_volume_mesh(slave_mesh, mesh, slave_facets, u);
   auto slave_bb = slave_mesh.bounding_box_tree();
@@ -270,8 +272,8 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   std::size_t mpi_size = MPI::size(mesh.mpi_comm());
 
   // Find number of cells/vertices in projected prism in 2D or 3D
-  const std::size_t cells_per_facet = (tdim - 1)*4;
-  const std::size_t vertices_per_facet = tdim*2;
+  const std::size_t c_per_f = GeometricContact::cells_per_facet(tdim);
+  const std::size_t v_per_f = GeometricContact::vertices_per_facet(tdim);
 
   // Check each master 'prism' against each slave 'prism'
   // Map is stored as local_master_facet -> [mpi_rank, local_index, mpi_rank, local_index ...]
@@ -282,9 +284,9 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
       // FIXME: for efficiency, use BBT here
       bool collision;
       if (tdim == 3)
-        collision = check_tri_set_collision(master_mesh, i*cells_per_facet, slave_mesh, j*cells_per_facet);
+        collision = check_tri_set_collision(master_mesh, i*c_per_f, slave_mesh, j*c_per_f);
       else
-        collision = check_edge_set_collision(master_mesh, i*cells_per_facet, slave_mesh, j*cells_per_facet);
+        collision = check_edge_set_collision(master_mesh, i*c_per_f, slave_mesh, j*c_per_f);
 
       if (collision)
       {
@@ -316,7 +318,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
       if (master_rank != mpi_rank)
       {
         // Get facet from cell index (eight triangles per prism)
-        std::size_t facet = slave_cells[i]/cells_per_facet;
+        std::size_t facet = slave_cells[i]/c_per_f;
         send_facets[master_rank].push_back(facet);
       }
     }
@@ -338,8 +340,8 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
       std::vector<double>& coords_p = send_coordinates[p];
       for (auto& q : send_facets[p])
       {
-        const double *coord_vals = slave_mesh.geometry().vertex_coordinates(q*vertices_per_facet);
-        coords_p.insert(coords_p.end(), coord_vals, coord_vals + gdim*vertices_per_facet);
+        const double *coord_vals = slave_mesh.geometry().vertex_coordinates(q*v_per_f);
+        coords_p.insert(coords_p.end(), coord_vals, coord_vals + gdim*v_per_f);
         // Convert back to main mesh indexing
         q = slave_facets[q];
       }
@@ -355,7 +357,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
     {
       auto& rfacet = recv_facets[proc];
       auto& coord = recv_coordinates[proc];
-      dolfin_assert(coord.size() == gdim*vertices_per_facet*rfacet.size());
+      dolfin_assert(coord.size() == gdim*v_per_f*rfacet.size());
 
       for (std::size_t j = 0; j < rfacet.size(); ++j)
       {
@@ -369,9 +371,9 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
         {
           bool collision;
           if (tdim == 3)
-            collision = check_tri_set_collision(master_mesh, i*cells_per_facet, prism_mesh, 0);
+            collision = check_tri_set_collision(master_mesh, i*c_per_f, prism_mesh, 0);
           else
-            collision = check_edge_set_collision(master_mesh, i*cells_per_facet, prism_mesh, 0);
+            collision = check_edge_set_collision(master_mesh, i*c_per_f, prism_mesh, 0);
 
           if (collision)
           {
@@ -385,7 +387,7 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
 
   }
 }
-////-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //void
 //tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function& u,
 //                                     const std::vector<std::size_t>& master_facets,
