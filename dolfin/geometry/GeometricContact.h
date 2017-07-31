@@ -79,7 +79,7 @@ namespace dolfin
 
     // Check whether two sets of edges collide in 2D
     static bool check_edge_set_collision(const Mesh& mmesh, std::size_t mi,
-                                        const Mesh& smesh, std::size_t si);
+                                         const Mesh& smesh, std::size_t si);
 
     // Project surface forward from a facet using 'u', creating a prismoidal volume in 2D or 3D
     static std::vector<Point> create_deformed_segment_volume(const Mesh& mesh,
@@ -99,6 +99,29 @@ namespace dolfin
                                                const std::vector<std::size_t>& facet,
                                                const std::vector<double>& coord,
                                                std::size_t local_facet_idx);
+
+
+    // Precalculate triangles making the surface of a prism
+    static constexpr std::size_t triangles[8][3] = {{0, 1, 2},
+                                                    {0, 1, 3},
+                                                    {1, 4, 3},
+                                                    {1, 2, 4},
+                                                    {2, 5, 4},
+                                                    {2, 0, 5},
+                                                    {0, 3, 5},
+                                                    {3, 4, 5}};
+
+    // Edges of surface of prism in 2D
+    static constexpr std::size_t edges[4][2] = {{0, 1},
+                                                {1, 2},
+                                                {2, 3},
+                                                {3, 0}};
+
+    // Find number of cells in projected prism in 2D or 3D
+    static std::size_t cells_per_facet(std::size_t tdim) { return (tdim - 1)*4; };
+
+    // Find number of cells in projected prism in 2D or 3D
+    static std::size_t vertices_per_facet(std::size_t tdim) { return tdim*2; };
 
     std::map<std::size_t, std::vector<std::size_t>> _master_to_slave;
     std::map<std::size_t, std::vector<std::size_t>> _local_cell_to_contact_dofs;
