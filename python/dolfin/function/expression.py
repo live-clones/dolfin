@@ -63,10 +63,8 @@ class _InterfaceExpression(cpp.function.Expression):
         # Attach user-provied Python eval functions (if they exist in
         # the user expression class) to the C++ class
         if hasattr(user_expression, 'eval'):
-            print("*** Attaching eval")
             self.eval = types.MethodType(wrapped_eval, self)
         elif hasattr(user_expression, 'eval_cell'):
-            print("*** Attaching eval_cell")
             self.eval_cell = types.MethodType(wrapped_eval_cell, self)
 
         # Create C++ Expression object
@@ -75,22 +73,115 @@ class _InterfaceExpression(cpp.function.Expression):
 
 
 class BaseExpression(ufl.Coefficient):
-    def __init__(self, cell=None, element=None):
+    def __init__(self, cell=None, element=None, *args, **kwargs):
+
+        arguments = ("element", "degree", "cell", "domain", "name", "label", "mpi_comm")
+        #element = kwargs.get("element", None)
+        #degree = kwargs.get("degree", None)
+        #cell = kwargs.get("cell", None)
+        #domain = kwargs.get("domain", None)
+        name = kwargs.get("name", None)
+        label = kwargs.get("label", None)
+        #mpi_comm = kwargs.get("mpi_comm", None)
 
         # Initialise base class
         ufl_function_space = ufl.FunctionSpace(None, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
-        #name = name or "f_" + str(ufl.Coefficient.count(self))
-        #label = label or "User defined expression"
-        #self._cpp_object.rename(name, label)
+        name = name or "f_" + str(ufl.Coefficient.count(self))
+        label = label or "User defined expression"
+        self._cpp_object.rename(name, label)
 
     #@abc.abstractproperty
     #def value(self):
     #    return 'Should never get here'
 
-    def __call__(self, x):
-        return self._cpp_object(x)
+    #def __call__(self, x):
+    #    return self._cpp_object(x)
+    def __call__(self, *args, **kwargs):
+        # GNW: This function is copied from the old DOLFIN Python
+        # code. It is far too complicated. There is no need to provide
+        # so many ways of doing the same thing.
+        #
+        # Deprecate as many options as possible
+
+        if len(args) == 0:
+            raise TypeError("expected at least 1 argument")
+
+        # Test for ufl restriction
+        if len(args) == 1 and isinstance(args[0], string_types):
+            if args[0] in ('+', '-'):
+                return ufl.Coefficient.__call__(self, *args)
+
+        # Test for ufl mapping
+        if len(args) == 2 and isinstance(args[1], dict) and self in args[1]:
+            return ufl.Coefficient.__call__(self, *args)
+
+        # Some help variables
+        value_size = product(self.ufl_element().value_shape())
+
+        # If values (return argument) is passed, check the type and length
+        values = kwargs.get("values", None)
+        if values is not None:
+            if not isinstance(values, numpy.ndarray):
+                raise TypeError("expected a NumPy array for 'values'")
+            if len(values) != value_size or not numpy.issubdtype(values.dtype, 'd'):
+                raise TypeError("expected a double NumPy array of length"\
+                                " %d for return values." % value_size)
+            values_provided = True
+        else:
+            values_provided = False
+            values = numpy.zeros(value_size, dtype='d')
+
+        # Get dim if element has any domains
+        cell = self.ufl_element().cell()
+        dim = None if cell is None else cell.geometric_dimension()
+
+        # Assume all args are x argument
+        x = args
+
+        # If only one x argument has been provided, unpack it if it's
+        # an iterable
+        if len(x) == 1:
+            if isinstance(x[0], cpp.geometry.Point):
+                if dim is not None:
+                    x = [x[0][i] for i in range(dim)]
+                else:
+                    x = [x[0][i] for i in range(3)]
+            elif hasattr(x[0], '__iter__'):
+                x = x[0]
+
+        # Convert it to an 1D numpy array
+        try:
+            x = numpy.fromiter(x, 'd')
+        except (TypeError, ValueError, AssertionError) as e:
+            print(e)
+            raise TypeError("expected scalar arguments for the coordinates")
+
+        if len(x) == 0:
+            raise TypeError("coordinate argument too short")
+
+        if dim is None:
+            # Disabled warning as it breaks py.test due to excessive
+            # output, and that code that is warned about is still
+            # officially supported. See
+            # https://bitbucket.org/fenics-project/dolfin/issues/355/
+            # warning("Evaluating an Expression without knowing the right geometric dimension, assuming %d is correct." % len(x))
+            pass
+        else:
+            if len(x) != dim:
+                raise TypeError("expected the geometry argument to be of "\
+                                "length %d" % dim)
+
+        # The actual evaluation
+        self._cpp_object.eval(values, x)
+
+        # If scalar return statement, return scalar value.
+        if value_size == 1 and not values_provided:
+            return values[0]
+
+        return values
+
 
     def id(self):
         return self._cpp_object.id()
@@ -144,7 +235,7 @@ class UserExpression(BaseExpression):
             element = _select_element(family=None, cell=None, degree=2,
                                       value_shape=value_shape)
 
-        BaseExpression.__init__(self, cell=None, element=element)
+        BaseExpression.__init__(self, None, element, *args, **kwargs)
 
 
 class Expression(BaseExpression):
@@ -181,7 +272,7 @@ class Expression(BaseExpression):
                                       value_shape=value_shape)
 
 
-        BaseExpression.__init__(self, cell=None, element=element)
+        BaseExpression.__init__(self, cell, element, *args, **kwargs)
 
     # This is added dynamically in the intialiser to allow checking of
     # eval in user classes.

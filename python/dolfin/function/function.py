@@ -52,11 +52,17 @@ class Function(ufl.Coefficient):
         else:
             raise TypeError("expected a FunctionSpace or a Function as argument 1")
 
+    def __call__(self, x):
+        return self._cpp_object.__call__(x)
+
     def interpolate(self, u):
         if isinstance(u, ufl.Coefficient):
             self._cpp_object.interpolate(u._cpp_object)
         else:
             self._cpp_object.interpolate(u)
+
+    def function_space(self):
+        return self._cpp_object.function_space()
 
     def vector(self):
         return self._cpp_object.vector()

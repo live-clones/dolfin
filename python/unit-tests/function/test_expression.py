@@ -45,9 +45,10 @@ def W(mesh):
     return VectorFunctionSpace(mesh, 'CG', 1)
 
 
-@pytest.mark.xfail
 def test_arbitrary_eval(mesh):
-    class F0(Expression):
+    class F0(UserExpression):
+        def __init__(self, *args, **kwargs):
+            UserExpression.__init__(self, *args, **kwargs)
         def eval(self, values, x):
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
 
@@ -111,8 +112,8 @@ def test_arbitrary_eval(mesh):
     u3 = f2(x)
     u4 = g0(x)
     u5 = g1(x)
-    assert round(u3 - u4, 7) == 0
-    assert round(u3 - u5, 4) == 0
+    assert round(float(u3 - u4), 7) == 0
+    assert round(float(u3 - u5), 4) == 0
 
     if has_petsc():
         PETScOptions.clear("mat_mumps_icntl_14")

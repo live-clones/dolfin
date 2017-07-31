@@ -13,8 +13,8 @@ class Form(cpp.fem.Form):
 
         ufc_form = ffc.jit(form, form_compiler_parameters)
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
-        function_spaces = [func.function_space() for func
-                           in form.arguments()]
+
+        function_spaces = [func.function_space() for func in form.arguments()]
         cpp.fem.Form.__init__(self, ufc_form, function_spaces)
 
         original_coefficients = form.coefficients()

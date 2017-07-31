@@ -51,7 +51,7 @@ from .cpp.la import (has_linear_algebra_backend,
                      has_krylov_solver_preconditioner)
 
 if has_linear_algebra_backend('PETSc'):
-    from .cpp.la import PETScVector, PETScMatrix, PETScFactory
+    from .cpp.la import PETScVector, PETScMatrix, PETScFactory, PETScOptions
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
@@ -84,6 +84,7 @@ from .fem.form import Form
 from .fem.norms import norm
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .fem.interpolation import interpolate
+from .fem.projection import project
 from .function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
 from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
