@@ -120,6 +120,22 @@ bool GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
                                                        const std::vector<std::size_t> contact_facets,
                                                        const Function& u)
 {
+  // Precalculate triangles making the surface of a prism
+  const std::size_t triangles[8][3] = {{0, 1, 2},
+                                       {0, 1, 3},
+                                       {1, 4, 3},
+                                       {1, 2, 4},
+                                       {2, 5, 4},
+                                       {2, 0, 5},
+                                       {0, 3, 5},
+                                       {3, 4, 5}};
+
+  // Edges of surface of prism in 2D
+  const std::size_t edges[4][2] = {{0, 1},
+                                       {1, 2},
+                                       {2, 3},
+                                       {3, 0}};
+
   const std::size_t tdim = mesh.topology().dim();
 
   // Find number of cells/vertices in projected prism in 2D or 3D
@@ -171,6 +187,22 @@ bool GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
                                                       const std::vector<double>& coord,
                                                       std::size_t local_facet_idx)
 {
+  // Precalculate triangles making the surface of a prism
+  const std::size_t triangles[8][3] = {{0, 1, 2},
+                                       {0, 1, 3},
+                                       {1, 4, 3},
+                                       {1, 2, 4},
+                                       {2, 5, 4},
+                                       {2, 0, 5},
+                                       {0, 3, 5},
+                                       {3, 4, 5}};
+
+  // Edges of surface of prism in 2D
+  const std::size_t edges[4][2] = {{0, 1},
+                                       {1, 2},
+                                       {2, 3},
+                                       {3, 0}};
+
   const std::size_t tdim = mesh.topology().dim();
   const std::size_t gdim = mesh.geometry().dim();
 
