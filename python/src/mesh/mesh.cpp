@@ -68,6 +68,28 @@ namespace dolfin_wrappers
     py::class_<dolfin::CellType> (m, "CellType")
       .def("description", &dolfin::CellType::description);
 
+    //--------------------------------------------------------------------------
+    // dolfin::MeshGeometry class
+    py::class_<dolfin::MeshGeometry, std::shared_ptr<dolfin::MeshGeometry>>
+      (m, "MeshGeometry", "DOLFIN MeshGeometry object")
+      .def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension")
+      .def("degree", &dolfin::MeshGeometry::degree, "Degree");
+
+    //-------------------------------------------------------------------------
+    // dolfin::MeshTopology class
+    py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
+      (m, "MeshTopology", "DOLFIN MeshTopology object")
+      .def("dim", &dolfin::MeshTopology::dim, "Topological dimension")
+      .def("__call__", (const dolfin::MeshConnectivity& (dolfin::MeshTopology::*)(std::size_t, std::size_t) const)
+           &dolfin::MeshTopology::operator())
+      .def("size", &dolfin::MeshTopology::size)
+      .def("hash", &dolfin::MeshTopology::hash)
+      .def("global_indices", &dolfin::MeshTopology::global_indices)
+      .def("have_shared_entities", &dolfin::MeshTopology::have_shared_entities)
+      .def("shared_entities",
+           (const std::map<std::int32_t, std::set<unsigned int> >&(dolfin::MeshTopology::*)(unsigned int) const)
+           &dolfin::MeshTopology::shared_entities);
+
     //-------------------------------------------------------------------------
     // dolfin::Mesh class
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh",
@@ -94,8 +116,8 @@ namespace dolfin_wrappers
            })
       .def("data", (dolfin::MeshData& (dolfin::Mesh::*)())
            &dolfin::Mesh::data, "Data associated with a mesh")
-      .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)())
-           &dolfin::Mesh::geometry, "Mesh geometry")
+      .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)()) &dolfin::Mesh::geometry,
+           py::return_value_policy::reference, "Mesh geometry")
       .def("id", &dolfin::Mesh::id)
       .def("init_global", &dolfin::Mesh::init_global)
       .def("init", (void (dolfin::Mesh::*)() const) &dolfin::Mesh::init)
@@ -150,27 +172,6 @@ namespace dolfin_wrappers
       .def("size", (std::size_t (dolfin::MeshConnectivity::*)(std::size_t) const)
            &dolfin::MeshConnectivity::size);
 
-    //-------------------------------------------------------------------------
-    // dolfin::MeshTopology class
-    py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
-      (m, "MeshTopology", "DOLFIN MeshTopology object")
-      .def("dim", &dolfin::MeshTopology::dim, "Topological dimension")
-      .def("__call__", (const dolfin::MeshConnectivity& (dolfin::MeshTopology::*)(std::size_t, std::size_t) const)
-           &dolfin::MeshTopology::operator())
-      .def("size", &dolfin::MeshTopology::size)
-      .def("hash", &dolfin::MeshTopology::hash)
-      .def("global_indices", &dolfin::MeshTopology::global_indices)
-      .def("have_shared_entities", &dolfin::MeshTopology::have_shared_entities)
-      .def("shared_entities",
-           (const std::map<std::int32_t, std::set<unsigned int> >&(dolfin::MeshTopology::*)(unsigned int) const)
-           &dolfin::MeshTopology::shared_entities);
-
-    //--------------------------------------------------------------------------
-    // dolfin::MeshGeometry class
-    py::class_<dolfin::MeshGeometry, std::shared_ptr<dolfin::MeshGeometry>>
-      (m, "MeshGeometry", "DOLFIN MeshGeometry object")
-      .def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension")
-      .def("degree", &dolfin::MeshGeometry::degree, "Degree");
 
     //-------------------------------------------------------------------------
     // dolfin::MeshEntity class

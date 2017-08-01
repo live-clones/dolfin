@@ -179,6 +179,18 @@ namespace dolfin_wrappers
       .def("init", (void (dolfin::GenericVector::*)(const dolfin::TensorLayout&)) &dolfin::GenericVector::init)
       .def("init", (void (dolfin::GenericVector::*)(std::pair<std::size_t, std::size_t>)) &dolfin::GenericVector::init)
       .def("copy", &dolfin::GenericVector::copy)
+      .def("__isub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
+           {
+             auto a = self.copy();
+             (*a) -= v;
+             return a;
+           })
+      .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
+           {
+             auto a = self.copy();
+             (*a) -= v;
+             return a;
+           })
       .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
            {
              std::size_t start, stop, step, slicelength;
@@ -186,9 +198,11 @@ namespace dolfin_wrappers
                throw py::error_already_set();
              if (start != 0 or stop != self.size() or step != 1)
                throw std::range_error("Only full slices are supported");
+
              std::vector<double> values;
              self.get_local(values);
-             return values;
+             return py::array_t<double>(values.size(), values.data());
+             //return self.copy();
            })
       .def("__getitem__", &dolfin::GenericVector::getitem)
       .def("__setitem__", [](dolfin::GenericVector& self, py::slice slice, double value)
@@ -199,6 +213,29 @@ namespace dolfin_wrappers
              if (start != 0 or stop != self.size() or step != 1)
                throw std::range_error("Only full slices are supported");
              self = value;
+           })
+      .def("__setitem__", [](dolfin::GenericVector& self, py::slice slice, const dolfin::GenericVector& x)
+           {
+             std::size_t start, stop, step, slicelength;
+             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+             if (start != 0 or stop != self.size() or step != 1)
+               throw std::range_error("Only full slices are supported");
+             self = x;
+           })
+      .def("__setitem__", [](dolfin::GenericVector& self, py::slice slice, const py::array_t<double> x)
+           {
+             std::size_t start, stop, step, slicelength;
+             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+             if (start != 0 or stop != self.size() or step != 1)
+               throw std::range_error("Only full slices are supported");
+
+             std::vector<double> values(x.data(), x.data() + x.size());
+             if (!values.empty())
+               self.set_local(values);
+
+             //self = x;
            })
       .def("__setitem__", &dolfin::GenericVector::setitem)
       .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)

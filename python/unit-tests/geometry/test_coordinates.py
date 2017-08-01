@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 """Unit tests for coordinates interface"""
 
 # Copyright (C) 2016 Jan Blechta
@@ -26,7 +24,7 @@ import numpy as np
 from dolfin import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh # , UnitDiscMesh
 from dolfin import FunctionSpace, VectorFunctionSpace, Function
 from dolfin import get_coordinates, set_coordinates, Mesh
-from dolfin import Expression, interpolate
+from dolfin import UserExpression, Expression, interpolate
 from dolfin_utils.test import skip_in_parallel, fixture
 
 
@@ -67,16 +65,18 @@ def _check_coords(mesh, c):
         return
 
     # Compare supplied c with interpolation of x
-    class X(Expression):
+    class X(UserExpression):
+        def __init(self, *args, **kwargs):
+            UserExpression.__init__(self, *args, **kwargs)
         def eval(self, values, x):
             values[:] = x[:]
+
     x = X(domain=mesh, element=mesh.ufl_coordinate_element())
     x = interpolate(x, c.function_space())
-    x.vector()[:] -= c.vector()
+    x.vector()[:] -= c.vector()[:]
     assert np.isclose(x.vector().norm("l1"), 0.0)
 
 
-@pytest.mark.xfail
 def test_linear(meshes_p1):
     for mesh in meshes_p1:
         _test_get_set_coordinates(mesh)

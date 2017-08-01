@@ -51,7 +51,7 @@ class _InterfaceExpression(cpp.function.Expression):
 
     """
 
-    def __init__(self, user_expression):
+    def __init__(self, user_expression, value_shape):
         self.user_expression = user_expression
 
         # Wrap eval functions
@@ -68,24 +68,16 @@ class _InterfaceExpression(cpp.function.Expression):
             self.eval_cell = types.MethodType(wrapped_eval_cell, self)
 
         # Create C++ Expression object
-        cpp.function.Expression.__init__(self)
+        cpp.function.Expression.__init__(self, value_shape)
 
 
 
 class BaseExpression(ufl.Coefficient):
-    def __init__(self, cell=None, element=None, *args, **kwargs):
-
-        arguments = ("element", "degree", "cell", "domain", "name", "label", "mpi_comm")
-        #element = kwargs.get("element", None)
-        #degree = kwargs.get("degree", None)
-        #cell = kwargs.get("cell", None)
-        #domain = kwargs.get("domain", None)
-        name = kwargs.get("name", None)
-        label = kwargs.get("label", None)
-        #mpi_comm = kwargs.get("mpi_comm", None)
+    def __init__(self, cell=None, element=None, domain=None, name=None,
+                 label=None):
 
         # Initialise base class
-        ufl_function_space = ufl.FunctionSpace(None, element)
+        ufl_function_space = ufl.FunctionSpace(domain, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
         name = name or "f_" + str(ufl.Coefficient.count(self))
@@ -216,10 +208,10 @@ class UserExpression(BaseExpression):
 
     def __init__(self, *args, **kwargs):
 
-        self._cpp_object = _InterfaceExpression(self)
+        #self._cpp_object = _InterfaceExpression(self)
 
         # Extract data
-        arguments = ("element", "degree", "cell", "domain", "name", "label", "mpi_comm")
+        #arguments = ("element", "degree", "cell", "domain", "name", "label", "mpi_comm")
         element = kwargs.get("element", None)
         degree = kwargs.get("degree", None)
         cell = kwargs.get("cell", None)
@@ -234,8 +226,12 @@ class UserExpression(BaseExpression):
                                 for i in range(self.value_rank()))
             element = _select_element(family=None, cell=None, degree=2,
                                       value_shape=value_shape)
+        else:
+            value_shape = element.value_shape()
 
-        BaseExpression.__init__(self, None, element, *args, **kwargs)
+        self._cpp_object = _InterfaceExpression(self, value_shape)
+        BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
+                                name=name, label=label)
 
 
 class Expression(BaseExpression):
@@ -272,7 +268,8 @@ class Expression(BaseExpression):
                                       value_shape=value_shape)
 
 
-        BaseExpression.__init__(self, cell, element, *args, **kwargs)
+        BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
+                                name=name, label=label)
 
     # This is added dynamically in the intialiser to allow checking of
     # eval in user classes.
