@@ -185,6 +185,13 @@ namespace dolfin_wrappers
              (*a) -= v;
              return a;
            })
+      .def("__itruediv__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
+           &dolfin::GenericVector::operator/=)
+      .def("__iadd__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
+           &dolfin::GenericVector::operator+=)
+      //.def(py::self += py::self)
+      .def("__iadd__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
+           &dolfin::GenericVector::operator+=)
       .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
            {
              auto a = self.copy();
@@ -244,6 +251,10 @@ namespace dolfin_wrappers
              (*a) -= v;
              return a;
            }, py::is_operator())
+      .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
+           &dolfin::GenericVector::operator*=)
+      .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
+           &dolfin::GenericVector::operator*=)
       .def("get_local", [](const dolfin::GenericVector& instance, const std::vector<long>& rows)
            {
              std::vector<dolfin::la_index> _rows(rows.begin(), rows.end());
@@ -321,21 +332,10 @@ namespace dolfin_wrappers
              a -= b;
              return a;
            })
-      .def("__iadd__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
-           &dolfin::Vector::operator+=)
-      .def(py::self += py::self)
-      //      .def("__iadd__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
-      //           &dolfin::Vector::operator+=)
       .def("__isub__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
            &dolfin::Vector::operator-=)
       .def("__isub__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
            &dolfin::Vector::operator-=)
-      .def("__imul__", (const dolfin::Vector& (dolfin::Vector::*)(double))
-           &dolfin::Vector::operator*=)
-      .def("__imul__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
-           &dolfin::Vector::operator*=)
-      .def("__itruediv__", (const dolfin::Vector& (dolfin::Vector::*)(double))
-           &dolfin::Vector::operator/=)
       .def("__setitem__", [](dolfin::Vector& self, dolfin::la_index index, double value)
            { self.instance()->setitem(index, value); })
       .def("__setitem__", [](dolfin::Vector& self, py::slice slice, double value)
