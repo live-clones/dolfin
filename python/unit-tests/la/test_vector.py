@@ -154,7 +154,6 @@ class TestVectorForAnyBackend:
         data = zeros((v0.local_size()), dtype='d')
         v0.add_local(data)
 
-    @pytest.mark.xfail
     def test_gather(self, any_backend):
         # Gather not implemented in Eigen
         if any_backend == "Eigen" or any_backend == "Tpetra":
@@ -294,7 +293,6 @@ class TestVectorForAnyBackend:
         v0 *= v1
         assert v0.sum() == -6.0*n
 
-    @pytest.mark.xfail
     def test_scalar_divide(self, any_backend):
         n = 301
         v0 = Vector(MPI.comm_world, n)

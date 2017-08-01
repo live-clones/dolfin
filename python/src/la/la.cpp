@@ -134,6 +134,14 @@ namespace dolfin_wrappers
                dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object")
       .def("init_vector", &dolfin::GenericMatrix::init_vector)
+      .def("transpmult", &dolfin::GenericMatrix::transpmult)
+      .def("__mul__", [](const dolfin::GenericMatrix& self, const dolfin::GenericVector& x)
+           {
+             dolfin::Vector y;
+             self.init_vector(y, 0);
+             self.mult(x, y);
+             return y;
+           }, py::is_operator())
       .def("copy", &dolfin::GenericMatrix::copy)
       .def("local_range", &dolfin::GenericMatrix::local_range)
       .def("norm", &dolfin::GenericMatrix::norm)
@@ -277,6 +285,8 @@ namespace dolfin_wrappers
            { self.set_local(x.data(), x.size(), indices.data()); self.apply("insert"); })
       .def("__setitem__", &dolfin::GenericVector::setitem)
       //
+      .def("__len__", [](dolfin::GenericVector& self) { return self.size(); })
+      //
       .def("get_local", [](const dolfin::GenericVector& instance, const std::vector<long>& rows)
            {
              std::vector<dolfin::la_index> _rows(rows.begin(), rows.end());
@@ -320,6 +330,8 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm>()) // This comes last of constructors so pybind11 attempts it lasts (avoid OpenMPI comm casting problems)
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
            &dolfin::Matrix::shared_instance);
+
+
 
     // dolfin::Vector class
     py::class_<dolfin::Vector, std::shared_ptr<dolfin::Vector>, dolfin::GenericVector>
