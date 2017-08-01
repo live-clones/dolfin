@@ -41,6 +41,7 @@ namespace dolfin_wrappers
       (m, "Variable", "Variable base class")
       .def("id", &dolfin::Variable::id)
       .def("name", &dolfin::Variable::name)
+      .def("label", &dolfin::Variable::label)
       .def("rename", &dolfin::Variable::rename);
 
     // From dolfin/common/defines.h

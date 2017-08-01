@@ -40,7 +40,8 @@ from .cpp import MPI
 from .cpp.function import Expression, Constant #, interpolate
 from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
-                      DiscreteOperators, assemble_local, LinearVariationalProblem, NonlinearVariationalProblem, LinearVariationalSolver, NonlinearVariationalSolver)
+                      DiscreteOperators, assemble_local, LinearVariationalProblem, NonlinearVariationalProblem, LinearVariationalSolver, NonlinearVariationalSolver, SparsityPatternBuilder)
+
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitDiscMesh, UnitQuadMesh, UnitHexMesh,
                              UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh)
@@ -56,7 +57,7 @@ if has_linear_algebra_backend('PETSc'):
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
 from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, EigenMatrix,
-                     EigenVector, EigenFactory, LUSolver, KrylovSolver)
+                     EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout)
 from .cpp.log import info
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
@@ -73,6 +74,7 @@ from .cpp.parameter import Parameters, parameters
 from .cpp.io import X3DOM, X3DOMParameters
 
 # Python modules
+from . import io
 from . import mesh
 from . import parameter
 
@@ -80,6 +82,7 @@ from .common import timer
 from .common.timer import Timer, timed
 from .fem.assembling import assemble, assemble_system
 from .fem.form import Form
+from .fem.norms import norm
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .fem.interpolation import interpolate
 from .fem.solving import solve, LocalSolver
@@ -89,7 +92,7 @@ from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
 from .function.constant import Constant
 from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate
-from .function.expression import CompiledExpression, UserExpression
+from .function.expression import CompiledExpression, Expression, UserExpression
 # from .mesh.mesh import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh
 from .la import as_backend_type
 from .mesh.meshfunction import (MeshFunction, CellFunction,

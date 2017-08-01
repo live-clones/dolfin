@@ -33,6 +33,7 @@
 #include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/la/GenericVector.h>
+#include <dolfin/geometry/Point.h>
 
 namespace py = pybind11;
 
@@ -41,6 +42,10 @@ namespace dolfin_wrappers
 
   void function(py::module& m)
   {
+    // Delcare ufc::cell
+    py::class_<ufc::cell, std::shared_ptr<ufc::cell>>(m, "ufc_cell")
+      .def_readonly("index", &ufc::cell::index);
+
     // Delcare ufc::function
     py::class_<ufc::function, std::shared_ptr<ufc::function>>(m, "ufc_function");
 
@@ -52,7 +57,8 @@ namespace dolfin_wrappers
            { std::vector<double> values;
              self.compute_vertex_values(values, mesh);
              return py::array_t<double>(values.size(), values.data());
-           });
+           })
+      .def("function_space", &dolfin::GenericFunction::function_space);
 
     // dolfin::MultiMeshFunction
     py::class_<dolfin::MultiMeshFunction, std::shared_ptr<dolfin::MultiMeshFunction>>
@@ -89,19 +95,25 @@ namespace dolfin_wrappers
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
       .def(py::init<std::vector<std::size_t>>())
-      .def("__call__", [](const dolfin::Expression& self, const Eigen::Ref<Eigen::VectorXd>& x)
+      .def("__call__", [](const dolfin::Expression& self, const Eigen::Ref<Eigen::VectorXd> x)
            {
              Eigen::VectorXd f(self.value_size());
              self.eval(f, x);
              return f;
            })
+      .def("__call__", [](const dolfin::Expression& self, const dolfin::Point& p)
+           {
+             const Eigen::Map<Eigen::VectorXd> x(const_cast<double*>(p.coordinates()), 3);
+             Eigen::VectorXd f(self.value_size());
+             self.eval(f, x);
+             return f;
+           })
       .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>,
-                                                 const Eigen::Ref<Eigen::VectorXd>) const)
-           &dolfin::Expression::eval, "Evaluate Expression")
-      .def("eval_cell", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>,
                                                       const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::Expression::eval,
            "Evaluate Expression (cell version)")
+      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>) const)
+           &dolfin::Expression::eval, py::arg("values"), py::arg("x"), "Evaluate Expression")
       .def("value_rank", &dolfin::Expression::value_rank)
       .def("value_dimension", &dolfin::Expression::value_dimension)
       .def("get_property", &dolfin::Expression::get_property)

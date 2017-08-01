@@ -35,6 +35,7 @@
 #include <dolfin/la/Matrix.h>
 #include <dolfin/la/Vector.h>
 #include <dolfin/la/Scalar.h>
+#include <dolfin/la/TensorLayout.h>
 #include <dolfin/la/DefaultFactory.h>
 #include <dolfin/la/EigenFactory.h>
 #include <dolfin/la/EigenMatrix.h>
@@ -44,6 +45,7 @@
 #include <dolfin/la/PETScVector.h>
 #include <dolfin/la/LUSolver.h>
 #include <dolfin/la/KrylovSolver.h>
+#include <dolfin/la/SparsityPattern.h>
 
 #include "../mpi_interface.h"
 
@@ -66,6 +68,47 @@ namespace dolfin_wrappers
       .value("UNOWNED", dolfin::IndexMap::MapSize::UNOWNED)
       .value("GLOBAL", dolfin::IndexMap::MapSize::GLOBAL);
 
+    // dolfin::SparsityPattern
+    py::class_<dolfin::SparsityPattern, std::shared_ptr<dolfin::SparsityPattern>>(m, "SparsityPattern")
+      .def("init", &dolfin::SparsityPattern::init)
+      .def("num_nonzeros", &dolfin::SparsityPattern::num_nonzeros)
+      .def("num_nonzeros_diagonal", [](const dolfin::SparsityPattern& instance)
+           {
+             std::vector<std::size_t> num_nonzeros;
+             instance.num_nonzeros_diagonal(num_nonzeros);
+             return py::array_t<std::size_t>(num_nonzeros.size(), num_nonzeros.data());
+           })
+      .def("num_nonzeros_off_diagonal", [](const dolfin::SparsityPattern& instance)
+           {
+             std::vector<std::size_t> num_nonzeros;
+             instance.num_nonzeros_off_diagonal(num_nonzeros);
+             return py::array_t<std::size_t>(num_nonzeros.size(), num_nonzeros.data());
+           })
+      .def("num_local_nonzeros", [](const dolfin::SparsityPattern& instance)
+           {
+             std::vector<std::size_t> num_nonzeros;
+             instance.num_local_nonzeros(num_nonzeros);
+             return py::array_t<std::size_t>(num_nonzeros.size(), num_nonzeros.data());
+           });
+
+    // dolfin::TensorLayout
+    py::class_<dolfin::TensorLayout, std::shared_ptr<dolfin::TensorLayout>> tensor_layout(m, "TensorLayout");
+
+    // dolfin::TensorLayout enums
+    py::enum_<dolfin::TensorLayout::Sparsity>(tensor_layout, "Sparsity")
+      .value("SPARSE", dolfin::TensorLayout::Sparsity::SPARSE)
+      .value("DENSE", dolfin::TensorLayout::Sparsity::DENSE);
+    py::enum_<dolfin::TensorLayout::Ghosts>(tensor_layout, "Ghosts")
+      .value("GHOSTED", dolfin::TensorLayout::Ghosts::GHOSTED)
+      .value("UNGHOSTED", dolfin::TensorLayout::Ghosts::UNGHOSTED);
+
+    tensor_layout
+      .def(py::init<MPI_Comm, std::size_t, dolfin::TensorLayout::Sparsity>())
+      .def(py::init<MPI_Comm, std::vector<std::shared_ptr<const dolfin::IndexMap>>,
+           std::size_t, dolfin::TensorLayout::Sparsity, dolfin::TensorLayout::Ghosts>())
+      .def("init", &dolfin::TensorLayout::init)
+      .def("sparsity_pattern", (std::shared_ptr<dolfin::SparsityPattern> (dolfin::TensorLayout::*)()) &dolfin::TensorLayout::sparsity_pattern);
+
     // dolfin::LinearAlgebraObject
     py::class_<dolfin::LinearAlgebraObject, std::shared_ptr<dolfin::LinearAlgebraObject>,
                dolfin::Variable>(m, "LinearAlgebraObject");
@@ -80,6 +123,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>,
                dolfin::LinearAlgebraObject>
       (m, "GenericTensor", "DOLFIN GenericTensor object")
+      .def("init", &dolfin::GenericTensor::init)
       .def("zero", &dolfin::GenericTensor::zero);
 
     // dolfin::GenericMatrix class
@@ -128,6 +172,9 @@ namespace dolfin_wrappers
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>,
                dolfin::GenericTensor>
       (m, "GenericVector", "DOLFIN GenericVector object")
+      .def("init", (void (dolfin::GenericVector::*)(std::size_t)) &dolfin::GenericVector::init)
+      .def("init", (void (dolfin::GenericVector::*)(const dolfin::TensorLayout&)) &dolfin::GenericVector::init)
+      .def("init", (void (dolfin::GenericVector::*)(std::pair<std::size_t, std::size_t>)) &dolfin::GenericVector::init)
       .def("copy", &dolfin::GenericVector::copy)
       .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
            {
@@ -207,7 +254,6 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::Vector&>())
       .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::size_t>())
-      .def("init", (void (dolfin::Vector::*)(std::pair<std::size_t, std::size_t>))&dolfin::Vector::init)
       .def("mpi_comm", &dolfin::Vector::mpi_comm)
       .def("size", &dolfin::Vector::size)
       .def("__add__", [](dolfin::Vector& self, dolfin::Vector& v)
@@ -280,12 +326,13 @@ namespace dolfin_wrappers
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Vector::*)())
            &dolfin::Vector::shared_instance);
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // dolfin::Scalar
     py::class_<dolfin::Scalar, std::shared_ptr<dolfin::Scalar>, dolfin::GenericTensor>
       (m, "Scalar")
       .def(py::init<>())
-      .def(py::init<MPI_Comm>());
+      .def(py::init<MPI_Comm>())
+      .def("get_scalar_value", &dolfin::Scalar::get_scalar_value);
 
     //----------------------------------------------------------------------------
     // dolfin::GenericLinearAlgebraFactory class

@@ -67,6 +67,7 @@ setup(
               "dolfin.function",
               "dolfin.fem",
               "dolfin.la",
+              "dolfin.io",
               "dolfin.mesh",
               "dolfin.parameter",
               "dolfin_utils.test"],

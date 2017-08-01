@@ -16,17 +16,19 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 #include <memory>
+#include <vector>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
 #include <dolfin/io/File.h>
-#include <dolfin/io/GenericFile.h>
 #include <dolfin/io/HDF5Attribute.h>
 #include <dolfin/io/HDF5File.h>
 #include <dolfin/io/VTKFile.h>
 #include <dolfin/io/XDMFFile.h>
 #include <dolfin/io/X3DOM.h>
+#include <dolfin/function/Function.h>
+#include <dolfin/geometry/Point.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MeshFunction.h>
@@ -46,45 +48,42 @@ namespace dolfin_wrappers
       .def(py::init<std::string>())
       .def(py::init<std::string, std::string>())
       //
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::Parameters&)) &dolfin::File::operator<<)
+      .def("write", (void (dolfin::File::*)(const dolfin::Parameters&)) &dolfin::File::write)
       //
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::Mesh&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::Mesh*, double>)) &dolfin::File::operator<<)
+      .def("write", (void (dolfin::File::*)(const dolfin::Mesh&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::Mesh&, double)) &dolfin::File::write)
       //
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::Function&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::Function*, double>)) &dolfin::File::operator<<)
+      .def("write", (void (dolfin::File::*)(const dolfin::Function&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::Function&, double)) &dolfin::File::write)
        //
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<int>&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<int>*, double>)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<std::size_t>&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<std::size_t>*, double>)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<double>&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<double>*, double>)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const dolfin::MeshFunction<bool>&)) &dolfin::File::operator<<)
-      .def("__lshift__", (void (dolfin::File::*)(const std::pair<const dolfin::MeshFunction<bool>*, double>)) &dolfin::File::operator<<)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<int>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<int>&, double)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<std::size_t>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<std::size_t>&, double)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<double>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<double>&, double)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<bool>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<bool>&, double)) &dolfin::File::write)
       // Unpack
-      .def("__lshift__", [](dolfin::File& instance, py::tuple u)
-           {
-             auto _u = u[0].attr("_cpp_object").cast<dolfin::Function*>();
-             auto _t = u[1].cast<double>();
-             instance << std::make_pair(_u, _t);
-           })
-      .def("__lshift__", [](dolfin::File& instance, py::object u)
+      .def("write", [](dolfin::File& instance, py::object u)
            {
              auto _u = u.attr("_cpp_object").cast<dolfin::Function&>();
-             instance << _u;
+             instance.write(_u);
+           })
+      .def("write", [](dolfin::File& instance, py::object u, double t)
+           {
+             auto _u = u.attr("_cpp_object").cast<dolfin::Function&>();
+             instance.write(_u, t);
            })
       // Read
-      .def("__rshift__", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::operator>>)
-      .def("__rshift__", (void (dolfin::File::*)(dolfin::Mesh&)) &dolfin::File::operator>>);
+      .def("read", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::Mesh&)) &dolfin::File::read);
 
     // dolfin::VTKFile
     py::class_<dolfin::VTKFile, std::shared_ptr<dolfin::VTKFile>>(m, "VTKFile")
       .def(py::init<std::string, std::string>())
-      .def("__lshift__",  [](dolfin::VTKFile& instance, const dolfin::Mesh& mesh)
-           { instance << mesh; })
       .def("write", [](dolfin::VTKFile& instance, const dolfin::Mesh& mesh)
-           { instance << mesh; });
+           { instance.write(mesh); });
 
 #ifdef HAS_HDF5
     // HDF5
@@ -145,7 +144,8 @@ namespace dolfin_wrappers
                return py::object();
              }
            })
-      .def("__contains__", [](const dolfin::HDF5Attribute& instance, std::string key) { return instance.exists(key); })
+      .def("__contains__", [](const dolfin::HDF5Attribute& instance, std::string key)
+           { return instance.exists(key); })
       .def("list_attributes", &dolfin::HDF5Attribute::list_attributes)
       .def("type_str", &dolfin::HDF5Attribute::type_str);
 
@@ -196,6 +196,12 @@ namespace dolfin_wrappers
     // dolfin::XDMFFile
     py::class_<dolfin::XDMFFile, std::shared_ptr<dolfin::XDMFFile>> xdmf_file(m, "XDMFFile");
 
+    xdmf_file
+      .def(py::init<MPI_Comm, std::string>())
+      .def(py::init<std::string>())
+      .def("__enter__", [](dolfin::XDMFFile& self){ return &self; })
+      .def("__exit__", [](dolfin::XDMFFile& self, py::args args, py::kwargs kwargs){ self.close(); });
+
     // dolfin::XDMFFile::Encoding (enum)
     py::enum_<dolfin::XDMFFile::Encoding>(xdmf_file, "Encoding")
       .value("HDF5", dolfin::XDMFFile::Encoding::HDF5)
@@ -203,11 +209,7 @@ namespace dolfin_wrappers
 
     // dolfin::XDMFFile::write
     xdmf_file
-      .def(py::init<MPI_Comm, std::string>())
-      .def(py::init<std::string>())
-      .def("__enter__", [](dolfin::XDMFFile& self){ return &self; })
-      .def("__exit__", [](dolfin::XDMFFile& self, py::args args, py::kwargs kwargs){ self.close(); })
-      // Function
+       // Function
       .def("write", (void (dolfin::XDMFFile::*)(const dolfin::Function&, dolfin::XDMFFile::Encoding))
            &dolfin::XDMFFile::write, py::arg("u"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       .def("write", (void (dolfin::XDMFFile::*)(const dolfin::Function&, double, dolfin::XDMFFile::Encoding))
@@ -233,26 +235,38 @@ namespace dolfin_wrappers
            &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
       .def("write", (void (dolfin::XDMFFile::*)(const dolfin::MeshValueCollection<double>&, dolfin::XDMFFile::Encoding))
            &dolfin::XDMFFile::write, py::arg("mvc"), py::arg("encoding") = dolfin::XDMFFile::Encoding::HDF5)
+      // py:object / dolfin.function.Function
+      .def("write", [](dolfin::XDMFFile& instance, const py::object u, dolfin::XDMFFile::Encoding encoding)
+           {
+             try
+             {
+               auto _u = u.attr("_cpp_object").cast<dolfin::Function&>();
+               instance.write(_u, encoding);
+             }
+             catch (const std::exception& e)
+             {
+               // Do nothing, pybind11 will try next function
+             }
+           }, py::arg("u"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
+      .def("write", [](dolfin::XDMFFile& instance, const py::object u, double t, dolfin::XDMFFile::Encoding encoding)
+           {
+             try
+             {
+               auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+               instance.write(*_u, t, encoding);
+             }
+             catch (const std::exception& e)
+             {
+               // Do nothing, pybind11 will try next function
+             }
+           }, py::arg("u"), py::arg("t"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       // Points
       .def("write", (void (dolfin::XDMFFile::*)(const std::vector<dolfin::Point>&, dolfin::XDMFFile::Encoding))
            &dolfin::XDMFFile::write, py::arg("points"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       .def("write", (void (dolfin::XDMFFile::*)(const std::vector<dolfin::Point>&, const std::vector<double>&,
-                                                dolfin::XDMFFile::Encoding))
-           &dolfin::XDMFFile::write,
-           py::arg("u"), py::arg("values"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
-      // py:object / dolfin.function.Function (these function are
-      // registered last so the the specialised version are prefered.
-      .def("write", [](dolfin::XDMFFile& instance, const py::object u, dolfin::XDMFFile::Encoding encoding)
-           {
-             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
-             instance.write(*_u, encoding);
-           }, py::arg("u"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
-      .def("write", [](dolfin::XDMFFile& instance, const py::object u, double t, dolfin::XDMFFile::Encoding encoding)
-           {
-             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
-             instance.write(*_u, t, encoding);
-           }, py::arg("u"), py::arg("t"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
-      //
+                                                dolfin::XDMFFile::Encoding)) &dolfin::XDMFFile::write,
+           py::arg("points"), py::arg("values"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
+      // Check points
       .def("write_checkpoint", [](dolfin::XDMFFile& instance, const dolfin::Function& u,
                                   std::string function_name,
                                   double time_step, dolfin::XDMFFile::Encoding encoding)

@@ -44,12 +44,14 @@
 #include <dolfin/fem/PointSource.h>
 #include <dolfin/fem/SystemAssembler.h>
 #include <dolfin/fem/PETScDMCollection.h>
+#include <dolfin/fem/SparsityPatternBuilder.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/GenericFunction.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
+#include <dolfin/la/SparsityPattern.h>
 
 namespace py = pybind11;
 
@@ -177,6 +179,15 @@ namespace dolfin_wrappers
       .def("ownership_range", &dolfin::DofMap::ownership_range)
       .def("cell_dofs", &dolfin::DofMap::cell_dofs);
 
+    // dolfin::SparsityPatternBuilder
+    py::class_<dolfin::SparsityPatternBuilder>(m, "SparsityPatternBuilder")
+      .def_static("build", &dolfin::SparsityPatternBuilder::build,
+                  py::arg("sparsity_pattern"),py::arg("mesh"),
+                  py::arg("dofmaps"), py::arg("cells"),
+                  py::arg("interior_facets"), py::arg("exterior_facets"),
+                  py::arg("vertices"), py::arg("diagonal"),
+                  py::arg("init")=true, py::arg("finalize")=true);
+
     // dolfin::DirichletBC class
     py::class_<dolfin::DirichletBC, std::shared_ptr<dolfin::DirichletBC>>
       (m, "DirichletBC", "DOLFIN DirichletBC object")
@@ -250,36 +261,42 @@ namespace dolfin_wrappers
       .def("apply", (void (dolfin::PointSource::*)(dolfin::GenericVector&)) &dolfin::PointSource::apply)
       .def("apply", (void (dolfin::PointSource::*)(dolfin::GenericMatrix&)) &dolfin::PointSource::apply);
 
-    py::class_<dolfin::LinearVariationalProblem>(m, "LinearVariationalProblem")
+    py::class_<dolfin::LinearVariationalProblem,
+               std::shared_ptr<dolfin::LinearVariationalProblem>>
+      (m, "LinearVariationalProblem")
       .def(py::init<std::shared_ptr<const dolfin::Form>,
            std::shared_ptr<const dolfin::Form>,
            std::shared_ptr<dolfin::Function>,
            std::vector<std::shared_ptr<const dolfin::DirichletBC>>>());
 
-    py::class_<dolfin::LinearVariationalSolver>(m, "LinearVariationalSolver")
+    py::class_<dolfin::LinearVariationalSolver,
+               std::shared_ptr<dolfin::LinearVariationalSolver>>(m, "LinearVariationalSolver")
       .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>());
 
 
 
-    py::class_<dolfin::NonlinearVariationalProblem>(m, "NonlinearVariationalProblem")
+    py::class_<dolfin::NonlinearVariationalProblem,
+               std::shared_ptr<dolfin::NonlinearVariationalProblem>>
+      (m, "NonlinearVariationalProblem")
       .def(py::init<std::shared_ptr<const dolfin::Form>,
            std::shared_ptr<dolfin::Function>,
            std::vector<std::shared_ptr<const dolfin::DirichletBC>>,
            std::shared_ptr<const dolfin::Form>>());
 
-    py::class_<dolfin::NonlinearVariationalSolver>(m, "NonlinearVariationalSolver");
+    py::class_<dolfin::NonlinearVariationalSolver, std::shared_ptr<dolfin::NonlinearVariationalSolver>>(m, "NonlinearVariationalSolver");
 
-    py::class_<dolfin::LocalSolver> local_solver(m, "LocalSolver");
+    py::class_<dolfin::LocalSolver, std::shared_ptr<dolfin::LocalSolver>>
+      local_solver(m, "LocalSolver");
 
     py::enum_<dolfin::LocalSolver::SolverType>(local_solver, "SolverType")
       .value("LU", dolfin::LocalSolver::SolverType::LU)
       .value("Cholesky", dolfin::LocalSolver::SolverType::Cholesky);
 
 
-      local_solver.def(py::init<std::shared_ptr<const dolfin::Form>,
-           std::shared_ptr<const dolfin::Form>,
-           dolfin::LocalSolver::SolverType>())
-        .def("solve_local_rhs", &dolfin::LocalSolver::solve_local_rhs);
+    local_solver.def(py::init<std::shared_ptr<const dolfin::Form>,
+                     std::shared_ptr<const dolfin::Form>,
+                     dolfin::LocalSolver::SolverType>())
+      .def("solve_local_rhs", &dolfin::LocalSolver::solve_local_rhs);
 
 #ifdef HAS_PETSC
     // dolfin::PETScDMCollection

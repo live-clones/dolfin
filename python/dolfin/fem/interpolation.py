@@ -26,6 +26,7 @@ finite element space."""
 
 # Local imports
 import dolfin.cpp as cpp
+from dolfin.function.function import Function
 
 
 def interpolate(v, V):
@@ -57,8 +58,8 @@ def interpolate(v, V):
     #                     "Illegal function space for interpolation, not a FunctionSpace (%s)" % str(v))
 
     # Compute interpolation
-    Pv = cpp.function.Function(V)
+    Pv = Function(V)
 
-    Pv.interpolate(v)
+    Pv.interpolate(v._cpp_object)
 
     return Pv
