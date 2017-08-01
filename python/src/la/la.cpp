@@ -114,7 +114,8 @@ namespace dolfin_wrappers
 
     // dolfin::LinearAlgebraObject
     py::class_<dolfin::LinearAlgebraObject, std::shared_ptr<dolfin::LinearAlgebraObject>,
-               dolfin::Variable>(m, "LinearAlgebraObject");
+               dolfin::Variable>(m, "LinearAlgebraObject")
+    .def("mpi_comm", &dolfin::GenericLinearOperator::mpi_comm);
 
     // dolfin::GenericLinearOperator class
     py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>,
@@ -188,10 +189,14 @@ namespace dolfin_wrappers
       .def("init", (void (dolfin::GenericVector::*)(std::pair<std::size_t, std::size_t>)) &dolfin::GenericVector::init)
       .def("copy", &dolfin::GenericVector::copy)
       // sub
+      .def("__isub__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
+           &dolfin::GenericVector::operator-=)
       .def("__isub__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
            &dolfin::GenericVector::operator-=)
-      .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
-           { auto a = self.copy(); (*a) -= v; return a; }, py::is_operator())
+      .def("__sub__", [](dolfin::GenericVector& self, double a)
+           { auto u = self.copy(); (*u) -= a; return u; }, py::is_operator())
+      .def("__sub__", [](dolfin::GenericVector& self, const dolfin::GenericVector& v)
+           { auto u = self.copy(); (*u) -= v; return u; }, py::is_operator())
       // div
       .def("__itruediv__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
            &dolfin::GenericVector::operator/=)
@@ -287,6 +292,7 @@ namespace dolfin_wrappers
       //
       .def("__len__", [](dolfin::GenericVector& self) { return self.size(); })
       //
+      .def("size",  (std::size_t (dolfin::GenericVector::*)() const) &dolfin::GenericVector::size)
       .def("get_local", [](const dolfin::GenericVector& instance, const std::vector<long>& rows)
            {
              std::vector<dolfin::la_index> _rows(rows.begin(), rows.end());
@@ -306,10 +312,26 @@ namespace dolfin_wrappers
              dolfin::Array<double> _values(values.size(), values.mutable_data());
              self.add_local(_values);
            })
+      .def("gather", [](const dolfin::GenericVector& instance, dolfin::GenericVector& y,
+                        const std::vector<dolfin::la_index>& rows)
+           { instance.gather(y, rows); })
+      .def("gather", [](const dolfin::GenericVector& instance, py::array_t<dolfin::la_index> rows)
+           {
+             std::vector<dolfin::la_index> _rows(rows.data(), rows.data() + rows.size());
+             std::vector<double> values(rows.size());
+             instance.gather(values, _rows);
+             return py::array_t<double>(values.size(), values.data());
+           })
       .def("gather", [](const dolfin::GenericVector& instance, std::vector<dolfin::la_index> rows)
            {
              std::vector<double> values(rows.size());
              instance.gather(values, rows);
+             return py::array_t<double>(values.size(), values.data());
+           })
+      .def("gather_on_zero", [](const dolfin::GenericVector& instance)
+           {
+             std::vector<double> values;
+             instance.gather_on_zero(values);
              return py::array_t<double>(values.size(), values.data());
            })
       .def("sum", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::sum)
@@ -340,8 +362,6 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::Vector&>())
       .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::size_t>())
-      .def("mpi_comm", &dolfin::Vector::mpi_comm)
-      .def("size", &dolfin::Vector::size)
       .def("sum", (double (dolfin::Vector::*)() const) &dolfin::Vector::sum)
       .def("min", &dolfin::Vector::min)
       .def("max", &dolfin::Vector::max)
@@ -378,6 +398,7 @@ namespace dolfin_wrappers
     // dolfin::DefaultFactory class
     py::class_<dolfin::DefaultFactory, std::shared_ptr<dolfin::DefaultFactory>>
       (m, "DefaultFactory", "DOLFIN DefaultFactory object")
+      .def(py::init<>())
       .def_static("factory", &dolfin::DefaultFactory::factory)
       .def("create_matrix", &dolfin::DefaultFactory::create_matrix)
       .def("create_vector", &dolfin::DefaultFactory::create_vector);
@@ -396,9 +417,9 @@ namespace dolfin_wrappers
     py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>,
                dolfin::GenericVector>
       (m, "EigenVector", "DOLFIN EigenVector object")
-      .def(py::init<MPI_Comm, std::size_t>());
-      //.def("array", (Eigen::VectorXd& (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec,
-      //     py::return_value_policy::reference_internal);
+      .def(py::init<MPI_Comm, std::size_t>())
+      .def("array", (Eigen::VectorXd& (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec,
+           py::return_value_policy::reference_internal);
 
     //----------------------------------------------------------------------------
     // dolfin::EigenMatrix class

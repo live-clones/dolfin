@@ -29,6 +29,7 @@ import six
 from copy import copy
 
 from dolfin import *
+from dolfin.la import la_index_dtype
 from dolfin_utils.test import *
 from math import sqrt
 
@@ -137,7 +138,7 @@ class TestVectorForAnyBackend:
         from numpy import empty
         n = 301
         v0 = Vector(MPI.comm_world, n)
-        data = v0.get_local()
+        data = v0.array()
 
     def test_set_local(self, any_backend):
         from numpy import zeros
