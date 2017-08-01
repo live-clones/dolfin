@@ -45,9 +45,10 @@ def W(mesh):
     return VectorFunctionSpace(mesh, 'CG', 1)
 
 
-@pytest.mark.xfail
 def test_arbitrary_eval(mesh):
-    class F0(Expression):
+    class F0(UserExpression):
+        def __init__(self, *args, **kwargs):
+            UserExpression.__init__(self, *args, **kwargs)
         def eval(self, values, x):
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
 
@@ -111,8 +112,8 @@ def test_arbitrary_eval(mesh):
     u3 = f2(x)
     u4 = g0(x)
     u5 = g1(x)
-    assert round(u3 - u4, 7) == 0
-    assert round(u3 - u5, 4) == 0
+    assert round(float(u3 - u4), 7) == 0
+    assert round(float(u3 - u5), 4) == 0
 
     if has_petsc():
         PETScOptions.clear("mat_mumps_icntl_14")
@@ -191,10 +192,9 @@ def test_overload_and_call_back(V, mesh):
     assert round(s2 - ref, 7) == 0
 
 
-@pytest.mark.xfail
 def test_wrong_eval():
     # Test wrong evaluation
-    class F0(Expression):
+    class F0(UserExpression):
         def eval(self, values, x):
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
 
@@ -222,11 +222,10 @@ def test_wrong_eval():
 def test_vector_valued_expression_member_function(mesh):
     V = FunctionSpace(mesh,'CG',1)
     W = VectorFunctionSpace(mesh,'CG',1, dim=3)
-    fs = [
-        CompiledExpression(("1", "2", "3"), degree=1),
-        Constant((1, 2, 3)),
-        interpolate(Constant((1, 2, 3)), W),
-    ]
+
+    fs = [CompiledExpression(("1", "2", "3"), degree=1),
+          Constant((1, 2, 3)),
+          interpolate(Constant((1, 2, 3)), W)]
     for f in fs:
         u = CompiledExpression("f[0] + f[1] + f[2]", f=f, degree=1)
         v = interpolate(u, V)
@@ -243,7 +242,7 @@ def test_meshfunction_expression():
     mesh = UnitSquareMesh(1, 1)
     V = FunctionSpace(mesh, "DG", 0)
 
-    c = CellFunctionSizet(mesh)
+    c = CellFunction("size_t", mesh)
     c[0] = 2
     c[1] = 3
     e = Expression("(double)c", c=c, degree=0)
@@ -292,7 +291,7 @@ def test_meshfunction_expression():
 
 @pytest.mark.xfail
 def test_no_write_to_const_array():
-    class F1(Expression):
+    class F1(UserExpression):
         def eval(self, values, x):
             x[0] = 1.0
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
@@ -405,11 +404,11 @@ def test_fail_expression_compilation():
 
 @pytest.mark.xfail
 def test_element_instantiation():
-    class F0(Expression):
+    class F0(UserExpression):
         def eval(self, values, x):
             values[0] = 1.0
 
-    class F1(Expression):
+    class F1(UserExpression):
         def eval(self, values, x):
             values[0] = 1.0
             values[1] = 1.0
@@ -417,7 +416,7 @@ def test_element_instantiation():
         def value_shape(self):
             return (2,)
 
-    class F2(Expression):
+    class F2(UserExpression):
         def eval(self, values, x):
             values[0] = 1.0
             values[1] = 1.0

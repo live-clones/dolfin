@@ -42,10 +42,12 @@
 #include <dolfin/la/EigenVector.h>
 #include <dolfin/la/PETScFactory.h>
 #include <dolfin/la/PETScMatrix.h>
+#include <dolfin/la/PETScOptions.h>
 #include <dolfin/la/PETScVector.h>
 #include <dolfin/la/LUSolver.h>
 #include <dolfin/la/KrylovSolver.h>
 #include <dolfin/la/SparsityPattern.h>
+#include <dolfin/la/solve.h>
 
 #include "../mpi_interface.h"
 
@@ -396,13 +398,19 @@ namespace dolfin_wrappers
              Eigen::VectorXd values  = Eigen::Map<const Eigen::VectorXd>(std::get<2>(_data), nnz);
 
              return py::make_tuple(rows, cols, values);
-             //return std::tuple<Eigen::VectorXi, Eigen::VectorXi, Eigen::VectorXd>(rows, cols, values);
            },
-           py::return_value_policy::copy,
-           "Return copy of CSR matrix data as NumPy arrays");
-
+           py::return_value_policy::copy, "Return copy of CSR matrix data as NumPy arrays");
 
     #ifdef HAS_PETSC
+    py::class_<dolfin::PETScOptions>(m, "PETScOptions")
+      .def_static("set", (void (*)(std::string)) &dolfin::PETScOptions::set)
+      .def_static("set", (void (*)(std::string, bool)) &dolfin::PETScOptions::set)
+      .def_static("set", (void (*)(std::string, int)) &dolfin::PETScOptions::set)
+      .def_static("set", (void (*)(std::string, double)) &dolfin::PETScOptions::set)
+      .def_static("set", (void (*)(std::string, std::string)) &dolfin::PETScOptions::set)
+      .def_static("clear", (void (*)(std::string)) &dolfin::PETScOptions::clear)
+      .def_static("clear", (void (*)()) &dolfin::PETScOptions::clear);
+
     py::class_<dolfin::PETScObject, std::shared_ptr<dolfin::PETScObject>>(m, "PETScObject");
 
     // dolfin::PETScFactory class
@@ -470,6 +478,12 @@ namespace dolfin_wrappers
     m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
     m.def("has_krylov_solver_method", &dolfin::has_krylov_solver_method);
     m.def("has_krylov_solver_preconditioner", &dolfin::has_krylov_solver_preconditioner);
+
+    // solve
+    m.def("solve", (std::size_t (*)(const dolfin::GenericLinearOperator&, dolfin::GenericVector&,
+                                    const dolfin::GenericVector&, std::string, std::string)) &dolfin::solve,
+          py::arg("A"), py::arg("x"), py::arg("b"), py::arg("method")="lu",
+          py::arg("preconditioner")="none");
 
   }
 }
