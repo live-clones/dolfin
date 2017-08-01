@@ -116,7 +116,7 @@ bool GeometricContact::check_edge_set_collision(const Mesh& master_mesh, std::si
   return false;
 }
 //-----------------------------------------------------------------------------
-bool GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
+void GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
                                                        const Mesh& mesh,
                                                        const std::vector<std::size_t> contact_facets,
                                                        const Function& u)
@@ -182,7 +182,7 @@ bool GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
   mesh_ed.close();
 }
 //-----------------------------------------------------------------------------
-bool GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
+void GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
                                                       const Mesh& mesh,
                                                       const std::vector<double>& coord,
                                                       std::size_t local_facet_idx)
@@ -230,6 +230,76 @@ bool GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
   m_ed.close();
 }
 //-----------------------------------------------------------------------------
+void GeometricContact::tabulate_displacement_volume_mesh_pairs(const Mesh& mesh,
+                                                               const Mesh& slave_mesh,
+                                                               const Mesh& master_mesh,
+                                                               const std::vector<std::size_t>& slave_facets,
+                                                               std::vector<std::vector<std::size_t>>& send_facets,
+                                                               std::vector<std::vector<double>>& send_coordinates)
+{
+  send_coordinates.clear();
+  send_facets.clear();
+
+  const std::size_t mpi_size = MPI::size(mesh.mpi_comm());
+  const std::size_t mpi_rank = MPI::rank(mesh.mpi_comm());
+
+  const std::size_t tdim = mesh.topology().dim();
+  const std::size_t gdim = mesh.geometry().dim();
+
+  const std::size_t c_per_f = GeometricContact::cells_per_facet(tdim);
+  const std::size_t v_per_f = GeometricContact::vertices_per_facet(tdim);
+
+  auto slave_bb = slave_mesh.bounding_box_tree();
+  auto master_bb = master_mesh.bounding_box_tree();
+
+  // Find which master processes collide with which local slave cells
+  auto overlap = master_bb->compute_process_entity_collisions(*slave_bb);
+  auto master_procs = overlap.first;
+  auto slave_cells = overlap.second;
+
+  // Get slave facet indices to send
+  // The slave mesh consists of repeated units of eight triangles
+  // making the prisms which are projected forward. The "prism index"
+  // can be obtained by integer division of the cell index.
+  // Each prism corresponds to a slave facet of the original mesh
+  send_facets.resize(mpi_size);
+  for (std::size_t i = 0; i < master_procs.size(); ++i)
+  {
+    const std::size_t master_rank = master_procs[i];
+    // Ignore local (already done)
+    if (master_rank != mpi_rank)
+    {
+      // Get facet from cell index (2D: 4 edges per prism, 3D: eight triangles per prism)
+      std::size_t facet = slave_cells[i]/c_per_f;
+      send_facets[master_rank].push_back(facet);
+    }
+  }
+
+  // Get unique set of facets to send to each process
+  for (std::size_t p = 0; p != mpi_size; ++p)
+  {
+    std::vector<std::size_t>& v = send_facets[p];
+    std::sort(v.begin(), v.end());
+    auto last = std::unique(v.begin(), v.end());
+    v.erase(last, v.end());
+  }
+
+  // Get coordinates of prism (18 doubles in 3D, 8 in 2D)
+  // and convert index of slave mesh back to index of main mesh
+  send_coordinates.resize(mpi_size);
+  for (std::size_t p = 0; p != mpi_size; ++p)
+  {
+    std::vector<double>& coords_p = send_coordinates[p];
+    for (auto& q : send_facets[p])
+    {
+      const double* coord_vals = slave_mesh.geometry().x(q*v_per_f);
+      coords_p.insert(coords_p.end(), coord_vals, coord_vals + gdim*v_per_f);
+      // Convert from local prism index to main mesh local facet indexing
+      q = slave_facets[q];
+    }
+  }
+}
+//-----------------------------------------------------------------------------
 void GeometricContact::contact_surface_map_volume_sweep(Mesh& mesh, Function& u,
 const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& slave_facets)
 {
@@ -260,14 +330,13 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   // Make the displacement volume mesh of the master facets
   Mesh master_mesh(mesh.mpi_comm());
   GeometricContact::create_displacement_volume_mesh(master_mesh, mesh, master_facets, u);
-  auto master_bb = master_mesh.bounding_box_tree();
 
   // Make the displacement volume mesh of the slave facets
   Mesh slave_mesh(mesh.mpi_comm());
   GeometricContact::create_displacement_volume_mesh(slave_mesh, mesh, slave_facets, u);
-  auto slave_bb = slave_mesh.bounding_box_tree();
 
   _master_to_slave.clear();
+  _slave_to_master.clear();
 
   std::size_t mpi_rank = MPI::rank(mesh.mpi_comm());
   std::size_t mpi_size = MPI::size(mesh.mpi_comm());
@@ -295,58 +364,18 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
         const std::size_t sf = slave_facets[j];
         _master_to_slave[mf].push_back(mpi_rank);
         _master_to_slave[mf].push_back(sf);
+        _slave_to_master[sf].push_back(mpi_rank);
+        _slave_to_master[sf].push_back(mf);
       }
     }
 
   // Find which [master global/slave entity] BBs overlap in parallel
   if (mpi_size > 1)
   {
-    // Find which master processes collide with which local slave cells
-    auto overlap = master_bb->compute_process_entity_collisions(*slave_bb);
-    auto master_procs = overlap.first;
-    auto slave_cells = overlap.second;
+    std::vector<std::vector<std::size_t>> send_facets;
+    std::vector<std::vector<double>> send_coordinates;
 
-    // Get slave facet indices to send
-    // The slave mesh consists of repeated units of eight triangles
-    // making the prisms which are projected forward. The "prism index"
-    // can be obtained by integer division of the cell index.
-    // Each prism corresponds to a slave facet of the original mesh
-    std::vector<std::vector<std::size_t>> send_facets(mpi_size);
-    for (std::size_t i = 0; i < master_procs.size(); ++i)
-    {
-      const std::size_t master_rank = master_procs[i];
-      // Ignore local (already done)
-      if (master_rank != mpi_rank)
-      {
-        // Get facet from cell index (eight triangles per prism)
-        std::size_t facet = slave_cells[i]/c_per_f;
-        send_facets[master_rank].push_back(facet);
-      }
-    }
-
-    // Get unique set of facets to send to each process
-    for (std::size_t p = 0; p != mpi_size; ++p)
-    {
-      std::vector<std::size_t>& v = send_facets[p];
-      std::sort(v.begin(), v.end());
-      auto last = std::unique(v.begin(), v.end());
-      v.erase(last, v.end());
-    }
-
-    // Get coordinates of prism (18 doubles in 3D, 8 in 2D)
-    // and convert index of slave mesh back to index of main mesh
-    std::vector<std::vector<double>> send_coordinates(mpi_size);
-    for (std::size_t p = 0; p != mpi_size; ++p)
-    {
-      std::vector<double>& coords_p = send_coordinates[p];
-      for (auto& q : send_facets[p])
-      {
-        const double* coord_vals = slave_mesh.geometry().vertex_coordinates(q*v_per_f);
-        coords_p.insert(coords_p.end(), coord_vals, coord_vals + gdim*v_per_f);
-        // Convert back to main mesh indexing
-        q = slave_facets[q];
-      }
-    }
+    GeometricContact::tabulate_displacement_volume_mesh_pairs(mesh, slave_mesh, master_mesh, slave_facets, send_facets, send_coordinates);
 
     std::vector<std::vector<std::size_t>> recv_facets(mpi_size);
     MPI::all_to_all(mesh.mpi_comm(), send_facets, recv_facets);
@@ -402,6 +431,7 @@ void GeometricContact::tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function
   const auto V = u.function_space();
   const auto dofmap = V->dofmap();
 
+  // tabulate global DoFs required for off-process insertion
   std::vector<std::size_t> local_to_global_dofs;
   dofmap->tabulate_local_to_global_dofs(local_to_global_dofs);
 
@@ -469,6 +499,10 @@ void GeometricContact::tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function
   MPI::all_to_all(mesh.mpi_comm(), send_master_dofs, recv_master_dofs);
 
   const std::size_t num_dofs_per_cell = dofmap->max_element_dofs();
+
+  // Tabulate the communicated dofs belonging to the master cells. This requires
+  // saving the global DoFs of the master cells to _local_cell_to_off_proc_contact_dofs
+  // at the index of the local on process slave cell index.
   for (const auto& global_master_dofs : recv_master_dofs)
   {
     if (global_master_dofs.empty())
@@ -476,6 +510,8 @@ void GeometricContact::tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function
 
     for (std::size_t j = 0; j < global_master_dofs.size(); j += num_dofs_per_cell + 1)
     {
+      // global_master_dofs[j] is the slave facet local index. global_master_dofs[j+1:j+num_dofs_per_cell]
+      // are the communicated master cell dofs.
       std::vector<std::size_t>& dof_list = _local_cell_to_off_proc_contact_dofs[global_master_dofs[j]];
       for (std::size_t i = 0; i < num_dofs_per_cell; ++i)
         dof_list.push_back(global_master_dofs[j + i + 1]);

@@ -95,16 +95,24 @@ namespace dolfin
                                                              std::size_t gdim);
 
     // Make a mesh of the displacement volume
-    static bool create_displacement_volume_mesh(Mesh& displacement_mesh,
+    static void create_displacement_volume_mesh(Mesh& displacement_mesh,
                                                 const Mesh& mesh,
                                                 const std::vector<std::size_t> contact_facets,
                                                 const Function& u);
 
     // Make a mesh of a communicated facet
-    static bool create_communicated_prism_mesh(Mesh& prism_mesh,
+    static void create_communicated_prism_mesh(Mesh& prism_mesh,
                                                const Mesh& mesh,
                                                const std::vector<double>& coord,
                                                std::size_t local_facet_idx);
+
+    // Tabulate pairings between collided displacement volume meshes.
+    static void tabulate_displacement_volume_mesh_pairs(const Mesh& mesh,
+                                                        const Mesh& slave_mesh,
+                                                        const Mesh& master_mesh,
+                                                        const std::vector<std::size_t>& slave_facets,
+                                                        std::vector<std::vector<std::size_t>>& send_facets,
+                                                        std::vector<std::vector<double>>& send_coordinates);
 
     // Find number of cells in projected prism in 2D or 3D
     static std::size_t cells_per_facet(std::size_t tdim) { return (tdim - 1)*4; };
@@ -113,6 +121,7 @@ namespace dolfin
     static std::size_t vertices_per_facet(std::size_t tdim) { return tdim*2; };
 
     std::map<std::size_t, std::vector<std::size_t>> _master_to_slave;
+    std::map<std::size_t, std::vector<std::size_t>> _slave_to_master;
     std::map<std::size_t, std::vector<std::size_t>> _local_cell_to_contact_dofs;
     std::map<std::size_t, std::vector<std::size_t>> _local_cell_to_off_proc_contact_dofs;
 
