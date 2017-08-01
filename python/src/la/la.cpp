@@ -22,6 +22,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
+#include <pybind11/operators.h>
 
 #include <dolfin/common/Array.h>
 #include <dolfin/la/solve.h>
@@ -205,7 +206,7 @@ namespace dolfin_wrappers
              auto a = self.copy();
              (*a) -= v;
              return a;
-           })
+           }, py::is_operator())
       .def("get_local", [](const dolfin::GenericVector& instance, const std::vector<long>& rows)
            {
              std::vector<dolfin::la_index> _rows(rows.begin(), rows.end());
@@ -232,6 +233,7 @@ namespace dolfin_wrappers
              return py::array_t<double>(values.size(), values.data());
            })
       .def("sum", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::sum)
+      .def("norm", &dolfin::GenericVector::norm)
       .def("array", [](const dolfin::GenericVector& instance)
            {
              std::vector<double> values;
