@@ -107,10 +107,10 @@ class TestBasicLaOperations:
 
         # Test set and access with different integers
         lind = 2
-        for T in [int,int16,int32,int64,uint,uint0,uint16,uint32,uint64,\
-                  int0,integer_types[-1]]:
+        for T in [int, int16, int32, int64, uint, uint0, uint16, uint32, uint64,
+                  int0, integer_types[-1]]:
             v[T(lind)] = 2.0
-            assert round(sum(v[T(lind)] - 2.0), 7) == 0
+            assert round(v[T(lind)] - 2.0, 7) == 0
 
         A = v.copy()
         B = as_backend_type(v.copy())
@@ -119,45 +119,45 @@ class TestBasicLaOperations:
 
         # Test global index access
         if A.owns_index(gind):
-            assert round(sum(A[lind] - B[lind]), 7) == 0
+            assert round(A[lind] - B[lind], 7) == 0
 
         lind0 = 5
-        round(sum(A[lind0] - B[lind0]), 7) == 0
+        round(A[lind0] - B[lind0], 7) == 0
 
         B *= 0.5
         A *= 2
-        assert round(sum(A[lind0] - 4*B[lind0]), 7) == 0
+        assert round(A[lind0] - 4*B[lind0], 7) == 0
 
         B /= 2
         A /= 0.5
-        assert round(sum(A[lind0] - 16*B[lind0]), 7) == 0
+        assert round(A[lind0] - 16*B[lind0], 7) == 0
 
         val1 = A[lind0]
         val2 = B[lind0]
 
         A += B
-        assert round(sum(A[lind0] - val1-val2), 7) == 0
+        assert round(A[lind0] - val1 -val2, 7) == 0
 
         A -= B
-        assert round(sum(A[lind0] - val1), 7) == 0
+        assert round(A[lind0] - val1, 7) == 0
 
-        C = 16*B
-        assert round(sum(A[lind0] - C[lind0]), 7) == 0
+        C = 16.0*B
+        assert round(A[lind0] - C[lind0], 7) == 0
 
         D = (C + B)*5
-        assert round(sum(D[lind0] - (val1 + val2)*5), 7) == 0
+        assert round(D[lind0] - (val1 + val2)*5, 7) == 0
 
         F = (A-B)/4
-        assert round(sum(F[lind0] - (val1 - val2)/4), 7) == 0
+        assert round(F[lind0] - (val1 - val2)/4, 7) == 0
 
         A.axpy(100, B)
-        assert round(sum(A[lind0] - val1 - val2*100), 7) == 0
+        assert round(A[lind0] - val1 - val2*100, 7) == 0
 
         A2 = A.array()
         assert isinstance(A2,ndarray)
         assert A2.shape == (n1 - n0, )
 
-        assert round(sum(A2[lind0] - A[lind0]), 7) == 0
+        assert round(A2[lind0] - A[lind0], 7) == 0
         assert round(MPI.sum(A.mpi_comm(), A2.sum()) - A.sum(), 7) == 0
 
         B2 = B.array()

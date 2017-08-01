@@ -187,6 +187,30 @@ namespace dolfin_wrappers
       .def("init", (void (dolfin::GenericVector::*)(const dolfin::TensorLayout&)) &dolfin::GenericVector::init)
       .def("init", (void (dolfin::GenericVector::*)(std::pair<std::size_t, std::size_t>)) &dolfin::GenericVector::init)
       .def("copy", &dolfin::GenericVector::copy)
+      .def("__isub__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
+           &dolfin::GenericVector::operator-=)
+      .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
+           { auto a = self.copy(); (*a) -= v; return a; })
+      .def("__itruediv__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
+           &dolfin::GenericVector::operator/=)
+      .def("__truediv__", [](const dolfin::GenericVector& instance, double a)
+           { auto x = instance.copy(); *x /= a; return x; })
+      .def("__iadd__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
+           &dolfin::GenericVector::operator+=)
+      .def("__iadd__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
+           &dolfin::GenericVector::operator+=)
+      .def("__add__", (std::shared_ptr<dolfin::GenericVector> (dolfin::GenericVector::*)(double))
+           &dolfin::GenericVector::operator+)
+      .def("__add__", (std::shared_ptr<dolfin::GenericVector> (dolfin::GenericVector::*)(const dolfin::GenericVector&))
+           &dolfin::GenericVector::operator+)
+      .def("__mul__", [](dolfin::GenericVector& v, double a)
+           { auto u = v.copy(); *u *=a; return u; })
+      .def("__rmul__", [](dolfin::GenericVector& v, double a)
+           {
+             auto u = v.copy();
+             *u *=a;
+             return u;
+           })
       .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
            {
              std::size_t start, stop, step, slicelength;
@@ -194,9 +218,11 @@ namespace dolfin_wrappers
                throw py::error_already_set();
              if (start != 0 or stop != self.size() or step != 1)
                throw std::range_error("Only full slices are supported");
+
              std::vector<double> values;
              self.get_local(values);
-             return values;
+             return py::array_t<double>(values.size(), values.data());
+             //return self.copy();
            })
       .def("__getitem__", &dolfin::GenericVector::getitem)
       .def("__setitem__", [](dolfin::GenericVector& self, py::slice slice, double value)
@@ -208,6 +234,29 @@ namespace dolfin_wrappers
                throw std::range_error("Only full slices are supported");
              self = value;
            })
+      .def("__setitem__", [](dolfin::GenericVector& self, py::slice slice, const dolfin::GenericVector& x)
+           {
+             std::size_t start, stop, step, slicelength;
+             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+             if (start != 0 or stop != self.size() or step != 1)
+               throw std::range_error("Only full slices are supported");
+             self = x;
+           })
+      .def("__setitem__", [](dolfin::GenericVector& self, py::slice slice, const py::array_t<double> x)
+           {
+             std::size_t start, stop, step, slicelength;
+             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+             if (start != 0 or stop != self.size() or step != 1)
+               throw std::range_error("Only full slices are supported");
+
+             std::vector<double> values(x.data(), x.data() + x.size());
+             if (!values.empty())
+               self.set_local(values);
+
+             //self = x;
+           })
       .def("__setitem__", &dolfin::GenericVector::setitem)
       .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
            {
@@ -216,6 +265,10 @@ namespace dolfin_wrappers
              return a;
            }, py::is_operator())
       .def("__len__", [](dolfin::GenericVector& self) { return self.size(); })
+      .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
+           &dolfin::GenericVector::operator*=)
+      .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
+           &dolfin::GenericVector::operator*=)
       .def("get_local", [](const dolfin::GenericVector& instance, const std::vector<long>& rows)
            {
              std::vector<dolfin::la_index> _rows(rows.begin(), rows.end());
@@ -271,55 +324,16 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm, std::size_t>())
       .def("mpi_comm", &dolfin::Vector::mpi_comm)
       .def("size", &dolfin::Vector::size)
-      .def("__add__", [](dolfin::Vector& self, dolfin::Vector& v)
-           {
-             dolfin::Vector a(self);
-             a += v;
-             return a;
-           })
-      .def("__add__", [](dolfin::Vector& self, double b)
-           {
-             dolfin::Vector a(self);
-             a += b;
-             return a;
-           })
-      .def("__sub__", [](dolfin::Vector& self, dolfin::Vector& v)
-           {
-             dolfin::Vector a(self);
-             a -= v;
-             return a;
-           })
-      .def("__sub__", [](dolfin::Vector& self, double b)
-           {
-             dolfin::Vector a(self);
-             a -= b;
-             return a;
-           })
-      .def("__iadd__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
-           &dolfin::Vector::operator+=)
-      .def(py::self += py::self)
-      //      .def("__iadd__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
-      //           &dolfin::Vector::operator+=)
-      .def("__isub__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
-           &dolfin::Vector::operator-=)
-      .def("__isub__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
-           &dolfin::Vector::operator-=)
-      .def("__imul__", (const dolfin::Vector& (dolfin::Vector::*)(double))
-           &dolfin::Vector::operator*=)
-      .def("__imul__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
-           &dolfin::Vector::operator*=)
-      .def("__itruediv__", (const dolfin::Vector& (dolfin::Vector::*)(double))
-           &dolfin::Vector::operator/=)
-      .def("__setitem__", [](dolfin::Vector& self, dolfin::la_index index, double value)
-           { self.instance()->setitem(index, value); })
-      .def("__setitem__", [](dolfin::Vector& self, py::slice slice, double value)
-           {
-             std::size_t start, stop, step, slicelength;
-             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
-               throw py::error_already_set();
-             if (start != 0 or stop != self.size() or step != 1)
-               throw std::range_error("Only full slices are supported");
-             *self.instance() = value; })
+      //.def("__setitem__", [](dolfin::Vector& self, dolfin::la_index index, double value)
+      //     { self.instance()->setitem(index, value); })
+      //.def("__setitem__", [](dolfin::Vector& self, py::slice slice, double value)
+      //     {
+      //       std::size_t start, stop, step, slicelength;
+      //       if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+      //         throw py::error_already_set();
+      //       if (start != 0 or stop != self.size() or step != 1)
+      //         throw std::range_error("Only full slices are supported");
+      //       *self.instance() = value; })
       .def("sum", (double (dolfin::Vector::*)() const) &dolfin::Vector::sum)
       .def("min", &dolfin::Vector::min)
       .def("max", &dolfin::Vector::max)
@@ -491,19 +505,20 @@ namespace dolfin_wrappers
                                                            const dolfin::GenericVector&))
            &dolfin::KrylovSolver::solve);
 
+    // solve.h
+
     m.def("has_linear_algebra_backend", &dolfin::has_linear_algebra_backend);
     m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
     m.def("has_krylov_solver_method", &dolfin::has_krylov_solver_method);
     m.def("has_krylov_solver_preconditioner", &dolfin::has_krylov_solver_preconditioner);
-
-    // normalize
-    m.def("normalize", &dolfin::normalize);
 
     // solve
     m.def("solve", (std::size_t (*)(const dolfin::GenericLinearOperator&, dolfin::GenericVector&,
                                     const dolfin::GenericVector&, std::string, std::string)) &dolfin::solve,
           py::arg("A"), py::arg("x"), py::arg("b"), py::arg("method")="lu",
           py::arg("preconditioner")="none");
+
+    m.def("normalize", &dolfin::normalize, py::arg("x"), py::arg("normalization_type")="average");
 
   }
 }
