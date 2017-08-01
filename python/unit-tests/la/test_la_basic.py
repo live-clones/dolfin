@@ -141,23 +141,23 @@ class TestBasicLaOperations:
         A -= B
         assert round(A[lind0] - val1, 7) == 0
 
-        C = 16*B
+        C = 16.0*B
         assert round(A[lind0] - C[lind0], 7) == 0
 
         D = (C + B)*5
         assert round(D[lind0] - (val1 + val2)*5, 7) == 0
 
         F = (A-B)/4
-        assert round(sum(F[lind0] - (val1 - val2)/4), 7) == 0
+        assert round(F[lind0] - (val1 - val2)/4, 7) == 0
 
         A.axpy(100, B)
-        assert round(sum(A[lind0] - val1 - val2*100), 7) == 0
+        assert round(A[lind0] - val1 - val2*100, 7) == 0
 
         A2 = A.array()
         assert isinstance(A2,ndarray)
         assert A2.shape == (n1 - n0, )
 
-        assert round(sum(A2[lind0] - A[lind0]), 7) == 0
+        assert round(A2[lind0] - A[lind0], 7) == 0
         assert round(MPI.sum(A.mpi_comm(), A2.sum()) - A.sum(), 7) == 0
 
         B2 = B.array()

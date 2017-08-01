@@ -179,24 +179,29 @@ namespace dolfin_wrappers
       .def("init", (void (dolfin::GenericVector::*)(const dolfin::TensorLayout&)) &dolfin::GenericVector::init)
       .def("init", (void (dolfin::GenericVector::*)(std::pair<std::size_t, std::size_t>)) &dolfin::GenericVector::init)
       .def("copy", &dolfin::GenericVector::copy)
-      .def("__isub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
-           {
-             auto a = self.copy();
-             (*a) -= v;
-             return a;
-           })
+      .def("__isub__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
+           &dolfin::GenericVector::operator-=)
+      .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
+           { auto a = self.copy(); (*a) -= v; return a; })
       .def("__itruediv__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
            &dolfin::GenericVector::operator/=)
+      .def("__truediv__", [](const dolfin::GenericVector& instance, double a)
+           { auto x = instance.copy(); *x /= a; return x; })
       .def("__iadd__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
            &dolfin::GenericVector::operator+=)
-      //.def(py::self += py::self)
       .def("__iadd__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
            &dolfin::GenericVector::operator+=)
-      .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
+      .def("__add__", (std::shared_ptr<dolfin::GenericVector> (dolfin::GenericVector::*)(double))
+           &dolfin::GenericVector::operator+)
+      .def("__add__", (std::shared_ptr<dolfin::GenericVector> (dolfin::GenericVector::*)(const dolfin::GenericVector&))
+           &dolfin::GenericVector::operator+)
+      .def("__mul__", [](dolfin::GenericVector& v, double a)
+           { auto u = v.copy(); *u *=a; return u; })
+      .def("__rmul__", [](dolfin::GenericVector& v, double a)
            {
-             auto a = self.copy();
-             (*a) -= v;
-             return a;
+             auto u = v.copy();
+             *u *=a;
+             return u;
            })
       .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
            {
@@ -308,44 +313,16 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm, std::size_t>())
       .def("mpi_comm", &dolfin::Vector::mpi_comm)
       .def("size", &dolfin::Vector::size)
-      .def("__add__", [](dolfin::Vector& self, dolfin::Vector& v)
-           {
-             dolfin::Vector a(self);
-             a += v;
-             return a;
-           })
-      .def("__add__", [](dolfin::Vector& self, double b)
-           {
-             dolfin::Vector a(self);
-             a += b;
-             return a;
-           })
-      .def("__sub__", [](dolfin::Vector& self, dolfin::Vector& v)
-           {
-             dolfin::Vector a(self);
-             a -= v;
-             return a;
-           })
-      .def("__sub__", [](dolfin::Vector& self, double b)
-           {
-             dolfin::Vector a(self);
-             a -= b;
-             return a;
-           })
-      .def("__isub__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
-           &dolfin::Vector::operator-=)
-      .def("__isub__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
-           &dolfin::Vector::operator-=)
-      .def("__setitem__", [](dolfin::Vector& self, dolfin::la_index index, double value)
-           { self.instance()->setitem(index, value); })
-      .def("__setitem__", [](dolfin::Vector& self, py::slice slice, double value)
-           {
-             std::size_t start, stop, step, slicelength;
-             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
-               throw py::error_already_set();
-             if (start != 0 or stop != self.size() or step != 1)
-               throw std::range_error("Only full slices are supported");
-             *self.instance() = value; })
+      //.def("__setitem__", [](dolfin::Vector& self, dolfin::la_index index, double value)
+      //     { self.instance()->setitem(index, value); })
+      //.def("__setitem__", [](dolfin::Vector& self, py::slice slice, double value)
+      //     {
+      //       std::size_t start, stop, step, slicelength;
+      //       if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+      //         throw py::error_already_set();
+      //       if (start != 0 or stop != self.size() or step != 1)
+      //         throw std::range_error("Only full slices are supported");
+      //       *self.instance() = value; })
       .def("sum", (double (dolfin::Vector::*)() const) &dolfin::Vector::sum)
       .def("min", &dolfin::Vector::min)
       .def("max", &dolfin::Vector::max)
