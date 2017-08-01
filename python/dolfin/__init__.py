@@ -40,7 +40,8 @@ from .cpp import MPI
 from .cpp.function import Expression, Constant #, interpolate
 from .cpp.fem import (FiniteElement, DofMap, Assembler, SystemAssembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
-                      DiscreteOperators, assemble_local, SparsityPatternBuilder)
+                      DiscreteOperators, assemble_local, LinearVariationalProblem, NonlinearVariationalProblem, LinearVariationalSolver, NonlinearVariationalSolver, SparsityPatternBuilder)
+
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitDiscMesh, UnitQuadMesh, UnitHexMesh,
                              UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh)
@@ -64,7 +65,7 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        facets, faces, edges, entities,
                        vertices, SubDomain, BoundaryMesh,
                        MeshEditor, MultiMesh, MeshQuality,
-                       SubMesh)
+                       SubMesh, DomainBoundary)
 from .cpp.nls import NonlinearProblem, NewtonSolver
 from .cpp.refinement import refine
 
@@ -84,7 +85,11 @@ from .fem.form import Form
 from .fem.norms import norm
 from .fem.dirichletbc import DirichletBC, CompiledSubDomain
 from .fem.interpolation import interpolate
+
 from .fem.projection import project
+from .fem.solving import solve, LocalSolver
+from .fem.formmanipulations import derivative, adjoint, increase_order, tear
+
 from .function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
 from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
@@ -100,7 +105,7 @@ from .mesh.meshvaluecollection import MeshValueCollection
 
 # ufl
 from ufl import (FiniteElement, VectorElement, MixedElement,
-                 inner, dot, grad, dx, div,
+                 inner, dot, grad, dx, div, Measure,
                  ds, dS, triangle, tetrahedron, avg, jump)
 from ufl.formoperators import action
 

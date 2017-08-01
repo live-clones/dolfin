@@ -37,7 +37,7 @@ def test_bcs():
     a = dot(grad(u), grad(v))*dx + u*v*dx
     L = f*v*dx
 
-    bc = DirichletBC(V, 0.0, DomainBoundary())
+    bc = DirichletBC(V, 0.0, "on_boundary")
 
     # Single bc argument
     u1 = Function(V)
@@ -75,7 +75,7 @@ def test_bcs_space():
     L = f*v*dx
 
     Q = FunctionSpace(mesh, "Lagrange", 2)
-    bc = DirichletBC(Q, 0.0, DomainBoundary())
+    bc = DirichletBC(Q, 0.0, "on_boundary")
 
     u = Function(V)
 
@@ -98,7 +98,7 @@ def test_calling():
     a = dot(grad(u), grad(v))*dx + u*v*dx
     L = f*v*dx
 
-    bc = DirichletBC(V, 0.0, DomainBoundary())
+    bc = DirichletBC(V, 0.0, "on_boundary")
 
     kwargs = {"solver_parameters":{"linear_solver": "lu"},
               "form_compiler_parameters":{"optimize": True}}

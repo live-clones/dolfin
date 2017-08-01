@@ -36,6 +36,11 @@
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/Form.h>
+#include <dolfin/fem/LinearVariationalProblem.h>
+#include <dolfin/fem/LinearVariationalSolver.h>
+#include <dolfin/fem/LocalSolver.h>
+#include <dolfin/fem/NonlinearVariationalProblem.h>
+#include <dolfin/fem/NonlinearVariationalSolver.h>
 #include <dolfin/fem/PointSource.h>
 #include <dolfin/fem/SystemAssembler.h>
 #include <dolfin/fem/PETScDMCollection.h>
@@ -255,6 +260,43 @@ namespace dolfin_wrappers
            const std::vector<std::pair<const dolfin::Point*, double>>>())
       .def("apply", (void (dolfin::PointSource::*)(dolfin::GenericVector&)) &dolfin::PointSource::apply)
       .def("apply", (void (dolfin::PointSource::*)(dolfin::GenericMatrix&)) &dolfin::PointSource::apply);
+
+    py::class_<dolfin::LinearVariationalProblem,
+               std::shared_ptr<dolfin::LinearVariationalProblem>>
+      (m, "LinearVariationalProblem")
+      .def(py::init<std::shared_ptr<const dolfin::Form>,
+           std::shared_ptr<const dolfin::Form>,
+           std::shared_ptr<dolfin::Function>,
+           std::vector<std::shared_ptr<const dolfin::DirichletBC>>>());
+
+    py::class_<dolfin::LinearVariationalSolver,
+               std::shared_ptr<dolfin::LinearVariationalSolver>>(m, "LinearVariationalSolver")
+      .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>());
+
+
+
+    py::class_<dolfin::NonlinearVariationalProblem,
+               std::shared_ptr<dolfin::NonlinearVariationalProblem>>
+      (m, "NonlinearVariationalProblem")
+      .def(py::init<std::shared_ptr<const dolfin::Form>,
+           std::shared_ptr<dolfin::Function>,
+           std::vector<std::shared_ptr<const dolfin::DirichletBC>>,
+           std::shared_ptr<const dolfin::Form>>());
+
+    py::class_<dolfin::NonlinearVariationalSolver, std::shared_ptr<dolfin::NonlinearVariationalSolver>>(m, "NonlinearVariationalSolver");
+
+    py::class_<dolfin::LocalSolver, std::shared_ptr<dolfin::LocalSolver>>
+      local_solver(m, "LocalSolver");
+
+    py::enum_<dolfin::LocalSolver::SolverType>(local_solver, "SolverType")
+      .value("LU", dolfin::LocalSolver::SolverType::LU)
+      .value("Cholesky", dolfin::LocalSolver::SolverType::Cholesky);
+
+
+    local_solver.def(py::init<std::shared_ptr<const dolfin::Form>,
+                     std::shared_ptr<const dolfin::Form>,
+                     dolfin::LocalSolver::SolverType>())
+      .def("solve_local_rhs", &dolfin::LocalSolver::solve_local_rhs);
 
 #ifdef HAS_PETSC
     // dolfin::PETScDMCollection
