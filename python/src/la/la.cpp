@@ -179,14 +179,17 @@ namespace dolfin_wrappers
       .def("init", (void (dolfin::GenericVector::*)(const dolfin::TensorLayout&)) &dolfin::GenericVector::init)
       .def("init", (void (dolfin::GenericVector::*)(std::pair<std::size_t, std::size_t>)) &dolfin::GenericVector::init)
       .def("copy", &dolfin::GenericVector::copy)
+      // sub
       .def("__isub__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
            &dolfin::GenericVector::operator-=)
       .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
-           { auto a = self.copy(); (*a) -= v; return a; })
+           { auto a = self.copy(); (*a) -= v; return a; }, py::is_operator())
+      // div
       .def("__itruediv__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
            &dolfin::GenericVector::operator/=)
       .def("__truediv__", [](const dolfin::GenericVector& instance, double a)
            { auto x = instance.copy(); *x /= a; return x; })
+      // add
       .def("__iadd__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
            &dolfin::GenericVector::operator+=)
       .def("__iadd__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
@@ -195,14 +198,16 @@ namespace dolfin_wrappers
            &dolfin::GenericVector::operator+)
       .def("__add__", (std::shared_ptr<dolfin::GenericVector> (dolfin::GenericVector::*)(const dolfin::GenericVector&))
            &dolfin::GenericVector::operator+)
+      // mult
+      .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
+           &dolfin::GenericVector::operator*=)
+      .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
+           &dolfin::GenericVector::operator*=)
       .def("__mul__", [](dolfin::GenericVector& v, double a)
            { auto u = v.copy(); *u *=a; return u; })
       .def("__rmul__", [](dolfin::GenericVector& v, double a)
-           {
-             auto u = v.copy();
-             *u *=a;
-             return u;
-           })
+           { auto u = v.copy(); *u *=a; return u; })
+      // __getitem___
       .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
            {
              std::size_t start, stop, step, slicelength;
@@ -216,7 +221,27 @@ namespace dolfin_wrappers
              return py::array_t<double>(values.size(), values.data());
              //return self.copy();
            })
+      .def("__getitem__", [](dolfin::GenericVector& self, py::array_t<dolfin::la_index> indices)
+           {
+             py::array_t<double> values(indices.size());
+             self.get_local(values.mutable_data(), values.size(), indices.data());
+             return values;
+           })
       .def("__getitem__", &dolfin::GenericVector::getitem)
+      // __setitem__
+      .def("__getitem__", [](dolfin::GenericVector& self, py::slice slice)
+           {
+             std::size_t start, stop, step, slicelength;
+             if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
+               throw py::error_already_set();
+             if (start != 0 or stop != self.size() or step != 1)
+               throw std::range_error("Only full slices are supported");
+
+             std::vector<double> values;
+             self.get_local(values);
+             return py::array_t<double>(values.size(), values.data());
+             //return self.copy();
+           })
       .def("__setitem__", [](dolfin::GenericVector& self, py::slice slice, double value)
            {
              std::size_t start, stop, step, slicelength;
@@ -246,20 +271,12 @@ namespace dolfin_wrappers
              std::vector<double> values(x.data(), x.data() + x.size());
              if (!values.empty())
                self.set_local(values);
-
-             //self = x;
            })
+      .def("__setitem__", [](dolfin::GenericVector& self, const py::array_t<dolfin::la_index> indices,
+                             const py::array_t<double> x)
+           { self.set_local(x.data(), x.size(), indices.data()); self.apply("insert"); })
       .def("__setitem__", &dolfin::GenericVector::setitem)
-      .def("__sub__", [](dolfin::GenericVector& self, dolfin::GenericVector& v)
-           {
-             auto a = self.copy();
-             (*a) -= v;
-             return a;
-           }, py::is_operator())
-      .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
-           &dolfin::GenericVector::operator*=)
-      .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(const dolfin::GenericVector&))
-           &dolfin::GenericVector::operator*=)
+      //
       .def("get_local", [](const dolfin::GenericVector& instance, const std::vector<long>& rows)
            {
              std::vector<dolfin::la_index> _rows(rows.begin(), rows.end());
@@ -313,16 +330,6 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm, std::size_t>())
       .def("mpi_comm", &dolfin::Vector::mpi_comm)
       .def("size", &dolfin::Vector::size)
-      //.def("__setitem__", [](dolfin::Vector& self, dolfin::la_index index, double value)
-      //     { self.instance()->setitem(index, value); })
-      //.def("__setitem__", [](dolfin::Vector& self, py::slice slice, double value)
-      //     {
-      //       std::size_t start, stop, step, slicelength;
-      //       if (!slice.compute(self.size(), &start, &stop, &step, &slicelength))
-      //         throw py::error_already_set();
-      //       if (start != 0 or stop != self.size() or step != 1)
-      //         throw std::range_error("Only full slices are supported");
-      //       *self.instance() = value; })
       .def("sum", (double (dolfin::Vector::*)() const) &dolfin::Vector::sum)
       .def("min", &dolfin::Vector::min)
       .def("max", &dolfin::Vector::max)
@@ -334,12 +341,6 @@ namespace dolfin_wrappers
       .def("local_size", &dolfin::Vector::local_size)
       .def("local_range", &dolfin::Vector::local_range)
       .def("owns_index", &dolfin::Vector::owns_index)
-      .def("get_local", [](dolfin::Vector& self)
-           {
-             std::vector<double> values;
-             self.get_local(values);
-             return values;
-           })
       .def("apply", &dolfin::Vector::apply)
       .def("str", &dolfin::Vector::str)
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Vector::*)())
@@ -383,9 +384,9 @@ namespace dolfin_wrappers
     py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>,
                dolfin::GenericVector>
       (m, "EigenVector", "DOLFIN EigenVector object")
-      .def(py::init<MPI_Comm, std::size_t>())
-      .def("array", (Eigen::VectorXd& (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec,
-           py::return_value_policy::reference_internal);
+      .def(py::init<MPI_Comm, std::size_t>());
+      //.def("array", (Eigen::VectorXd& (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec,
+      //     py::return_value_policy::reference_internal);
 
     //----------------------------------------------------------------------------
     // dolfin::EigenMatrix class

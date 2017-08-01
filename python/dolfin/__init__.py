@@ -75,6 +75,7 @@ from .cpp.io import X3DOM, X3DOMParameters
 
 # Python modules
 from . import io
+from . import la
 from . import mesh
 from . import parameter
 
