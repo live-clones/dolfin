@@ -169,7 +169,8 @@ namespace dolfin_wrappers
              std::vector<std::size_t> dofs;
              instance.tabulate_local_to_global_dofs(dofs);
              return py::array_t<std::size_t>(dofs.size(), dofs.data());
-           });
+           })
+      .def("set", &dolfin::GenericDofMap::set);
 
     // dolfin::DofMap class
     py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>

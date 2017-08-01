@@ -49,14 +49,14 @@ from .cpp.graph import GraphBuilder
 from .cpp.io import File, XDMFFile, VTKFile
 from .cpp.la import (has_linear_algebra_backend,
                      linear_algebra_backends, has_krylov_solver_method,
-                     has_krylov_solver_preconditioner)
+                     has_krylov_solver_preconditioner, normalize)
 
 if has_linear_algebra_backend('PETSc'):
     from .cpp.la import PETScVector, PETScMatrix, PETScFactory, PETScOptions
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
-from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, EigenMatrix,
+from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar, EigenMatrix,
                      EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout)
 from .cpp.log import info
 from .cpp.math import ipow, near, between
@@ -80,12 +80,12 @@ from . import parameter
 
 from .common import timer
 from .common.timer import Timer, timed
+
 from .fem.assembling import assemble, assemble_system
 from .fem.form import Form
 from .fem.norms import norm
-from .fem.dirichletbc import DirichletBC, CompiledSubDomain
+from .fem.dirichletbc import DirichletBC, AutoSubDomain
 from .fem.interpolation import interpolate
-
 from .fem.projection import project
 from .fem.solving import solve, LocalSolver
 from .fem.formmanipulations import derivative, adjoint, increase_order, tear
@@ -96,17 +96,18 @@ from .function.argument import TestFunction, TrialFunction, TestFunctions, Trial
 from .function.constant import Constant
 from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate
 from .function.expression import CompiledExpression, Expression, UserExpression
-# from .mesh.mesh import UnitIntervalMesh, UnitSquareMesh, UnitCubeMesh
+
 from .la import as_backend_type
+
 from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
-
+from .mesh.subdomain import CompiledSubDomain
 
 # ufl
 from ufl import (FiniteElement, VectorElement, MixedElement,
                  inner, dot, grad, dx, div, Measure,
-                 ds, dS, triangle, tetrahedron, avg, jump)
+                 ds, dS, triangle, tetrahedron, avg, jump, sym)
 from ufl.formoperators import action
 
 # FIXME

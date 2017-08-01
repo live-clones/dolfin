@@ -24,6 +24,7 @@
 
 import pytest
 from dolfin import *
+from numpy import sqrt
 
 @pytest.mark.xfail
 def test_normalize_average():
