@@ -323,8 +323,9 @@ namespace dolfin_wrappers
            })
       .def("__iadd__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
            &dolfin::Vector::operator+=)
-      .def("__iadd__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
-           &dolfin::Vector::operator+=)
+      .def(py::self += py::self)
+      //      .def("__iadd__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
+      //           &dolfin::Vector::operator+=)
       .def("__isub__", (const dolfin::GenericVector& (dolfin::Vector::*)(double))
            &dolfin::Vector::operator-=)
       .def("__isub__", (const dolfin::Vector& (dolfin::Vector::*)(const dolfin::GenericVector&))
@@ -373,6 +374,9 @@ namespace dolfin_wrappers
       (m, "Scalar")
       .def(py::init<>())
       .def(py::init<MPI_Comm>())
+      .def("add_local_value", &dolfin::Scalar::add_local_value)
+      .def("apply", &dolfin::Scalar::apply)
+      .def("mpi_comm", &dolfin::Scalar::mpi_comm)
       .def("get_scalar_value", &dolfin::Scalar::get_scalar_value);
 
     //----------------------------------------------------------------------------
@@ -517,6 +521,9 @@ namespace dolfin_wrappers
     m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
     m.def("has_krylov_solver_method", &dolfin::has_krylov_solver_method);
     m.def("has_krylov_solver_preconditioner", &dolfin::has_krylov_solver_preconditioner);
+
+    // normalize
+    m.def("normalize", &dolfin::normalize);
 
     // solve
     m.def("solve", (std::size_t (*)(const dolfin::GenericLinearOperator&, dolfin::GenericVector&,

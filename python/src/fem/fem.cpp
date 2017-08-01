@@ -169,7 +169,8 @@ namespace dolfin_wrappers
              std::vector<std::size_t> dofs;
              instance.tabulate_local_to_global_dofs(dofs);
              return py::array_t<std::size_t>(dofs.size(), dofs.data());
-           });
+           })
+      .def("set", &dolfin::GenericDofMap::set);
 
     // dolfin::DofMap class
     py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>
@@ -272,7 +273,8 @@ namespace dolfin_wrappers
 
     // dolfin::LinearVariationalSolver class
     py::class_<dolfin::LinearVariationalSolver,
-               std::shared_ptr<dolfin::LinearVariationalSolver>>(m, "LinearVariationalSolver")
+               std::shared_ptr<dolfin::LinearVariationalSolver>,
+               dolfin::Variable>(m, "LinearVariationalSolver")
       .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>());
 
     // dolfin::NonlinearVariationalProblem class
@@ -285,7 +287,10 @@ namespace dolfin_wrappers
            std::shared_ptr<const dolfin::Form>>());
 
     // dolfin::NonlinearVariationalSolver class
-    py::class_<dolfin::NonlinearVariationalSolver, std::shared_ptr<dolfin::NonlinearVariationalSolver>>(m, "NonlinearVariationalSolver");
+    py::class_<dolfin::NonlinearVariationalSolver,
+               std::shared_ptr<dolfin::NonlinearVariationalSolver>,
+               dolfin::Variable>
+      (m, "NonlinearVariationalSolver");
 
     // dolfin::LocalSolver class
     py::class_<dolfin::LocalSolver, std::shared_ptr<dolfin::LocalSolver>>

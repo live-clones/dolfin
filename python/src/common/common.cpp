@@ -42,7 +42,8 @@ namespace dolfin_wrappers
       .def("id", &dolfin::Variable::id)
       .def("name", &dolfin::Variable::name)
       .def("label", &dolfin::Variable::label)
-      .def("rename", &dolfin::Variable::rename);
+      .def("rename", &dolfin::Variable::rename)
+      .def_readwrite("parameters", &dolfin::Variable::parameters);
 
     // From dolfin/common/defines.h
     m.def("has_debug", &dolfin::has_debug);

@@ -35,7 +35,7 @@ namespace dolfin_wrappers
     //      py::arg("variable"), py::arg("verbose")=false);
     m.def("info", [](const dolfin::Variable& v){ dolfin::info(v); });
     m.def("info", [](const dolfin::Variable& v, bool verbose){ dolfin::info(v, verbose); });
-
+    m.def("info", [](std::string s){ dolfin::info(s); });
 
   }
 
