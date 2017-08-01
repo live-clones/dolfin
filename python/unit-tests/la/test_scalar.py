@@ -23,7 +23,6 @@ import pytest
 from dolfin import *
 
 
-@pytest.mark.xfail
 def test_scalar_parallel_sum():
     a = Scalar()
     b = 1.0
