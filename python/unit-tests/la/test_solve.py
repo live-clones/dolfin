@@ -26,7 +26,7 @@ import pytest
 from dolfin import *
 from numpy import sqrt
 
-@pytest.mark.xfail
+
 def test_normalize_average():
     MPI.init()
     size = 200
@@ -37,7 +37,7 @@ def test_normalize_average():
     assert factor == value
     assert x.sum() == 0.0
 
-@pytest.mark.xfail
+
 def test_normalize_l2():
     MPI.init()
     size = 200

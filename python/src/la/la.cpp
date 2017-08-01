@@ -517,19 +517,20 @@ namespace dolfin_wrappers
                                                            const dolfin::GenericVector&))
            &dolfin::KrylovSolver::solve);
 
+    // solve.h
+
     m.def("has_linear_algebra_backend", &dolfin::has_linear_algebra_backend);
     m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
     m.def("has_krylov_solver_method", &dolfin::has_krylov_solver_method);
     m.def("has_krylov_solver_preconditioner", &dolfin::has_krylov_solver_preconditioner);
-
-    // normalize
-    m.def("normalize", &dolfin::normalize);
 
     // solve
     m.def("solve", (std::size_t (*)(const dolfin::GenericLinearOperator&, dolfin::GenericVector&,
                                     const dolfin::GenericVector&, std::string, std::string)) &dolfin::solve,
           py::arg("A"), py::arg("x"), py::arg("b"), py::arg("method")="lu",
           py::arg("preconditioner")="none");
+
+    m.def("normalize", &dolfin::normalize, py::arg("x"), py::arg("normalization_type")="average");
 
   }
 }
