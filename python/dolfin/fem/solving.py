@@ -329,8 +329,8 @@ def _solve_varproblem(*args, **kwargs):
 
         # Create Jacobian if missing
         if J is None:
-            cpp.info("No Jacobian form specified for nonlinear variational problem.")
-            cpp.info("Differentiating residual form F to obtain Jacobian J = F'.")
+            cpp.log.info("No Jacobian form specified for nonlinear variational problem.")
+            cpp.log.info("Differentiating residual form F to obtain Jacobian J = F'.")
             F = eq.lhs
             J = derivative(F, u)
 
@@ -350,6 +350,8 @@ def _solve_varproblem_adaptive(*args, **kwargs):
     # Extract arguments
     eq, u, bcs, J, tol, M, form_compiler_parameters, \
         solver_parameters = _extract_args(*args, **kwargs)
+
+    print('eq.lhs = ', eq.lhs, ' eq.rhs=', eq.rhs)
 
     # Check that we received the goal functional
     if M is None:
@@ -374,8 +376,8 @@ def _solve_varproblem_adaptive(*args, **kwargs):
 
         # Create Jacobian if missing
         if J is None:
-            cpp.info("No Jacobian form specified for nonlinear variational problem.")
-            cpp.info("Differentiating residual form F to obtain Jacobian J = F'.")
+            cpp.log.info("No Jacobian form specified for nonlinear variational problem.")
+            cpp.log.info("Differentiating residual form F to obtain Jacobian J = F'.")
             F = eq.lhs
             J = derivative(F, u)
 

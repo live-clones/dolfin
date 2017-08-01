@@ -24,7 +24,9 @@ import ufl
 import ufl.algorithms.elementtransformations
 
 import dolfin.cpp as cpp
-# from dolfin import FunctionSpace, Function, Argument, MultiMeshFunction
+from dolfin.function.argument import Argument
+from dolfin.function.functionspace import FunctionSpace
+from dolfin.function.function import Function
 
 
 __all__ = ["derivative", "adjoint", "increase_order", "tear"]
@@ -51,9 +53,9 @@ def adjoint(form, reordered_arguments=None):
     v_1 = Argument(arguments[1].function_space(), arguments[0].number(), arguments[0].part())
     v_0 = Argument(arguments[0].function_space(), arguments[1].number(), arguments[1].part())
     # Also copy the extended part of the argument for MultiMesh-functionality
-    if hasattr(arguments[0], '_V_multi'):
-        v_1._V_multi = arguments[1]._V_multi
-        v_0._V_multi = arguments[0]._V_multi
+#    if hasattr(arguments[0], '_V_multi'):
+#        v_1._V_multi = arguments[1]._V_multi
+#        v_0._V_multi = arguments[0]._V_multi
 
     # Call ufl.adjoint with swapped arguments as new arguments
     return ufl.adjoint(form, reordered_arguments=(v_1, v_0))
@@ -68,24 +70,18 @@ def derivative(form, u, du=None, coefficient_derivatives=None):
         number = max([-1] + [arg.number() for arg in form_arguments]) + 1
 
         if any(arg.part() is not None for arg in form_arguments):
-            cpp.dolfin_error("formmanipulation.py",
-                             "compute derivative of form",
-                             "Cannot automatically create new Argument using "
-                             "parts, please supply one")
+            raise RuntimeError("formmanipulation.py",
+                               "compute derivative of form",
+                               "Cannot automatically create new Argument using "
+                               "parts, please supply one")
         part = None
 
-        if isinstance(u, (Function, MultiMeshFunction)):
+        if isinstance(u, cpp.function.Function):
             V = u.function_space()
             du = Argument(V, number, part)
-        elif isinstance(u, (list,tuple)) and all(isinstance(w, Function) for w in u):
-            cpp.dolfin_error("formmanipulation.py",
-                             "take derivative of form w.r.t. a tuple of Coefficients",
-                             "Take derivative w.r.t. a single Coefficient on "\
-                             "a mixed space instead.")
         else:
-            cpp.dolfin_error("formmanipulation.py",
-                             "compute derivative of form w.r.t. '%s'" % u,
-                             "Supply Function as a Coefficient")
+            raise RuntimeError("Cannot compute derivative of form w.r.t. '%s'" % u,
+                               "Supply Function as a Coefficient")
 
     return ufl.derivative(form, u, du, coefficient_derivatives)
 
