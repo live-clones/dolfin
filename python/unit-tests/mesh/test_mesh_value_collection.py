@@ -99,7 +99,6 @@ def test_assign_2D_vertices():
             assert value+i == g.get_value(cell.index(), i)
 
 
-@pytest.mark.xfail
 def test_mesh_function_assign_2D_cells():
     mesh = UnitSquareMesh(3, 3)
     ncells = mesh.num_cells()

@@ -278,7 +278,7 @@ class TestMatrixForAnyBackend:
             assert j < cols.size
             assert round(sum(abs(row)) - 1.0, 7) == 0
 
-    @pytest.mark.xfail
+
     def test_setting_getting_diagonal(self, use_backend, any_backend):
         self.backend, self.sub_backend = any_backend
 
