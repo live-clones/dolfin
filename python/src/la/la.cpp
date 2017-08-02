@@ -49,6 +49,8 @@
 #include <dolfin/la/KrylovSolver.h>
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/la/solve.h>
+#include <dolfin/la/VectorSpaceBasis.h>
+#include <dolfin/la/test_nullspace.h>
 
 #include "../mpi_interface.h"
 
@@ -527,6 +529,19 @@ namespace dolfin_wrappers
       .def("solve", (std::size_t (dolfin::KrylovSolver::*)(dolfin::GenericVector&,
                                                            const dolfin::GenericVector&))
            &dolfin::KrylovSolver::solve);
+
+    // dolfin::VectorSpaceBasis
+    py::class_<dolfin::VectorSpaceBasis, std::shared_ptr<dolfin::VectorSpaceBasis>>(m, "VectorSpaceBasis")
+      .def(py::init<const std::vector<std::shared_ptr<dolfin::GenericVector>>>())
+      .def("is_orthonormal", &dolfin::VectorSpaceBasis::is_orthonormal, py::arg("tol")=1.0e-10)
+      .def("is_orthogonal", &dolfin::VectorSpaceBasis::is_orthogonal, py::arg("tol")=1.0e-10)
+      .def("orthogonalize", &dolfin::VectorSpaceBasis::orthogonalize)
+      .def("orthonormalize", &dolfin::VectorSpaceBasis::orthonormalize, py::arg("tol")=1.0e-10)
+      .def("dim", &dolfin::VectorSpaceBasis::dim)
+      .def("__getitem__", &dolfin::VectorSpaceBasis::operator[]);
+
+    // test_nullspace.h
+    m.def("in_nullspace", &dolfin::in_nullspace, py::arg("A"), py::arg("x"), py::arg("type")="right");
 
     // solve.h
 

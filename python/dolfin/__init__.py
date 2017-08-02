@@ -49,7 +49,8 @@ from .cpp.graph import GraphBuilder
 from .cpp.io import File, XDMFFile, VTKFile
 from .cpp.la import (has_linear_algebra_backend,
                      linear_algebra_backends, has_krylov_solver_method,
-                     has_krylov_solver_preconditioner, normalize)
+                     has_krylov_solver_preconditioner, normalize, VectorSpaceBasis,
+                     in_nullspace)
 
 if has_linear_algebra_backend('PETSc'):
     from .cpp.la import PETScVector, PETScMatrix, PETScFactory, PETScOptions
