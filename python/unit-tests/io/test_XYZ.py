@@ -26,7 +26,6 @@ from dolfin_utils.test import skip_in_parallel, fixture, tempdir
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_save_2d_scalar(tempdir):
 
     mesh = UnitSquareMesh(16, 16)

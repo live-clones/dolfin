@@ -21,12 +21,10 @@
 
 from dolfin import *
 import pytest
-from dolfin_utils.test import skip_if_not_PETSc, skip_in_parallel
-
+from dolfin_utils.test import skip_if_not_PETSc, skip_in_parallel, pushpop_parameters
 backends = ["PETSc", skip_in_parallel("Eigen")]
 
 @pytest.mark.parametrize('backend', backends)
-@pytest.mark.xfail
 def test_lu_solver(backend):
 
     # Check whether backend is available
@@ -66,21 +64,11 @@ def test_lu_solver(backend):
 
 
 @pytest.mark.parametrize('backend', backends)
-@pytest.mark.xfail
-def test_lu_solver_reuse(backend):
+def test_lu_solver_reuse(backend, pushpop_parameters):
     """Test that LU re-factorisation is only performed after
-    set_operator(A) is called"""
+    set_operator(A) is called
 
-    # Test requires PETSc version 3.5 or later. Use petsc4py to check
-    # version number.
-    try:
-        from petsc4py import PETSc
-    except ImportError:
-        pytest.skip("petsc4py required to check PETSc version")
-    else:
-        if not PETSc.Sys.getVersion() >= (3, 5, 0):
-            pytest.skip("PETSc version must be 3.5  of higher")
-
+    """
 
     # Check whether backend is available
     if not has_linear_algebra_backend(backend):

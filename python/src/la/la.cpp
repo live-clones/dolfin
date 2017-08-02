@@ -508,12 +508,21 @@ namespace dolfin_wrappers
     // dolfin::LUSolver class
     py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>>
     (m, "LUSolver", "DOLFIN LUSolver object")
+      .def(py::init<>())
+      .def(py::init<std::shared_ptr<const dolfin::GenericLinearOperator>, std::string>(),
+           py::arg("A"), py::arg("method")="default")
       .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>,
          std::string>(),
-         py::arg("comm"), py::arg("A"), py::arg("method") = "default")
-    .def("solve", (std::size_t (dolfin::LUSolver::*)(dolfin::GenericVector&,
-                                                     const dolfin::GenericVector&))
-         &dolfin::LUSolver::solve);
+           py::arg("comm"), py::arg("A"), py::arg("method") = "default")
+      .def("set_operator", &dolfin::LUSolver::set_operator)
+      .def("solve", (std::size_t (dolfin::LUSolver::*)(dolfin::GenericVector&,
+                                                       const dolfin::GenericVector&))
+           &dolfin::LUSolver::solve)
+      .def("solve", (std::size_t (dolfin::LUSolver::*)(const dolfin::GenericLinearOperator&,
+                                                       dolfin::GenericVector&,
+                                                       const dolfin::GenericVector&))
+           &dolfin::LUSolver::solve);
+
 
     //-----------------------------------------------------------------------------
     // dolfin::KrylovSolver class
