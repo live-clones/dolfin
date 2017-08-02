@@ -304,7 +304,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshFunction<SCALAR>, \
         std::shared_ptr<dolfin::MeshFunction<SCALAR>>, dolfin::Variable>  \
       (m, "MeshFunction_"#SCALAR_NAME, "DOLFIN MeshFunction object") \
-      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t>()) \
+      .def("__init__", [](dolfin::MeshFunction<SCALAR>& instance, std::shared_ptr<const dolfin::Mesh> mesh, std::size_t dim) \
+           { new (&instance) dolfin::MeshFunction<SCALAR>(mesh, dim, 0); }) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, SCALAR>()) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, const dolfin::MeshValueCollection<SCALAR>&>()) \
       .def("__getitem__", (const SCALAR& (dolfin::MeshFunction<SCALAR>::*) \
@@ -449,10 +450,12 @@ namespace dolfin_wrappers
            &dolfin::SubDomain::inside)
       .def("map", (void (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<Eigen::VectorXd>) const)
            &dolfin::SubDomain::map)
+      .def("set_property", &dolfin::SubDomain::set_property)
+      .def("get_property", &dolfin::SubDomain::get_property)
       .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<std::size_t>&, std::size_t, bool) const)
            &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true);
 
-    // doldin::DomainBoundary
+    // dolfin::DomainBoundary
     py::class_<dolfin::DomainBoundary, std::shared_ptr<dolfin::DomainBoundary>, dolfin::SubDomain>
       (m, "DomainBoundary")
       .def(py::init<>());
