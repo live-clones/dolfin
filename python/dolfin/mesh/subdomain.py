@@ -106,10 +106,13 @@ def compile_subdomain(inside_code, properties):
 
     module_hash = hashlib.md5(inside_code.encode('utf-8')).hexdigest()
     module_name = "dolfin_subdomain_" + module_hash
-    module, signature = dijitso.jit(class_data, module_name, params,
-                                    generate=jit_generate)
 
-    submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
+    try:
+        module, signature = dijitso.jit(class_data, module_name, params,
+                                        generate=jit_generate)
+        submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
+    except:
+        raise RuntimeError("Unable to compile C++ code with dijitso")
 
     sub_domain = cpp.mesh.make_dolfin_subdomain(submodule)
 
