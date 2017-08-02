@@ -246,6 +246,7 @@ namespace dolfin_wrappers
            &dolfin::Form::set_coefficient, "Doc")
       .def("set_coefficient", (void (dolfin::Form::*)(std::string, std::shared_ptr<const dolfin::GenericFunction>))
            &dolfin::Form::set_coefficient, "Doc")
+      .def("set_mesh", &dolfin::Form::set_mesh)
       .def("rank", &dolfin::Form::rank)
       .def("mesh", &dolfin::Form::mesh);
 

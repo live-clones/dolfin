@@ -128,6 +128,11 @@ namespace dolfin_wrappers
       .def("init", (std::size_t (dolfin::Mesh::*)(std::size_t) const) &dolfin::Mesh::init)
       .def("init", (void (dolfin::Mesh::*)(std::size_t, std::size_t) const) &dolfin::Mesh::init)
       .def("init_cell_orientations", &dolfin::Mesh::init_cell_orientations)
+      .def("init_cell_orientations", [](dolfin::Mesh& self, py::object o)
+           {
+             auto _o = o.attr("_cpp_object").cast<dolfin::Expression*>();
+             self.init_cell_orientations(*_o);
+           })
       .def("mpi_comm", &dolfin::Mesh::mpi_comm)
       .def("num_entities", &dolfin::Mesh::num_entities, "Number of mesh entities")
       .def("num_vertices", &dolfin::Mesh::num_vertices, "Number of vertices")

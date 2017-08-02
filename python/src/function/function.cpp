@@ -53,6 +53,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::GenericFunction, std::shared_ptr<dolfin::GenericFunction>,
                ufc::function, dolfin::Variable>
       (m, "GenericFunction")
+      .def("value_dimension", &dolfin::GenericFunction::value_dimension)
       .def("compute_vertex_values", [](dolfin::GenericFunction& self, const dolfin::Mesh& mesh)
            { std::vector<double> values;
              self.compute_vertex_values(values, mesh);

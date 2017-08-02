@@ -302,7 +302,7 @@ def solve(*args, **kwargs):
                              "Not expecting keyword arguments when solving "
                              "linear algebra problem")
 
-        return cpp.fem.la_solve(*args)
+        return cpp.la.solve(*args)
 
 
 def _solve_varproblem(*args, **kwargs):

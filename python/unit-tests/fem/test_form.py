@@ -79,7 +79,6 @@ def Q2(cube_boundary):
     return FunctionSpace(cube_boundary, "DG", 0)
 
 
-@pytest.mark.xfail
 def test_assemble_functional(V1, V2):
 
     mesh = V1.mesh()
@@ -281,7 +280,7 @@ def QQ3(base):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_basic_rt(RT2, RT3):
 
     f2 = CompiledExpression(("2.0", "1.0"), degree=0)
@@ -403,7 +402,6 @@ def bottom3(mesh3, line):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_normals_2D_1D(bottom1, m):
     "Testing assembly of normals for 1D meshes embedded in 2D"
 
@@ -420,7 +418,6 @@ def test_normals_2D_1D(bottom1, m):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_normals_3D_1D(bottom3, m):
     "Testing assembly of normals for 1D meshes embedded in 3D"
 
@@ -437,7 +434,6 @@ def test_normals_3D_1D(bottom3, m):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_normals_3D_2D(bottom2):
     "Testing assembly of normals for 2D meshes embedded in 3D"
 

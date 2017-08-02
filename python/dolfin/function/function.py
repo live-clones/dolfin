@@ -52,6 +52,9 @@ class Function(ufl.Coefficient):
         else:
             raise TypeError("expected a FunctionSpace or a Function as argument 1")
 
+    def value_dimension(self, i):
+        return self._cpp_object.value_dimension(i)
+
     def __call__(self, x):
         return self._cpp_object.__call__(x)
 

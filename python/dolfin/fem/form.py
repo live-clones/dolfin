@@ -15,6 +15,7 @@ class Form(cpp.fem.Form):
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 
         function_spaces = [func.function_space() for func in form.arguments()]
+
         cpp.fem.Form.__init__(self, ufc_form, function_spaces)
 
         original_coefficients = form.coefficients()
@@ -38,3 +39,13 @@ class Form(cpp.fem.Form):
         for i in range(self.num_coefficients()):
             if isinstance(self.coefficients[i], cpp.function.GenericFunction):
                 self.set_coefficient(i, self.coefficients[i])
+
+        sd = form.subdomain_data()
+        self.subdomains, = list(sd.values())  # Assuming single domain
+        domain, = list(sd.keys())  # Assuming single domain
+        mesh = domain.ufl_cargo()
+
+        # Attach mesh (because function spaces and coefficients may be
+        # empty lists)
+        if not function_spaces:
+            self.set_mesh(mesh)
