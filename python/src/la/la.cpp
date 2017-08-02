@@ -152,6 +152,10 @@ namespace dolfin_wrappers
       (m, "GenericMatrix", "DOLFIN GenericMatrix object")
       .def("init_vector", &dolfin::GenericMatrix::init_vector)
       .def("transpmult", &dolfin::GenericMatrix::transpmult)
+      .def("__mul__", [](const dolfin::GenericMatrix& self, float a)
+           { auto B = self.copy(); (*B) *= a; return B; }, py::is_operator())
+      .def("__rmul__", [](const dolfin::GenericMatrix& self, float a)
+           { auto B = self.copy(); (*B) *= a; return B; }, py::is_operator())
       .def("__mul__", [](const dolfin::GenericMatrix& self, const dolfin::GenericVector& x)
            {
              auto y = x.factory().create_vector(x.mpi_comm());
@@ -159,6 +163,27 @@ namespace dolfin_wrappers
              self.mult(x, *y);
              return y;
            }, py::is_operator())
+      .def("__mul__", [](const dolfin::GenericMatrix& self, const py::array_t<double> x)
+           {
+             if (x.ndim() != 1)
+               throw py::index_error("NumPy must be a 1D array for multiplication by a GenericMatrix");
+             if (x.size() != self.size(1))
+               throw py::index_error("Length of array must match number of matrix columns");
+
+             auto _x = self.factory().create_vector(self.mpi_comm());
+             self.init_vector(*_x, 1);
+             std::vector<double> values(x.data(), x.data() + x.size());
+             _x->set_local(values);
+             _x->apply("insert");
+
+             auto y = self.factory().create_vector(self.mpi_comm());
+             self.init_vector(*y, 0);
+
+             self.mult(*_x, *y);
+
+             y->get_local(values);
+             return py::array_t<double>(values.size(), values.data());
+           }, "Multiply a DOLFIN matrix and a NumPy array (non-distributed matricds only)")
       .def("copy", &dolfin::GenericMatrix::copy)
       .def("local_range", &dolfin::GenericMatrix::local_range)
       .def("norm", &dolfin::GenericMatrix::norm)
@@ -432,6 +457,19 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::Matrix&>())  // Remove? (use copy instead)
       .def(py::init<const dolfin::GenericMatrix&>())  // Remove? (use copy instead)
       .def(py::init<MPI_Comm>()) // This comes last of constructors so pybind11 attempts it lasts (avoid OpenMPI comm casting problems)
+      /*
+      .def("__mul__", [](const dolfin::Matrix& self, const dolfin::GenericVector& x)
+           {
+             // Specialised verion in place of GenericMatrix.__mul__
+             // becuase this guarantees that a dolfin::Vector is
+             // return rather than a more concrete vector. Maybe not
+             // important, but some tests check the type.
+             dolfin::Vector y(x.mpi_comm());
+             self.init_vector(y, 0);
+             self.mult(x, y);
+             return y;
+           }, py::is_operator())
+      */
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
            &dolfin::Matrix::shared_instance);
 
