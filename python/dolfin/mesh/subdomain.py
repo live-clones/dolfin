@@ -104,7 +104,8 @@ def compile_subdomain(inside_code, properties):
 
     class_data = {'inside_code': inside_code, 'properties': properties}
 
-    module_hash = hashlib.md5(inside_code.encode('utf-8')).hexdigest()
+    hash_str = inside_code + str(properties.keys())
+    module_hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
     module_name = "dolfin_subdomain_" + module_hash
 
     try:
