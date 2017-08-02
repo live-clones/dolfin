@@ -28,6 +28,7 @@ src/demo/mesh/subdomains."""
 # Begin demo
 
 from __future__ import print_function
+import matplotlib.pyplot as plt
 from dolfin import *
 
 # Load mesh and subdomains
@@ -35,10 +36,11 @@ mesh = Mesh("../dolfin_fine.xml.gz")
 sub_domains = MeshFunction("size_t", mesh, "../dolfin_fine_subdomains.xml.gz")
 
 # Build function spaces on Mini element
-P1 = VectorElement("Lagrange", mesh.ufl_cell(), 1)
-B = VectorElement("Bubble",   mesh.ufl_cell(), 3)
-Q = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-W = FunctionSpace(mesh, (P1 + B) * Q)
+P1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+B = FiniteElement("Bubble",   mesh.ufl_cell(), 3)
+V = VectorElement(P1 + B)
+Q = P1
+W = FunctionSpace(mesh, V * Q)
 
 # No-slip boundary condition for velocity
 # NOTE: Projection here is inefficient workaround of issue #489, FFC issue #69
@@ -81,6 +83,11 @@ pfile_pvd = File("pressure.pvd")
 pfile_pvd << p
 
 # Plot solution
-plot(u)
-plot(p)
-interactive()
+plt.figure()
+plot(u, title="velocity")
+
+plt.figure()
+plot(p, title="pressure")
+
+# Display plots
+plt.show()

@@ -199,16 +199,8 @@
 %shared_ptr(dolfin::SLEPcEigenSolver)
 #endif
 
-#ifdef HAS_PASTIX
-%shared_ptr(dolfin::PaStiXLUSolver)
-#endif
-
-%shared_ptr(dolfin::UmfpackLUSolver)
-%shared_ptr(dolfin::CholmodCholeskySolver)
-
 %shared_ptr(dolfin::LinearSolver)
 %shared_ptr(dolfin::GenericLinearSolver)
-%shared_ptr(dolfin::GenericLUSolver)
 %shared_ptr(dolfin::KrylovSolver)
 %shared_ptr(dolfin::LUSolver)
 
@@ -235,13 +227,6 @@
 %shared_ptr(dolfin::TAOLinearBoundSolver)
 %shared_ptr(dolfin::PETScTAOSolver)
 #endif
-// plot
-%shared_ptr(dolfin::VTKPlotter)
-%shared_ptr(dolfin::GenericVTKPlottable)
-%shared_ptr(dolfin::VTKPlottableMesh)
-%shared_ptr(dolfin::VTKPlottableGenericFunction)
-%shared_ptr(dolfin::VTKPlottableMeshFunction)
-%shared_ptr(dolfin::ExpressionWrapper)
 
 // quadrature
 %shared_ptr(dolfin::Quadrature)

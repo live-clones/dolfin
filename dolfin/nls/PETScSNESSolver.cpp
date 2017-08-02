@@ -123,7 +123,10 @@ PETScSNESSolver::PETScSNESSolver(MPI_Comm comm, std::string nls_type)
 }
 //-----------------------------------------------------------------------------
 PETScSNESSolver::PETScSNESSolver(std::string nls_type)
-  : PETScSNESSolver(MPI_COMM_WORLD, nls_type) { }
+  : PETScSNESSolver(MPI_COMM_WORLD, nls_type)
+{
+  // Do nothing
+}
 //-----------------------------------------------------------------------------
 PETScSNESSolver::~PETScSNESSolver()
 {
@@ -153,9 +156,9 @@ PETScSNESSolver::solve(NonlinearProblem& nonlinear_problem,
 
   // Set the bounds
   std::shared_ptr<const PETScVector>
-    _ub(&ub.down_cast<PETScVector>(), NoDeleter());
+    _ub(&as_type<const PETScVector>(ub), NoDeleter());
   std::shared_ptr<const PETScVector>
-    _lb(&lb.down_cast<PETScVector>(), NoDeleter());
+    _lb(&as_type<const PETScVector>(lb), NoDeleter());
   this->lb = _lb;
   this->ub = _ub;
   _has_explicit_bounds = true;
@@ -174,7 +177,7 @@ void PETScSNESSolver::init(NonlinearProblem& nonlinear_problem,
 
   // Prepare context for evaluation routines
   _snes_ctx.nonlinear_problem = &nonlinear_problem;
-  _snes_ctx.x = &x.down_cast<PETScVector>();
+  _snes_ctx.x = &as_type<PETScVector>(x);
   // FIXME: We are duplicating ghosted vector, while we don't need ghosted
   // NOTE: Seems that we can get rid of f_tmp and use working vec obtained by
   //       SNESLineSearchGetVecs
@@ -265,6 +268,15 @@ void PETScSNESSolver::init(NonlinearProblem& nonlinear_problem,
                            max_iters, max_residual_evals);
   if (ierr != 0) petsc_error(ierr, __FILE__, "SNESSetTolerances");
 
+  // Following set from options call requires Mat type to be set (at least
+  // when PETSC_USE_DEBUG) and we don't have any better way
+  if (_matJ.empty())
+  {
+    ierr = FormJacobian(_snes, _snes_ctx.x->vec(),
+                        _matJ.mat(), _matP.mat(), &_snes_ctx);
+    if (ierr != 0) petsc_error(ierr, __FILE__, "PETScSNESSolver::FormJacobian");
+  }
+
   // Set some options
   ierr = SNESSetFromOptions(_snes);
   if (ierr != 0) petsc_error(ierr, __FILE__, "SNESSetFromOptions");
@@ -311,7 +323,7 @@ PETScSNESSolver::solve(NonlinearProblem& nonlinear_problem,
   PetscInt its;
   SNESConvergedReason reason;
 
-  PETScVector& _x = x.down_cast<PETScVector>();
+  PETScVector& _x = as_type<PETScVector>(x);
 
   this->init(nonlinear_problem, x);
 
@@ -521,11 +533,11 @@ void PETScSNESSolver::set_linear_solver_parameters()
     }
   }
   else if (linear_solver == "lu"
-           || PETScLUSolver::_methods.count(linear_solver) != 0)
+           || PETScLUSolver::lumethods.count(linear_solver) != 0)
   {
     std::string lu_method;
-    if (PETScLUSolver::_methods.find(linear_solver)
-        != PETScLUSolver::_methods.end())
+    if (PETScLUSolver::lumethods.find(linear_solver)
+        != PETScLUSolver::lumethods.end())
     {
       lu_method = linear_solver;
     }
@@ -566,8 +578,8 @@ void PETScSNESSolver::set_linear_solver_parameters()
     if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetType");
     ierr = PCSetType(pc, PCLU);
     if (ierr != 0) petsc_error(ierr, __FILE__, "PCSetType");
-    auto it = PETScLUSolver::_methods.find(lu_method);
-    dolfin_assert(it != PETScLUSolver::_methods.end());
+    auto it = PETScLUSolver::lumethods.find(lu_method);
+    dolfin_assert(it != PETScLUSolver::lumethods.end());
     ierr = PCFactorSetMatSolverPackage(pc, it->second);
     if (ierr != 0) petsc_error(ierr, __FILE__, "PCFactorSetMatSolverPackage");
   }
@@ -601,7 +613,7 @@ void PETScSNESSolver::set_bounds(GenericVector& x)
       // tell PETSc the bounds.
       Vec ub, lb;
 
-      PETScVector _x = x.down_cast<PETScVector>();
+      PETScVector _x = as_type<PETScVector>(x);
       ierr = VecDuplicate(_x.vec(), &ub);
       if (ierr != 0) petsc_error(ierr, __FILE__, "VecDuplicate");
       ierr = VecDuplicate(_x.vec(), &lb);
