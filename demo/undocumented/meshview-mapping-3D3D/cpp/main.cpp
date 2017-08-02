@@ -44,7 +44,7 @@ int main()
 {
   // Create mesh and function space
   auto mesh = std::make_shared<UnitCubeMesh>(32, 32, 32);
-  auto V = std::make_shared<MeshView_3D3D::FunctionSpace>(mesh);
+  auto V = std::make_shared<MeshView_3D3D::Form_a::TestSpace>(mesh);
 
   CellFunction<std::size_t> marker(mesh, 0);
   for (CellIterator cell(*mesh); !cell.end(); ++cell)
@@ -59,17 +59,16 @@ int main()
   auto submesh2 = std::make_shared<Mesh>(mapping->create_from_marker(marker, 0));
 
   // Function spaces associated with each of the function spaces
-  auto V1 = std::make_shared<MeshView_3D3D::FunctionSpace>(submesh1);
-  auto V2 = std::make_shared<MeshView_3D3D::FunctionSpace>(submesh2);
+  auto V1 = std::make_shared<MeshView_3D3D::Form_a00::TestSpace>(submesh1);
+  auto V2 = std::make_shared<MeshView_3D3D::Form_a11::TestSpace>(submesh2);
 
   // Bilinear and linear forms
-  MeshView_3D3D::BilinearForm a(V, V);
-  MeshView_3D3D::LinearForm L(V);
-
-  MeshView_3D3D::BilinearForm a1(V1, V1);
-  MeshView_3D3D::BilinearForm a2(V2, V2);
-  MeshView_3D3D::LinearForm L1(V1);
-  MeshView_3D3D::LinearForm L2(V2);
+  MeshView_3D3D::Form_a a(V, V);
+  MeshView_3D3D::Form_L L(V);
+  MeshView_3D3D::Form_a00 a1(V1, V1);
+  MeshView_3D3D::Form_a11 a2(V2, V2);
+  MeshView_3D3D::Form_L0 L1(V1);
+  MeshView_3D3D::Form_L1 L2(V2);
 
   // Define boundary conditions
   auto zero = std::make_shared<Constant>(0.0);
@@ -84,9 +83,8 @@ int main()
   // Define RHS
   auto f = std::make_shared<Source>();
   L.f = f;
-
-  L1.f = f;
-  L2.f = f;
+  L1.f1 = f;
+  L2.f2 = f;
 
   // Compute solution
   // Global problem

@@ -1,10 +1,6 @@
-V = FiniteElement("Lagrange", tetrahedron, 1)
+intervalIn3D = Cell("interval", 3)
 V1 = FiniteElement("Lagrange", tetrahedron, 1)
-V2 = FiniteElement("Lagrange", tetrahedron, 1)
-
-u = TrialFunction(V)
-v = TestFunction(V)
-f = Coefficient(V)
+V2 = FiniteElement("Lagrange", intervalIn3D, 1)
 
 u1 = TrialFunction(V1)
 v1 = TestFunction(V1)
@@ -14,12 +10,9 @@ u2 = TrialFunction(V2)
 v2 = TestFunction(V2)
 f2 = Coefficient(V2)
 
-a = inner(grad(u), grad(v))*dx
-L = f*v*dx
-
 a00 = inner(grad(u1), grad(v1))*dx
 a11 = inner(grad(u2), grad(v2))*dx
 L0 = f1*v1*dx
 L1 = f2*v2*dx
 
-forms = [a, L, a00, a11, L0, L1]
+forms = [a00, a11, L0, L1]
