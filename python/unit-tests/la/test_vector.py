@@ -263,7 +263,6 @@ class TestVectorForAnyBackend:
         v0[:] = -2.0
         assert v0.sum() == -2.0*n
 
-    @pytest.mark.xfail
     def test_sum_entries(self, any_backend):
         from numpy import zeros
         n = 301

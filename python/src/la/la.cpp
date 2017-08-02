@@ -293,8 +293,8 @@ namespace dolfin_wrappers
       .def("__setitem__", &dolfin::GenericVector::setitem)
       //
       .def("__len__", [](dolfin::GenericVector& self) { return self.size(); })
-      //
       .def("size",  (std::size_t (dolfin::GenericVector::*)() const) &dolfin::GenericVector::size)
+      //
       .def("get_local", [](const dolfin::GenericVector& instance, const std::vector<long>& rows)
            {
              std::vector<dolfin::la_index> _rows(rows.begin(), rows.end());
@@ -337,6 +337,8 @@ namespace dolfin_wrappers
              return py::array_t<double>(values.size(), values.data());
            })
       .def("sum", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::sum)
+      .def("sum", [](const dolfin::GenericVector& self, py::array_t<std::size_t> rows)
+           { const dolfin::Array<std::size_t> _rows(rows.size(), rows.mutable_data()); return self.sum(_rows); })
       .def("norm", &dolfin::GenericVector::norm)
       .def("array", [](const dolfin::GenericVector& instance)
            {
@@ -364,7 +366,6 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::Vector&>())
       .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::size_t>())
-      .def("sum", (double (dolfin::Vector::*)() const) &dolfin::Vector::sum)
       .def("min", &dolfin::Vector::min)
       .def("max", &dolfin::Vector::max)
       .def("abs", &dolfin::Vector::abs)
