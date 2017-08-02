@@ -42,35 +42,72 @@ def meshes(cube, square, request):
     mesh = [cube, square]
     return mesh[request.param]
 
+def test_make_facets_view(square, cube):
+    """Create view of facets"""
 
-def test_make_surface_view(square):
-    """Create view of surface"""
+    def _check_facets_view(mesh):
+        marker = FacetFunction("size_t", mesh, 0)
+        D = mesh.topology().dim()
+        mesh.init(D-1, D)
 
-    marker = FacetFunction("size_t", square, 0)
-    square.init(1, 2)
+        c = 0
+        for f in facets(mesh):
+            if f.num_global_entities(D) == 1:
+                marker[f] = 1
+                c += 1
+
+        m2 = MeshViewMapping.create_from_marker(marker, 1)
+
+        assert m2.num_cells() == c
+        assert m2.num_cells() == len(m2.topology().mapping.cell_map())
+        assert m2.num_vertices() == len(m2.topology().mapping.vertex_map())
+
+    _check_facets_view(square)
+    _check_facets_view(cube)
+
+
+def test_make_cells_view(square, cube):
+    """Create view of cells"""
+
+    def _check_cells_view(mesh):
+        marker = CellFunction("size_t", mesh, 0)
+
+        ct = 0
+        for c in cells(mesh):
+            if c.midpoint().x() < 0.5:
+                marker[c] = 1
+                ct += 1
+
+        m2 = MeshViewMapping.create_from_marker(marker, 1)
+
+        assert m2.num_cells() == ct
+        assert m2.num_cells() == len(m2.topology().mapping.cell_map())
+        assert m2.num_vertices() == len(m2.topology().mapping.vertex_map())
+
+    _check_cells_view(square)
+    _check_cells_view(cube)
+
+
+def test_make_edges_view(cube):
+    """Create view of edges"""
+
+    marker = EdgeFunction("size_t", cube, 0)
+    cube.init(1, 3)
+
     c = 0
-    for f in facets(square):
-        if f.num_global_entities(2) == 1:
-            marker[f] = 1
+    for e in edges(cube):
+        if (e.midpoint().x() == 0 or e.midpoint().x() == 1):
+            marker[e] = 1
+            c += 1
+        elif (e.midpoint().y() == 0 or e.midpoint().y() == 1):
+            marker[e] = 1
+            c += 1
+        elif (e.midpoint().z() == 0 or e.midpoint().z() == 1):
+            marker[e] = 1
             c += 1
 
     m2 = MeshViewMapping.create_from_marker(marker, 1)
 
     assert m2.num_cells() == c
-    assert m2.num_cells() == len(m2.topology().mapping.cell_map())
-    assert m2.num_vertices() == len(m2.topology().mapping.vertex_map())
-
-def test_make_volume_view(square):
-    marker = CellFunction("size_t", square, 0)
-
-    ct = 0
-    for c in cells(square):
-        if c.midpoint().x() < 0.5:
-            marker[c] = 1
-            ct += 1
-
-    m2 = MeshViewMapping.create_from_marker(marker, 1)
-
-    assert m2.num_cells() == ct
     assert m2.num_cells() == len(m2.topology().mapping.cell_map())
     assert m2.num_vertices() == len(m2.topology().mapping.vertex_map())
