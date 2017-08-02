@@ -136,13 +136,13 @@ namespace dolfin_wrappers
       (m, "GenericMatrix", "DOLFIN GenericMatrix object")
       .def("init_vector", &dolfin::GenericMatrix::init_vector)
       .def("transpmult", &dolfin::GenericMatrix::transpmult)
-      .def("__mul__", [](const dolfin::GenericMatrix& self, const dolfin::GenericVector& x)
-           {
-             dolfin::Vector y;
-             self.init_vector(y, 0);
-             self.mult(x, y);
-             return y;
-           }, py::is_operator())
+//       .def("__mul__", [](const dolfin::GenericMatrix& self, const dolfin::GenericVector& x)
+//            {
+//              dolfin::Vector y;
+//              self.init_vector(y, 0);
+//              self.mult(x, y);
+//              return y;
+//            }, py::is_operator())
       .def("copy", &dolfin::GenericMatrix::copy)
       .def("local_range", &dolfin::GenericMatrix::local_range)
       .def("norm", &dolfin::GenericMatrix::norm)

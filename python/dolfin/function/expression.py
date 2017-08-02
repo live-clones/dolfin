@@ -244,26 +244,24 @@ class Expression(BaseExpression):
 
     def __init__(self, cpp_code=None, *args, **kwargs):
 
-        # Extract data
-        arguments = ("element", "degree", "cell", "domain", "name", "label", "mpi_comm")
-        element = kwargs.get("element", None)
-        degree = kwargs.get("degree", None)
-        cell = kwargs.get("cell", None)
-        domain = kwargs.get("domain", None)
-        name = kwargs.get("name", None)
-        label = kwargs.get("label", None)
-        mpi_comm = kwargs.get("mpi_comm", None)
-
         # Remove arguments that are used in Expression creation
-        properties = dict(item for item in kwargs.items() if item[0]  not in arguments)
-        for k in properties:
+        element = kwargs.pop("element", None)
+        degree = kwargs.pop("degree", None)
+        cell = kwargs.pop("cell", None)
+        domain = kwargs.pop("domain", None)
+        name = kwargs.pop("name", None)
+        label = kwargs.pop("label", None)
+        mpi_comm = kwargs.pop("mpi_comm", None)
+
+        # Save properties for checking later
+        self._properties = kwargs
+        for k in self._properties:
             if not isinstance(k, string_types):
                 raise KeyError("Invalid key")
             if not isinstance(properties[k], float):
                 raise ValueError("Invalid value")
 
-        self._cpp_object = jit.compile_expression(cpp_code, properties)
-
+        self._cpp_object = jit.compile_expression(cpp_code, self._properties)
 
         # Deduce element type if not provided
         if element is None:
@@ -271,7 +269,6 @@ class Expression(BaseExpression):
                                 for i in range(self.value_rank()))
             element = _select_element(family=None, cell=None, degree=2,
                                       value_shape=value_shape)
-
 
         BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
                                 name=name, label=label)

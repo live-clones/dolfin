@@ -43,6 +43,17 @@ namespace dolfin
        {{
          return {inside};
        }}
+
+       void set_property(std::string name, double value)
+       {{
+{set_props}
+       }}
+
+       double get_property(std::string name) const
+       {{
+{get_props}
+       }}
+
   }};
 }}
 
@@ -55,7 +66,7 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
 
     classname = signature
     code_c = template_code.format(inside=inside_code, classname=classname,
-                                  members= "", constructor="")
+                                  members= "", constructor="", get_props="", set_props="")
     code_h = ""
     depends = []
 
@@ -86,7 +97,6 @@ def compile_subdomain(inside_code):
 
     sub_domain = cpp.mesh.make_dolfin_subdomain(submodule)
     return sub_domain
-
 
 class CompiledSubDomain(cpp.mesh.SubDomain):
     def __new__(cls, inside_code):

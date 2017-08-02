@@ -54,13 +54,14 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
 
     statements = class_data["statements"]
     statement = ""
-    if isinstance(statements, string_types):
-        statement += "          values[0] = " + statements + ";\n"
-    else:
-        for i, val in enumerate(statements):
-            statement += "          values[" + str(i) + "] = " + val + ";\n"
+    for i, val in enumerate(statements):
+        statement += "          values[" + str(i) + "] = " + val + ";\n"
 
+    # Set the value_shape
     constructor = ""
+    if len(statements) > 1:
+        constructor += "_value_shape.push_back(" + str(len(statements)) + ");"
+
     members = ""
     set_props = ""
     get_props = ""
@@ -72,10 +73,6 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
         members += "double " + k + ";\n"
         set_props += _set_props.format(name=k)
         get_props += _get_props.format(name=k)
-
-    # Set the value_shape
-    if isinstance(statements, (tuple, list)):
-        constructor += "_value_shape.push_back(" + str(len(statements)) + ");"
 
     classname = signature
     code_c = template_code.format(statement=statement, classname=classname,
@@ -105,6 +102,9 @@ def compile_expression(statements, properties):
 
     if not isinstance(statements, (string_types, tuple, list)):
         raise RuntimeError("Expression must be a string, or a list or tuple of strings")
+
+    if isinstance(statements, string_types):
+        statements = (statements,)
 
     class_data = {'statements': statements, 'properties': properties}
 
