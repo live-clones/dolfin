@@ -90,7 +90,6 @@ def get_forms(mesh):
 
 
 class TestBasicLaOperations:
-    @pytest.mark.xfail
     def test_vector(self, any_backend):
         self.backend, self.sub_backend = any_backend
         from numpy import ndarray, linspace, array, fromiter
@@ -187,6 +186,7 @@ class TestBasicLaOperations:
 
         b = 1.e10
 
+
         assert round(G1.sum() - G.sum(), 7) == 0
         assert round(G2.sum() - G.sum(), 7) == 0
         assert len(G3) == len(G4)
@@ -206,13 +206,15 @@ class TestBasicLaOperations:
         assert (A.array()==A2).all()
 
         H  = A.copy()
-        H._assign(0.0)
+        #H._assign(0.0)
+        H[:] = 0.0
         H[linds0] = G
 
         C[:] = 2
-        D._assign(2)
-        assert round(sum(C[0] - 2), 7) == 0
-        assert round(sum(C[len(linds0)-1] - 2), 7) == 0
+        #D._assign(2)
+        D[:] = 2
+        assert round(C[0] - 2, 7) == 0
+        assert round(C[len(linds0) - 1] - 2, 7) == 0
         assert round(C.sum() - D.sum(), 7) == 0
 
         C[linds0] = 3
@@ -256,8 +258,11 @@ class TestBasicLaOperations:
         def wrong_assign(A, ind):
             A[linds0[::2]] = linds0[::2]
 
-        with pytest.raises(TypeError):
-            wrong_assign(A, linds2)
+        # GNW: I don't see what's wrong assigning a list than can be
+        # converted to a NumPy array
+
+        #with pytest.raises(TypeError):
+        #    wrong_assign(A, linds2)
 
 
     @pytest.mark.xfail

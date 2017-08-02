@@ -18,6 +18,7 @@ def as_backend_type(x):
     else:
         return x
 
+
 # Extend GenericVector
 def __gt__(self, value):
     if np.isscalar(value):
