@@ -457,6 +457,8 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::Matrix&>())  // Remove? (use copy instead)
       .def(py::init<const dolfin::GenericMatrix&>())  // Remove? (use copy instead)
       .def(py::init<MPI_Comm>()) // This comes last of constructors so pybind11 attempts it lasts (avoid OpenMPI comm casting problems)
+      // Enabling the below messes up the operators because pybind11
+      // then fails to try the GenericMatrix __mul__ operators
       /*
       .def("__mul__", [](const dolfin::Matrix& self, const dolfin::GenericVector& x)
            {
@@ -468,7 +470,7 @@ namespace dolfin_wrappers
              self.init_vector(y, 0);
              self.mult(x, y);
              return y;
-           }, py::is_operator())
+           }, py::is_operator(),py::arg().noconvert())
       */
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
            &dolfin::Matrix::shared_instance);

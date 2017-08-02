@@ -67,7 +67,7 @@ def xtest_deterministic_partition():
     assert V1.dofmap().ownership_range() == V2.dofmap().ownership_range()
 
 
-def assemble_vectors(mesh, backend):
+def assemble_vectors(mesh, backend=None):
     V = FunctionSpace(mesh, "Lagrange", 2)
     W = FunctionSpace(mesh, "Lagrange", 1)
     v = TestFunction(V)
