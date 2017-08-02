@@ -7,7 +7,7 @@ import dijitso
 import ffc
 
 
-def jit_generate(inside_code, module_name, signature, parameters):
+def jit_generate(class_data, module_name, signature, parameters):
 
     template_code = """
 // Based on https://gcc.gnu.org/wiki/Visibility
@@ -52,6 +52,7 @@ namespace dolfin
        double get_property(std::string name) const
        {{
 {get_props}
+         return 0.0;
        }}
 
   }};
@@ -63,17 +64,30 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
 }}
 
 """
+    _set_prop = """ if (name == "{name}") {name} = value;\n"""
+    _get_prop = """ if (name == "{name}") return {name};\n"""
+
+    print('Class data = ', class_data)
+    inside_code = class_data['inside_code']
+
+    members = ""
+    get_props = ""
+    set_props = ""
+    for k in class_data['properties']:
+        members += " double " + k + ";\n"
+        get_props += _get_prop.format(name = k)
+        set_props += _set_prop.format(name = k)
 
     classname = signature
     code_c = template_code.format(inside=inside_code, classname=classname,
-                                  members= "", constructor="", get_props="", set_props="")
+                                  members=members, constructor="", get_props=get_props, set_props=set_props)
     code_h = ""
     depends = []
 
     return code_h, code_c, depends
 
 
-def compile_subdomain(inside_code):
+def compile_subdomain(inside_code, **kwargs):
 
     import pkgconfig
     if not pkgconfig.exists('dolfin'):
@@ -88,9 +102,11 @@ def compile_subdomain(inside_code):
     params['build']['libs'] = d["libraries"]
     params['build']['lib_dirs'] = d["library_dirs"]
 
+    class_data = {'inside_code':inside_code, 'properties':kwargs}
+
     module_hash = hashlib.md5(inside_code.encode('utf-8')).hexdigest()
     module_name = "dolfin_subdomain_" + module_hash
-    module, signature = dijitso.jit(inside_code, module_name, params,
+    module, signature = dijitso.jit(class_data, module_name, params,
                                     generate=jit_generate)
 
     submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
@@ -99,5 +115,5 @@ def compile_subdomain(inside_code):
     return sub_domain
 
 class CompiledSubDomain(cpp.mesh.SubDomain):
-    def __new__(cls, inside_code):
-        return compile_subdomain(inside_code)
+    def __new__(cls, inside_code, **kwargs):
+        return compile_subdomain(inside_code, **kwargs)

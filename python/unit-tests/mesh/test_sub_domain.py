@@ -97,9 +97,10 @@ def test_creation_and_marking():
                        (CompiledSubDomain("near(x[0], a)", a=0.0),
                         CompiledSubDomain("near(x[0], a)", a=1.0)),
                        (CompiledSubDomain("near(x[0], 0.0)"),
-                        CompiledSubDomain("near(x[0], 1.0)")),
-                       (CompiledSubDomain(left_cpp),
-                        CompiledSubDomain(right_cpp))]
+                        CompiledSubDomain("near(x[0], 1.0)"))]
+
+    #                   (CompiledSubDomain(left_cpp),
+    #                    CompiledSubDomain(right_cpp))]
 
     empty = CompiledSubDomain("false")
     every = CompiledSubDomain("true")
