@@ -104,7 +104,6 @@ def test_local_assembler_on_facet_integrals(ghost_mode):
     assert error < 1e-8
 
 
-@pytest.mark.xfail
 def test_local_assembler_on_facet_integrals2(ghost_mode):
     mesh = UnitSquareMesh(4, 4)
     Vu = VectorFunctionSpace(mesh, 'DG', 1)

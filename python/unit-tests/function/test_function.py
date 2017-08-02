@@ -293,7 +293,6 @@ def test_real_function_float_conversion2(R):
     assert float(c) == 2.34
 
 
-@pytest.mark.xfail
 def test_real_function_float_conversion3(R):
     c = Function(R)
     c.vector()[:] = 1.23

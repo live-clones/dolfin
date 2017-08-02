@@ -107,7 +107,6 @@ def test_assemble_functional(V1, V2):
     assert round(surfacearea - 6.0, 7) == 0
 
 
-@pytest.mark.xfail
 def test_assemble_linear(V1, Q1, square_boundary, V2, Q2, cube_boundary):
 
     u = Function(V1)
@@ -542,7 +541,6 @@ def test_derivative(QQ2, QQ3):
         b1 = assemble(dF)
 
 
-@pytest.mark.xfail
 def test_coefficient_derivatives(V1, V2):
     for V in [V1, V2]:
         f = Function(V)
@@ -550,8 +548,8 @@ def test_coefficient_derivatives(V1, V2):
         v = TestFunction(V)
         u = TrialFunction(V)
 
-        f.interpolate(CompiledExpression("1.0 + x[0] + x[1]", degree=1))
-        g.interpolate(CompiledExpression("2.0 + x[0] + x[1]", degree=1))
+        f.interpolate(Expression("1.0 + x[0] + x[1]", degree=1))
+        g.interpolate(Expression("2.0 + x[0] + x[1]", degree=1))
 
         # Since g = f + 1, define dg/df = 1
         cd = {g: 1}

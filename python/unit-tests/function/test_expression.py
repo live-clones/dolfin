@@ -457,7 +457,6 @@ def test_element_instantiation():
     assert isinstance(f4.ufl_element(), TensorElement)
 
 
-@pytest.mark.xfail
 def test_num_literal():
     e0 = CompiledExpression("1e10", degree=0)
     assert e0(0, 0, 0) == 1e10
