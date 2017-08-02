@@ -154,29 +154,15 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm, std::string, std::string>())
       .def("__enter__", [](dolfin::HDF5File& self){ return &self; })
       .def("__exit__", [](dolfin::HDF5File& self, py::args args, py::kwargs kwargs){ self.close(); })
-      .def("write", (void (dolfin::HDF5File::*)(const dolfin::Mesh&, std::string)) &dolfin::HDF5File::write)
-      .def("read", (void (dolfin::HDF5File::*)(dolfin::Mesh&, std::string, bool) const) &dolfin::HDF5File::read)
       .def("close", &dolfin::HDF5File::close)
-      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshValueCollection<bool>&, std::string))
-           &dolfin::HDF5File::write, py::arg("mvc"), py::arg("name"))
-      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshValueCollection<std::size_t>&, std::string))
-           &dolfin::HDF5File::write, py::arg("mvc"), py::arg("name"))
-      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshValueCollection<double>&, std::string))
-           &dolfin::HDF5File::write, py::arg("mvc"), py::arg("name"))
+      // read
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::Mesh&, std::string, bool) const) &dolfin::HDF5File::read)
       .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshValueCollection<bool>&, std::string) const)
            &dolfin::HDF5File::read, py::arg("mvc"), py::arg("name"))
       .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshValueCollection<std::size_t>&, std::string) const)
            &dolfin::HDF5File::read, py::arg("mvc"), py::arg("name"))
       .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshValueCollection<double>&, std::string) const)
            &dolfin::HDF5File::read, py::arg("mvc"), py::arg("name"))
-      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<bool>&, std::string))
-           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
-      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<std::size_t>&, std::string))
-           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
-      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<int>&, std::string))
-           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
-      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<double>&, std::string))
-           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
       .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshFunction<bool>&, std::string) const)
            &dolfin::HDF5File::read, py::arg("meshfunction"), py::arg("name"))
       .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshFunction<std::size_t>&, std::string) const)
@@ -185,10 +171,49 @@ namespace dolfin_wrappers
            &dolfin::HDF5File::read, py::arg("meshfunction"), py::arg("name"))
       .def("read", (void (dolfin::HDF5File::*)(dolfin::MeshFunction<double>&, std::string) const)
            &dolfin::HDF5File::read, py::arg("meshfunction"), py::arg("name"))
-      .def("write", (void (dolfin::HDF5File::*)(const dolfin::GenericVector&, std::string))
-           &dolfin::HDF5File::write, py::arg("vector"), py::arg("name"))
       .def("read", (void (dolfin::HDF5File::*)(dolfin::GenericVector&, std::string, bool) const)
            &dolfin::HDF5File::read, py::arg("vector"), py::arg("name"), py::arg("use_partitioning"))
+      .def("read", (void (dolfin::HDF5File::*)(dolfin::Function&, const std::string))
+           &dolfin::HDF5File::read, py::arg("u"), py::arg("name"))
+      .def("read", [](dolfin::HDF5File& self, py::object u, std::string name)
+           {
+             try{
+               auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+               self.read(*_u, name);
+             } catch (const std::exception& e) {
+               // Do nothing, pybind11 will try next function
+             }
+           }, py::arg("u"), py::arg("name"))
+      // write
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::Mesh&, std::string)) &dolfin::HDF5File::write)
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshValueCollection<bool>&, std::string))
+           &dolfin::HDF5File::write, py::arg("mvc"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshValueCollection<std::size_t>&, std::string))
+           &dolfin::HDF5File::write, py::arg("mvc"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshValueCollection<double>&, std::string))
+           &dolfin::HDF5File::write, py::arg("mvc"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<bool>&, std::string))
+           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<std::size_t>&, std::string))
+           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<int>&, std::string))
+           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::MeshFunction<double>&, std::string))
+           &dolfin::HDF5File::write, py::arg("meshfunction"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::GenericVector&, std::string))
+           &dolfin::HDF5File::write, py::arg("vector"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::Function&, std::string))
+           &dolfin::HDF5File::write, py::arg("u"), py::arg("name"))
+      .def("write", [](dolfin::HDF5File& self, py::object u, std::string name)
+           {
+             try{
+               auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+               self.write(*_u, name);
+             } catch (const std::exception& e) {
+               // Do nothing, pybind11 will try next function
+             }
+           }, py::arg("u"), py::arg("name"))
+      // attributes
       .def("attributes", &dolfin::HDF5File::attributes);
 
 #endif

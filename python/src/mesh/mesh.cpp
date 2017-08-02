@@ -372,6 +372,8 @@ namespace dolfin_wrappers
       .def("get_value", &dolfin::MeshValueCollection<SCALAR>::get_value) \
       .def("set_value", (bool (dolfin::MeshValueCollection<SCALAR>::*)(std::size_t, const SCALAR&)) \
            &dolfin::MeshValueCollection<SCALAR>::set_value) \
+      .def("values", (std::map<std::pair<std::size_t, std::size_t>, SCALAR>& (dolfin::MeshValueCollection<SCALAR>::*)()) \
+           &dolfin::MeshValueCollection<SCALAR>::values, py::return_value_policy::reference) \
       .def("assign", [](dolfin::MeshValueCollection<SCALAR>& self, const dolfin::MeshFunction<SCALAR>& mf) { self = mf; }) \
       .def("assign", [](dolfin::MeshValueCollection<SCALAR>& self, const dolfin::MeshValueCollection<SCALAR>& other) \
          { self = other; })
