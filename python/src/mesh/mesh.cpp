@@ -46,6 +46,7 @@
 #include <dolfin/mesh/SubDomain.h>
 #include <dolfin/mesh/SubMesh.h>
 #include <dolfin/mesh/DomainBoundary.h>
+#include <dolfin/mesh/PeriodicBoundaryComputation.h>
 
 #include "../mpi_interface.h"
 
@@ -96,7 +97,9 @@ namespace dolfin_wrappers
                                                             py::dynamic_attr(),
                                                             "DOLFIN Mesh object")
       .def(py::init<>())
+      .def(py::init<MPI_Comm>())
       .def(py::init<std::string>())
+      .def(py::init<const dolfin::Mesh&>())
       .def("bounding_box_tree", &dolfin::Mesh::bounding_box_tree)
       .def("cells",
            [](const dolfin::Mesh& self)
@@ -438,7 +441,7 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::SubDomain, std::shared_ptr<dolfin::SubDomain>, PySubDomain>
       (m, "SubDomain", "DOLFIN SubDomain object")
-      .def(py::init<>())
+      .def(py::init<double>(), py::arg("map_tol")=DOLFIN_EPS)
       .def("inside", (bool (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>, bool) const)
            &dolfin::SubDomain::inside)
       .def("map", (void (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<Eigen::VectorXd>) const)
@@ -446,10 +449,15 @@ namespace dolfin_wrappers
       .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<std::size_t>&, std::size_t, bool) const)
            &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true);
 
+    // doldin::DomainBoundary
     py::class_<dolfin::DomainBoundary, std::shared_ptr<dolfin::DomainBoundary>, dolfin::SubDomain>
       (m, "DomainBoundary")
       .def(py::init<>());
 
+    // dolfin::PeriodicBoundaryComputation
+    py::class_<dolfin::PeriodicBoundaryComputation>
+      (m, "PeriodicBoundaryComputation")
+      .def_static("compute_periodic_pairs", &dolfin::PeriodicBoundaryComputation::compute_periodic_pairs);
 
   }
 
