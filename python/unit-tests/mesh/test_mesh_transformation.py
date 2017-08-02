@@ -52,7 +52,6 @@ def test_rotate_3d():
     mesh.rotate(30, 0, p)
 
 
-@pytest.mark.xfail
 def test_rescale_2d():
     mesh = UnitSquareMesh(8, 8)
     p = Point(4, 4)
@@ -62,7 +61,6 @@ def test_rescale_2d():
     assert MPI.sum(comm, sum(c.volume() for c in cells(mesh))) == s*s
 
 
-@pytest.mark.xfail
 def test_rescale_3d():
     mesh = UnitCubeMesh(8, 8, 8)
     p = Point(4, 4, 4)

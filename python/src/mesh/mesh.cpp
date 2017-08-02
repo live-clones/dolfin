@@ -47,6 +47,7 @@
 #include <dolfin/mesh/SubMesh.h>
 #include <dolfin/mesh/DomainBoundary.h>
 #include <dolfin/mesh/PeriodicBoundaryComputation.h>
+#include <dolfin/mesh/MeshTransformation.h>
 
 #include "../mpi_interface.h"
 
@@ -459,6 +460,15 @@ namespace dolfin_wrappers
       (m, "PeriodicBoundaryComputation")
       .def_static("compute_periodic_pairs", &dolfin::PeriodicBoundaryComputation::compute_periodic_pairs)
       .def_static("masters_slaves", &dolfin::PeriodicBoundaryComputation::masters_slaves);
+
+    // dolfin::MeshTransformation
+    py::class_<dolfin::MeshTransformation>(m, "MeshTransformation")
+      .def_static("translate", &dolfin::MeshTransformation::translate)
+      .def_static("rescale", &dolfin::MeshTransformation::rescale)
+      .def_static("rotate", (void (*)(dolfin::Mesh&, double, std::size_t)) &dolfin::MeshTransformation::rotate)
+      .def_static("rotate", (void (*)(dolfin::Mesh&, double, std::size_t, const dolfin::Point&))
+                  &dolfin::MeshTransformation::rotate);
+
 
   }
 
