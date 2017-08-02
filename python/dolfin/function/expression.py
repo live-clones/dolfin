@@ -258,7 +258,7 @@ class Expression(BaseExpression):
         for k in self._properties:
             if not isinstance(k, string_types):
                 raise KeyError("Invalid key")
-            if not isinstance(properties[k], float):
+            if not isinstance(self._properties[k], float):
                 raise ValueError("Invalid value")
 
         self._cpp_object = jit.compile_expression(cpp_code, self._properties)

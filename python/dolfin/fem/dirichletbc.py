@@ -28,7 +28,7 @@ class AutoSubDomain(cpp.mesh.SubDomain):
                                "Expecting a function of the form inside(x) or inside(x, on_boundary)")
         self.num_args = inside_function.__code__.co_argcount
 
-        super().__init__()
+        cpp.mesh.SubDomain.__init__(self)
 
     def inside(self, x, on_boundary):
         "Return true for points inside the subdomain"
