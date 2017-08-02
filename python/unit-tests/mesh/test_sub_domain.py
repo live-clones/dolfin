@@ -56,7 +56,6 @@ def test_compiled_subdomains_compilation_failure():
         invalidCppCode()
 
 
-@pytest.mark.xfail
 def test_creation_and_marking():
 
     class Left(SubDomain):
@@ -99,6 +98,7 @@ def test_creation_and_marking():
                        (CompiledSubDomain("near(x[0], 0.0)"),
                         CompiledSubDomain("near(x[0], 1.0)"))]
 
+    # FIXME: not supported yet - maybe better through pybind11 JIT?
     #                   (CompiledSubDomain(left_cpp),
     #                    CompiledSubDomain(right_cpp))]
 
