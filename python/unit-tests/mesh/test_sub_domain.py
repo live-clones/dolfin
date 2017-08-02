@@ -28,7 +28,6 @@ from dolfin_utils.test import skip_in_parallel
 import pytest
 
 
-@pytest.mark.xfail
 def test_compiled_subdomains():
     def noDefaultValues():
         CompiledSubDomain("a")
@@ -48,7 +47,6 @@ def test_compiled_subdomains():
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_compiled_subdomains_compilation_failure():
     def invalidCppCode():
         CompiledSubDomain("/")
@@ -56,7 +54,6 @@ def test_compiled_subdomains_compilation_failure():
         invalidCppCode()
 
 
-@pytest.mark.xfail
 def test_creation_and_marking():
 
     class Left(SubDomain):
@@ -99,6 +96,7 @@ def test_creation_and_marking():
                        (CompiledSubDomain("near(x[0], 0.0)"),
                         CompiledSubDomain("near(x[0], 1.0)"))]
 
+    # FIXME: not supported yet - maybe better through pybind11 JIT?
     #                   (CompiledSubDomain(left_cpp),
     #                    CompiledSubDomain(right_cpp))]
 

@@ -191,12 +191,15 @@ namespace dolfin_wrappers
       .def("size", &dolfin::GenericMatrix::size)
       .def("get_diagonal", &dolfin::GenericMatrix::get_diagonal)
       .def("set_diagonal", &dolfin::GenericMatrix::set_diagonal)
+      .def("ident_zeros", &dolfin::GenericMatrix::ident_zeros)
       .def("getrow", [](const dolfin::GenericMatrix& instance, std::size_t row)
            {
              std::vector<double> values;
              std::vector<std::size_t> columns;
              instance.getrow(row, columns, values);
-             return std::make_pair(columns, values);
+             auto _columns = py::array_t<std::size_t>(columns.size(), columns.data());
+             auto _values = py::array_t<double>(values.size(), values.data());
+             return std::make_pair(_columns, _values);
            })
       .def("array", [](const dolfin::GenericMatrix& instance)
            {

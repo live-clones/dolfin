@@ -87,7 +87,7 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
     return code_h, code_c, depends
 
 
-def compile_subdomain(inside_code, **kwargs):
+def compile_subdomain(inside_code, properties):
 
     import pkgconfig
     if not pkgconfig.exists('dolfin'):
@@ -102,18 +102,27 @@ def compile_subdomain(inside_code, **kwargs):
     params['build']['libs'] = d["libraries"]
     params['build']['lib_dirs'] = d["library_dirs"]
 
-    class_data = {'inside_code':inside_code, 'properties':kwargs}
+    class_data = {'inside_code': inside_code, 'properties': properties}
 
-    module_hash = hashlib.md5(inside_code.encode('utf-8')).hexdigest()
+    hash_str = inside_code + str(properties.keys())
+    module_hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
     module_name = "dolfin_subdomain_" + module_hash
-    module, signature = dijitso.jit(class_data, module_name, params,
-                                    generate=jit_generate)
 
-    submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
+    try:
+        module, signature = dijitso.jit(class_data, module_name, params,
+                                        generate=jit_generate)
+        submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
+    except:
+        raise RuntimeError("Unable to compile C++ code with dijitso")
 
     sub_domain = cpp.mesh.make_dolfin_subdomain(submodule)
+
+    for k in properties:
+        sub_domain.set_property(k, properties[k])
+
     return sub_domain
 
 class CompiledSubDomain(cpp.mesh.SubDomain):
     def __new__(cls, inside_code, **kwargs):
-        return compile_subdomain(inside_code, **kwargs)
+        properties = kwargs
+        return compile_subdomain(inside_code, properties)
