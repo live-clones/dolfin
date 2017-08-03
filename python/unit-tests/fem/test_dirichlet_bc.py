@@ -72,8 +72,7 @@ def test_director_lifetime():
     assert round(A1.norm("frobenius") - A0.norm("frobenius"), 7) == 0
 
 
-@pytest.mark.xfail
-def xtest_get_values():
+def test_get_values():
     mesh = UnitSquareMesh(8, 8)
     dofs = numpy.zeros(3, dtype="I")
 
@@ -84,8 +83,9 @@ def xtest_get_values():
     bc = DirichletBC(V, 0.0, upper)
     bc_values = bc.get_boundary_values()
 
+
 @pytest.mark.skip
-def xtest_meshdomain_bcs(datadir):
+def test_meshdomain_bcs(datadir):
     """Test application of Dirichlet boundary conditions stored as
     part of the mesh. This test is also a compatibility test for
     VMTK."""
@@ -111,7 +111,7 @@ def xtest_meshdomain_bcs(datadir):
 
 
 @pytest.mark.xfail
-def xtest_user_meshfunction_domains():
+def test_user_meshfunction_domains():
     mesh0 = UnitSquareMesh(12, 12)
     mesh1 = UnitSquareMesh(12, 12)
     V = FunctionSpace(mesh0, "CG", 1)
@@ -125,7 +125,6 @@ def xtest_user_meshfunction_domains():
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_bc_for_piola_on_manifolds():
     "Testing DirichletBC for piolas over standard domains vs manifolds."
     n = 4
@@ -162,7 +161,6 @@ def test_bc_for_piola_on_manifolds():
         assert round(b0 - b1, 7) == 0
 
 
-@pytest.mark.xfail
 def test_zero():
     mesh = UnitSquareMesh(4, 4)
     V = FunctionSpace(mesh, "CG", 1)
@@ -189,7 +187,6 @@ def test_zero():
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_zero_columns_offdiag():
     """Test zero_columns applied to offdiagonal block"""
     mesh = UnitSquareMesh(20, 20)
@@ -227,7 +224,6 @@ def test_zero_columns_offdiag():
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_zero_columns_square():
     """Test zero_columns applied to square matrix"""
     mesh = UnitSquareMesh(20, 20)
@@ -275,10 +271,11 @@ def test_homogenize_consistency():
         assert bc_new.method() == bc.method()
 
 
-@pytest.mark.xfail
 def test_nocaching_values():
-    """There might be caching of dof indices in DirichletBC.
-    But caching of values is _not_ allowed."""
+    """There might be caching of dof indices in DirichletBC.  But caching
+    of values is _not_ allowed.
+
+    """
     mesh = UnitSquareMesh(4, 4)
     V = FunctionSpace(mesh, "P", 1)
     u = Function(V)
