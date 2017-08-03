@@ -77,6 +77,10 @@ namespace dolfin_wrappers
            })
       // Read
       .def("read", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::MeshFunction<bool>&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::MeshFunction<int>&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::MeshFunction<std::size_t>&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::MeshFunction<double>&)) &dolfin::File::read)
       .def("read", (void (dolfin::File::*)(dolfin::Mesh&)) &dolfin::File::read);
 
     // dolfin::VTKFile
