@@ -21,6 +21,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
+#include <pybind11/operators.h>
 #include <Eigen/Dense>
 
 #include <dolfin/geometry/intersect.h>
@@ -116,10 +117,10 @@ namespace dolfin_wrappers
             double* x = instance.coordinates();
             std::copy_n(values.data(), 3, x);
            })
-      .def("__add__", [](const dolfin::Point& self, const dolfin::Point& other)
-           { return self + other; })
-      .def("__sub__", [](const dolfin::Point& self, const dolfin::Point& other)
-           { return self - other; })
+      .def(py::self + py::self)
+      .def(py::self - py::self)
+      .def(py::self * float())
+      .def(py::self / float())
       .def("array", [](dolfin::Point& self)
            { return Eigen::Map<Eigen::Vector3d>(self.coordinates()); })
       .def("norm", &dolfin::Point::norm)
