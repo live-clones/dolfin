@@ -109,6 +109,7 @@ from .mesh.subdomain import CompiledSubDomain
 
 # ufl
 from ufl import (FiniteElement, VectorElement, MixedElement, rhs, lhs,
+                 conditional, le, lt, ge, gt,
                  inner, dot, grad, dx, div, Measure, det, sin, cos, ln, exp, sqrt,
                  ds, dS, dP, triangle, tetrahedron, avg, jump, sym, tr, Identity)
 from ufl.formoperators import action

@@ -74,6 +74,12 @@ class Function(ufl.Coefficient):
 
         return self._cpp_object.__call__(*args)
 
+    def extrapolate(self, u):
+        if isinstance(u, ufl.Coefficient):
+            self._cpp_object.extrapolate(u._cpp_object)
+        else:
+            self._cpp_object.extrapolate(u)
+
     def interpolate(self, u):
         if isinstance(u, ufl.Coefficient):
             self._cpp_object.interpolate(u._cpp_object)
