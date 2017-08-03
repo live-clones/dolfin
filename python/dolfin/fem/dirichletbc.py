@@ -6,6 +6,7 @@ import ufl
 import dolfin.cpp as cpp
 from dolfin.mesh.subdomain import CompiledSubDomain
 from dolfin.function.constant import Constant
+from dolfin.fem.projection import project
 
 class AutoSubDomain(cpp.mesh.SubDomain):
     "Wrapper class for creating a SubDomain from an inside() function."

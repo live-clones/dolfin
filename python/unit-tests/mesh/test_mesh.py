@@ -206,7 +206,6 @@ def test_UnitHexMesh():
     assert mesh.size_global(3) == 315
 
 
-@pytest.mark.xfail
 def test_RefineUnitIntervalMesh():
     """Refine mesh of unit interval."""
     mesh = UnitIntervalMesh(20)
@@ -421,7 +420,6 @@ def test_rmin_rmax(mesh1d, mesh2d, mesh3d):
     assert round(mesh3d.rmax() - sqrt(3.0)/6.0, 7) == 0
 
 
-@pytest.mark.xfail
 def test_basic_cell_orientations():
     "Test that default cell orientations initialize and update as expected."
     mesh = UnitIntervalMesh(12)
@@ -437,7 +435,6 @@ def test_basic_cell_orientations():
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_cell_orientations():
     "Test that cell orientations update as expected."
     mesh = UnitIntervalMesh(12)

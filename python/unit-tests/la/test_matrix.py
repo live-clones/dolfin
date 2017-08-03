@@ -226,7 +226,6 @@ class TestMatrixForAnyBackend:
         assert B0.size(1) == B1.size(1)
         assert round(B0.norm("frobenius") - B1.norm("frobenius"), 7) == 0
 
-    @pytest.mark.xfail
     def test_ident_zeros(self, use_backend, any_backend):
         self.backend, self.sub_backend = any_backend
 
