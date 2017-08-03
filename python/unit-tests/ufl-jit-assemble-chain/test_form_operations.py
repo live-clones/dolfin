@@ -18,15 +18,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# First added:  2011-11-14
-# Last changed: 2011-11-14
-
 
 import pytest
+import ufl
 from dolfin import *
 
-@pytest.mark.xfail
 def test_lhs_rhs_simple():
     """Test taking lhs/rhs of DOLFIN specific forms (constants
     without cell). """
@@ -39,12 +35,12 @@ def test_lhs_rhs_simple():
     u = TrialFunction(V)
 
     F = inner(g*grad(f*v), grad(u))*dx + f*v*dx
-    a, L = system(F)
+    a, L = ufl.system(F)
 
-    Fl = lhs(F)
-    Fr = rhs(F)
+    Fl = ufl.lhs(F)
+    Fr = ufl.rhs(F)
 
-    a0 = inner(grad(v), grad(u))*dx
+    a0 = ufl.inner(grad(v), grad(u))*dx
 
     n = assemble(a).norm("frobenius")
     nl = assemble(Fl).norm("frobenius")
@@ -52,4 +48,3 @@ def test_lhs_rhs_simple():
 
     assert round(n - n0, 7) == 0
     assert round(n - nl, 7) == 0
-

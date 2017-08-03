@@ -27,10 +27,11 @@ import unittest
 import numpy
 import math
 import pytest
+
+import ufl
 from dolfin import *
 
 
-@pytest.mark.xfail
 def test_diff_then_integrate():
 
     # Define 1D geometry
@@ -65,11 +66,11 @@ def test_diff_then_integrate():
     reg([x**(x**3)], 6)
     reg([x**(x**4)], 2)
     # Special functions:
-    reg([atan(xs)], 8)
-    reg([sin(x), cos(x), exp(x)], 5)
-    reg([ln(xs), pow(x, 2.7), pow(2.7, x)], 3)
-    reg([asin(xs), acos(xs)], 1)
-    reg([tan(xs)], 7)
+    reg([ufl.atan(xs)], 8)
+    reg([ufl.sin(x), ufl.cos(x), ufl.exp(x)], 5)
+    reg([ufl.ln(xs), pow(x, 2.7), pow(2.7, x)], 3)
+    reg([ufl.asin(xs), ufl.acos(xs)], 1)
+    reg([ufl.tan(xs)], 7)
 
     try:
         import scipy
@@ -77,7 +78,7 @@ def test_diff_then_integrate():
         scipy = None
 
     if hasattr(math, 'erf') or scipy is not None:
-        reg([erf(xs)])
+        reg([ufl.erf(xs)])
     else:
         print("Warning: skipping test of erf, old python version and no scipy.")
 
@@ -89,32 +90,33 @@ def test_diff_then_integrate():
         for nu in (0,1,2):
             # Many of these are possibly more accurately integrated,
             # but 4 covers all and is sufficient for this test
-            reg([bessel_J(nu, xs), bessel_Y(nu, xs), bessel_I(nu, xs), bessel_K(nu, xs)], 4)
+            reg([ufl.bessel_J(nu, xs), ufl.bessel_Y(nu, xs),
+                 ufl.bessel_I(nu, xs), ufl.bessel_K(nu, xs)], 4)
 
     # To handle tensor algebra, make an x dependent input tensor
     # xx and square all expressions
     def reg2(exprs, acc=10):
         for expr in exprs:
             F_list.append((inner(expr,expr), acc))
-    xx  = as_matrix([[2*x**2, 3*x**3], [11*x**5, 7*x**4]])
-    x3v = as_vector([3*x**2, 5*x**3, 7*x**4])
-    cc  = as_matrix([[2, 3], [4, 5]])
+    xx  = ufl.as_matrix([[2*x**2, 3*x**3], [11*x**5, 7*x**4]])
+    x3v = ufl.as_vector([3*x**2, 5*x**3, 7*x**4])
+    cc  = ufl.as_matrix([[2, 3], [4, 5]])
     reg2([xx])
     reg2([x3v])
-    reg2([cross(3*x3v, as_vector([-x3v[1], x3v[0], x3v[2]]))])
+    reg2([ufl.cross(3*x3v, ufl.as_vector([-x3v[1], x3v[0], x3v[2]]))])
     reg2([xx.T])
-    reg2([tr(xx)])
-    reg2([det(xx)])
-    reg2([dot(xx, 0.1*xx)])
-    reg2([outer(xx, xx.T)])
-    reg2([dev(xx)])
-    reg2([sym(xx)])
-    reg2([skew(xx)])
-    reg2([elem_mult(7*xx, cc)])
-    reg2([elem_div(7*xx, xx+cc)])
-    reg2([elem_pow(1e-3*xx, 1e-3*cc)])
-    reg2([elem_pow(1e-3*cc, 1e-3*xx)])
-    reg2([elem_op(lambda z: sin(z) + 2, 0.03*xx)], 2) # pretty inaccurate...
+    reg2([ufl.tr(xx)])
+    reg2([ufl.det(xx)])
+    reg2([ufl.dot(xx, 0.1*xx)])
+    reg2([ufl.outer(xx, xx.T)])
+    reg2([ufl.dev(xx)])
+    reg2([ufl.sym(xx)])
+    reg2([ufl.skew(xx)])
+    reg2([ufl.elem_mult(7*xx, cc)])
+    reg2([ufl.elem_div(7*xx, xx+cc)])
+    reg2([ufl.elem_pow(1e-3*xx, 1e-3*cc)])
+    reg2([ufl.elem_pow(1e-3*cc, 1e-3*xx)])
+    reg2([ufl.elem_op(lambda z: ufl.sin(z) + 2, 0.03*xx)], 2) # pretty inaccurate...
 
     # FIXME: Add tests for all UFL operators:
     # These cause discontinuities and may be harder to test in the
@@ -134,7 +136,7 @@ def test_diff_then_integrate():
     debug = 0
     for F, acc in F_list:
         # Apply UFL differentiation
-        f = diff(F, SpatialCoordinate(mesh))[...,0]
+        f = ufl.diff(F, SpatialCoordinate(mesh))[...,0]
         if debug:
             print(F)
             print(x)
