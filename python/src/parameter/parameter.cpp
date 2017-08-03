@@ -44,6 +44,12 @@ namespace dolfin_wrappers
       .def("name", &dolfin::Parameters::name)
       .def("rename", &dolfin::Parameters::rename)
       .def("update", &dolfin::Parameters::update)
+      .def("update", [](dolfin::Parameters& self, py::dict param)
+           {
+             // FIXME: should this parse a dictionary?
+             if (param.size() > 0)
+               throw py::value_error("Cannot handle dict with values");
+           })
       .def("has_parameter", &dolfin::Parameters::has_parameter)
       .def("has_parameter_set", &dolfin::Parameters::has_parameter_set)
       .def("_get_parameter", (dolfin::Parameter& (dolfin::Parameters::*)(std::string))

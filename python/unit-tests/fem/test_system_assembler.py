@@ -186,7 +186,6 @@ def test_facet_assembly():
     parameters["ghost_mode"] = "none"
 
 
-@pytest.mark.xfail
 def test_vertex_assembly():
 
     # Create mesh and define function space

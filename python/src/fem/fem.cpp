@@ -208,7 +208,13 @@ namespace dolfin_wrappers
            &dolfin::DirichletBC::apply)
       .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericMatrix&) const)
            &dolfin::DirichletBC::apply)
-      .def("user_subdomain", &dolfin::DirichletBC::user_sub_domain);
+      .def("user_subdomain", &dolfin::DirichletBC::user_sub_domain)
+      .def("set_value", &dolfin::DirichletBC::set_value)
+      .def("set_value", [](dolfin::DirichletBC& self, py::object value)
+           {
+             auto _u = value.attr("_cpp_object").cast<std::shared_ptr<const dolfin::GenericFunction>>();
+             self.set_value(_u);
+           });
 
     // dolfin::AssemblerBase class
     py::class_<dolfin::AssemblerBase, std::shared_ptr<dolfin::AssemblerBase>>
@@ -276,7 +282,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::LinearVariationalSolver,
                std::shared_ptr<dolfin::LinearVariationalSolver>,
                dolfin::Variable>(m, "LinearVariationalSolver")
-      .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>());
+      .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>())
+      .def("solve", &dolfin::LinearVariationalSolver::solve);
 
     // dolfin::NonlinearVariationalProblem class
     py::class_<dolfin::NonlinearVariationalProblem,
@@ -291,7 +298,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::NonlinearVariationalSolver,
                std::shared_ptr<dolfin::NonlinearVariationalSolver>,
                dolfin::Variable>
-      (m, "NonlinearVariationalSolver");
+      (m, "NonlinearVariationalSolver")
+      .def("solve", &dolfin::NonlinearVariationalSolver::solve);
 
     // dolfin::LocalSolver class
     py::class_<dolfin::LocalSolver, std::shared_ptr<dolfin::LocalSolver>>
