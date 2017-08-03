@@ -26,8 +26,8 @@ del sys
 #del sys
 
 # cpp modules
-from .cpp.common import (Variable, has_debug, has_hdf5,
-                         has_hdf5_parallel, has_mpi, has_petsc,
+from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
+                         has_hdf5_parallel, has_mpi, has_petsc, has_parmetis,
                          has_slepc, git_commit_hash, DOLFIN_EPS,
                          DOLFIN_PI, TimingClear, TimingType, timing)
 
@@ -108,8 +108,8 @@ from .mesh.meshvaluecollection import MeshValueCollection
 from .mesh.subdomain import CompiledSubDomain
 
 # ufl
-from ufl import (FiniteElement, VectorElement, MixedElement,
-                 inner, dot, grad, dx, div, Measure,
+from ufl import (FiniteElement, VectorElement, MixedElement, rhs, lhs,
+                 inner, dot, grad, dx, div, Measure, det, sin, cos, ln, exp, sqrt,
                  ds, dS, dP, triangle, tetrahedron, avg, jump, sym, tr, Identity)
 from ufl.formoperators import action
 

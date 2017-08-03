@@ -50,6 +50,8 @@ namespace dolfin_wrappers
     m.def("has_hdf5", &dolfin::has_hdf5);
     m.def("has_hdf5_parallel", &dolfin::has_hdf5_parallel);
     m.def("has_mpi", &dolfin::has_mpi);
+    m.def("has_parmetis", &dolfin::has_parmetis);
+    m.def("has_scotch", &dolfin::has_scotch);
     m.def("has_petsc", &dolfin::has_petsc);
     m.def("has_slepc", &dolfin::has_slepc);
     m.def("git_commit_hash", &dolfin::git_commit_hash);
