@@ -156,6 +156,10 @@ namespace dolfin_wrappers
       // __ifoo__
       .def("__imul__", &dolfin::GenericMatrix::operator*=, "Multiply by a scalar")
       .def("__itruediv__", &dolfin::GenericMatrix::operator/=, py::is_operator(), "Divide by a scalar")
+      // Below is an examle of a hand-wrapped in-place operator. Note
+      // the explicit return type (const reference). This is necessary
+      // to avoid segfaults. Need to investigate more how pybind11
+      // handles return types for operators.
       //.def("__itruediv__", [](dolfin::GenericMatrix& self, double a) -> const dolfin::GenericMatrix&
       //     {
       //       self /= a;
