@@ -4,6 +4,20 @@ from six import string_types
 import dijitso
 import dolfin.cpp as cpp
 
+_cpp_math_builtins = [
+    # <cmath> functions: from http://www.cplusplus.com/reference/cmath/
+    "cos", "sin", "tan", "acos", "asin", "atan", "atan2",
+    "cosh", "sinh", "tanh", "exp", "frexp", "ldexp", "log", "log10", "modf",
+    "pow", "sqrt", "ceil", "fabs", "floor", "fmod",
+    "max", "min"]
+
+_math_header = """
+// cmath functions
+%s
+
+const double pi = DOLFIN_PI;
+""" % "\n".join("using std::%s;" % mf for mf in _cpp_math_builtins)
+
 
 def jit_generate(class_data, module_name, signature, parameters):
     """TODO: document"""
@@ -12,6 +26,8 @@ def jit_generate(class_data, module_name, signature, parameters):
 
 #include <dolfin/function/Expression.h>
 #include <Eigen/Dense>
+
+{math_header}
 
 namespace dolfin
 {{
@@ -80,7 +96,8 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
     classname = signature
     code_c = template_code.format(statement=statement, classname=classname,
                                   members=members, constructor=constructor,
-                                  set_props=set_props, get_props=get_props)
+                                  set_props=set_props, get_props=get_props,
+                                  math_header=_math_header)
     code_h = ""
     depends = []
 
