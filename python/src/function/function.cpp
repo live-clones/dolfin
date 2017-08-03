@@ -150,6 +150,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>, dolfin::GenericFunction>
       (m, "Function")
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>())
+      .def(py::init<std::shared_ptr<dolfin::FunctionSpace>, std::shared_ptr<dolfin::GenericVector>>())
       .def("_in", &dolfin::Function::in)
       .def("__call__", [](dolfin::Function& self, std::vector<double>& p)
           {

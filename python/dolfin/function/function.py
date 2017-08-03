@@ -45,9 +45,16 @@ class Function(ufl.Coefficient):
             if len(args) == 1:
                 # If passing only the FunctionSpace
                 self._cpp_object = cpp.function.Function(V)
+            elif len(args) == 2:
+                if isinstance(args[1], cpp.la.GenericVector):
+                    self._cpp_object = cpp.function.Function(V, args[1])
+                else:
+                    raise RuntimeError("Don't know what to do yet")
+            else:
+                raise RuntimeError("Don't know what to do yet")
 
-                # Initialize the ufl.FunctionSpace
-                ufl.Coefficient.__init__(self, V.ufl_function_space(), count=self._cpp_object.id())
+            # Initialize the ufl.FunctionSpace
+            ufl.Coefficient.__init__(self, V.ufl_function_space(), count=self._cpp_object.id())
 
         else:
             raise TypeError("expected a FunctionSpace or a Function as argument 1")
