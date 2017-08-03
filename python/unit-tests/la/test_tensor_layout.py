@@ -35,7 +35,7 @@ backend = set_parameters_fixture("linear_algebra_backend", backends)
 def mesh():
     return UnitSquareMesh(10, 10)
 
-@pytest.mark.xfail
+
 @pytest.mark.parametrize("element", [
     FiniteElement("P", triangle, 1),
     VectorElement("P", triangle, 1),
