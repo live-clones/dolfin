@@ -136,6 +136,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::GenericDofMap, std::shared_ptr<dolfin::GenericDofMap>>
       (m, "GenericDofMap", "DOLFIN DofMap object")
       .def("index_map", &dolfin::GenericDofMap::index_map)
+      .def("shared_nodes", &dolfin::GenericDofMap::shared_nodes)
       .def("cell_dofs", &dolfin::GenericDofMap::cell_dofs)
       .def("dofs", (std::vector<dolfin::la_index>(dolfin::GenericDofMap::*)() const)
            &dolfin::GenericDofMap::dofs)
@@ -235,6 +236,13 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::Form>, std::shared_ptr<const dolfin::Form>,
            std::vector<std::shared_ptr<const dolfin::DirichletBC>>>())
       .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericMatrix&, dolfin::GenericVector&))
+           &dolfin::SystemAssembler::assemble)
+      .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericMatrix&, dolfin::GenericVector&,
+                                                          const dolfin::GenericVector&))
+           &dolfin::SystemAssembler::assemble)
+      .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericMatrix&))
+           &dolfin::SystemAssembler::assemble)
+      .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericVector&))
            &dolfin::SystemAssembler::assemble);
 
     // dolfin::DiscreteOperators
