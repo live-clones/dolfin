@@ -52,6 +52,10 @@ class Function(ufl.Coefficient):
         else:
             raise TypeError("expected a FunctionSpace or a Function as argument 1")
 
+        # Set name as given or automatic
+        name = kwargs.get("name") or "f_%d" % self.count()
+        self.rename(name, "a Function")
+
     def value_dimension(self, i):
         return self._cpp_object.value_dimension(i)
 
@@ -63,6 +67,9 @@ class Function(ufl.Coefficient):
             self._cpp_object.interpolate(u._cpp_object)
         else:
             self._cpp_object.interpolate(u)
+
+    def compute_vertex_values(self, mesh):
+        return self._cpp_object.compute_vertex_values(mesh)
 
     def function_space(self):
         return self._cpp_object.function_space()
@@ -85,6 +92,16 @@ class Function(ufl.Coefficient):
         indices = np.zeros(1, dtype=la.la_index_dtype())
         values = vec.gather(indices)
         return float(values[0])
+
+    def name(self):
+        return self._cpp_object.name()
+
+    def rename(self, name, s):
+        self._cpp_object.rename(name, s)
+
+    def __str__(self):
+        """Return a pretty print representation of it self."""
+        return self.name()
 
     def cpp_object(self):
         return self._cpp_object

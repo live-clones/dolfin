@@ -46,7 +46,6 @@ def W(mesh):
     return VectorFunctionSpace(mesh, 'CG', 1)
 
 
-@pytest.mark.xfail
 def test_name_argument(W):
     u = Function(W)
     v = Function(W, name="v")
@@ -66,7 +65,6 @@ def test_in_function_space(W):
         assert usub in W.sub(i)
 
 
-@pytest.mark.xfail
 def test_compute_vertex_values(V, W, mesh):
     from numpy import zeros, all, array
     u = Function(V)
@@ -325,21 +323,19 @@ def test_scalar_conditions(R):
         not c < 0
 
 
-@pytest.mark.xfail
+
 def test_interpolation_mismatch_rank0(W):
     f = Expression("1.0", degree=0)
     with pytest.raises(RuntimeError):
         interpolate(f, W)
 
 
-@pytest.mark.xfail
 def test_interpolation_mismatch_rank1(W):
     f = Expression(("1.0", "1.0"), degree=0)
     with pytest.raises(RuntimeError):
         interpolate(f, W)
 
 
-@pytest.mark.xfail
 def test_interpolation_jit_rank0(V):
     f = Expression("1.0", degree=0)
     w = interpolate(f, V)
@@ -401,7 +397,6 @@ def test_extrapolation(V, pushpop_parameters):
     assert f2.get_allow_extrapolation() is False
 
 
-@pytest.mark.xfail
 def test_interpolation_jit_rank1(W):
     f = Expression(("1.0", "1.0", "1.0"), degree=0)
     w = interpolate(f, W)
