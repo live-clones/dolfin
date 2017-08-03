@@ -44,7 +44,14 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm, std::string>());
 
     py::class_<dolfin::TAOLinearBoundSolver>(m, "TAOLinearBoundSolver")
-      .def(py::init<MPI_Comm>());
+      .def(py::init<MPI_Comm>())
+      .def(py::init<std::string, std::string, std::string>(), py::arg("method")="default",
+           py::arg("ksp_type")="default", py::arg("pc_type")="default")
+      .def("solve", (std::size_t (dolfin::TAOLinearBoundSolver::*)
+                     (const dolfin::GenericMatrix&, dolfin::GenericVector&,
+                      const dolfin::GenericVector&, const dolfin::GenericVector&,
+                      const dolfin::GenericVector&))
+           &dolfin::TAOLinearBoundSolver::solve);
 
     py::class_<dolfin::PETScTAOSolver>(m, "PETScTAOSolver")
     .def("__init__",
