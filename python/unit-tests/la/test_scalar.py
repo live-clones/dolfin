@@ -31,7 +31,6 @@ def test_scalar_parallel_sum():
     assert round(a.get_scalar_value() - b*MPI.size(a.mpi_comm()), 7) == 0
 
 
-@pytest.mark.xfail
 def test_scalar_assembly():
     mesh = UnitSquareMesh(3, 3)
 
