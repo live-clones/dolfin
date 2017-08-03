@@ -1,8 +1,9 @@
 import ffc
 import ufl
 import types
-import dolfin.cpp as cpp
 
+import dolfin.cpp as cpp
+from  . import function
 
 class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
 
@@ -116,6 +117,27 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
 
         # Extend with the python layer
         return FunctionSpace(cpp.function.FunctionSpace.sub(self, i))
+
+    def __contains__(self, u):
+        "Check whether a function is in the FunctionSpace"
+        if isinstance(u, cpp.function.Function):
+            return u._in(self)
+        elif isinstance(u, function.Function):
+            return u._cpp_object._in(self)
+        return False
+
+        return ufl.FunctionSpace.__eq__(self, other) and cpp.function.FunctionSpace.__eq__(self, other)
+
+    def __eq__(self, other):
+        "Comparison for equality."
+        return ufl.FunctionSpace.__eq__(self, other) and cpp.function.FunctionSpace.__eq__(self, other)
+
+    def __ne__(self, other):
+        "Comparison for inequality."
+        return ufl.FunctionSpace.__ne__(self, other) or cpp.function.FunctionSpace.__ne__(self, other)
+
+    def ufl_cell(self):
+        return self.mesh().ufl_cell()
 
     def ufl_function_space(self):
         return self

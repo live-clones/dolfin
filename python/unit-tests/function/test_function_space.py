@@ -65,7 +65,6 @@ def W2(g):
     return g.function_space()
 
 
-@pytest.mark.xfail
 def test_python_interface(V, V2, W, W2, Q):
     # Test Python interface of cpp generated FunctionSpace
     assert isinstance(V, FunctionSpace)
@@ -82,7 +81,7 @@ def test_python_interface(V, V2, W, W2, Q):
     assert W.id() == W2.id()
     assert V.id() == V2.id()
 
-@pytest.mark.xfail
+
 def test_component(V, W, Q):
     assert not W.component()
     assert not V.component()
@@ -91,7 +90,7 @@ def test_component(V, W, Q):
     assert Q.sub(0).component()[0] == 0
     assert Q.sub(1).component()[0] == 1
 
-@pytest.mark.xfail
+
 def test_equality(V, V2, W, W2):
     assert V == V
     assert V == V2
@@ -140,7 +139,6 @@ def test_inclusion(V, Q):
     assert not Q.sub(0).sub(0).contains(Q.extract_sub_space((1,)))
 
 
-@pytest.mark.xfail
 def test_boundary(mesh):
     bmesh = BoundaryMesh(mesh, "exterior")
     Vb = FunctionSpace(bmesh, "DG", 0)
@@ -148,7 +146,7 @@ def test_boundary(mesh):
     assert Vb.dim() == 768
     assert Wb.dim() == 1158
 
-@pytest.mark.xfail
+
 def test_not_equal(W, V, W2, V2):
     assert W != V
     assert W2 != V2
@@ -161,7 +159,7 @@ def test_sub_equality(W, Q):
     assert W.sub(1) == W.extract_sub_space([1])
     assert Q.sub(0) == Q.extract_sub_space([0])
 
-@pytest.mark.xfail
+
 def test_in_operator(f, g, V, V2, W, W2):
     assert f in V
     assert f in V2
@@ -182,10 +180,12 @@ def test_collapse(W, V):
     f1 = Function(Vc)
     assert len(f0.vector()) == len(f1.vector())
 
-@pytest.mark.xfail
+
 def test_argument_equality(mesh, V, V2, W, W2):
     """Placed this test here because it's mainly about detecting differing
-function spaces."""
+    function spaces.
+
+    """
     mesh2 = UnitCubeMesh(8, 8, 8)
     V3 = FunctionSpace(mesh2, 'CG', 1)
     W3 = VectorFunctionSpace(mesh2, 'CG', 1)
@@ -232,7 +232,6 @@ function spaces."""
         assert grad(v) != grad(v3)
 
 
-@pytest.mark.xfail
 def test_cell_mismatch(mesh):
     """Test that cell mismatch raises early enough from UFL"""
     element = FiniteElement("P", triangle, 1)

@@ -280,7 +280,6 @@ def QQ3(base):
 
 
 @skip_in_parallel
-#@pytest.mark.xfail
 def test_basic_rt(RT2, RT3):
 
     f2 = CompiledExpression(("2.0", "1.0"), degree=0)
@@ -325,7 +324,6 @@ def test_basic_rt(RT2, RT3):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_mixed_poisson_solve(W2, W3):
 
     f = Constant(1.0)

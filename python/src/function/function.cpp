@@ -150,6 +150,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>, dolfin::GenericFunction>
       (m, "Function")
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>())
+      .def("_in", &dolfin::Function::in)
       .def("__call__", [](dolfin::Function& self, std::vector<double>& p)
           {
             // FIXME - remove Array and replace with Eigen in DOLFIN
@@ -180,12 +181,14 @@ namespace dolfin_wrappers
 
     //-----------------------------------------------------------------------------
     // dolfin::FunctionSpace
-    py::class_<dolfin::FunctionSpace, std::shared_ptr<dolfin::FunctionSpace>>
+    py::class_<dolfin::FunctionSpace, std::shared_ptr<dolfin::FunctionSpace>, dolfin::Variable>
       (m, "FunctionSpace", py::dynamic_attr())
       .def(py::init<std::shared_ptr<dolfin::Mesh>, std::shared_ptr<dolfin::FiniteElement>,
            std::shared_ptr<dolfin::GenericDofMap>>())
       .def(py::init<const dolfin::FunctionSpace&>())
       .def("dim", &dolfin::FunctionSpace::dim)
+      .def("component", &dolfin::FunctionSpace::component)
+      .def("contains", &dolfin::FunctionSpace::contains)
       .def("element", &dolfin::FunctionSpace::element)
       .def("mesh", &dolfin::FunctionSpace::mesh)
       .def("dofmap", &dolfin::FunctionSpace::dofmap)
