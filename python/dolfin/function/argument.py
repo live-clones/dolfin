@@ -86,6 +86,7 @@ class Argument(ufl.Argument):
     def __hash__(self):
         return ufl.Argument.__hash__(self)
 
+
 def TestFunction(V, part=None):
     """UFL value: Create a test function argument to a form.
 
@@ -93,12 +94,14 @@ def TestFunction(V, part=None):
     """
     return Argument(V, 0, part)
 
+
 def TrialFunction(V, part=None):
     """UFL value: Create a trial function argument to a form.
 
     This is the overloaded PyDOLFIN variant.
     """
     return Argument(V, 1, part)
+
 
 #--- TestFunctions and TrialFunctions ---
 
@@ -110,6 +113,7 @@ def Arguments(V, number):
     """
     return ufl.split(Argument(V, number))
 
+
 def TestFunctions(V):
     """UFL value: Create a TestFunction in a mixed space, and return a
     tuple with the function components corresponding to the subelements.
@@ -117,6 +121,7 @@ def TestFunctions(V):
     This is the overloaded PyDOLFIN variant.
     """
     return ufl.split(TestFunction(V))
+
 
 def TrialFunctions(V):
     """UFL value: Create a TrialFunction in a mixed space, and return a

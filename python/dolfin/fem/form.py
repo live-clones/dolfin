@@ -9,8 +9,16 @@ class Form(cpp.fem.Form):
         if not isinstance(form, ufl.Form):
             raise RuntimeError("Expected a ufl.Form.")
 
-        form_compiler_parameters = kwargs.pop("form_compiler_parameters", None)
+        sd = form.subdomain_data()
+        self.subdomains, = list(sd.values())  # Assuming single domain
+        domain, = list(sd.keys())  # Assuming single domain
+        mesh = domain.ufl_cargo()
 
+        # Having a mesh in the form is a requirement
+        if mesh is None:
+            raise RuntimeError("Expecting to find a Mesh in the form.")
+
+        form_compiler_parameters = kwargs.pop("form_compiler_parameters", None)
         ufc_form = ffc.jit(form, form_compiler_parameters)
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 
@@ -40,10 +48,6 @@ class Form(cpp.fem.Form):
             if isinstance(self.coefficients[i], cpp.function.GenericFunction):
                 self.set_coefficient(i, self.coefficients[i])
 
-        sd = form.subdomain_data()
-        self.subdomains, = list(sd.values())  # Assuming single domain
-        domain, = list(sd.keys())  # Assuming single domain
-        mesh = domain.ufl_cargo()
 
         # Attach mesh (because function spaces and coefficients may be
         # empty lists)

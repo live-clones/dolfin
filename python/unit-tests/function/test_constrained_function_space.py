@@ -137,7 +137,6 @@ def test_tolerance():
         assert num_periodic_pairs0 == num_periodic_pairs1
 
 
-@pytest.mark.xfail
 def test_solution():
     """Test periodic constrained domain by checking solution to a PDE."""
 

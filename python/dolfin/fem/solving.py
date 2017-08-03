@@ -22,15 +22,16 @@ VariationalProblem/Solver classes as well as the solve function."""
 # Modified by Marie E. Rognes, 2011.
 # Modified by Johan Hake, 2011.
 
-# Import SWIG-generated extension module (DOLFIN C++)
+# Import C++ interface
 import dolfin.cpp as cpp
 
 # Import UFL
 import ufl
 
 # Local imports
+from dolfin.function.function import Function
 from dolfin.fem.form import Form
-from dolfin.fem.formmanipulations import derivative
+import dolfin.fem.formmanipulations as formmanipulations
 import six
 
 __all__ = ["LinearVariationalProblem",
@@ -79,7 +80,7 @@ class LinearVariationalProblem(cpp.fem.LinearVariationalProblem):
         a = Form(a, form_compiler_parameters=form_compiler_parameters)
 
         # Initialize C++ base class
-        cpp.fem.LinearVariationalProblem.__init__(self, a, L, u, bcs)
+        cpp.fem.LinearVariationalProblem.__init__(self, a, L, u._cpp_object, bcs)
 
 
 class LocalSolver(cpp.fem.LocalSolver):
@@ -146,7 +147,7 @@ class NonlinearVariationalProblem(cpp.fem.NonlinearVariationalProblem):
             J = Form(J, form_compiler_parameters=form_compiler_parameters)
 
         # Initialize C++ base class
-        cpp.fem.NonlinearVariationalProblem.__init__(self, F, u, bcs, J)
+        cpp.fem.NonlinearVariationalProblem.__init__(self, F, u._cpp_object, bcs, J)
 
 
 # Solver classes are imported directly
@@ -332,7 +333,7 @@ def _solve_varproblem(*args, **kwargs):
             cpp.log.info("No Jacobian form specified for nonlinear variational problem.")
             cpp.log.info("Differentiating residual form F to obtain Jacobian J = F'.")
             F = eq.lhs
-            J = derivative(F, u)
+            J = formmanipulations.derivative(F, u)
 
         # Create problem
         problem = NonlinearVariationalProblem(eq.lhs, u, bcs, J,
@@ -470,10 +471,12 @@ def _extract_eq(eq):
 
 def _extract_u(u):
     "Extract and check argument u"
-    if hasattr(u, "cpp_object") and isinstance(u.cpp_object(), cpp.function.Function):
-        return u.cpp_object()
-
-    if isinstance(u, cpp.function.Function):
+    #if hasattr(u, "cpp_object") and isinstance(u.cpp_object(), cpp.function.Function):
+    #    return u.cpp_object()
+    #
+    #if isinstance(u, cpp.function.Function):
+    #    return u
+    if isinstance(u, Function):
         return u
 
     cpp.dolfin_error("solving.py",

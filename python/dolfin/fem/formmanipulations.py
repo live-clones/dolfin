@@ -76,7 +76,7 @@ def derivative(form, u, du=None, coefficient_derivatives=None):
                                "parts, please supply one")
         part = None
 
-        if isinstance(u, cpp.function.Function):
+        if isinstance(u, Function):
             V = u.function_space()
             du = Argument(V, number, part)
         else:
