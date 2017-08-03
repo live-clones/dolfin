@@ -84,7 +84,7 @@ def test_mesh_html():
     html = mesh._repr_html_()
 
 
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_x3dom_parameters():
     p = X3DOMParameters()
 

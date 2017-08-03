@@ -1,6 +1,6 @@
 import ufl
 import dolfin.cpp as cpp
-
+from . import svgtools
 
 # Functions to extend cpp.mesh.Mesh with
 
@@ -32,11 +32,16 @@ def ufl_domain(self):
 def _repr_html_(self):
     return cpp.io.X3DOM.html(self)
 
+
+def _repr_svg_(self):
+    return svgtools.mesh2svg(self)
+
 # Extend cpp.mesh.Mesh class, and clean-up
 cpp.mesh.Mesh.ufl_cell = ufl_cell
 cpp.mesh.Mesh.ufl_coordinate_element = ufl_coordinate_element
 cpp.mesh.Mesh.ufl_domain = ufl_domain
 
 cpp.mesh.Mesh._repr_html_ = _repr_html_
+cpp.mesh.Mesh._repr_svg_ = _repr_svg_
 
-del ufl_cell, ufl_coordinate_element, ufl_domain, _repr_html_
+del ufl_cell, ufl_coordinate_element, ufl_domain, _repr_html_, _repr_svg_

@@ -42,7 +42,7 @@ def test_write_mesh_3d(cd_tempdir):
     f = File("3d.svg")
     f << mesh
 
-@pytest.mark.xfail
+
 def test_ipython_svg(cd_tempdir):
     # Test IPython SVG repr hooks
     mesh2d = UnitSquareMesh(8, 8)
