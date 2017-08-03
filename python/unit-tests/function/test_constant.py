@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 """Unit tests for the function library"""
 
 # Copyright (C) 2007 Anders Logg
@@ -18,11 +16,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# First added:  2007-05-24
-# Last changed: 2011-01-28
 
 import pytest
+import ufl
 from numpy import array
 from dolfin import *
 
@@ -35,18 +31,17 @@ def test_name_argument():
     assert str(v) == "v"
 
 
-@pytest.mark.xfail
 def testConstantInit():
     c0 = Constant(1.)
-    c1 = Constant([2, 3], interval)
-    c2 = Constant([[2, 3], [3, 4]], triangle)
-    c3 = Constant(array([2, 3]), tetrahedron)
+    c1 = Constant([2, 3], ufl.interval)
+    c2 = Constant([[2, 3], [3, 4]], ufl.triangle)
+    c3 = Constant(array([2, 3]), ufl.tetrahedron)
 
     # FIXME:
     assert c0.cell() is None
-    assert c1.cell() == interval
-    assert c2.cell() == triangle
-    assert c3.cell() == tetrahedron
+    assert c1.cell() == ufl.interval
+    assert c2.cell() == ufl.triangle
+    assert c3.cell() == ufl.tetrahedron
 
     assert c0.ufl_shape == ()
     assert c1.ufl_shape == (2,)
@@ -54,7 +49,6 @@ def testConstantInit():
     assert c3.ufl_shape == (2,)
 
 
-@pytest.mark.xfail
 def testGrad():
     import ufl
     zero = ufl.constantvalue.Zero((2, 3))
@@ -63,12 +57,11 @@ def testGrad():
 
     def gradient(c):
         return grad(c)
-    with pytest.raises(UFLException):
+    with pytest.raises(ufl.UFLException):
         grad(c0)
     assert zero == gradient(c3)
 
 
-@pytest.mark.xfail
 def test_compute_vertex_values():
     from numpy import zeros, all, array
 
@@ -89,7 +82,6 @@ def test_compute_vertex_values():
     assert all(e1_values[mesh.num_vertices()*2:mesh.num_vertices()*3] == 3)
 
 
-@pytest.mark.xfail
 def test_values():
     import numpy as np
 
@@ -106,7 +98,6 @@ def test_values():
     assert np.all(c2_vals == np.array([1., 2., 3.], dtype=np.double))
 
 
-@pytest.mark.xfail
 def test_str():
     c0 = Constant(1.)
     c0.str(False)

@@ -96,6 +96,12 @@ class Constant(ufl.Coefficient):
     def cell(self):
         return self.ufl_element().cell()
 
+    def compute_vertex_values(self, mesh):
+        return self._cpp_object.compute_vertex_values(mesh)
+
+    def values(self):
+        return self._cpp_object.values()
+
     def id(self):
         return self._cpp_object.id()
 
@@ -110,6 +116,9 @@ class Constant(ufl.Coefficient):
         if self.ufl_shape:
             raise TypeError("Cannot convert nonscalar constant to float.")
         return float(self._cpp_object)
+
+    def str(self, verbose=False):
+        return self._cpp_object.str(verbose)
 
     def __str__(self):
         return self.name()

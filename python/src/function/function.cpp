@@ -127,7 +127,11 @@ namespace dolfin_wrappers
       (m, "Constant")
       .def(py::init<double>())
       .def(py::init<std::vector<double>>())
-      .def("__float__", [](const dolfin::Constant& instance) -> double { return instance; });
+      .def(py::init<std::vector<std::size_t>, std::vector<double>>())
+      .def("values", [](const dolfin::Constant& self)
+           { auto v =  self.values(); return py::array_t<double>(v.size(), v.data()); })
+      .def("__float__", [](const dolfin::Constant& instance) -> double { return instance; })
+      .def("str", &dolfin::Constant::str);
 
     //-----------------------------------------------------------------------------
     // dolfin::FacetArea
