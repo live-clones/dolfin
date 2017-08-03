@@ -90,7 +90,6 @@ class TestMatrixForAnyBackend:
 
         return A, B
 
-    @pytest.mark.xfail
     def test_basic_la_operations(self, use_backend, any_backend):
         # Hack to make old tests work in new framework. The original
         # setup was a bit exoteric...
@@ -140,15 +139,15 @@ class TestMatrixForAnyBackend:
         assert round(A.norm('frobenius') - unit_norm, 7) == 0
 
         # Test __mul__ and __add__ operator
-        D = (C+A)*0.2
+        D = (C + A)*0.2
         assert round(D.norm('frobenius') - unit_norm, 7) == 0
 
         # Test __div__ and __sub__ operator
-        F = (C-A)/3
+        F = (C - A)/3
         assert round(F.norm('frobenius') - unit_norm, 7) == 0
 
         # Test axpy
-        A.axpy(10,C,True)
+        A.axpy(10, C, True)
         assert round(A.norm('frobenius') - 41*unit_norm, 7) == 0
 
         # Test expected size of rectangular array
@@ -156,8 +155,8 @@ class TestMatrixForAnyBackend:
         assert B.size(1) == 528
 
         # Test setitem/getitem
-        #A[5,5] = 15
-        #assert A[5,5] == 15
+        #A[5, 5] = 15
+        #assert A[5, 5] == 15
 
     @skip_in_parallel
     def test_numpy_array(self, use_backend, any_backend):
@@ -225,6 +224,7 @@ class TestMatrixForAnyBackend:
         assert B0.size(0) == B1.size(0)
         assert B0.size(1) == B1.size(1)
         assert round(B0.norm("frobenius") - B1.norm("frobenius"), 7) == 0
+
 
     def test_ident_zeros(self, use_backend, any_backend):
         self.backend, self.sub_backend = any_backend

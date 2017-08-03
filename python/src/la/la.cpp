@@ -151,16 +151,32 @@ namespace dolfin_wrappers
                dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object")
       .def("init_vector", &dolfin::GenericMatrix::init_vector)
+      .def("axpy", &dolfin::GenericMatrix::axpy)
       .def("transpmult", &dolfin::GenericMatrix::transpmult)
-      .def("__add__", [](const dolfin::GenericMatrix& self, const dolfin::GenericMatrix& C)
-           { auto B = self.copy(); (*B) += C; return B; }, py::is_operator())
-      .def("__sub__", [](const dolfin::GenericMatrix& self, const dolfin::GenericMatrix& C)
-           { auto B = self.copy(); (*B) -= C; return B; }, py::is_operator())
-      .def("__truediv__", [](const dolfin::GenericMatrix& self, float a)
-           { auto B = self.copy(); (*B) /= a; return B; }, py::is_operator())
-      .def("__mul__", [](const dolfin::GenericMatrix& self, float a)
+      // __ifoo__
+      .def("__imul__", &dolfin::GenericMatrix::operator*=, "Multiply by a scalar")
+      .def("__itruediv__", &dolfin::GenericMatrix::operator/=, py::is_operator(), "Divide by a scalar")
+      // Below is an examle of a hand-wrapped in-place operator. Note
+      // the explicit return type (const reference). This is necessary
+      // to avoid segfaults. Need to investigate more how pybind11
+      // handles return types for operators.
+      //.def("__itruediv__", [](dolfin::GenericMatrix& self, double a) -> const dolfin::GenericMatrix&
+      //     {
+      //       self /= a;
+      //       return self;
+      //     }, py::is_operator(), "Divide by a scalar")
+      .def("__iadd__", &dolfin::GenericMatrix::operator+=, py::is_operator(), "Add Matrix")
+      .def("__isub__", &dolfin::GenericMatrix::operator-=, py::is_operator(), "Subtract Matrix")
+      // __add__
+      .def("__add__", [](const dolfin::GenericMatrix& self, const dolfin::GenericMatrix& B)
+           { auto C = self.copy(); (*C) += B; return C; }, py::is_operator())
+      // __sub__
+      .def("__sub__", [](const dolfin::GenericMatrix& self, const dolfin::GenericMatrix& B)
+           { auto C = self.copy(); (*C) -= B; return C; }, py::is_operator())
+      // __mul__
+      .def("__mul__", [](const dolfin::GenericMatrix& self, double a)
            { auto B = self.copy(); (*B) *= a; return B; }, py::is_operator())
-      .def("__rmul__", [](const dolfin::GenericMatrix& self, float a)
+      .def("__rmul__", [](const dolfin::GenericMatrix& self, double a)
            { auto B = self.copy(); (*B) *= a; return B; }, py::is_operator())
       .def("__mul__", [](const dolfin::GenericMatrix& self, const dolfin::GenericVector& x)
            {
@@ -190,6 +206,10 @@ namespace dolfin_wrappers
              y->get_local(values);
              return py::array_t<double>(values.size(), values.data());
            }, "Multiply a DOLFIN matrix and a NumPy array (non-distributed matricds only)")
+      // __div__
+      .def("__truediv__", [](const dolfin::GenericMatrix& self, double a)
+           { auto B = self.copy(); (*B) /= a; return B; }, py::is_operator())
+      //
       .def("copy", &dolfin::GenericMatrix::copy)
       .def("local_range", &dolfin::GenericMatrix::local_range)
       .def("norm", &dolfin::GenericMatrix::norm)
