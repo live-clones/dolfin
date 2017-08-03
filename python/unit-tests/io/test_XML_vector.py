@@ -26,7 +26,6 @@ from dolfin_utils.test import skip_if_not_PETSc, fixture, cd_tempdir
 
 
 @skip_if_not_PETSc
-@pytest.mark.xfail
 def test_save_vector_petsc(cd_tempdir):
     # Create vector and write file
     x = PETScVector(MPI.comm_world, 197)
@@ -35,7 +34,6 @@ def test_save_vector_petsc(cd_tempdir):
     f << x
 
 @skip_if_not_PETSc
-@pytest.mark.xfail
 def test_save_gzipped_vector(cd_tempdir):
     # Create vector and write file
     x = PETScVector(MPI.comm_world, 197)
@@ -44,7 +42,6 @@ def test_save_gzipped_vector(cd_tempdir):
     f << x
 
 @skip_if_not_PETSc
-@pytest.mark.xfail
 def test_read_vector_petcs(cd_tempdir):
     # Create vector and write file
     x = PETScVector(MPI.comm_world, 197)
@@ -60,7 +57,6 @@ def test_read_vector_petcs(cd_tempdir):
 
 
 @skip_if_not_PETSc
-@pytest.mark.xfail
 def test_read_gzipped_vector(cd_tempdir):
     # Create vector and write file
     x = PETScVector(MPI.comm_world, 197)
@@ -74,8 +70,6 @@ def test_read_gzipped_vector(cd_tempdir):
     assert x.size() == y.size()
     assert round(x.norm("l2") - y.norm("l2"), 7) == 0
 
-@pytest.mark.xfail
-@pytest.mark.xfail
 def test_save_read_vector(cd_tempdir):
     size = 512
     x = Vector(MPI.comm_world, size)

@@ -29,7 +29,6 @@ from dolfin_utils.test import skip_in_parallel, fixture, cd_tempdir
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_io_size_t(cd_tempdir):
     "Test input/output for size_t"
 
@@ -57,7 +56,6 @@ def test_io_size_t(cd_tempdir):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_io_int(cd_tempdir):
     "Test input/output for int"
 
@@ -85,7 +83,6 @@ def test_io_int(cd_tempdir):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_io_double(cd_tempdir):
     "Test input/output for double"
 
@@ -113,7 +110,6 @@ def test_io_double(cd_tempdir):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_io_bool(cd_tempdir):
     "Test input/output for bool"
 

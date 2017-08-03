@@ -381,6 +381,8 @@ namespace dolfin_wrappers
       .def("get_value", &dolfin::MeshValueCollection<SCALAR>::get_value) \
       .def("set_value", (bool (dolfin::MeshValueCollection<SCALAR>::*)(std::size_t, const SCALAR&)) \
            &dolfin::MeshValueCollection<SCALAR>::set_value) \
+      .def("set_value", (bool (dolfin::MeshValueCollection<SCALAR>::*)(std::size_t, std::size_t, const SCALAR&)) \
+           &dolfin::MeshValueCollection<SCALAR>::set_value) \
       .def("values", (std::map<std::pair<std::size_t, std::size_t>, SCALAR>& (dolfin::MeshValueCollection<SCALAR>::*)()) \
            &dolfin::MeshValueCollection<SCALAR>::values, py::return_value_policy::reference) \
       .def("assign", [](dolfin::MeshValueCollection<SCALAR>& self, const dolfin::MeshFunction<SCALAR>& mf) { self = mf; }) \
@@ -460,6 +462,10 @@ namespace dolfin_wrappers
            &dolfin::SubDomain::map)
       .def("set_property", &dolfin::SubDomain::set_property)
       .def("get_property", &dolfin::SubDomain::get_property)
+      .def("mark_cells", (void (dolfin::SubDomain::*)(dolfin::Mesh&, std::size_t, bool) const)
+           &dolfin::SubDomain::mark_cells, py::arg("mesh"), py::arg("sub_domain"), py::arg("check_midpoint")=true)
+      .def("mark_facets", (void (dolfin::SubDomain::*)(dolfin::Mesh&, std::size_t, bool) const)
+           &dolfin::SubDomain::mark_facets, py::arg("mesh"), py::arg("sub_domain"), py::arg("check_midpoint")=true)
       .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<std::size_t>&, std::size_t, bool) const)
            &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true);
 

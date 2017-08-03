@@ -28,14 +28,12 @@ from dolfin_utils.test import skip_in_parallel, fixture, cd_tempdir
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_save_plain_mesh2D(cd_tempdir):
     mesh = UnitSquareMesh(8, 8)
     f = File("unit_square.xml")
     f << mesh
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_save_plain_mesh3D(cd_tempdir):
     mesh = UnitCubeMesh(8, 8, 8)
     f = File("unit_cube.xml")
