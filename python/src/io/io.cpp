@@ -64,6 +64,13 @@ namespace dolfin_wrappers
       .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<double>&, double)) &dolfin::File::write)
       .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<bool>&)) &dolfin::File::write)
       .def("write", (void (dolfin::File::*)(const dolfin::MeshFunction<bool>&, double)) &dolfin::File::write)
+      //
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshValueCollection<int>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshValueCollection<std::size_t>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshValueCollection<double>&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::MeshValueCollection<bool>&)) &dolfin::File::write)
+      //
+      .def("write", (void (dolfin::File::*)(const dolfin::GenericVector&)) &dolfin::File::write)
       // Unpack
       .def("write", [](dolfin::File& instance, py::object u)
            {
@@ -77,10 +84,19 @@ namespace dolfin_wrappers
            })
       // Read
       .def("read", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::GenericVector&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::Function&)) &dolfin::File::read)
+      //
       .def("read", (void (dolfin::File::*)(dolfin::MeshFunction<bool>&)) &dolfin::File::read)
       .def("read", (void (dolfin::File::*)(dolfin::MeshFunction<int>&)) &dolfin::File::read)
       .def("read", (void (dolfin::File::*)(dolfin::MeshFunction<std::size_t>&)) &dolfin::File::read)
       .def("read", (void (dolfin::File::*)(dolfin::MeshFunction<double>&)) &dolfin::File::read)
+      //
+      .def("read", (void (dolfin::File::*)(dolfin::MeshValueCollection<bool>&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::MeshValueCollection<int>&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::MeshValueCollection<std::size_t>&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::MeshValueCollection<double>&)) &dolfin::File::read)
+      //
       .def("read", (void (dolfin::File::*)(dolfin::Mesh&)) &dolfin::File::read);
 
     // dolfin::VTKFile

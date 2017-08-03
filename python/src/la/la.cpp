@@ -562,6 +562,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>,
                dolfin::GenericVector>
       (m, "EigenVector", "DOLFIN EigenVector object")
+      .def(py::init<>())
+      .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::size_t>())
       .def("array", (Eigen::VectorXd& (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec,
            py::return_value_policy::reference_internal);
@@ -625,6 +627,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::PETScVector, std::shared_ptr<dolfin::PETScVector>,
                dolfin::GenericVector, dolfin::PETScObject>
       (m, "PETScVector", "DOLFIN PETScVector object")
+      .def(py::init<>())
       .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::size_t>())
       .def("update_ghost_values", &dolfin::PETScVector::update_ghost_values);

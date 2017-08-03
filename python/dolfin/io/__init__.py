@@ -27,7 +27,10 @@ def __rshift__(self, u):
     # Note: __rshift__ notation for IO will be deprecated, see
     # https://bitbucket.org/fenics-project/dolfin/issues/895.
 
-    self.read(u)
+    if isinstance(u, dolfin.function.function.Function):
+        self.read(u._cpp_object)
+    else:
+        self.read(u)
 
 
 # Extend cpp.io.File class, and clean-up
