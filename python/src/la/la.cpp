@@ -470,6 +470,8 @@ namespace dolfin_wrappers
       .def("sum", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::sum)
       .def("sum", [](const dolfin::GenericVector& self, py::array_t<std::size_t> rows)
            { const dolfin::Array<std::size_t> _rows(rows.size(), rows.mutable_data()); return self.sum(_rows); })
+      .def("max", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::max)
+      .def("min", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::min)
       .def("norm", &dolfin::GenericVector::norm)
       .def("local_size", &dolfin::GenericVector::local_size)
       .def("local_range", (std::pair<std::int64_t, std::int64_t> (dolfin::GenericVector::*)() const) &dolfin::GenericVector::local_range)

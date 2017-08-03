@@ -35,8 +35,8 @@ def test_scalar_p1():
     Vf = FunctionSpace(meshf, "CG", 1)
 
     u = CompiledExpression("x[0] + 2*x[1] + 3*x[2]", degree=1)
-    uc = interpolate(u.cpp_object(), Vc)
-    uf = interpolate(u.cpp_object(), Vf)
+    uc = interpolate(u, Vc)
+    uf = interpolate(u, Vf)
 
     mat = PETScDMCollection.create_transfer_matrix(Vc, Vf)
     Vuc = Function(Vf)
@@ -59,8 +59,8 @@ def test_scalar_p1_scaled_mesh():
     Vf = FunctionSpace(meshf, "CG", 1)
 
     u = CompiledExpression("x[0] + 2*x[1] + 3*x[2]", degree=1)
-    uc = interpolate(u.cpp_object(), Vc)
-    uf = interpolate(u.cpp_object(), Vf)
+    uc = interpolate(u, Vc)
+    uf = interpolate(u, Vf)
 
     mat = PETScDMCollection.create_transfer_matrix(Vc, Vf)
     Vuc = Function(Vf)
@@ -75,7 +75,7 @@ def test_scalar_p1_scaled_mesh():
     # Now make coarse mesh larger than fine mesh
     for x in meshc.coordinates():
         x *= 1.5
-    uc = interpolate(u.cpp_object(), Vc)
+    uc = interpolate(u, Vc)
 
     mat = PETScDMCollection.create_transfer_matrix(Vc, Vf)
     mat.mult(uc.vector(), Vuc.vector())
@@ -93,8 +93,8 @@ def test_scalar_p2():
     Vf = FunctionSpace(meshf, "CG", 2)
 
     u = CompiledExpression("x[0]*x[2] + 2*x[1]*x[0] + 3*x[2]", degree=2)
-    uc = interpolate(u.cpp_object(), Vc)
-    uf = interpolate(u.cpp_object(), Vf)
+    uc = interpolate(u, Vc)
+    uf = interpolate(u, Vf)
 
     mat = PETScDMCollection.create_transfer_matrix(Vc, Vf)
     Vuc = Function(Vf)
@@ -114,8 +114,8 @@ def test_vector_p1_2d():
     Vf = VectorFunctionSpace(meshf, "CG", 1)
 
     u = CompiledExpression(("x[0] + 2*x[1]", "4*x[0]"), degree=1)
-    uc = interpolate(u.cpp_object(), Vc)
-    uf = interpolate(u.cpp_object(), Vf)
+    uc = interpolate(u, Vc)
+    uf = interpolate(u, Vf)
 
     mat = PETScDMCollection.create_transfer_matrix(Vc, Vf)
     Vuc = Function(Vf)
