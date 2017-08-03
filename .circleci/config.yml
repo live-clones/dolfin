@@ -10,6 +10,10 @@ jobs:
           command: git lfs clone https://bitbucket.org/"${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}".git .
       - checkout
       - run:
+          name: Install/update dependencies  # Install with sudo as tests not run as superuser in circleci/python
+          command: |
+            sudo3 pip install pytest six --upgrade
+      - run:
           name: Checkout pybind11
           command: |
             cd python
