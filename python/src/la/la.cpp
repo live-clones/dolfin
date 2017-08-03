@@ -45,6 +45,7 @@
 #include <dolfin/la/PETScFactory.h>
 #include <dolfin/la/PETScMatrix.h>
 #include <dolfin/la/PETScOptions.h>
+#include <dolfin/la/PETScPreconditioner.h>
 #include <dolfin/la/PETScVector.h>
 #include <dolfin/la/LUSolver.h>
 #include <dolfin/la/KrylovSolver.h>
@@ -643,7 +644,13 @@ namespace dolfin_wrappers
                dolfin::GenericMatrix, dolfin::PETScBaseMatrix>
       (m, "PETScMatrix", "DOLFIN PETScMatrix object")
       .def(py::init<>())
-      .def(py::init<MPI_Comm>());
+      .def(py::init<MPI_Comm>())
+      .def("set_nullspace", &dolfin::PETScMatrix::set_nullspace)
+      .def("set_near_nullspace", &dolfin::PETScMatrix::set_near_nullspace);
+
+    py::class_<dolfin::PETScPreconditioner, std::shared_ptr<dolfin::PETScPreconditioner>>
+      (m, "PETScPreconditioner", "DOLFIN PETScPreconditioner object")
+      .def(py::init<std::string>(), py::arg("type")="default");
 
     #endif
     //-----------------------------------------------------------------------------
@@ -693,6 +700,9 @@ namespace dolfin_wrappers
                dolfin::GenericLinearSolver>
       (m, "PETScKrylovSolver", "DOLFIN PETScKrylovSolver object")
       .def(py::init<std::string, std::string>())
+      .def(py::init<std::string, std::shared_ptr<dolfin::PETScPreconditioner>>())
+      .def("set_operator",  (void (dolfin::PETScKrylovSolver::*)(std::shared_ptr<const dolfin::GenericLinearOperator>))
+           &dolfin::PETScKrylovSolver::set_operator)
       .def("set_operators", (void (dolfin::PETScKrylovSolver::*)(std::shared_ptr<const dolfin::GenericLinearOperator>,
                                                                  std::shared_ptr<const dolfin::GenericLinearOperator>))
            &dolfin::PETScKrylovSolver::set_operators)
