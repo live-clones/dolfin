@@ -327,7 +327,10 @@ namespace dolfin_wrappers
            { self.operator[](index) = value;}) \
       .def("__len__", &dolfin::MeshFunction<SCALAR>::size) \
       .def("dim", &dolfin::MeshFunction<SCALAR>::dim) \
-      .def("size", &dolfin::MeshFunction<SCALAR>::size)         \
+      .def("size", &dolfin::MeshFunction<SCALAR>::size) \
+      .def("id", &dolfin::MeshFunction<SCALAR>::id) \
+      .def("ufl_id", &dolfin::MeshFunction<SCALAR>::id) \
+      .def("mesh", &dolfin::MeshFunction<SCALAR>::mesh) \
       .def("set_all", &dolfin::MeshFunction<SCALAR>::set_all) \
       .def("where_equal", &dolfin::MeshFunction<SCALAR>::where_equal) \
       .def("array", [](dolfin::MeshFunction<SCALAR>& self) \

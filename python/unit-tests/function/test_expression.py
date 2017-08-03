@@ -479,7 +479,6 @@ def test_num_literal():
     assert values[1] == -1.
 
 
-@pytest.mark.xfail
 def test_name_space_usage(mesh):
     e0 = CompiledExpression("std::sin(x[0])*cos(x[1])", degree=2)
     e1 = CompiledExpression("sin(x[0])*std::cos(x[1])", degree=2)

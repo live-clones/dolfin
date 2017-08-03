@@ -114,7 +114,6 @@ def xtest_facet_assembly(pushpop_parameters):
     assert round(assemble(a).norm("frobenius") - A_frobenius_norm, 10) == 0
     assert round(assemble(L).norm("l2") - b_l2_norm, 10) == 0
 
-
 @pytest.mark.xfail
 def test_ghost_mode_handling(pushpop_parameters):
     def _form():
@@ -141,7 +140,6 @@ def test_ghost_mode_handling(pushpop_parameters):
     assert numpy.isclose(assemble(_form()), 1.0)
 
 
-@pytest.mark.xfail
 def test_functional_assembly():
     mesh = UnitSquareMesh(24, 24)
 
