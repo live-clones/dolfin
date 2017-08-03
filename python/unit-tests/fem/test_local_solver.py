@@ -24,13 +24,14 @@
 
 import pytest
 import numpy
+
+import ufl
 from dolfin import *
 from dolfin_utils.test import skip_in_parallel
 from dolfin_utils.test import set_parameters_fixture
 ghost_mode = set_parameters_fixture("ghost_mode", ["shared_facet"])
 
 
-@pytest.mark.xfail
 def test_solve_global_rhs():
     mesh = UnitCubeMesh(2, 3, 3)
     V = FunctionSpace(mesh, "Discontinuous Lagrange", 2)
@@ -67,7 +68,6 @@ def test_solve_global_rhs():
         assert round(error, 10) == 0
 
 
-@pytest.mark.xfail
 def test_solve_local_rhs(ghost_mode):
     mesh = UnitCubeMesh(1, 5, 1)
     V = FunctionSpace(mesh, "Lagrange", 2)
@@ -150,7 +150,7 @@ def test_local_solver_dg(ghost_mode):
     dt = Constant(2.0e-4)
 
     # Define fluxes on interior and exterior facets
-    u_hat = avg(u0) + 0.25*jump(u0)
+    u_hat = ufl.avg(u0) + 0.25*ufl.jump(u0)
     u_hatbnd = -u0 + 0.25*(u0 - 1.0)
 
     # Define variational formulation

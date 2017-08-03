@@ -59,8 +59,13 @@ class Function(ufl.Coefficient):
     def value_dimension(self, i):
         return self._cpp_object.value_dimension(i)
 
-    def __call__(self, x):
-        return self._cpp_object.__call__(x)
+    def __call__(self, *args, **kwargs):
+        # Test for ufl restriction
+        if len(args) == 1 and isinstance(args[0], string_types):
+            if args[0] in ('+', '-'):
+                return ufl.Coefficient.__call__(self, *args)
+
+        return self._cpp_object.__call__(*args)
 
     def interpolate(self, u):
         if isinstance(u, ufl.Coefficient):
