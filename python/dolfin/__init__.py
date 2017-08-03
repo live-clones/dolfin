@@ -53,7 +53,7 @@ from .cpp.la import (has_linear_algebra_backend,
                      in_nullspace)
 
 if has_linear_algebra_backend('PETSc'):
-    from .cpp.la import PETScVector, PETScMatrix, PETScFactory, PETScOptions
+    from .cpp.la import PETScVector, PETScMatrix, PETScFactory, PETScOptions, PETScKrylovSolver
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 

@@ -41,6 +41,7 @@
 #include <dolfin/la/EigenFactory.h>
 #include <dolfin/la/EigenMatrix.h>
 #include <dolfin/la/EigenVector.h>
+#include <dolfin/la/PETScKrylovSolver.h>
 #include <dolfin/la/PETScFactory.h>
 #include <dolfin/la/PETScMatrix.h>
 #include <dolfin/la/PETScOptions.h>
@@ -472,6 +473,7 @@ namespace dolfin_wrappers
       .def("local_size", &dolfin::GenericVector::local_size)
       .def("local_range", (std::pair<std::int64_t, std::int64_t> (dolfin::GenericVector::*)() const) &dolfin::GenericVector::local_range)
       .def("owns_index", &dolfin::GenericVector::owns_index)
+      .def("apply", &dolfin::GenericVector::apply)
       .def("array", [](const dolfin::GenericVector& instance)
            {
              std::vector<double> values;
@@ -642,8 +644,8 @@ namespace dolfin_wrappers
       (m, "PETScMatrix", "DOLFIN PETScMatrix object")
       .def(py::init<>())
       .def(py::init<MPI_Comm>());
-    #endif
 
+    #endif
     //-----------------------------------------------------------------------------
 
     // dolfin::GenericLinearSolver class
@@ -684,6 +686,20 @@ namespace dolfin_wrappers
       .def("solve", (std::size_t (dolfin::KrylovSolver::*)(dolfin::GenericVector&,
                                                            const dolfin::GenericVector&))
            &dolfin::KrylovSolver::solve);
+
+    #ifdef HAS_PETSC
+    // dolfin::PETScKrylovSolver class
+    py::class_<dolfin::PETScKrylovSolver, std::shared_ptr<dolfin::PETScKrylovSolver>,
+               dolfin::GenericLinearSolver>
+      (m, "PETScKrylovSolver", "DOLFIN PETScKrylovSolver object")
+      .def(py::init<std::string, std::string>())
+      .def("set_operators", (void (dolfin::PETScKrylovSolver::*)(std::shared_ptr<const dolfin::GenericLinearOperator>,
+                                                                 std::shared_ptr<const dolfin::GenericLinearOperator>))
+           &dolfin::PETScKrylovSolver::set_operators)
+      .def("solve", (std::size_t (dolfin::PETScKrylovSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
+           &dolfin::PETScKrylovSolver::solve)
+      .def("set_reuse_preconditioner", &dolfin::PETScKrylovSolver::set_reuse_preconditioner);
+    #endif
 
     // dolfin::VectorSpaceBasis
     py::class_<dolfin::VectorSpaceBasis, std::shared_ptr<dolfin::VectorSpaceBasis>>(m, "VectorSpaceBasis")
