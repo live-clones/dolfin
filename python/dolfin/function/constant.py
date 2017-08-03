@@ -117,7 +117,7 @@ class Constant(ufl.Coefficient):
             raise TypeError("Cannot convert nonscalar constant to float.")
         return float(self._cpp_object)
 
-    def str(self, verbose=False):
+    def str(self, verbose):
         return self._cpp_object.str(verbose)
 
     def __str__(self):

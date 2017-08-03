@@ -108,7 +108,6 @@ def test_vector_assemble(dim):
     assert sum(np.absolute(vec.array() - uu.vector().array())) < eps
 
 
-@pytest.mark.xfail
 def test_matrix_assemble(dim):
     eps = 1000*DOLFIN_EPS
 
