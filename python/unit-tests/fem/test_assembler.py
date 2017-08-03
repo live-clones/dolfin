@@ -32,13 +32,13 @@ from dolfin_utils.test import skip_in_parallel, filedir, pushpop_parameters
 
 
 @pytest.mark.xfail
-def xtest_cell_size_assembly_1D():
+def test_cell_size_assembly_1D():
     mesh = UnitIntervalMesh(10)
     assert round(assemble(CellSize(mesh)*dx) - 0.1, 12) == 0
     assert round(assemble(CellVolume(mesh)*dx) - 0.1, 12) == 0
 
 
-def xtest_cell_assembly_1D():
+def test_cell_assembly_1D():
     mesh = UnitIntervalMesh(48)
     V = FunctionSpace(mesh, "CG", 1)
 
@@ -57,7 +57,7 @@ def xtest_cell_assembly_1D():
     assert round(assemble(L).norm("l2") - b_l2_norm, 10) == 0
 
 
-def xtest_cell_assembly():
+def test_cell_assembly():
     mesh = UnitCubeMesh(4, 4, 4)
     V = VectorFunctionSpace(mesh, "DG", 1)
 
@@ -79,7 +79,8 @@ def xtest_cell_assembly():
     assert round(assemble(L).norm("l2") - b_l2_norm, 10) == 0
 
 
-def xtest_facet_assembly(pushpop_parameters):
+@pytest.mark.xfail
+def test_facet_assembly(pushpop_parameters):
     parameters["ghost_mode"] = "shared_facet"
     mesh = UnitSquareMesh(24, 24)
     V = FunctionSpace(mesh, "DG", 1)
@@ -113,6 +114,7 @@ def xtest_facet_assembly(pushpop_parameters):
     # Assemble A and b
     assert round(assemble(a).norm("frobenius") - A_frobenius_norm, 10) == 0
     assert round(assemble(L).norm("l2") - b_l2_norm, 10) == 0
+
 
 @pytest.mark.xfail
 def test_ghost_mode_handling(pushpop_parameters):
@@ -151,7 +153,6 @@ def test_functional_assembly():
     assert round(assemble(M1) - 4.0, 7) == 0
 
 
-@pytest.mark.xfail
 def test_subdomain_and_fulldomain_assembly_meshdomains():
     """Test assembly over subdomains AND the full domain with markers
     stored as part of the mesh.
@@ -321,8 +322,7 @@ def test_subdomain_assembly_form_2():
     assert round(assemble(a1) - 1.0, 7) == 0
 
 
-@pytest.mark.xfail
-def xtest_nonsquare_assembly():
+def test_nonsquare_assembly():
     """Test assembly of a rectangular matrix"""
 
     mesh = UnitSquareMesh(16, 16)
