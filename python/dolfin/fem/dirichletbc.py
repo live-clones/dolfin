@@ -29,7 +29,7 @@ class AutoSubDomain(cpp.mesh.SubDomain):
                                "Expecting a function of the form inside(x) or inside(x, on_boundary)")
         self.num_args = inside_function.__code__.co_argcount
 
-        cpp.mesh.SubDomain.__init__(self)
+        super().__init__()
 
     def inside(self, x, on_boundary):
         "Return true for points inside the subdomain"
@@ -48,33 +48,43 @@ class DirichletBC(cpp.fem.DirichletBC):
         if len(args) != 3:
             raise RuntimeError("Not yet supported")
 
-        # Special case for value specified as float, tuple or similar
-        if len(args) >= 2 and not isinstance(args[1], cpp.function.GenericFunction):
-            if isinstance(args[1], ufl.classes.Expr):
-                expr = project(args[1], args[0])
-            else:
-                expr = Constant(args[1])  # let Constant handle all problems
-            args = args[:1] + (expr,) + args[2:]
-
-        # Special case for sub domain specified as a function
-        if len(args) >= 3 and isinstance(args[2], types.FunctionType):
-            sub_domain = AutoSubDomain(args[2])
-            args = args[:2] + (sub_domain,) + args[3:]
-
+        # Get FunctionSpace
         if not isinstance(args[0], cpp.function.FunctionSpace):
             raise RuntimeError("First argument must be of type FunctionSpace")
         V = args[0]
 
+        # FIXME: correct the below comment
+        # Case: boundary value specified as float, tuple or similar
+        if len(args) >= 2 and not isinstance(args[1], cpp.function.GenericFunction):
+            if isinstance(args[1], ufl.classes.Expr):
+                expr = project(args[1], args[0])  # FIXME: This should really be interpolaton (project is expensive)
+            else:
+                expr = Constant(args[1])
+            args = args[:1] + (expr,) + args[2:]
+
+        # Case: Special sub domain 'inside' function provded as a
+        # function
+        if len(args) >= 3 and isinstance(args[2], types.FunctionType):
+            # Note: using self below to avoid a problem where the user
+            # function attached to AutoSubDomain get prematurely
+            # destroyed. Maybe a pybind11 bug?
+            self.sub_domain = AutoSubDomain(args[2])
+            args = args[:2] + (self.sub_domain,) + args[3:]
+
+        # Get boundary condition field (the condition that is applied)
         if isinstance(args[1], float) or isinstance(args[1], int):
             u = cpp.function.Constant(float(args[1]))
         elif isinstance(args[1], ufl.Coefficient):
-            # Extract cpp object
             u = args[1].cpp_object()
         elif isinstance(args[1], cpp.function.GenericFunction):
             u = args[1]
-        elif not isinstance(args[1], cpp.function.GenericFunction):
-            raise RuntimeError("Second argument must be of type GenericFunction: ", args[1], type(args[1]))
+        else:
+            raise RuntimeError("Second argument must be convertiable to a GenericFunction: ",
+                               args[1], type(args[1]))
 
+        # FIXME: for clarity, can the user provided function case be
+        # handled here too?
+        # Create SubDomain object
         if isinstance(args[2], cpp.mesh.SubDomain):
              subdomain = args[2]
         elif isinstance(args[2], string_types):
