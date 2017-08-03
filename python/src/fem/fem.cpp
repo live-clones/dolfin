@@ -282,7 +282,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::LinearVariationalSolver,
                std::shared_ptr<dolfin::LinearVariationalSolver>,
                dolfin::Variable>(m, "LinearVariationalSolver")
-      .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>());
+      .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>())
+      .def("solve", &dolfin::LinearVariationalSolver::solve);
 
     // dolfin::NonlinearVariationalProblem class
     py::class_<dolfin::NonlinearVariationalProblem,
@@ -297,7 +298,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::NonlinearVariationalSolver,
                std::shared_ptr<dolfin::NonlinearVariationalSolver>,
                dolfin::Variable>
-      (m, "NonlinearVariationalSolver");
+      (m, "NonlinearVariationalSolver")
+      .def("solve", &dolfin::NonlinearVariationalSolver::solve);
 
     // dolfin::LocalSolver class
     py::class_<dolfin::LocalSolver, std::shared_ptr<dolfin::LocalSolver>>

@@ -110,7 +110,7 @@ from .mesh.subdomain import CompiledSubDomain
 # ufl
 from ufl import (FiniteElement, VectorElement, MixedElement,
                  inner, dot, grad, dx, div, Measure,
-                 ds, dS, triangle, tetrahedron, avg, jump, sym, tr, Identity)
+                 ds, dS, dP, triangle, tetrahedron, avg, jump, sym, tr, Identity)
 from ufl.formoperators import action
 
 # FIXME

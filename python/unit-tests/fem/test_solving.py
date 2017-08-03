@@ -24,7 +24,6 @@ from dolfin import *
 from dolfin_utils.test import *
 
 
-@pytest.mark.xfail
 def test_bcs():
     "Check that the bcs argument is picked up"
 
