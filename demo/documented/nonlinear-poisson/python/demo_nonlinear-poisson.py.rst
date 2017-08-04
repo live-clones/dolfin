@@ -72,7 +72,7 @@ Linearizing the semilinear form :math:`F` around :math:`u = u_h`, we obtain
 
 .. math::
 
-   F'(u_h;\delta u,v) = \int_\Omega [(2 \delta u\nabla u_h)\cdot\nabla v + ((1+u_h^2)\nabla\delta u)\nabla v] \,{\rm dx}
+   F'(u_h;\delta u,v) = \int_\Omega [(2 u_h \delta u\nabla u_h)\cdot\nabla v + ((1+u_h^2)\nabla\delta u)\nabla v] \,{\rm dx}
 
 We note that for each fixed :math:`u_h`, :math:`a =
 F'(u_h;\,\cdot\,,\,\cdot\,)` is a bilinear form and :math:`L =
