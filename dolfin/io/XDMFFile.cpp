@@ -1039,7 +1039,7 @@ void XDMFFile::add_points(MPI_Comm comm, pugi::xml_node& xdmf_node,
 //----------------------------------------------------------------------------
 void XDMFFile::write(const std::vector<Point>& points,
                      const std::vector<Point>& values,
-                     Encoding encoding)
+                     const Encoding encoding)
 {
   // Write clouds of points to XDMF/HDF5 with vector values
   dolfin_assert(points.size() == values.size());
@@ -1057,7 +1057,7 @@ void XDMFFile::write(const std::vector<Point>& points,
   if (encoding == Encoding::HDF5)
   {
     // Open file
-    h5_file.reset(new HDF5File(_mpi_comm, get_hdf5_filename(_filename), "w"));
+    h5_file.reset(new HDF5File(_mpi_comm.comm(), get_hdf5_filename(_filename), "w"));
     dolfin_assert(h5_file);
 
     // Get file handle
@@ -1071,7 +1071,7 @@ void XDMFFile::write(const std::vector<Point>& points,
   pugi::xml_node xdmf_node = _xml_doc->append_child("Xdmf");
   dolfin_assert(xdmf_node);
 
-  add_points(_mpi_comm, xdmf_node, h5_id, points);
+  add_points(_mpi_comm.comm(), xdmf_node, h5_id, points);
 
   // Add attribute node
   pugi::xml_node domain_node = xdmf_node.child("Domain");
@@ -1085,7 +1085,7 @@ void XDMFFile::write(const std::vector<Point>& points,
   attribute_node.append_attribute("Center") = "Node";
 
   // Add attribute DataItem node and write data
-  std::int64_t num_values =  MPI::sum(_mpi_comm, values.size());
+  std::int64_t num_values =  MPI::sum(_mpi_comm.comm(), values.size());
 
   // Copy vector values to vector
   std::vector<double> value_data;
@@ -1097,11 +1097,11 @@ void XDMFFile::write(const std::vector<Point>& points,
     value_data.push_back(p.z());
   }
 
-  add_data_item(_mpi_comm, attribute_node, h5_id,
+  add_data_item(_mpi_comm.comm(), attribute_node, h5_id,
                 "/Points/values", value_data, {num_values, 3});
 
   // Save XML file (on process 0 only)
-  if (MPI::rank(_mpi_comm) == 0)
+  if (_mpi_comm.rank() == 0)
     _xml_doc->save_file(_filename.c_str(), "  ");
 }
 //-----------------------------------------------------------------------------

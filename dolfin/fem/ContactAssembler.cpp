@@ -53,13 +53,17 @@ void ContactAssembler::_init_global_tensor(GenericTensor& A, const Form& a)
   for (std::size_t i = 0; i < a.rank(); ++i)
     dofmaps.push_back(a.function_space(i)->dofmap().get());
 
+  // Get mesh
+  dolfin_assert(a.mesh());
+  const Mesh& mesh = *(a.mesh());
+
   if (A.empty())
   {
     Timer t0("Build sparsity");
 
     // Create layout for initialising tensor
     std::shared_ptr<TensorLayout> tensor_layout;
-    tensor_layout = A.factory().create_layout(a.rank());
+    tensor_layout = A.factory().create_layout(mesh.mpi_comm(), a.rank());
     dolfin_assert(tensor_layout);
 
     // Get dimensions and mapping across processes for each dimension
@@ -81,8 +85,7 @@ void ContactAssembler::_init_global_tensor(GenericTensor& A, const Form& a)
     //            moreover the functions will tabulate directly using a
     //            correct int type
 
-    tensor_layout->init(mesh.mpi_comm(), index_maps,
-                        TensorLayout::Ghosts::UNGHOSTED);
+    tensor_layout->init(index_maps, TensorLayout::Ghosts::UNGHOSTED);
 
     // Build sparsity pattern if required
     if (tensor_layout->sparsity_pattern())
@@ -122,7 +125,7 @@ void ContactAssembler::_init_global_tensor(GenericTensor& A, const Form& a)
     if (A.rank() == 2 && keep_diagonal)
     {
       // Down cast to GenericMatrix
-      GenericMatrix& _matA = A.down_cast<GenericMatrix>();
+      GenericMatrix& _matA = as_type<GenericMatrix>(A);
 
       // Loop over rows and insert 0.0 on the diagonal
       const double block = 0.0;

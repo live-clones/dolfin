@@ -449,8 +449,10 @@ void GeometricContact::tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function
 
     // Cell to which the master facet belongs and its DoFs
     const Cell m_cell(mesh, Facet(mesh, mi).entities(tdim)[0]);
-    const ArrayView<const dolfin::la_index> m_cell_dofs
+    const auto& m_cell_dofs_eigen_map
         = dofmap->cell_dofs(m_cell.index());
+    const auto m_cell_dofs = ArrayView<const dolfin::la_index>(
+        m_cell_dofs_eigen_map.size(), m_cell_dofs_eigen_map.data());
 
     for (std::size_t j=0; j<sis.size(); j+=2)
     {
@@ -462,8 +464,10 @@ void GeometricContact::tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function
       {
         // Cell to which the slave facet belongs and its DoFs
         const Cell s_cell(mesh, Facet(mesh, si).entities(tdim)[0]);
-        const ArrayView<const dolfin::la_index> s_cell_dofs
+        const auto& s_cell_dofs_eigen_map
             = dofmap->cell_dofs(s_cell.index());
+        const auto s_cell_dofs = ArrayView<const dolfin::la_index>(
+            s_cell_dofs_eigen_map.size(), s_cell_dofs_eigen_map.data());
 
         // Insert slave dofs into the map
         _local_cell_to_contact_dofs[mi].insert(std::end(_local_cell_to_contact_dofs[mi]),

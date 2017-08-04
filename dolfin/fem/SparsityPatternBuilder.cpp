@@ -437,18 +437,18 @@ SparsityPatternBuilder::build_contact_sparsity_pattern(
       for (std::size_t i = 0; i < rank; i++)
       {
         // Get dofs for each cell
-        const ArrayView<const dolfin::la_index> cell_dofs0
+        const auto cell_dofs0
             = dofmaps[i]->cell_dofs(cell0.index());
-        const ArrayView<const dolfin::la_index> cell_dofs1
+        const auto cell_dofs1
             = dofmaps[i]->cell_dofs(cell1.index());
 
         // Create space in macro dof vector
         macro_dofs[i].resize(cell_dofs0.size() + cell_dofs1.size());
 
         // Copy cell dofs into macro dof vector
-        std::copy(cell_dofs0.begin(), cell_dofs0.end(),
+        std::copy(cell_dofs0.data(), cell_dofs0.data() + cell_dofs0.size(),
                   macro_dofs[i].begin());
-        std::copy(cell_dofs1.begin(), cell_dofs1.end(),
+        std::copy(cell_dofs1.data(), cell_dofs1.data() + cell_dofs1.size(),
                   macro_dofs[i].begin() + cell_dofs0.size());
 
         // Store pointer to macro dofs
