@@ -22,18 +22,19 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 
-
 #include <dolfin/common/Array.h>
 #include <dolfin/function/Constant.h>
 #include <dolfin/function/Expression.h>
+#include <dolfin/function/Function.h>
+#include <dolfin/function/FunctionAXPY.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/MultiMeshFunction.h>
 #include <dolfin/function/SpecialFunctions.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/GenericDofMap.h>
-#include <dolfin/mesh/Mesh.h>
-#include <dolfin/la/GenericVector.h>
 #include <dolfin/geometry/Point.h>
+#include <dolfin/la/GenericVector.h>
+#include <dolfin/mesh/Mesh.h>
 
 namespace py = pybind11;
 
@@ -185,6 +186,20 @@ namespace dolfin_wrappers
             g->interpolate(f);
             return g;
           });
+
+    // dolfin::FunctionAXPY
+    py::class_<dolfin::FunctionAXPY, std::shared_ptr<dolfin::FunctionAXPY>> function_axpy(m, "FunctionAXPY");
+    function_axpy
+      .def(py::init<std::shared_ptr<const dolfin::Function>, double>())
+      .def(py::init<std::shared_ptr<const dolfin::Function>, std::shared_ptr<const dolfin::Function>,
+           dolfin::FunctionAXPY::Direction>());
+
+    // dolfin::FunctionAXPY enum
+    py::enum_<dolfin::FunctionAXPY::Direction>(function_axpy, "Direction")
+      .value("ADD_ADD", dolfin::FunctionAXPY::Direction::ADD_ADD)
+      .value("SUB_ADD", dolfin::FunctionAXPY::Direction::SUB_ADD)
+      .value("ADD_SUB", dolfin::FunctionAXPY::Direction::ADD_SUB)
+      .value("SUB_SUB", dolfin::FunctionAXPY::Direction::SUB_SUB);
 
     //-----------------------------------------------------------------------------
     // dolfin::FunctionSpace

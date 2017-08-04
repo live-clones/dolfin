@@ -467,6 +467,7 @@ namespace dolfin_wrappers
              instance.gather_on_zero(values);
              return py::array_t<double>(values.size(), values.data());
            })
+      .def("axpy", &dolfin::GenericVector::axpy)
       .def("sum", (double (dolfin::GenericVector::*)() const) &dolfin::GenericVector::sum)
       .def("sum", [](const dolfin::GenericVector& self, py::array_t<std::size_t> rows)
            { const dolfin::Array<std::size_t> _rows(rows.size(), rows.mutable_data()); return self.sum(_rows); })
