@@ -26,6 +26,7 @@
 #include <dolfin/nls/PETScTAOSolver.h>
 #include <dolfin/nls/TAOLinearBoundSolver.h>
 #include <dolfin/nls/NonlinearProblem.h>
+#include <dolfin/nls/OptimisationProblem.h>
 
 #include "../mpi_interface.h"
 
@@ -63,7 +64,7 @@ namespace dolfin_wrappers
          py::arg("ksp_type")="default", py::arg("pc_type")="default");
 #endif
 
-    // dolfin::NonlinearProblem
+    // dolfin::NonlinearProblem 'trampoline'
     class PyNonlinearProblem : public dolfin::NonlinearProblem
     {
       using dolfin::NonlinearProblem::NonlinearProblem;
@@ -80,6 +81,7 @@ namespace dolfin_wrappers
 
     };
 
+    // dolfin::NonlinearProblem
     py::class_<dolfin::NonlinearProblem, PyNonlinearProblem>(m, "NonlinearProblem")
       .def(py::init<>())
       .def("F", &dolfin::NonlinearProblem::F)
@@ -87,6 +89,27 @@ namespace dolfin_wrappers
       .def("form", (void (dolfin::NonlinearProblem::*)(dolfin::GenericMatrix&, dolfin::GenericMatrix&,
                                                        dolfin::GenericVector&, const dolfin::GenericVector&))
                     &dolfin::NonlinearProblem::form);
+
+
+    // dolfin::OptimizationProblem 'trampoline
+    class PyOptimisationProblem : public dolfin::OptimisationProblem
+    {
+      using dolfin::OptimisationProblem::OptimisationProblem;
+
+      double f(const dolfin::GenericVector& x) override
+      { PYBIND11_OVERLOAD_PURE(double, dolfin::OptimisationProblem, f, x); }
+
+      void F(dolfin::GenericVector& b, const dolfin::GenericVector& x) override
+      { PYBIND11_OVERLOAD_PURE(void, dolfin::OptimisationProblem, F, b, x); }
+
+      void J(dolfin::GenericMatrix& A, const dolfin::GenericVector& x) override
+      { PYBIND11_OVERLOAD_PURE(void, dolfin::OptimisationProblem, J, A, x); }
+
+    };
+
+    // dolfin::OptimizationProblem
+    py::class_<dolfin::OptimisationProblem, PyOptimisationProblem, dolfin::NonlinearProblem>(m, "OptimisationProblem")
+      .def(py::init<>());
 
   }
 

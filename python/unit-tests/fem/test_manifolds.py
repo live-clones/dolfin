@@ -168,7 +168,6 @@ def rotate_2d_mesh(theta):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_poisson2D_in_3D():
     """This test solves Poisson's equation on a unit square in 2D, and
     then on a unit square embedded in 3D and rotated pi/4 radians
@@ -276,6 +275,7 @@ def basis_test(family, degree, basemesh, rotmesh, rotation, piola=False):
                 assert round(abs(values_cmp-values_rot).max() - 0.0, 10) == 0
 
     parameters["form_compiler"]["no-evaluate_basis_derivatives"] = basis_derivatives
+
 
 @pytest.mark.skip
 def xtest_elliptic_eqn_on_intersecting_surface(datadir):
