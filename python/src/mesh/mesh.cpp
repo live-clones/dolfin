@@ -87,7 +87,8 @@ namespace dolfin_wrappers
            &dolfin::MeshTopology::operator())
       .def("size", &dolfin::MeshTopology::size)
       .def("hash", &dolfin::MeshTopology::hash)
-      .def("global_indices", &dolfin::MeshTopology::global_indices)
+      .def("global_indices", [](const dolfin::MeshTopology& self, int dim)
+           { auto& indices = self.global_indices(dim); return py::array_t<std::int64_t>(indices.size(), indices.data()); })
       .def("have_shared_entities", &dolfin::MeshTopology::have_shared_entities)
       .def("shared_entities",
            (const std::map<std::int32_t, std::set<unsigned int> >&(dolfin::MeshTopology::*)(unsigned int) const)
