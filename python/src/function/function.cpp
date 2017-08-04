@@ -21,6 +21,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
+#include <pybind11/operators.h>
 
 #include <dolfin/common/Array.h>
 #include <dolfin/function/Constant.h>
@@ -158,6 +159,10 @@ namespace dolfin_wrappers
       (m, "Function")
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>())
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>, std::shared_ptr<dolfin::GenericVector>>())
+      .def("_assign", (const dolfin::Function& (dolfin::Function::*)(const dolfin::Function&))
+           &dolfin::Function::operator=)
+      .def("_assign", (void (dolfin::Function::*)(const dolfin::FunctionAXPY&))
+           &dolfin::Function::operator=)
       .def("_in", &dolfin::Function::in)
       .def("__call__", [](dolfin::Function& self, std::vector<double>& p)
           {
@@ -174,6 +179,7 @@ namespace dolfin_wrappers
              auto _v = v.attr("_cpp_object").cast<dolfin::Function*>();
              instance.extrapolate(*_v);
            })
+      .def("get_allow_extrapolation", &dolfin::Function::get_allow_extrapolation)
       .def("interpolate", (void (dolfin::Function::*)(const dolfin::GenericFunction&))
            &dolfin::Function::interpolate)
       .def("interpolate", [](dolfin::Function& instance, const py::object v)
@@ -181,6 +187,7 @@ namespace dolfin_wrappers
              auto _v = v.attr("_cpp_object").cast<dolfin::GenericFunction*>();
              instance.interpolate(*_v);
            })
+      .def("set_allow_extrapolation", &dolfin::Function::set_allow_extrapolation)
       .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
            &dolfin::Function::vector);
 
@@ -198,7 +205,34 @@ namespace dolfin_wrappers
     function_axpy
       .def(py::init<std::shared_ptr<const dolfin::Function>, double>())
       .def(py::init<std::shared_ptr<const dolfin::Function>, std::shared_ptr<const dolfin::Function>,
-           dolfin::FunctionAXPY::Direction>());
+           dolfin::FunctionAXPY::Direction>())
+      .def(py::init<std::vector<std::pair<double, std::shared_ptr<const dolfin::Function>>>>())
+      .def("__init__", [](dolfin::FunctionAXPY& instance, std::vector<std::pair<double, py::object>> fun)
+           {
+             std::vector<std::pair<double, std::shared_ptr<const dolfin::Function>>> a;
+             for (auto p : fun)
+               a.push_back({p.first, p.second.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>()});
+             new (&instance) dolfin::FunctionAXPY(a);
+           })
+      .def("__init__", [](dolfin::FunctionAXPY& instance, py::object f1, double a)
+           {
+             auto _f1 = f1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>();
+             new (&instance) dolfin::FunctionAXPY(_f1, a);
+           })
+      .def(py::self + py::self)
+      .def(py::self + std::shared_ptr<const dolfin::Function>())
+      .def("__add__", [](dolfin::FunctionAXPY& self, py::object f1)
+           {
+             return (self + f1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>());
+           })
+      .def(py::self - py::self)
+      .def(py::self - std::shared_ptr<const dolfin::Function>())
+      .def("__sub__", [](dolfin::FunctionAXPY& self, py::object f1)
+           {
+             return (self - f1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>());
+           })
+      .def(py::self * float())
+      .def(py::self / float());
 
     // dolfin::FunctionAXPY enum
     py::enum_<dolfin::FunctionAXPY::Direction>(function_axpy, "Direction")

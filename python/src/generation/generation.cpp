@@ -22,6 +22,7 @@
 
 #include <dolfin/geometry/Point.h>
 #include <dolfin/generation/BoxMesh.h>
+#include <dolfin/generation/UnitTriangleMesh.h>
 #include <dolfin/generation/UnitCubeMesh.h>
 #include <dolfin/generation/UnitDiscMesh.h>
 #include <dolfin/generation/UnitSquareMesh.h>
@@ -75,6 +76,10 @@ namespace dolfin_wrappers
     // dolfin::UnitDiscMesh
     py::class_<dolfin::UnitDiscMesh>(m, "UnitDiscMesh")
       .def_static("create", &dolfin::UnitDiscMesh::create);
+
+    // dolfin::UnitTriangleMesh
+    py::class_<dolfin::UnitTriangleMesh>(m, "UnitTriangleMesh")
+      .def_static("create", &dolfin::UnitTriangleMesh::create);
 
     // dolfin::UnitQuadMesh
     py::class_<dolfin::UnitQuadMesh>(m, "UnitQuadMesh")

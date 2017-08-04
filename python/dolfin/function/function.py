@@ -275,6 +275,10 @@ class Function(ufl.Coefficient):
 
         return values
 
+    def _assign(self, u):
+        if isinstance(u, cpp.function.FunctionAXPY):
+            self._cpp_object._assign(u)
+
     def extrapolate(self, u):
         if isinstance(u, ufl.Coefficient):
             self._cpp_object.extrapolate(u._cpp_object)
@@ -292,6 +296,12 @@ class Function(ufl.Coefficient):
 
     def function_space(self):
         return self._cpp_object.function_space()
+
+    def set_allow_extrapolation(self, value):
+        self._cpp_object.set_allow_extrapolation(value)
+
+    def get_allow_extrapolation(self):
+        return self._cpp_object.get_allow_extrapolation()
 
     def vector(self):
         return self._cpp_object.vector()
