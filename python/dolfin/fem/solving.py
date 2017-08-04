@@ -298,10 +298,11 @@ def solve(*args, **kwargs):
     # Default case, just call the wrapped C++ solve function
     else:
         if kwargs:
-            cpp.dolfin_error("solving.py",
-                             "solve linear algebra problem",
-                             "Not expecting keyword arguments when solving "
-                             "linear algebra problem")
+            raise RuntimeError("Not expecting keyword arguments when solving linear algebra problem")
+            #cpp.dolfin_error("solving.py",
+            #                 "solve linear algebra problem",
+            #                 "Not expecting keyword arguments when solving "
+            #                 "linear algebra problem")
 
         return cpp.la.solve(*args)
 
