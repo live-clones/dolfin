@@ -354,10 +354,7 @@ class Function(ufl.Coefficient):
                 vector.axpy(weight, func.vector())
 
         else:
-            cpp.dolfin_error("function.py",
-                             "function assignment",
-                             "Expects a Function or linear combinations of "\
-                             "Functions in the same FunctionSpaces")
+            raise RuntimeError("Expected a Function or linear combinations of Functions in the same FunctionSpace")
 
     def __float__(self):
         # FIXME: this could be made simple on the C++ (in particular,
@@ -387,3 +384,53 @@ class Function(ufl.Coefficient):
 
     def cpp_object(self):
         return self._cpp_object
+
+
+    def sub(self, i, deepcopy = False):
+        """
+        Return a sub function.
+
+        The sub functions are numbered from i = 0..N-1, where N is the
+        total number of sub spaces.
+
+        *Arguments*
+            i : int
+                The number of the sub function
+
+        """
+        if not isinstance(i, int):
+            raise TypeError("expects an 'int' as first argument")
+        num_sub_spaces = self.function_space().num_sub_spaces()
+        if num_sub_spaces == 1:
+            raise RuntimeError("No subfunctions to extract")
+        if not i < num_sub_spaces:
+            raise RuntimeError("Can only extract subfunctions with i = 0..%d" \
+                               % num_sub_spaces)
+
+        # Create and instantiate the Function
+        if deepcopy:
+            return Function(self.function_space().sub(i), \
+                            cpp.Function.sub(self, i), \
+                            name='%s-%d' % (str(self), i))
+        else:
+            return Function(self, i, name='%s-%d' % (str(self), i))
+
+
+    def split(self, deepcopy=False):
+        """
+        Extract any sub functions.
+
+        A sub function can be extracted from a discrete function that
+        is in a mixed, vector, or tensor FunctionSpace. The sub
+        function resides in the subspace of the mixed space.
+
+        *Arguments*
+            deepcopy
+                Copy sub function vector instead of sharing
+
+        """
+
+        num_sub_spaces = self.function_space().num_sub_spaces()
+        if num_sub_spaces == 1:
+            raise RuntimeError("No subfunctions to extract")
+        return tuple(self.sub(i, deepcopy) for i in range(num_sub_spaces))
