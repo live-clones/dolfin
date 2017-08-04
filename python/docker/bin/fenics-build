@@ -28,7 +28,7 @@ function build_cmake () {
     cd "$build"
     cmake ../ -DCMAKE_INSTALL_PREFIX=${FENICS_PREFIX} -DCMAKE_BUILD_TYPE=${FENICS_BUILD_TYPE} \
               -Wno-dev -DPYTHON_EXECUTABLE:FILEPATH=$(which ${FENICS_PYTHON}) ${CMAKE_EXTRA_ARGS}
-    make
+    make -j 4
     make install
 }
 
