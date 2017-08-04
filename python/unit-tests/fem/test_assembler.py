@@ -116,7 +116,6 @@ def test_facet_assembly(pushpop_parameters):
     assert round(assemble(L).norm("l2") - b_l2_norm, 10) == 0
 
 
-@pytest.mark.xfail
 def test_ghost_mode_handling(pushpop_parameters):
     def _form():
         # Return form with trivial interior facet integral
@@ -216,7 +215,6 @@ def test_subdomain_and_fulldomain_assembly_meshdomains():
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_subdomain_assembly_form_1():
     "Test assembly over subdomains with markers stored as part of form"
 
@@ -283,7 +281,6 @@ def test_subdomain_assembly_form_1():
     assert round(assemble(b).norm("l2") - reference, 8) == 0
 
 
-@pytest.mark.xfail
 def test_subdomain_assembly_form_2():
     "Test assembly over subdomains with markers stored as part of form"
 

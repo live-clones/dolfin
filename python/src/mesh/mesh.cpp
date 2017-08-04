@@ -100,9 +100,10 @@ namespace dolfin_wrappers
                                                             py::dynamic_attr(),
                                                             "DOLFIN Mesh object")
       .def(py::init<>())
-      .def(py::init<MPI_Comm>())
       .def(py::init<std::string>())
       .def(py::init<const dolfin::Mesh&>())
+      .def(py::init<MPI_Comm>())
+      .def(py::init<MPI_Comm, std::string>())  // Put MPI constructors last to avoid casting problems
       .def("bounding_box_tree", &dolfin::Mesh::bounding_box_tree)
       .def("cells",
            [](const dolfin::Mesh& self)
