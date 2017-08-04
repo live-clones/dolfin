@@ -4,13 +4,11 @@ from __future__ import print_function
 __all__ = ["CompiledExpression", "UserExpression"]
 
 # Python imports
-import abc
 import hashlib
 from functools import reduce
 from six import add_metaclass, string_types
 from six.moves import xrange as range
 import types
-import weakref
 
 import dijitso
 
@@ -23,7 +21,6 @@ import numpy
 
 import dolfin.function.jit as jit
 
-#from dolfin import warning, error
 
 def _select_element(family, cell, degree, value_shape):
     """Select finite element type for cases where user has not provided a
@@ -71,7 +68,6 @@ class _InterfaceExpression(cpp.function.Expression):
         cpp.function.Expression.__init__(self, value_shape)
 
 
-
 class BaseExpression(ufl.Coefficient):
     def __init__(self, cell=None, element=None, domain=None, name=None,
                  label=None):
@@ -83,10 +79,6 @@ class BaseExpression(ufl.Coefficient):
         name = name or "f_" + str(ufl.Coefficient.count(self))
         label = label or "User defined expression"
         self._cpp_object.rename(name, label)
-
-    #@abc.abstractproperty
-    #def value(self):
-    #    return 'Should never get here'
 
     #def __call__(self, x):
     #    return self._cpp_object(x)
@@ -201,8 +193,8 @@ class BaseExpression(ufl.Coefficient):
 
 
 class UserExpression(BaseExpression):
-    """Base class for user-defined Python Expression classes, wherer the
-    user overload eval or eval_cell
+    """Base class for user-defined Python Expression classes, where the
+    user overloads eval or eval_cell
 
     """
 
@@ -261,7 +253,8 @@ class Expression(BaseExpression):
             if not isinstance(self._properties[k], float):
                 raise ValueError("Invalid value")
 
-        self._cpp_object = jit.compile_expression(cpp_code, self._properties)
+        if cpp_code is not None:
+            self._cpp_object = jit.compile_expression(cpp_code, self._properties)
 
         # Deduce element type if not provided
         if element is None:
@@ -277,7 +270,7 @@ class Expression(BaseExpression):
     # eval in user classes.
     def __getattr__(self, name):
         "Pass attributes through to (JIT compiled) Expression object"
-        if hasattr(self._cpp_object, name):
+        if name in self._properties.keys():
             return self._cpp_object.get_property(name)
         else:
             raise(AttributeError)
@@ -285,9 +278,8 @@ class Expression(BaseExpression):
     def __setattr__(self, name, value):
         if name.startswith("_"):
             super().__setattr__(name, value)
-        else:
+        elif name in self._properties.keys():
             self._cpp_object.set_property(name, value)
-
 
 # Temporary alias for CompiledExpression name
 class CompiledExpression(Expression):

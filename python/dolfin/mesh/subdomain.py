@@ -6,6 +6,7 @@ import dolfin.cpp as cpp
 import dijitso
 import ffc
 
+from dolfin.jit.jit import compile_class
 
 def jit_generate(class_data, module_name, signature, parameters):
 
@@ -67,8 +68,7 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
     _set_prop = """ if (name == "{name}") {name} = value;\n"""
     _get_prop = """ if (name == "{name}") return {name};\n"""
 
-    print('Class data = ', class_data)
-    inside_code = class_data['inside_code']
+    inside_code = class_data['statements']
 
     members = ""
     get_props = ""
@@ -89,38 +89,13 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
 
 def compile_subdomain(inside_code, properties):
 
-    import pkgconfig
-    if not pkgconfig.exists('dolfin'):
-        raise RuntimeError("Could not find DOLFIN pkg-config file. Please make sure appropriate paths are set.")
+    cpp_data = {'statements': inside_code,
+                'properties': properties,
+                'name': 'subdomain',
+                'jit_generate': jit_generate}
 
-    # Get pkg-config data
-    d = pkgconfig.parse('dolfin')
-
-    # Set compiler/build options
-    params = dijitso.params.default_params()
-    params['build']['include_dirs'] = d["include_dirs"]
-    params['build']['libs'] = d["libraries"]
-    params['build']['lib_dirs'] = d["library_dirs"]
-
-    class_data = {'inside_code': inside_code, 'properties': properties}
-
-    hash_str = inside_code + str(properties.keys())
-    module_hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
-    module_name = "dolfin_subdomain_" + module_hash
-
-    try:
-        module, signature = dijitso.jit(class_data, module_name, params,
-                                        generate=jit_generate)
-        submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
-    except:
-        raise RuntimeError("Unable to compile C++ code with dijitso")
-
-    sub_domain = cpp.mesh.make_dolfin_subdomain(submodule)
-
-    for k in properties:
-        sub_domain.set_property(k, properties[k])
-
-    return sub_domain
+    subdomain = compile_class(cpp_data)
+    return subdomain
 
 class CompiledSubDomain(cpp.mesh.SubDomain):
     def __new__(cls, inside_code, **kwargs):

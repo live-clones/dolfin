@@ -4,6 +4,8 @@ from six import string_types
 import dijitso
 import dolfin.cpp as cpp
 
+from dolfin.jit.jit import compile_class
+
 _cpp_math_builtins = [
     # <cmath> functions: from http://www.cplusplus.com/reference/cmath/
     "cos", "sin", "tan", "acos", "asin", "atan", "atan2",
@@ -23,6 +25,16 @@ def jit_generate(class_data, module_name, signature, parameters):
     """TODO: document"""
 
     template_code = """
+// Based on https://gcc.gnu.org/wiki/Visibility
+#if defined _WIN32 || defined __CYGWIN__
+    #ifdef __GNUC__
+        #define DLL_EXPORT __attribute__ ((dllexport))
+    #else
+        #define DLL_EXPORT __declspec(dllexport)
+    #endif
+#else
+    #define DLL_EXPORT __attribute__ ((visibility ("default")))
+#endif
 
 #include <dolfin/function/Expression.h>
 #include <Eigen/Dense>
@@ -59,7 +71,7 @@ namespace dolfin
   }};
 }}
 
-extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_{classname}()
+extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
 {{
   return new dolfin::{classname};
 }}
@@ -105,41 +117,11 @@ extern "C" __attribute__ ((visibility ("default"))) dolfin::Expression * create_
 
 
 def compile_expression(statements, properties):
-    """Compile a user C(++) string to a Python object"""
 
-    import pkgconfig
-    if not pkgconfig.exists('dolfin'):
-        raise RuntimeError("Could not find DOLFIN pkg-config file. Please make sure appropriate paths are set.")
+    cpp_data = {'statements': statements,
+                'properties': properties,
+                'name': 'expression',
+                'jit_generate': jit_generate}
 
-    # Get pkg-config data
-    d = pkgconfig.parse('dolfin')
-
-    # Set compiler/build options
-    params = dijitso.params.default_params()
-    params['build']['include_dirs'] = d["include_dirs"]
-    params['build']['libs'] = d["libraries"]
-    params['build']['lib_dirs'] = d["library_dirs"]
-
-    if not isinstance(statements, (string_types, tuple, list)):
-        raise RuntimeError("Expression must be a string, or a list or tuple of strings")
-
-    class_data = {'statements': statements, 'properties': properties}
-
-    hash_str = str(statements)
-    module_hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
-    module_name = "dolfin_expression_" + module_hash
-
-    try:
-        module, signature = dijitso.jit(class_data, module_name, params,
-                                        generate=jit_generate)
-        submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
-    except:
-        raise RuntimeError("Unable to compile C++ code with dijitso")
-
-    expression = cpp.function.make_dolfin_expression(submodule)
-
-    # Set properties to initial values
-    for k in properties:
-        expression.set_property(k, properties[k])
-
+    expression = compile_class(cpp_data)
     return expression

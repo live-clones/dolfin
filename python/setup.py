@@ -68,6 +68,7 @@ setup(
               "dolfin.fem",
               "dolfin.la",
               "dolfin.io",
+              "dolfin.jit",
               "dolfin.mesh",
               "dolfin.parameter",
               "dolfin_utils.test"],
