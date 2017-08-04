@@ -68,7 +68,7 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        MeshEditor, MultiMesh, MeshQuality,
                        SubMesh, DomainBoundary, PeriodicBoundaryComputation,
                        MeshTransformation, SubsetIterator)
-from .cpp.nls import NonlinearProblem, NewtonSolver
+from .cpp.nls import NonlinearProblem, NewtonSolver, OptimisationProblem
 from .cpp.refinement import refine
 
 from .cpp.parameter import Parameters, parameters
