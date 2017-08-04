@@ -118,6 +118,8 @@ namespace dolfin_wrappers
                 self.geometry().num_points(),
                 self.geometry().dim());
            })
+      .def("domains", (dolfin::MeshDomains& (dolfin::Mesh::*)())
+           &dolfin::Mesh::domains, py::return_value_policy::reference_internal)
       .def("data", (dolfin::MeshData& (dolfin::Mesh::*)())
            &dolfin::Mesh::data, "Data associated with a mesh")
       .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)()) &dolfin::Mesh::geometry,
@@ -164,6 +166,11 @@ namespace dolfin_wrappers
     // dolfin::MeshData class
     py::class_<dolfin::MeshData, std::shared_ptr<dolfin::MeshData>>(m, "MeshData", "Mesh data object")
       .def("array", (std::vector<std::size_t>& (dolfin::MeshData::*)(std::string, std::size_t)) &dolfin::MeshData::array);
+
+    // dolfin::MeshDomain
+    py::class_<dolfin::MeshDomains, std::shared_ptr<dolfin::MeshDomains>>(m, "MeshDomains", "Mesh domains object")
+      .def("set_marker", &dolfin::MeshDomains::set_marker)
+      .def("get_marker", &dolfin::MeshDomains::get_marker);
 
     //-------------------------------------------------------------------------
     // dolfin::BoundaryMesh class

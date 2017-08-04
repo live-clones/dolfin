@@ -28,7 +28,6 @@ import pytest
 from dolfin import *
 
 
-@pytest.mark.xfail
 def test_subdomain_marking():
     "Test setting markers from subdomains"
 
@@ -70,7 +69,6 @@ def test_subdomain_marking():
     assert 0 == 0
 
 
-@pytest.mark.xfail
 def test_domain_markers():
     mesh = UnitSquareMesh(3, 3)
     mdoms = mesh.domains()

@@ -27,7 +27,6 @@ import pytest
 from dolfin import *
 
 
-@pytest.mark.xfail
 def test_assign_2D_cells():
     mesh = UnitSquareMesh(3, 3)
     ncells = mesh.num_cells()
@@ -51,7 +50,6 @@ def test_assign_2D_cells():
     assert old_value + 1 == g.get_value(0, 0)
 
 
-@pytest.mark.xfail
 def test_assign_2D_facets():
     mesh = UnitSquareMesh(3, 3)
     mesh.init(2, 1)
@@ -75,7 +73,6 @@ def test_assign_2D_facets():
             assert value+i == g.get_value(cell.index(), i)
 
 
-@pytest.mark.xfail
 def test_assign_2D_vertices():
     mesh = UnitSquareMesh(3, 3)
     mesh.init(2, 0)
