@@ -209,12 +209,71 @@ class Function(ufl.Coefficient):
         return self._cpp_object.value_dimension(i)
 
     def __call__(self, *args, **kwargs):
+        if len(args)==0:
+            raise TypeError("expected at least 1 argument")
+
         # Test for ufl restriction
         if len(args) == 1 and isinstance(args[0], string_types):
             if args[0] in ('+', '-'):
                 return ufl.Coefficient.__call__(self, *args)
 
-        return self._cpp_object.__call__(*args)
+        # Test for ufl mapping
+        if len(args) == 2 and isinstance(args[1], dict) and self in args[1]:
+            return ufl.Coefficient.__call__(self, *args)
+
+        # Some help variables
+        value_size = ufl.product(self.ufl_element().value_shape())
+
+        # If values (return argument) is passed, check the type and length
+        values = kwargs.get("values", None)
+        if values is not None:
+            if not isinstance(values, np.ndarray):
+                raise TypeError("expected a NumPy array for 'values'")
+            if len(values) != value_size or \
+                   not np.issubdtype(values.dtype, 'd'):
+                raise TypeError("expected a double NumPy array of length"\
+                      " %d for return values."%value_size)
+            values_provided = True
+        else:
+            values_provided = False
+            values = np.zeros(value_size, dtype='d')
+
+        # Get the geometric dimension we live in
+        dim = self.ufl_domain().geometric_dimension()
+
+        # Assume all args are x argument
+        x = args
+
+        # If only one x argument has been provided, unpack it if it's
+        # an iterable
+        if len(x) == 1:
+            if isinstance(x[0], cpp.geometry.Point):
+                x = [x[0][i] for i in range(dim)]
+            elif hasattr(x[0], '__iter__'):
+                x = x[0]
+
+        # Convert it to an 1D numpy array
+        try:
+            x = np.fromiter(x, 'd')
+        except (TypeError, ValueError, AssertionError) as e:
+            raise TypeError("expected scalar arguments for the coordinates")
+
+        if len(x) == 0:
+            raise TypeError("coordinate argument too short")
+
+        if len(x) != dim:
+            raise TypeError("expected the geometry argument to be of "\
+                  "length %d"%dim)
+
+        # The actual evaluation
+        print(x, str(x))
+        self._cpp_object.eval(values, x)
+
+        # If scalar return statement, return scalar value.
+        if value_size == 1 and not values_provided:
+            return values[0]
+
+        return values
 
     def extrapolate(self, u):
         if isinstance(u, ufl.Coefficient):

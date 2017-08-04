@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Garth N. Wells
+/// Copyright (C) 2017 Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -55,6 +55,12 @@ namespace dolfin_wrappers
                ufc::function, dolfin::Variable>
       (m, "GenericFunction")
       .def("value_dimension", &dolfin::GenericFunction::value_dimension)
+      .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>,
+                                                      const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
+           &dolfin::GenericFunction::eval,
+           "Evaluate GenericFunction (cell version)")
+      .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>) const)
+           &dolfin::GenericFunction::eval, py::arg("values"), py::arg("x"), "Evaluate GenericFunction")
       .def("compute_vertex_values", [](dolfin::GenericFunction& self, const dolfin::Mesh& mesh)
            { std::vector<double> values;
              self.compute_vertex_values(values, mesh);
