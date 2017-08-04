@@ -6,7 +6,11 @@ import dolfin.cpp as cpp
 def compile_class(cpp_data):
     """Compile a user C(++) string or set of statements to a Python object
 
-    cpp_data is a dict
+    cpp_data is a dict containing:
+      "name": must be "expression" or "subdomain"
+      "statements": must be a string, or list/tuple of strings
+      "properties": a dict of float properties
+      "jit_generate": callable (generates cpp code with this dict as input)
 
 """
     import pkgconfig

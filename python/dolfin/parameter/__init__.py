@@ -27,3 +27,34 @@ cpp.parameter.Parameters.__getitem__ = __getitem__
 cpp.parameter.Parameters.update = update
 del __getitem__
 del update
+
+# Import global form compiler parameters from FFC
+from ffc import default_jit_parameters
+from dolfin.cpp.parameter import parameters, Parameters
+
+def ffc_default_parameters():
+    """Get default parameters of FFC"""
+    # Get dict with defaults
+    d = default_jit_parameters()
+
+    p = Parameters()
+
+    typemap = {
+        "quadrature_rule": "",
+        "quadrature_degree": 0,
+        "precision": 0,
+    }
+
+    # Add the rest
+    for k in d:
+        if d[k] is None:
+            p.add(k, typemap[k])
+            p[k] = None  # Reset to None
+        else:
+            p.add(k, d[k])
+
+    return p
+
+# Add form compiler parameters to global parameter set
+if not parameters.has_parameter_set("form_compiler"):
+    parameters.add(ffc_default_parameters())
