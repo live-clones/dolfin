@@ -53,3 +53,17 @@ class Form(cpp.fem.Form):
         # empty lists)
         if not function_spaces:
             self.set_mesh(mesh)
+
+        # Attach subdomains to C++ Form if we have them
+        subdomains = self.subdomains.get("cell")
+        if subdomains is not None:
+            self.set_cell_domains(subdomains)
+        subdomains = self.subdomains.get("exterior_facet")
+        if subdomains is not None:
+            self.set_exterior_facet_domains(subdomains)
+        subdomains = self.subdomains.get("interior_facet")
+        if subdomains is not None:
+            self.set_interior_facet_domains(subdomains)
+        subdomains = self.subdomains.get("vertex")
+        if subdomains is not None:
+            self.set_vertex_domains(subdomains)

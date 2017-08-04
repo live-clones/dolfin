@@ -32,6 +32,10 @@ from dolfin_utils.test import *
 def dim(request):
     return request.param
 
+# FIXME: these should not have to be globals to keep them 'in scope'
+subdomain = AutoSubDomain(lambda x, on_boundary: x[0] <= 0.5)
+disjoint_subdomain = AutoSubDomain(lambda x, on_boundary: x[0] > 0.5)
+
 
 def _create_dp_problem(dim):
     assert dim in [1, 2, 3]
@@ -63,8 +67,6 @@ def _create_dp_problem(dim):
     UU = TrialFunction(VV)
 
     # Subdomains
-    subdomain = AutoSubDomain(lambda x, on_boundary: x[0] <= 0.5)
-    disjoint_subdomain = AutoSubDomain(lambda x, on_boundary: x[0] > 0.5)
     vertex_domain = VertexFunction("size_t", mesh, 0)
     subdomain.mark(vertex_domain, 1)
     bc = DirichletBC(VV, Constant((0, 0)), disjoint_subdomain)
