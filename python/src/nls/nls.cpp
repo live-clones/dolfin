@@ -118,10 +118,36 @@ namespace dolfin_wrappers
     // dolfin::OptimizationProblem 'trampoline
     class PyOptimisationProblem : public dolfin::OptimisationProblem
     {
+      // See https://github.com/pybind/pybind11/issues/250
+
       using dolfin::OptimisationProblem::OptimisationProblem;
+      //using _binder_base_ = dolfin::OptimisationProblem;
+      //using dolfin::OptimisationProblem;
+
+      //double f(const dolfin::GenericVector& x) override
+      //{
+      //  //PYBIND11_OVERLOAD_PURE(double, dolfin::OptimisationProblem, f, x);
+      //  PYBIND11_OVERLOAD_INT(double, dolfin::OptimisationProblem, "f", &x);
+      //  return dolfin::OptimisationProblem::f(x);
+      //  pybind11::pybind11_fail("Tried to call pure virtual function");
+      //}
 
       double f(const dolfin::GenericVector& x) override
-      { PYBIND11_OVERLOAD_PURE(double, dolfin::OptimisationProblem, f, x); }
+      {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::function overload = pybind11::get_overload(static_cast<const dolfin::OptimisationProblem *>(this), "f");
+        if (overload)
+        {
+          auto o = overload.operator()<pybind11::return_value_policy::reference>(x);
+          if (pybind11::detail::cast_is_temporary_value_reference<double>::value)
+          {
+            static pybind11::detail::overload_caster_t<double> caster;
+            return pybind11::detail::cast_ref<double>(std::move(o), caster);
+          }
+          else return pybind11::detail::cast_safe<double>(std::move(o));
+        }
+        pybind11::pybind11_fail("Tried to call pure virtual function \"AAA::pv_foo\"");
+      }
 
       void F(dolfin::GenericVector& b, const dolfin::GenericVector& x) override
       { PYBIND11_OVERLOAD_PURE(void, dolfin::OptimisationProblem, F, b, x); }
@@ -135,6 +161,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::OptimisationProblem, std::shared_ptr<dolfin::OptimisationProblem>,
                PyOptimisationProblem, dolfin::NonlinearProblem>(m, "OptimisationProblem")
       .def(py::init<>())
+      .def(py::init<const dolfin::OptimisationProblem&>())
       .def("f", &dolfin::OptimisationProblem::f)
       .def("F", &dolfin::OptimisationProblem::F)
       .def("J", &dolfin::OptimisationProblem::J);
