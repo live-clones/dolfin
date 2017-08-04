@@ -18,9 +18,13 @@
 #include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 
+#include <dolfin/parameter/Parameters.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
+#include <dolfin/la/PETScObject.h>
 #include <dolfin/nls/NewtonSolver.h>
 #include <dolfin/nls/PETScSNESSolver.h>
 #include <dolfin/nls/PETScTAOSolver.h>
@@ -37,11 +41,13 @@ namespace dolfin_wrappers
 
   void nls(py::module& m)
   {
-    py::class_<dolfin::NewtonSolver>(m, "NewtonSolver")
+    py::class_<dolfin::NewtonSolver, std::shared_ptr<dolfin::NewtonSolver>,
+               dolfin::Variable>(m, "NewtonSolver")
       .def(py::init<MPI_Comm>());
 
 #ifdef HAS_PETSC
-    py::class_<dolfin::PETScSNESSolver>(m, "PETScSNESSolver")
+    py::class_<dolfin::PETScSNESSolver, std::shared_ptr<dolfin::PETScSNESSolver>,
+               dolfin::PETScObject>(m, "PETScSNESSolver")
       .def(py::init<MPI_Comm, std::string>());
 
     py::class_<dolfin::TAOLinearBoundSolver>(m, "TAOLinearBoundSolver")
@@ -54,14 +60,32 @@ namespace dolfin_wrappers
                       const dolfin::GenericVector&))
            &dolfin::TAOLinearBoundSolver::solve);
 
-    py::class_<dolfin::PETScTAOSolver>(m, "PETScTAOSolver")
-    .def("__init__",
-         [](dolfin::PETScTAOSolver &instance,
-            MPI_Comm comm, std::string tao_type,
-            std::string ksp_type, std::string pc_type)
-         { new (&instance) dolfin::PETScTAOSolver(comm, tao_type, ksp_type, pc_type); },
-         py::arg("comm"), py::arg("tao_type")="default",
-         py::arg("ksp_type")="default", py::arg("pc_type")="default");
+    py::class_<dolfin::PETScTAOSolver, std::shared_ptr<dolfin::PETScTAOSolver>, dolfin::PETScObject>(m, "PETScTAOSolver")
+      .def(py::init<>())
+      .def("__init__",
+           [](dolfin::PETScTAOSolver &instance,
+              MPI_Comm comm, std::string tao_type,
+              std::string ksp_type, std::string pc_type)
+           { new (&instance) dolfin::PETScTAOSolver(comm, tao_type, ksp_type, pc_type); },
+           py::arg("comm"), py::arg("tao_type")="default",
+           py::arg("ksp_type")="default", py::arg("pc_type")="default")
+      .def_readwrite("parameters", &dolfin::PETScTAOSolver::parameters)
+        .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScTAOSolver::*)(dolfin::OptimisationProblem&, dolfin::GenericVector&))
+             &dolfin::PETScTAOSolver::solve)
+        .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScTAOSolver::*)(dolfin::OptimisationProblem&, dolfin::GenericVector&,
+                                                                                const dolfin::GenericVector&, const dolfin::GenericVector&))
+             &dolfin::PETScTAOSolver::solve);
+    //.def("solve", [](dolfin::PETScTAOSolver& self, dolfin::OptimisationProblem& problem, dolfin::GenericVector& x)
+    //     { auto val = self.solve(problem, x); return py::make_tuple(val.first, val.second); })
+      //ef("solve", [](dolfin::PETScTAOSolver& self, dolfin::OptimisationProblem& problem, dolfin::GenericVector& x,
+      //              const dolfin::GenericVector& lb, const dolfin::GenericVector& ub)
+      //   {
+      //     //std::cout << "Here I am" << std::endl;
+      //     std::pair<std::size_t, bool> mval = self.solve(problem, x, lb, ub);
+      //    return 1;
+      //     //return py::make_tuple(val.first, val.second);
+      // });
+
 #endif
 
     // dolfin::NonlinearProblem 'trampoline'
@@ -82,7 +106,7 @@ namespace dolfin_wrappers
     };
 
     // dolfin::NonlinearProblem
-    py::class_<dolfin::NonlinearProblem, PyNonlinearProblem>(m, "NonlinearProblem")
+    py::class_<dolfin::NonlinearProblem, std::shared_ptr<dolfin::NonlinearProblem>, PyNonlinearProblem>(m, "NonlinearProblem")
       .def(py::init<>())
       .def("F", &dolfin::NonlinearProblem::F)
       .def("J", &dolfin::NonlinearProblem::J)
@@ -108,7 +132,8 @@ namespace dolfin_wrappers
     };
 
     // dolfin::OptimizationProblem
-    py::class_<dolfin::OptimisationProblem, PyOptimisationProblem, dolfin::NonlinearProblem>(m, "OptimisationProblem")
+    py::class_<dolfin::OptimisationProblem, std::shared_ptr<dolfin::OptimisationProblem>,
+               PyOptimisationProblem, dolfin::NonlinearProblem>(m, "OptimisationProblem")
       .def(py::init<>());
 
   }
