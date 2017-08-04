@@ -134,7 +134,10 @@ namespace dolfin_wrappers
     // dolfin::OptimizationProblem
     py::class_<dolfin::OptimisationProblem, std::shared_ptr<dolfin::OptimisationProblem>,
                PyOptimisationProblem, dolfin::NonlinearProblem>(m, "OptimisationProblem")
-      .def(py::init<>());
+      .def(py::init<>())
+      .def("f", &dolfin::OptimisationProblem::f)
+      .def("F", &dolfin::OptimisationProblem::F)
+      .def("J", &dolfin::OptimisationProblem::J);
 
   }
 

@@ -35,8 +35,8 @@ from dolfin_utils.test import *
 
 backend = set_parameters_fixture("linear_algebra_backend", ["PETSc"])
 
-@skip_if_not_PETSc
 @pytest.mark.xfail
+@skip_if_not_PETSc
 def test_tao_linear_bound_solver(backend):
     "Test PETScTAOSolver"
 
@@ -81,23 +81,27 @@ def test_tao_linear_bound_solver(backend):
     # Define the minimisation problem by using OptimisationProblem class
     class TestProblem(OptimisationProblem):
 
-        def __init__(self):
+        def __init__(self, u, energy, grad_energy, H_energy):
             OptimisationProblem.__init__(self)
+            self.u = u
+            self.energy = energy
+            self.grad_energy = grad_energy
+            self.H_energy = H_energy
 
         # Objective function
         def f(self, x):
-            u.vector()[:] = x
-            return assemble(energy)
+            self.u.vector()[:] = x
+            return assemble(self.energy)
 
         # Gradient of the objective function
         def F(self, b, x):
-            u.vector()[:] = x
-            assemble(grad_energy, tensor=b)
+            self.u.vector()[:] = x
+            assemble(self.grad_energy, tensor=b)
 
         # Hessian of the objective function
         def J(self, A, x):
-            u.vector()[:] = x
-            assemble(H_energy, tensor=A)
+            self.u.vector()[:] = x
+            assemble(self.H_energy, tensor=A)
 
     # Create the PETScTAOSolver
     solver = PETScTAOSolver()
@@ -106,7 +110,8 @@ def test_tao_linear_bound_solver(backend):
     solver.parameters["monitor_convergence"] = True
     solver.parameters["report"] = True
 
-    solver.solve(TestProblem(), u.vector(), lb.vector(), ub.vector())
+    p = TestProblem(u, energy, grad_energy, H_energy)
+    solver.solve(p, u.vector(), lb.vector(), ub.vector())
     solver.solve(TestProblem(), u.vector(), lb.vector(), ub.vector())
 
     # Verify that energy(u) = Ly
