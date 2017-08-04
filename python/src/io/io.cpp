@@ -224,6 +224,8 @@ namespace dolfin_wrappers
            &dolfin::HDF5File::write, py::arg("vector"), py::arg("name"))
       .def("write", (void (dolfin::HDF5File::*)(const dolfin::Function&, std::string))
            &dolfin::HDF5File::write, py::arg("u"), py::arg("name"))
+      .def("write", (void (dolfin::HDF5File::*)(const dolfin::Function&, std::string, double))
+           &dolfin::HDF5File::write, py::arg("u"), py::arg("name"), py::arg("t"))
       .def("write", [](dolfin::HDF5File& self, py::object u, std::string name)
            {
              try{
@@ -233,6 +235,15 @@ namespace dolfin_wrappers
                // Do nothing, pybind11 will try next function
              }
            }, py::arg("u"), py::arg("name"))
+      .def("write", [](dolfin::HDF5File& self, py::object u, std::string name, double t)
+           {
+             try{
+               auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+               self.write(*_u, name, t);
+             } catch (const std::exception& e) {
+               // Do nothing, pybind11 will try next function
+             }
+           }, py::arg("u"), py::arg("name"), py::arg("t"))
       // attributes
       .def("attributes", &dolfin::HDF5File::attributes);
 
