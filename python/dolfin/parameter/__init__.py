@@ -36,9 +36,8 @@ def ffc_default_parameters():
     """Get default parameters of FFC"""
     # Get dict with defaults
 
-    # FIXME: calls MPI(!)
-    #    d = default_jit_parameters()
-    d = {}
+    d = default_jit_parameters()
+    print(d)
     p = Parameters()
 
     typemap = {
@@ -48,10 +47,11 @@ def ffc_default_parameters():
     }
 
     # Add the rest
-    for k in d:
+    for i,k in enumerate(d):
+        print(i, k)
         if d[k] is None:
             p.add(k, typemap[k])
-            p[k] = None  # Reset to None
+#            p[k] = None  # Reset to None - FIXME: causes MPI to be invoked(!)
         else:
             p.add(k, d[k])
 
