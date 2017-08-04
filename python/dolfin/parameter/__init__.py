@@ -35,8 +35,10 @@ from dolfin.cpp.parameter import parameters, Parameters
 def ffc_default_parameters():
     """Get default parameters of FFC"""
     # Get dict with defaults
-    d = default_jit_parameters()
 
+    # FIXME: calls MPI(!)
+    #    d = default_jit_parameters()
+    d = {}
     p = Parameters()
 
     typemap = {
