@@ -26,14 +26,19 @@ import ufl
 import dolfin.cpp as cpp
 from dolfin.function.function import Function
 
-from ufl.formoperators import extract_blocks
+# Import UFL
+import ufl
 
 # Local imports
 from dolfin.fem.form import Form
 import dolfin.fem.formmanipulations as formmanipulations
 from dolfin.fem.formmanipulations import derivative
+
 import dolfin.la.solver
 from dolfin.fem.problem import LinearVariationalProblem, NonlinearVariationalProblem
+
+from dolfin.fem.formmanipulations import extract_blocks
+import six
 
 __all__ = ["LinearVariationalProblem",
            "LinearVariationalSolver",

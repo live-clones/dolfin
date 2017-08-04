@@ -18,9 +18,12 @@
 
 import ufl
 import ufl.algorithms.elementtransformations
+import ufl.algorithms.formsplitter
+
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.function.function import Function
 from dolfin.function.argument import Argument
+
 
 __all__ = ["derivative", "adjoint", "increase_order", "tear", "extract_blocks"]
 
@@ -116,4 +119,4 @@ def tear(V):
     return change_regularity(V, "DG")
 
 def extract_blocks(form, i=None, j=None):
-    return ufl.extract_blocks(form,i,j)
+    return ufl.algorithms.formsplitter.extract_blocks(form,i,j)
