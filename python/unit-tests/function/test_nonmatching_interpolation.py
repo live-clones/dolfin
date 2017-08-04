@@ -28,18 +28,17 @@ from dolfin import *
 from dolfin_utils.test import skip_in_parallel
 
 
-class Quadratic2D(Expression):
+class Quadratic2D(UserExpression):
     def eval(self, values, x):
         values[0] = x[0]*x[0] + x[1]*x[1] + 1.0
 
 
-class Quadratic3D(Expression):
+class Quadratic3D(UserExpression):
     def eval(self, values, x):
         values[0] = x[0]*x[0] + x[1]*x[1] + x[2]*x[2] + 1.0
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_functional2D():
     """Test integration of function interpolated in non-matching meshes"""
 
@@ -56,16 +55,21 @@ def test_functional2D():
     V1 = FunctionSpace(mesh1, "Lagrange", 2)
     u1 = Function(V1)
     u1.interpolate(u0)
-    assert round(assemble(u0*dx) - assemble(u1*dx), 10) == 0
+    f = assemble(u0*dx)
+    assert abs(f) > 1.0
+    assert round(f - assemble(u1*dx), 10) == 0
+
 
     mesh1 = UnitSquareMesh(30, 30)
     V1 = FunctionSpace(mesh1, "Lagrange", 2)
     u1 = Function(V1)
     u1.interpolate(u0)
-    assert round(assemble(u0*dx) - assemble(u1*dx), 10) == 0
+    f = assemble(u0*dx)
+    assert abs(f) > 1.0
+    assert round(f - assemble(u1*dx), 10) == 0
+
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_functional3D():
     """Test integration of function interpolated in non-matching meshes"""
 
