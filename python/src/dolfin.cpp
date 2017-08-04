@@ -31,7 +31,6 @@ namespace dolfin_wrappers
 
   void adaptivity(py::module& m);
   void ale(py::module& m);
-  void experimental(py::module& m);
 
   void function(py::module& m);
   void fem(py::module& m);
@@ -131,8 +130,4 @@ PYBIND11_MODULE(cpp, m)
   py::module refinement = m.def_submodule("refinement", "DOLFIN refinement module");
   dolfin_wrappers::refinement(refinement);
 
-  // Create experimental submodule
-  py::module experimental = m.def_submodule("experimental",
-                                            "Experimental module");
-  dolfin_wrappers::experimental(experimental);
 }
