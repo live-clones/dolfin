@@ -227,7 +227,7 @@ def test_axpy(V, W):
         assert (round(u.vector().sum() -
                       float(expr_scalar1*u.vector().size()), 7) == 0)
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(TypeError):
             FunctionAXPY(u, u3, 0)
 
         axpy = FunctionAXPY(u3, 2.0)
