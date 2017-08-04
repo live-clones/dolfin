@@ -21,7 +21,6 @@ pybind11_add_module(cpp SHARED
   src/adaptivity/adaptivity.cpp
   src/ale/ale.cpp
   src/common/common.cpp
-  src/experimental/experimental.cpp
   src/fem/fem.cpp
   src/function/function.cpp
   src/generation/generation.cpp
