@@ -516,6 +516,7 @@ namespace dolfin_wrappers
       (m, "Vector", "DOLFIN Vector object")
       .def(py::init<>())
       .def(py::init<const dolfin::Vector&>())
+      .def(py::init<const dolfin::GenericVector&>())
       .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::size_t>())
       .def("min", &dolfin::Vector::min)
