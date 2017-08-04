@@ -287,7 +287,6 @@ def test_Read(cd_tempdir):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_SubsetIterators(mesh):
     def inside1(x):
         return x[0] <= 0.5

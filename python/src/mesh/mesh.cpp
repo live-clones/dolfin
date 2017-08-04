@@ -45,6 +45,7 @@
 #include <dolfin/mesh/MeshQuality.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <dolfin/mesh/SubMesh.h>
+#include <dolfin/mesh/SubsetIterator.h>
 #include <dolfin/mesh/DomainBoundary.h>
 #include <dolfin/mesh/PeriodicBoundaryComputation.h>
 #include <dolfin/mesh/MeshTransformation.h>
@@ -274,13 +275,28 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshEntityIterator, std::shared_ptr<dolfin::MeshEntityIterator>>
       (m, "MeshEntityIterator", "DOLFIN MeshEntityIterator object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
-      .def("__iter__",[](dolfin::MeshEntityIterator& self) { self.operator--(); return self; })
-      .def("__next__",[](dolfin::MeshEntityIterator& self) {
-          self.operator++();
-          if (self.end())
-            throw py::stop_iteration("");
-          return *self;
-        });
+      .def("__iter__",[](dolfin::MeshEntityIterator& self) { self.operator--(); return self; }) // TODO: check return type and policy
+      .def("__next__",[](dolfin::MeshEntityIterator& self)  // TODO: check return type and policy
+           {
+             self.operator++();
+             if (self.end())
+               throw py::stop_iteration("");
+             return *self;
+           });
+
+    // dolfin::SubsetIterator
+    py::class_<dolfin::SubsetIterator>(m, "SubsetIterator")
+      .def(py::init<const dolfin::MeshFunction<std::size_t>&, std::size_t>())
+      .def(py::init<const dolfin::SubsetIterator&>())
+      .def("__iter__",[](dolfin::SubsetIterator& self) { self.operator--(); return self; })  // TODO: check return type and policy
+      .def("__next__",[](dolfin::SubsetIterator& self)
+           {
+             self.operator++();
+             if (self.end())
+               throw py::stop_iteration("");
+             return *self;
+           });
+
 
     m.def("entities", [](dolfin::Mesh& mesh, std::size_t dim)
           { return dolfin::MeshEntityIterator(mesh, dim); });
