@@ -369,33 +369,19 @@ namespace dolfin_wrappers
           &dolfin::assemble_local);
 
     // FEM utils functions
+    m.def("set_coordinates", &dolfin::set_coordinates);
     m.def("set_coordinates", [](dolfin::MeshGeometry& geometry, const py::object u)
           {
-            try
-            {
-              auto _u = u.attr("_cpp_object").cast<const dolfin::Function*>();
-              dolfin::set_coordinates(geometry, *_u);
-            }
-            catch (const std::runtime_error& e)
-            {
-              // Do nothing, pybind11 will try next function
-            }
+            auto _u = u.attr("_cpp_object").cast<const dolfin::Function*>();
+            dolfin::set_coordinates(geometry, *_u);
           });
-    m.def("set_coordinates", &dolfin::set_coordinates);
 
+    m.def("get_coordinates", &dolfin::get_coordinates);
     m.def("get_coordinates", [](py::object u, const dolfin::MeshGeometry& geometry)
           {
-            try
-            {
-              auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
-              dolfin::get_coordinates(*_u, geometry);
-            }
-            catch (const std::runtime_error& e)
-            {
-              // Do nothing, pybind11 will try next function
-            }
+            auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+            dolfin::get_coordinates(*_u, geometry);
           });
-    m.def("get_coordinates", &dolfin::get_coordinates);
 
     m.def("vertex_to_dof_map", &dolfin::vertex_to_dof_map);
     m.def("dof_to_vertex_map", &dolfin::dof_to_vertex_map);

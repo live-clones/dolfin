@@ -88,7 +88,6 @@ def test_linear(meshes_p1):
 #         _test_get_set_coordinates(mesh)
 
 
-@pytest.mark.xfail
 def test_raises(meshes_p1):
     mesh1, mesh2 = meshes_p1[:2]
 
