@@ -97,7 +97,7 @@ from .function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFu
 from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
 from .function.constant import Constant
-from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate
+from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate, CellVolume, Circumradius
 from .function.expression import CompiledExpression, Expression, UserExpression
 
 from .la import as_backend_type

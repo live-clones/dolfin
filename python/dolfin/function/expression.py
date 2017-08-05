@@ -258,9 +258,11 @@ class Expression(BaseExpression):
 
         # Deduce element type if not provided
         if element is None:
+            if degree is None:
+                raise KeyError("Must supply element or degree")
             value_shape = tuple(self.value_dimension(i)
                                 for i in range(self.value_rank()))
-            element = _select_element(family=None, cell=None, degree=2,
+            element = _select_element(family=None, cell=None, degree=degree,
                                       value_shape=value_shape)
 
         BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
