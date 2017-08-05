@@ -238,7 +238,7 @@ class Expression(BaseExpression):
 
         # Remove arguments that are used in Expression creation
         element = kwargs.pop("element", None)
-        degree = kwargs.pop("degree", None)
+        degree = kwargs.pop("degree")
         cell = kwargs.pop("cell", None)
         domain = kwargs.pop("domain", None)
         name = kwargs.pop("name", None)
@@ -260,7 +260,7 @@ class Expression(BaseExpression):
         if element is None:
             value_shape = tuple(self.value_dimension(i)
                                 for i in range(self.value_rank()))
-            element = _select_element(family=None, cell=None, degree=2,
+            element = _select_element(family=None, cell=None, degree=degree,
                                       value_shape=value_shape)
 
         BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
