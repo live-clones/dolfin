@@ -79,10 +79,6 @@ def _mesh2domain(mesh):
 
 #         """
 
-#         # Handle MultiMesh
-#         if isinstance(mesh, cpp.MultiMesh):
-#             mesh = mesh.part(0)
-
 #         # Initialize C++ part
 #         cpp.function.FacetArea.__init__(self, mesh)
 
