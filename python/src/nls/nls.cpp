@@ -116,35 +116,38 @@ namespace dolfin_wrappers
 
 
     // dolfin::OptimizationProblem 'trampoline'
+    /*
     class PyOptimisationProblem : public dolfin::OptimisationProblem
     {
-      using dolfin::OptimisationProblem::OptimisationProblem;
+      //using dolfin::OptimisationProblem::OptimisationProblem;
 
       // pybdind11 has some issues when passing by reference (due to
       // the return value policy), so the below is non-standard.  See
       // https://github.com/pybind/pybind11/issues/250.
 
-      double f(const dolfin::GenericVector& x) override
-      {
-        PYBIND11_OVERLOAD_INT(double, dolfin::OptimisationProblem, "f", &x);
-        py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::f");
-      }
+      //double f(const dolfin::GenericVector& x) override
+      //{
+      //  PYBIND11_OVERLOAD_INT(double, dolfin::OptimisationProblem, "f", &x, );
+      //  py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::f");
+      //}
 
-      void F(dolfin::GenericVector& b, const dolfin::GenericVector& x) override
-      {
-        PYBIND11_OVERLOAD_INT(void, dolfin::OptimisationProblem, "F", &b, &x);
-        py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::F");
-      }
+      //void F(dolfin::GenericVector& b, const dolfin::GenericVector& x) override
+      //{
+      //  PYBIND11_OVERLOAD_INT(void, dolfin::OptimisationProblem, "F", &b, &x);
+      //  py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::F");
+      //}
 
-      void J(dolfin::GenericMatrix& A, const dolfin::GenericVector& x) override
-      {
-        PYBIND11_OVERLOAD_INT(void, dolfin::OptimisationProblem, "J", &A, &x);
-        py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::J");
-      }
+      //void J(dolfin::GenericMatrix& A, const dolfin::GenericVector& x) override
+      //{
+      //  PYBIND11_OVERLOAD_INT(void, dolfin::OptimisationProblem, "J", &A, &x);
+      //  py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::J");
+      //}
 
     };
+    */
 
     // dolfin::OptimizationProblem
+    /*
     py::class_<dolfin::OptimisationProblem, std::shared_ptr<dolfin::OptimisationProblem>,
                PyOptimisationProblem, dolfin::NonlinearProblem>(m, "OptimisationProblem")
       .def(py::init<>())
@@ -152,7 +155,7 @@ namespace dolfin_wrappers
       .def("f", &dolfin::OptimisationProblem::f)
       .def("F", &dolfin::OptimisationProblem::F)
       .def("J", &dolfin::OptimisationProblem::J);
-
+    */
   }
 
 }
