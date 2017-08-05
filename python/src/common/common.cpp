@@ -53,8 +53,8 @@ namespace dolfin_wrappers
     m.def("has_parmetis", &dolfin::has_parmetis);
     m.def("has_scotch", &dolfin::has_scotch);
     m.def("has_petsc", &dolfin::has_petsc);
-    m.def("has_slepc", &dolfin::has_slepc);
-    m.def("git_commit_hash", &dolfin::git_commit_hash);
+    m.def("has_slepc", &dolfin::has_slepc, "Return `True` if DOLFIN is configured with SLEPc");
+    m.def("git_commit_hash", &dolfin::git_commit_hash, "Get git hash for this build.");
     m.def("sizeof_la_index", &dolfin::sizeof_la_index);
 
     m.attr("DOLFIN_EPS") = DOLFIN_EPS;
@@ -65,8 +65,8 @@ namespace dolfin_wrappers
       (m, "Timer", "Timer class")
       .def(py::init<>())
       .def(py::init<std::string>())
-      .def("start", &dolfin::Timer::start)
-      .def("stop", &dolfin::Timer::stop)
+      .def("start", &dolfin::Timer::start, "Start timer")
+      .def("stop", &dolfin::Timer::stop, "Stop timer")
       .def("resume", &dolfin::Timer::resume)
       .def("elapsed", &dolfin::Timer::elapsed);
 
@@ -105,7 +105,7 @@ namespace dolfin_wrappers
       .def_property_readonly_static("comm_self", [](py::object) { return MPI_COMM_SELF; })
       .def_property_readonly_static("comm_null", [](py::object) { return MPI_COMM_NULL; })
 #endif
-      .def_static("init", [](){ dolfin::SubSystemsManager::init_mpi(); })
+      .def_static("init", [](){ dolfin::SubSystemsManager::init_mpi(); }, "Initialise MPI")
       .def_static("barrier", &dolfin::MPI::barrier)
       .def_static("rank", &dolfin::MPI::rank)
       .def_static("size", &dolfin::MPI::size)

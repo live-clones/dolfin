@@ -1,14 +1,9 @@
 DOLFIN documentation
 ====================
 
-.. autosummary::
-   :toctree:
+Testing documentation auto-generated from the pybind11 code.
 
-   dolfin.cpp
-   dolfin.cpp.common
-   dolfin.cpp.function
-   dolfin.cpp.fem
-   dolfin.cpp.io
-   dolfin.cpp.MPI
-   dolfin.cpp.mesh
-   dolfin.cpp.la
+.. toctree::
+   :maxdepth: 2
+
+   api

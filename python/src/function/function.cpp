@@ -99,7 +99,7 @@ namespace dolfin_wrappers
     };
 
     py::class_<dolfin::Expression, PyExpression, std::shared_ptr<dolfin::Expression>,
-               dolfin::GenericFunction>(m, "Expression")
+               dolfin::GenericFunction>(m, "Expression", "An Expression is a function (field) that can appear as a coefficient in a form")
       .def(py::init<>())
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
@@ -156,8 +156,8 @@ namespace dolfin_wrappers
     //-----------------------------------------------------------------------------
     // dolfin::Function
     py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>, dolfin::GenericFunction>
-      (m, "Function")
-      .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>())
+      (m, "Function", "A finite element function")
+      .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>(), "Create a function on the given function space")
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>, std::shared_ptr<dolfin::GenericVector>>())
       .def("_assign", (const dolfin::Function& (dolfin::Function::*)(const dolfin::Function&))
            &dolfin::Function::operator=)
@@ -181,15 +181,15 @@ namespace dolfin_wrappers
            })
       .def("get_allow_extrapolation", &dolfin::Function::get_allow_extrapolation)
       .def("interpolate", (void (dolfin::Function::*)(const dolfin::GenericFunction&))
-           &dolfin::Function::interpolate)
+           &dolfin::Function::interpolate, "Interpolate the function u")
       .def("interpolate", [](dolfin::Function& instance, const py::object v)
            {
              auto _v = v.attr("_cpp_object").cast<dolfin::GenericFunction*>();
              instance.interpolate(*_v);
-           })
+           }, "Interpolate the function u")
       .def("set_allow_extrapolation", &dolfin::Function::set_allow_extrapolation)
       .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
-           &dolfin::Function::vector);
+           &dolfin::Function::vector, "Return the vector associated with the finite element Function");
 
     // FIXME: why is this floating here?
     m.def("interpolate", [](const dolfin::GenericFunction& f,

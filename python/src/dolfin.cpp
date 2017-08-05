@@ -55,79 +55,79 @@ PYBIND11_MODULE(cpp, m)
   m.doc() ="DOLFIN Python interface";
 
   // Create common submodule [common]
-  py::module common = m.def_submodule("common", "DOLFIN common module");
+  py::module common = m.def_submodule("common", "Common module");
   dolfin_wrappers::common(common);
 
   // Create MPI class [common]
   dolfin_wrappers::mpi(m);
 
   // Create common submodule [log]
-  py::module log = m.def_submodule("log", "DOLFIN logging module");
+  py::module log = m.def_submodule("log", "Logging module");
   dolfin_wrappers::log(log);
 
   // Create function submodule [function]
   py::module function = m.def_submodule("function",
-                                        "DOLFIN function module");
+                                        "Function module");
   dolfin_wrappers::function(function);
 
 
 
   // Create adaptivity submodule [adaptivity]
-  py::module adaptivity = m.def_submodule("adaptivity", "DOLFIN adaptivity module");
+  py::module adaptivity = m.def_submodule("adaptivity", "Adaptivity module");
   dolfin_wrappers::adaptivity(adaptivity);
 
   // Create ale submodule [ale]
-  py::module ale = m.def_submodule("ale", "DOLFIN ALE module");
+  py::module ale = m.def_submodule("ale", "ALE (mesh movement) module");
   dolfin_wrappers::ale(ale);
 
   // Create math submodule [math]
-  py::module math = m.def_submodule("math", "DOLFIN math library module");
+  py::module math = m.def_submodule("math", "Math library module");
   dolfin_wrappers::math(math);
 
   // Create mesh submodule [mesh]
-  py::module mesh = m.def_submodule("mesh", "DOLFIN mesh library module");
+  py::module mesh = m.def_submodule("mesh", "Mesh library module");
   dolfin_wrappers::mesh(mesh);
 
   // Create multistage submodule [multistage]
-  py::module multistage = m.def_submodule("multistage", "DOLFIN multistage library module");
+  py::module multistage = m.def_submodule("multistage", "Multistage integrator library module");
   dolfin_wrappers::multistage(multistage);
 
   // Create graph submodule [graph]
-  py::module graph = m.def_submodule("graph", "DOLFIN graph module");
+  py::module graph = m.def_submodule("graph", "Graph module");
   dolfin_wrappers::graph(graph);
 
   // Create fem submodule [fem]
-  py::module fem = m.def_submodule("fem", "DOLFIN FEM module");
+  py::module fem = m.def_submodule("fem", "FEM module");
   dolfin_wrappers::fem(fem);
 
   // Create generation submodule [generation]
   py::module generation = m.def_submodule("generation",
-                                          "DOLFIN mesh generation module");
+                                          "Mesh generation module");
   dolfin_wrappers::generation(generation);
 
   // Create geometry submodule
   py::module geometry = m.def_submodule("geometry",
-                                        "DOLFIN geometry module");
+                                        "Geometry module");
   dolfin_wrappers::geometry(geometry);
 
   // Create io submodule
-  py::module io = m.def_submodule("io", "DOLFIN I/O module");
+  py::module io = m.def_submodule("io", "I/O module");
   dolfin_wrappers::io(io);
 
   // Create la submodule
-  py::module la = m.def_submodule("la", "DOLFIN linear algebra module");
+  py::module la = m.def_submodule("la", "Linear algebra module");
   dolfin_wrappers::la(la);
 
   // Create nls submodule
-  py::module nls = m.def_submodule("nls", "DOLFIN non-linear solver module");
+  py::module nls = m.def_submodule("nls", "Nonlinear solver module");
   dolfin_wrappers::nls(nls);
 
   // Create parameter submodule
-  py::module parameter = m.def_submodule("parameter", "DOLFIN parameter module");
+  py::module parameter = m.def_submodule("parameter", "Parameter module");
   dolfin_wrappers::parameter(parameter);
 
   // Create refinement submodule
-  py::module refinement = m.def_submodule("refinement", "DOLFIN refinement module");
+  py::module refinement = m.def_submodule("refinement", "Mesh refinement module");
   dolfin_wrappers::refinement(refinement);
 
 }
