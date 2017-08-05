@@ -238,7 +238,7 @@ class Expression(BaseExpression):
 
         # Remove arguments that are used in Expression creation
         element = kwargs.pop("element", None)
-        degree = kwargs.pop("degree")
+        degree = kwargs.pop("degree", None)
         cell = kwargs.pop("cell", None)
         domain = kwargs.pop("domain", None)
         name = kwargs.pop("name", None)
@@ -258,6 +258,8 @@ class Expression(BaseExpression):
 
         # Deduce element type if not provided
         if element is None:
+            if degree is None:
+                raise KeyError("Must supply element or degree")
             value_shape = tuple(self.value_dimension(i)
                                 for i in range(self.value_rank()))
             element = _select_element(family=None, cell=None, degree=degree,
