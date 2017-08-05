@@ -50,6 +50,13 @@ namespace dolfin_wrappers
            &dolfin::Parameters::operator[], py::return_value_policy::reference)
       .def("_get_parameter_set", (dolfin::Parameters& (dolfin::Parameters::*)(std::string))
            &dolfin::Parameters::operator(), py::return_value_policy::reference)
+      .def("__setitem__", [](dolfin::Parameters& self, std::string key, py::none value)
+           {
+             dolfin::Parameter* param = self.find_parameter(key);
+             if (!param)
+               throw std::runtime_error("Parameter not found in Parameters object");
+             param->reset();
+           }, "Reset Parameter (mark as unset) by setting to None.")
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
              auto param = self.find_parameter(key);

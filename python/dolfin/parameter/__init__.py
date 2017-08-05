@@ -1,5 +1,5 @@
-
 import dolfin.cpp as cpp
+
 
 #  Extend cpp.Parameters with a __getitem__ method
 def __getitem__(self, key):
@@ -11,7 +11,8 @@ def __getitem__(self, key):
         np = cpp.parameter.Parameters(p)
         return np
     else:
-        raise RuntimeError("invalid parameter")
+        raise RuntimeError("Invalid parameter: {}".format(key))
+
 
 def update(self, params):
     if isinstance(params, cpp.parameter.Parameters):
@@ -25,8 +26,8 @@ def update(self, params):
 # Extend the cpp.parameter.Parameters class and clean-up
 cpp.parameter.Parameters.__getitem__ = __getitem__
 cpp.parameter.Parameters.update = update
-del __getitem__
-del update
+del __getitem__, update
+
 
 # Import global form compiler parameters from FFC
 from ffc import default_jit_parameters
@@ -36,22 +37,24 @@ def ffc_default_parameters():
     """Get default parameters of FFC"""
     # Get dict with defaults
 
+    # FIXME: intialising MPI because setting parameters makes MPI
+    # calls, possibly via the log systems. Needs to be fixed.
+    cpp.MPI.init()
+
     d = default_jit_parameters()
-    print(d)
+    #print(d)
     p = Parameters()
 
-    typemap = {
-        "quadrature_rule": "",
-        "quadrature_degree": 0,
-        "precision": 0,
-    }
+    typemap = {"quadrature_rule": "",
+               "quadrature_degree": 0,
+               "precision": 0}
 
     # Add the rest
-    for i,k in enumerate(d):
-        print(i, k)
+    for i, k in enumerate(d):
+        print("Adding parameters:", i, k)
         if d[k] is None:
             p.add(k, typemap[k])
-#            p[k] = None  # Reset to None - FIXME: causes MPI to be invoked(!)
+            p[k] = None  # Reset to None - FIXME: causes MPI to be invoked(!)
         else:
             p.add(k, d[k])
 
