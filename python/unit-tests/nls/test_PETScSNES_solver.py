@@ -120,8 +120,7 @@ def snes_solver_parameters_bounds():
 
 
 @skip_if_not_PETSc
-@pytest.mark.xfail
-def test_snes_solver(F, bcs, u, snes_solver_parameters_sign, parameter_degree,\
+def test_snes_solver(F, bcs, u, snes_solver_parameters_sign, parameter_degree,
                      parameter_backend):
     u.interpolate(Constant(-1000.0))
     solve(F == 0, u, bcs, solver_parameters=snes_solver_parameters_sign)
@@ -130,7 +129,7 @@ def test_snes_solver(F, bcs, u, snes_solver_parameters_sign, parameter_degree,\
 
 @skip_if_not_PETSc
 @pytest.mark.xfail
-def test_newton_solver(F, u, bcs, newton_solver_parameters, parameter_degree,\
+def test_newton_solver(F, u, bcs, newton_solver_parameters, parameter_degree,
                        parameter_backend):
     u.interpolate(Constant(-1000.0))
     solve(F == 0, u, bcs, solver_parameters=newton_solver_parameters)

@@ -115,45 +115,32 @@ namespace dolfin_wrappers
                     &dolfin::NonlinearProblem::form);
 
 
-    // dolfin::OptimizationProblem 'trampoline
+    // dolfin::OptimizationProblem 'trampoline'
     class PyOptimisationProblem : public dolfin::OptimisationProblem
     {
-      // See https://github.com/pybind/pybind11/issues/250
-
       using dolfin::OptimisationProblem::OptimisationProblem;
-      //using _binder_base_ = dolfin::OptimisationProblem;
-      //using dolfin::OptimisationProblem;
 
-      //double f(const dolfin::GenericVector& x) override
-      //{
-      //  //PYBIND11_OVERLOAD_PURE(double, dolfin::OptimisationProblem, f, x);
-      //  PYBIND11_OVERLOAD_INT(double, dolfin::OptimisationProblem, "f", &x);
-      //  return dolfin::OptimisationProblem::f(x);
-      //  pybind11::pybind11_fail("Tried to call pure virtual function");
-      //}
+      // pybdind11 has some issues when passing by reference (due to
+      // the return value policy), so the below is non-standard.  See
+      // https://github.com/pybind/pybind11/issues/250.
 
       double f(const dolfin::GenericVector& x) override
       {
-        pybind11::gil_scoped_acquire gil;
-        pybind11::function overload = pybind11::get_overload(static_cast<const dolfin::OptimisationProblem *>(this), "f");
-        if (overload)
-        {
-          auto o = overload.operator()<pybind11::return_value_policy::reference>(x);
-          if (pybind11::detail::cast_is_temporary_value_reference<double>::value)
-          {
-            static pybind11::detail::overload_caster_t<double> caster;
-            return pybind11::detail::cast_ref<double>(std::move(o), caster);
-          }
-          else return pybind11::detail::cast_safe<double>(std::move(o));
-        }
-        pybind11::pybind11_fail("Tried to call pure virtual function \"AAA::pv_foo\"");
+        PYBIND11_OVERLOAD_INT(double, dolfin::OptimisationProblem, "f", &x);
+        py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::f");
       }
 
       void F(dolfin::GenericVector& b, const dolfin::GenericVector& x) override
-      { PYBIND11_OVERLOAD_PURE(void, dolfin::OptimisationProblem, F, b, x); }
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::OptimisationProblem, "F", &b, &x);
+        py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::F");
+      }
 
       void J(dolfin::GenericMatrix& A, const dolfin::GenericVector& x) override
-      { PYBIND11_OVERLOAD_PURE(void, dolfin::OptimisationProblem, J, A, x); }
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::OptimisationProblem, "J", &A, &x);
+        py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::J");
+      }
 
     };
 

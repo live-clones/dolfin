@@ -35,7 +35,6 @@ from dolfin_utils.test import *
 
 backend = set_parameters_fixture("linear_algebra_backend", ["PETSc"])
 
-@pytest.mark.xfail
 @skip_if_not_PETSc
 def test_tao_linear_bound_solver(backend):
     "Test PETScTAOSolver"
@@ -90,7 +89,6 @@ def test_tao_linear_bound_solver(backend):
 
         # Objective function
         def f(self, x):
-            print("WWWWWWWWW")
             self.u.vector()[:] = x
             return assemble(self.energy)
 
@@ -113,7 +111,7 @@ def test_tao_linear_bound_solver(backend):
 
     p = TestProblem(u, energy, grad_energy, H_energy)
     solver.solve(p, u.vector(), lb.vector(), ub.vector())
-    #solver.solve(TestProblem(), u.vector(), lb.vector(), ub.vector())
+    solver.solve(p, u.vector(), lb.vector(), ub.vector())
 
     # Verify that energy(u) = Ly
-    #assert round(assemble(energy) - Ly, 4) == 0
+    assert round(assemble(energy) - Ly, 4) == 0
