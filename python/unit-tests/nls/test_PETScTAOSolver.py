@@ -36,7 +36,6 @@ from dolfin_utils.test import *
 backend = set_parameters_fixture("linear_algebra_backend", ["PETSc"])
 
 @skip_if_not_PETSc
-@pytest.mark.xfail
 def test_tao_linear_bound_solver(backend):
     "Test PETScTAOSolver"
 
