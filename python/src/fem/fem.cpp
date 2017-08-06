@@ -136,6 +136,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::GenericDofMap, std::shared_ptr<dolfin::GenericDofMap>>
       (m, "GenericDofMap", "DOLFIN DofMap object")
       .def("index_map", &dolfin::GenericDofMap::index_map)
+      .def("neighbours", &dolfin::GenericDofMap::neighbours)
+      .def("off_process_owner", &dolfin::GenericDofMap::off_process_owner)
       .def("shared_nodes", &dolfin::GenericDofMap::shared_nodes)
       .def("cell_dofs", &dolfin::GenericDofMap::cell_dofs)
       .def("dofs", (std::vector<dolfin::la_index>(dolfin::GenericDofMap::*)() const)
