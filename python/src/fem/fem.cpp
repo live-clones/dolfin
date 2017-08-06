@@ -193,9 +193,13 @@ namespace dolfin_wrappers
     // dolfin::DirichletBC class
     py::class_<dolfin::DirichletBC, std::shared_ptr<dolfin::DirichletBC>>
       (m, "DirichletBC", "DOLFIN DirichletBC object")
+      .def(py::init<const dolfin::DirichletBC&>())
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
            std::shared_ptr<const dolfin::GenericFunction>,
            std::shared_ptr<const dolfin::SubDomain>>())
+      .def("function_space", &dolfin::DirichletBC::function_space)
+      .def("homogenize", &dolfin::DirichletBC::homogenize)
+      .def("method", &dolfin::DirichletBC::method)
       .def("zero", &dolfin::DirichletBC::zero)
       .def("zero_columns", &dolfin::DirichletBC::zero_columns,
            py::arg("A"), py::arg("b"), py::arg("diagonal_value")=0.0)

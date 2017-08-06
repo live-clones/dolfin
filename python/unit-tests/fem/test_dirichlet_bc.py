@@ -53,7 +53,7 @@ def test_director_lifetime():
     class Boundary(SubDomain):
         def inside(self, x, on_boundary): return on_boundary
 
-    class BoundaryFunction(Expression):
+    class BoundaryFunction(UserExpression):
         def eval(self, values, x):
             values[0] = 1.0
 

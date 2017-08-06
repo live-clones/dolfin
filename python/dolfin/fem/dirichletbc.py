@@ -43,6 +43,15 @@ class AutoSubDomain(cpp.mesh.SubDomain):
 class DirichletBC(cpp.fem.DirichletBC):
     def __init__(self, *args, **kwargs):
 
+        # Copy constructor
+        if len(args) == 1:
+            if not isinstance(args[0], cpp.fem.DirichletBC):
+                raise RuntimeError("Expecting a DirichleBC as only argument for copy constructor")
+
+            # Initialize base class
+            cpp.fem.DirichletBC.__init__(self, args[0])
+            return
+
         method = kwargs.pop("method", None)
 
         if len(args) != 3:
@@ -86,10 +95,10 @@ class DirichletBC(cpp.fem.DirichletBC):
         # handled here too?
         # Create SubDomain object
         if isinstance(args[2], cpp.mesh.SubDomain):
-             subdomain = args[2]
+             self.sub_domain = args[2]
         elif isinstance(args[2], string_types):
-             subdomain = CompiledSubDomain(args[2])
+             self.sub_domain = CompiledSubDomain(args[2])
         else:
             raise RuntimeError("Third argument must be of type SubDomain or string")
 
-        super().__init__(V, u, subdomain)
+        super().__init__(V, u, self.sub_domain)
