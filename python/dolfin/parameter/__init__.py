@@ -42,7 +42,6 @@ def ffc_default_parameters():
     cpp.MPI.init()
 
     d = default_jit_parameters()
-    #print(d)
     p = Parameters()
 
     typemap = {"quadrature_rule": "",
@@ -51,10 +50,9 @@ def ffc_default_parameters():
 
     # Add the rest
     for i, k in enumerate(d):
-        print("Adding parameters:", i, k)
         if d[k] is None:
             p.add(k, typemap[k])
-            p[k] = None  # Reset to None - FIXME: causes MPI to be invoked(!)
+            p[k] = None
         else:
             p.add(k, d[k])
 

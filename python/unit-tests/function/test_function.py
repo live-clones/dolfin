@@ -78,7 +78,6 @@ def test_compute_vertex_values(V, W, mesh):
 
     assert all(u_values == 1.)
 
-
 @pytest.mark.xfail
 def test_assign(V, W):
     from ufl.algorithms import replace
@@ -155,7 +154,6 @@ def test_assign(V, W):
                 uu.assign(4*u*u1)
 
 
-@pytest.mark.xfail
 def test_axpy(V, W):
     for V0, V1, vector_space in [(V, W, False), (W, V, True)]:
         u = Function(V0)
@@ -236,7 +234,6 @@ def test_axpy(V, W):
             axpy + u
 
 
-@pytest.mark.xfail
 def test_call(R, V, W, mesh):
     from numpy import zeros, all, array
     u0 = Function(R)
@@ -297,7 +294,6 @@ def test_real_function_float_conversion3(R):
     assert float(c) == 1.23
 
 
-@pytest.mark.xfail
 def test_scalar_conditions(R):
     c = Function(R)
     c.vector()[:] = 1.5
@@ -345,7 +341,6 @@ def test_interpolation_jit_rank0(V):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_extrapolation(V, pushpop_parameters):
     original_parameters = parameters["allow_extrapolation"]
 

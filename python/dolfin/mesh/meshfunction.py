@@ -1,10 +1,10 @@
 
 import dolfin.cpp as cpp
 
-_meshfunction_types = {"bool": cpp.mesh.MeshFunction_bool,
-                       "size_t": cpp.mesh.MeshFunction_sizet,
-                       "int": cpp.mesh.MeshFunction_int,
-                       "double": cpp.mesh.MeshFunction_double}
+_meshfunction_types = {"bool": cpp.mesh.MeshFunctionBool,
+                       "size_t": cpp.mesh.MeshFunctionSizet,
+                       "int": cpp.mesh.MeshFunctionInt,
+                       "double": cpp.mesh.MeshFunctionDouble}
 
 class MeshFunction(object):
     def __new__(cls, value_type, mesh, dim, value=None):

@@ -336,7 +336,7 @@ namespace dolfin_wrappers
 #define MESHFUNCTION_MACRO(SCALAR, SCALAR_NAME) \
     py::class_<dolfin::MeshFunction<SCALAR>, \
         std::shared_ptr<dolfin::MeshFunction<SCALAR>>, dolfin::Variable>  \
-      (m, "MeshFunction_"#SCALAR_NAME, "DOLFIN MeshFunction object") \
+      (m, "MeshFunction"#SCALAR_NAME, "DOLFIN MeshFunction object") \
       .def("__init__", [](dolfin::MeshFunction<SCALAR>& instance, std::shared_ptr<const dolfin::Mesh> mesh, std::size_t dim) \
            { new (&instance) dolfin::MeshFunction<SCALAR>(mesh, dim, 0); }) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, SCALAR>()) \
@@ -364,36 +364,36 @@ namespace dolfin_wrappers
       .def("array", [](dolfin::MeshFunction<SCALAR>& self) \
            { return Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>(self.values(), self.size()); })
 
-    MESHFUNCTION_MACRO(bool, bool);
-    MESHFUNCTION_MACRO(int, int);
-    MESHFUNCTION_MACRO(double, double);
-    MESHFUNCTION_MACRO(std::size_t, sizet);
+    MESHFUNCTION_MACRO(bool, Bool);
+    MESHFUNCTION_MACRO(int, Int);
+    MESHFUNCTION_MACRO(double, Double);
+    MESHFUNCTION_MACRO(std::size_t, Sizet);
 #undef MESHFUNCTION_MACRO
 
 #define MESH_ENTITY_FUNCTION_MACRO(TYPE, SCALAR, SCALAR_NAME) \
     py::class_<dolfin::TYPE<SCALAR>, std::shared_ptr<dolfin::TYPE<SCALAR>>, \
-      dolfin::MeshFunction<SCALAR>>(m, #TYPE"_"#SCALAR_NAME)
+      dolfin::MeshFunction<SCALAR>>(m, #TYPE""#SCALAR_NAME)
 
-    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, bool, bool);
-    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, int, int);
-    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, double, double);
-    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, std::size_t, sizet);
-    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, bool, bool);
-    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, int, int);
-    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, double, double);
-    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, std::size_t, sizet);
-    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, bool, bool);
-    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, int, int);
-    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, double, double);
-    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, std::size_t, sizet);
-    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, bool, bool);
-    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, int, int);
-    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, double, double);
-    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, std::size_t, sizet);
-    MESH_ENTITY_FUNCTION_MACRO(CellFunction, bool, bool);
-    MESH_ENTITY_FUNCTION_MACRO(CellFunction, int, int);
-    MESH_ENTITY_FUNCTION_MACRO(CellFunction, double, double);
-    MESH_ENTITY_FUNCTION_MACRO(CellFunction, std::size_t, sizet);
+    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, bool, Bool);
+    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, int, Int);
+    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, double, Double);
+    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, std::size_t, Sizet);
+    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, bool, Bool);
+    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, int, Int);
+    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, double, Double);
+    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, std::size_t, Sizet);
+    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, bool, Bool);
+    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, int, Int);
+    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, double, Double);
+    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, std::size_t, Sizet);
+    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, bool, Bool);
+    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, int, Int);
+    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, double, Double);
+    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, std::size_t, Sizet);
+    MESH_ENTITY_FUNCTION_MACRO(CellFunction, bool, Bool);
+    MESH_ENTITY_FUNCTION_MACRO(CellFunction, int, Int);
+    MESH_ENTITY_FUNCTION_MACRO(CellFunction, double, Double);
+    MESH_ENTITY_FUNCTION_MACRO(CellFunction, std::size_t, Sizet);
 #undef MESH_ENTITY_FUNCTION_MACRO
 
     //--------------------------------------------------------------------------

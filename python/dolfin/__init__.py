@@ -83,6 +83,7 @@ from . import parameter
 
 from .common import timer
 from .common.timer import Timer, timed
+from .common.plotting import plot
 
 from .fem.assembling import assemble, assemble_system, SystemAssembler
 from .fem.form import Form
