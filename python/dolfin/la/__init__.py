@@ -76,7 +76,7 @@ del __eq__
 
 
 def __iter__(self):
-    for i in range(self.size()):
+    for i in range(self.local_size()):
         yield self[i]
 cpp.la.GenericVector.__iter__ = __iter__
 del __iter__
