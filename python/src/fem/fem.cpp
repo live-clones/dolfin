@@ -329,8 +329,11 @@ namespace dolfin_wrappers
     local_solver.def(py::init<std::shared_ptr<const dolfin::Form>,
                      std::shared_ptr<const dolfin::Form>,
                      dolfin::LocalSolver::SolverType>())
+      .def(py::init<std::shared_ptr<const dolfin::Form>,
+                     dolfin::LocalSolver::SolverType>())
       .def("factorize", &dolfin::LocalSolver::factorize)
       .def("clear_factorization", &dolfin::LocalSolver::clear_factorization)
+      .def("solve_local", &dolfin::LocalSolver::solve_local)
       .def("solve_local_rhs", &dolfin::LocalSolver::solve_local_rhs)
       .def("solve_global_rhs", &dolfin::LocalSolver::solve_global_rhs)
       .def("solve_local_rhs", [](dolfin::LocalSolver& self, py::object u)

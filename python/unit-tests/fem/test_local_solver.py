@@ -168,7 +168,7 @@ def test_local_solver_dg(ghost_mode):
     assert round((u_lu.vector() - u_ls.vector()).norm("l2"), 12) == 0
 
     # Compute solution with local solver (Cholesky) and compare
-    local_solver = LocalSolver(a, L, LocalSolver.SolverType_Cholesky)
+    local_solver = LocalSolver(a, L, LocalSolver.SolverType.Cholesky)
     u_ls = Function(U)
     local_solver.solve_global_rhs(u_ls)
     assert round((u_lu.vector() - u_ls.vector()).norm("l2"), 12) == 0
