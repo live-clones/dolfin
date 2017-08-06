@@ -196,7 +196,15 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::DirichletBC&>())
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
            std::shared_ptr<const dolfin::GenericFunction>,
-           std::shared_ptr<const dolfin::SubDomain>>())
+           std::shared_ptr<const dolfin::SubDomain>, std::string, bool>(),
+           py::arg("V"), py::arg("g"), py::arg("sub_domain"),
+           py::arg("method")="topological", py::arg("check_midpoint")=true)
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
+           std::shared_ptr<const dolfin::GenericFunction>,
+           std::shared_ptr<const dolfin::MeshFunction<std::size_t>>,
+           std::size_t, std::string>(),
+           py::arg("V"), py::arg("g"), py::arg("sub_domains"),
+           py::arg("sub_domain"), py::arg("method")="topological")
       .def("function_space", &dolfin::DirichletBC::function_space)
       .def("homogenize", &dolfin::DirichletBC::homogenize)
       .def("method", &dolfin::DirichletBC::method)
