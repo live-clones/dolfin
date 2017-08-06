@@ -246,7 +246,7 @@ namespace dolfin_wrappers
                const std::size_t row = i + m_range.first;
                instance.getrow(row, columns, values);
                for (std::size_t j = 0; j < columns.size(); ++j)
-                 A(row, columns[j]) = values[j];
+                 A(i, columns[j]) = values[j];
              }
 
              return A;

@@ -32,11 +32,6 @@ from dolfin_utils.test import *
 def dim(request):
     return request.param
 
-# FIXME: these should not have to be globals to keep them 'in scope'
-subdomain = AutoSubDomain(lambda x, on_boundary: x[0] <= 0.5)
-disjoint_subdomain = AutoSubDomain(lambda x, on_boundary: x[0] > 0.5)
-
-
 def _create_dp_problem(dim):
     assert dim in [1, 2, 3]
     if dim == 1:
@@ -45,6 +40,9 @@ def _create_dp_problem(dim):
         mesh = UnitSquareMesh(10, 10)
     else:
         mesh = UnitCubeMesh(4, 4, 4)
+
+    subdomain = AutoSubDomain(lambda x, on_boundary: x[0] <= 0.5)
+    disjoint_subdomain = AutoSubDomain(lambda x, on_boundary: x[0] > 0.5)
 
     P1 = FiniteElement("P", mesh.ufl_cell(), 1)
     V = FunctionSpace(mesh, P1)
