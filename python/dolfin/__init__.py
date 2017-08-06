@@ -29,7 +29,7 @@ del sys
 from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          has_hdf5_parallel, has_mpi, has_petsc, has_parmetis,
                          has_slepc, git_commit_hash, DOLFIN_EPS,
-                         DOLFIN_PI, TimingClear, TimingType, timing)
+                         DOLFIN_PI, TimingClear, TimingType, timing, timings, list_timings)
 
 if has_hdf5():
     from .cpp.adaptivity import TimeSeries
@@ -59,7 +59,7 @@ if has_linear_algebra_backend('PETSc'):
 
 from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar, EigenMatrix,
                      EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout)
-from .cpp.log import info
+from .cpp.log import info, Table
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        Cell, Facet, Face, Edge, Vertex, cells,

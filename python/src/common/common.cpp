@@ -71,6 +71,8 @@ namespace dolfin_wrappers
       .def("elapsed", &dolfin::Timer::elapsed);
 
     m.def("timing", &dolfin::timing);
+    m.def("timings", &dolfin::timings);
+    m.def("list_timings", &dolfin::list_timings);
 
     py::enum_<dolfin::TimingClear>(m, "TimingClear")
       .value("clear", dolfin::TimingClear::clear)

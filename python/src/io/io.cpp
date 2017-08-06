@@ -47,6 +47,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::File, std::shared_ptr<dolfin::File>>(m, "File")
       .def(py::init<std::string>())
       .def(py::init<std::string, std::string>())
+      .def(py::init<MPI_Comm, std::string>())
       //
       .def("write", (void (dolfin::File::*)(const dolfin::Parameters&)) &dolfin::File::write)
       //
@@ -71,6 +72,7 @@ namespace dolfin_wrappers
       .def("write", (void (dolfin::File::*)(const dolfin::MeshValueCollection<bool>&)) &dolfin::File::write)
       //
       .def("write", (void (dolfin::File::*)(const dolfin::GenericVector&)) &dolfin::File::write)
+      .def("write", (void (dolfin::File::*)(const dolfin::Table&)) &dolfin::File::write)
       // Unpack
       .def("write", [](dolfin::File& instance, py::object u)
            {
@@ -84,6 +86,7 @@ namespace dolfin_wrappers
            })
       // Read
       .def("read", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::read)
+      .def("read", (void (dolfin::File::*)(dolfin::Table&)) &dolfin::File::read)
       .def("read", (void (dolfin::File::*)(dolfin::GenericVector&)) &dolfin::File::read)
       .def("read", (void (dolfin::File::*)(dolfin::Function&)) &dolfin::File::read)
       //

@@ -22,6 +22,7 @@
 
 #include <dolfin/common/Variable.h>
 #include <dolfin/log/log.h>
+#include <dolfin/log/Table.h>
 #include "../mpi_interface.h"
 
 namespace py = pybind11;
@@ -30,6 +31,9 @@ namespace dolfin_wrappers
 {
   void log(py::module& m)
   {
+    py::class_<dolfin::Table, std::shared_ptr<dolfin::Table>>(m, "Table")
+      .def(py::init<std::string>())
+      .def("str", &dolfin::Table::str);
 
     //m.def("info", (void (*)(const dolfin::Variable&, bool)) &dolfin::info,
     //      py::arg("variable"), py::arg("verbose")=false);
