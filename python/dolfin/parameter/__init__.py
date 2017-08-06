@@ -42,7 +42,7 @@ def ffc_default_parameters():
     cpp.MPI.init()
 
     d = default_jit_parameters()
-    p = Parameters()
+    p = Parameters("form_compiler")
 
     typemap = {"quadrature_rule": "",
                "quadrature_degree": 0,

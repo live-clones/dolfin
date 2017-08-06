@@ -43,6 +43,7 @@ namespace dolfin_wrappers
       .def("add", (void (dolfin::Parameters::*)(const dolfin::Parameters&)) &dolfin::Parameters::add)
       .def("name", &dolfin::Parameters::name)
       .def("rename", &dolfin::Parameters::rename)
+      .def("str", &dolfin::Parameters::str)
       .def("_update", &dolfin::Parameters::update)
       .def("has_parameter", &dolfin::Parameters::has_parameter)
       .def("has_parameter_set", &dolfin::Parameters::has_parameter_set)
