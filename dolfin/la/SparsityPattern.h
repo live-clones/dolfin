@@ -77,6 +77,11 @@ namespace dolfin
     void insert_local(const std::vector<
                       ArrayView<const dolfin::la_index>>& entries);
 
+    /// Insert non-zero entries using local (process-wise) indices for
+    /// the row and global indices for the columns
+    void insert_local_row_global_column(
+        const std::vector<ArrayView<const dolfin::la_index>>& entries);
+
     /// Insert full rows (or columns, according to primary dimension)
     /// using local (process-wise) indices. This must be called before
     /// any other sparse insertion occurs to avoid quadratic complexity
@@ -134,6 +139,16 @@ namespace dolfin
     std::vector<std::vector<std::size_t>> off_diagonal_pattern(Type type) const;
 
   private:
+
+    // Other insertion methods will call this method providing the
+    // appropriate mapping of the indices in the entries.
+    //
+    // The primary dim entries must be local
+    // The primary_codim entries must be global
+    void insert_entries(
+        const std::vector<ArrayView<const dolfin::la_index>>& entries,
+        const std::function<dolfin::la_index(const dolfin::la_index&, const IndexMap&)>& primary_dim_map,
+        const std::function<dolfin::la_index(const dolfin::la_index&, const IndexMap&)>& primary_codim_map);
 
     // Print some useful information
     void info_statistics() const;
