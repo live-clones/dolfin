@@ -101,6 +101,9 @@ from .function.constant import Constant
 from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate, CellVolume, Circumradius
 from .function.expression import CompiledExpression, Expression, UserExpression
 
+# experimental
+from .jit.pybind11jit import CompiledExpressionPyBind11
+
 from .la import as_backend_type
 
 from .mesh.meshfunction import (MeshFunction, CellFunction,
