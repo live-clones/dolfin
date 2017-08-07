@@ -23,9 +23,10 @@
 #include <pybind11/stl.h>
 
 
-#include <mapbox/variant.hpp>
-#include <boost/variant.hpp>
-#include <boost/optional.hpp>
+#include "includes/mapbox/variant.hpp"
+
+//#include <boost/variant.hpp>
+//#include <boost/optional.hpp>
 
 
 #ifdef HAS_MPI
@@ -67,7 +68,7 @@ namespace pybind11 { namespace detail {
 }} // namespace pybind11::detail
 */
 
-// From https://github.com/pybind/pybind11/issues/916
+// Caster for mapbox/variant - from https://github.com/pybind/pybind11/issues/916
 namespace pybind11 { namespace detail {
     template <typename... Ts>
     struct type_caster<mapbox::util::variant<Ts...>> :

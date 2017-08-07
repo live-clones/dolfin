@@ -84,20 +84,20 @@ namespace dolfin_wrappers
       //.def("value", &dolfin::Parameter::value)
       .def("value", [](dolfin::Parameter& self)
            {
+             //boost::variant<int, double> v = 2.3;
+             //return v;
              auto _v = self.value();
              mapbox::util::variant<bool, int, double, std::string> v;
-             if (_v.which() == 0)
+             if (_v.which() == 1)
                v = boost::get<bool>(_v);
-             else if (_v.which() == 1)
-               v = boost::get<int>(_v);
              else if (_v.which() == 2)
-               v = boost::get<double>(_v);
+               v = boost::get<int>(_v);
              else if (_v.which() == 3)
+               v = boost::get<double>(_v);
+             else if (_v.which() == 4)
                v = boost::get<std::string>(_v);
              else
-             {
-               // Error
-             }
+               throw std::runtime_error("Cannot get parameter value");
 
              return v;
            })
