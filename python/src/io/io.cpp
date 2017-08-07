@@ -247,6 +247,8 @@ namespace dolfin_wrappers
                // Do nothing, pybind11 will try next function
              }
            }, py::arg("u"), py::arg("name"), py::arg("t"))
+      .def("set_mpi_atomicity", &dolfin::HDF5File::set_mpi_atomicity)
+      .def("get_mpi_atomicity", &dolfin::HDF5File::get_mpi_atomicity)
       // attributes
       .def("attributes", &dolfin::HDF5File::attributes);
 
