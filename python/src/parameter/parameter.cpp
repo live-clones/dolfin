@@ -23,6 +23,9 @@
 #include <dolfin/parameter/Parameter.h>
 #include <dolfin/parameter/Parameters.h>
 
+
+#include "../mpi_interface.h"
+
 namespace py = pybind11;
 
 namespace dolfin_wrappers
@@ -53,7 +56,7 @@ namespace dolfin_wrappers
            &dolfin::Parameters::operator(), py::return_value_policy::reference)
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, py::none value)
            {
-             dolfin::Parameter* param = self.find_parameter(key);
+             auto param = self.find_parameter(key);
              if (!param)
                throw std::runtime_error("Parameter not found in Parameters object");
              param->reset();
@@ -74,14 +77,19 @@ namespace dolfin_wrappers
              *param = value;
            })
       .def("copy", [](dolfin::Parameters& self) { return dolfin::Parameters(self); })
-
       .def("assign", [](dolfin::Parameters& self, dolfin::Parameters& other) { self = other;});
 
     // dolfin::Parameter
-    py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>
-      (m, "Parameter");
+    py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>(m, "Parameter")
+      //.def("value", &dolfin::Parameter::value)
+      .def("value", [](dolfin::Parameter& self) -> boost::variant<double, int>
+           {
+             boost::variant<double, int> v = 2.6
+             return v;
+           })
+      .def("__str__", &dolfin::Parameter::value_str);
 
-    // dolfin::IntParameter
+    /*
     py::class_<dolfin::IntParameter, std::shared_ptr<dolfin::IntParameter>,
       dolfin::Parameter>
       (m, "IntParameter")
@@ -106,6 +114,7 @@ namespace dolfin_wrappers
       (m, "BoolParameter")
       .def("value", [](dolfin::BoolParameter& self) { return bool(self); })
       .def("__str__", &dolfin::BoolParameter::value_str);
+    */
 
     py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,
       dolfin::Parameters> (m, "GlobalParameters");
