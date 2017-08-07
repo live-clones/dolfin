@@ -7,9 +7,11 @@ def __getitem__(self, key):
         p = self._get_parameter(key)
         return p.value()
     elif self.has_parameter_set(key):
+        # FIXME: I think we want to return the parameter set rather than a copy?
         p = self._get_parameter_set(key)
-        np = cpp.parameter.Parameters(p)
-        return np
+        return p
+        #np = cpp.parameter.Parameters(p)
+        #return np
     else:
         raise RuntimeError("Invalid parameter: {}".format(key))
 

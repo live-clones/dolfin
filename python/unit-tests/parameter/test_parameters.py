@@ -111,6 +111,11 @@ def test_nested(tempdir):
     assert p1["sub0"]["tolerance"] == 0.001
     assert p1["sub0"]["monitor_convergence"] == True
 
+    ps1 = p1["sub0"]
+    ps1["maxiter"] = 200
+    assert p1["sub0"]["maxiter"] == 200
+
+
 @skip_in_parallel
 def test_parameters_update(tempdir):
     p0 = parameters.copy()
