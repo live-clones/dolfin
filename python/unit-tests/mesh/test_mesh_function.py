@@ -90,7 +90,7 @@ def test_numpy_access(funcs, tp, name):
 
 
 
-@pytest.mark.xfail
+@pytest.mark.skip("Not implementing with pybind11")
 def test_iterate(tp, name, funcs):
     for index, value in enumerate(funcs[(tp, name)]):
         pass

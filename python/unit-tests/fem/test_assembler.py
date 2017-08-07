@@ -31,7 +31,6 @@ from dolfin import *
 from dolfin_utils.test import skip_in_parallel, filedir, pushpop_parameters
 
 
-@pytest.mark.xfail
 def test_cell_size_assembly_1D():
     mesh = UnitIntervalMesh(10)
     assert round(assemble(CellSize(mesh)*dx) - 0.1, 12) == 0
@@ -79,7 +78,6 @@ def test_cell_assembly():
     assert round(assemble(L).norm("l2") - b_l2_norm, 10) == 0
 
 
-@pytest.mark.xfail
 def test_facet_assembly(pushpop_parameters):
     parameters["ghost_mode"] = "shared_facet"
     mesh = UnitSquareMesh(24, 24)

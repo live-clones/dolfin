@@ -382,12 +382,7 @@ namespace dolfin_wrappers
           &dolfin::assemble_system);
 
      m.def("assemble_local", (Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(*)(const dolfin::Form&, const dolfin::Cell&))
-          &dolfin::assemble_local)
-      .def("assemble_local", [](py::object form, const dolfin::Cell& cell)
-          {
-            auto _form = form.attr("_cpp_object").cast<const dolfin::Form*>();
-            return dolfin::assemble_local(*_form, cell);
-          });
+           &dolfin::assemble_local);
 
     // FEM utils functions
     m.def("set_coordinates", &dolfin::set_coordinates);

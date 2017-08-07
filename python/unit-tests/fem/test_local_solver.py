@@ -101,7 +101,6 @@ def test_solve_local_rhs(ghost_mode):
         assert round((u.vector() - x).norm("l2") - 0.0, 10) == 0
 
 
-@pytest.mark.xfail
 def test_solve_local_rhs_facet_integrals(ghost_mode):
     mesh = UnitSquareMesh(4, 4)
 
@@ -135,7 +134,6 @@ def test_solve_local_rhs_facet_integrals(ghost_mode):
     assert round((u.vector() - x).norm('l2'), 10) == 0
 
 
-@pytest.mark.xfail
 def test_local_solver_dg(ghost_mode):
     mesh = UnitIntervalMesh(50)
     U = FunctionSpace(mesh, "DG", 2)
@@ -174,7 +172,6 @@ def test_local_solver_dg(ghost_mode):
     assert round((u_lu.vector() - u_ls.vector()).norm("l2"), 12) == 0
 
 
-@pytest.mark.xfail
 def test_solve_local(ghost_mode):
     mesh = UnitIntervalMesh(50)
     U = FunctionSpace(mesh, "DG", 2)

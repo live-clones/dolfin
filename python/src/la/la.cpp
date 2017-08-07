@@ -423,7 +423,7 @@ namespace dolfin_wrappers
              self.set_local(x.data(), x.size(), indices.data());
              self.apply("insert");
            })
-      .def("__len__", [](dolfin::GenericVector& self) { return self.size(); })
+      .def("__len__", [](dolfin::GenericVector& self) { return self.local_size(); })
       .def("size",  (std::size_t (dolfin::GenericVector::*)() const) &dolfin::GenericVector::size)
       //
       .def("get_local", [](const dolfin::GenericVector& instance, const std::vector<long>& rows)

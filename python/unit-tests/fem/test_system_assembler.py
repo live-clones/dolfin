@@ -120,7 +120,6 @@ def test_cell_assembly_bc():
     assert round(b.norm("l2") - b_l2_norm, 10) == 0
 
 
-@pytest.mark.xfail
 def test_facet_assembly():
 
     def test(mesh):
@@ -253,7 +252,6 @@ def test_incremental_assembly():
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_domains():
 
     class RightSubDomain(SubDomain):

@@ -33,7 +33,6 @@ from dolfin import *
 from dolfin_utils.test import skip_in_parallel, datadir
 
 
-@pytest.mark.xfail
 def test_instantiation():
     """ A rudimentary test for instantiation"""
     # FIXME: Needs to be expanded
@@ -45,7 +44,6 @@ def test_instantiation():
     assert bc0.function_space() == bc1.function_space()
 
 
-@pytest.mark.xfail
 def test_director_lifetime():
     """Test for any problems with objects with directors going out
     of scope"""
@@ -110,7 +108,6 @@ def test_meshdomain_bcs(datadir):
     assert round(norm(b) - 16.55294535724685, 7) == 0
 
 
-@pytest.mark.xfail
 def test_user_meshfunction_domains():
     mesh0 = UnitSquareMesh(12, 12)
     mesh1 = UnitSquareMesh(12, 12)
@@ -259,7 +256,6 @@ def test_zero_columns_square():
     assert numpy.isclose(x1.norm('linf'), 0.0)
 
 
-@pytest.mark.xfail
 def test_homogenize_consistency():
     mesh = UnitIntervalMesh(10)
     V = FunctionSpace(mesh, "CG", 1)
