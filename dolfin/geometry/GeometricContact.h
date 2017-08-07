@@ -120,6 +120,12 @@ namespace dolfin
                                                                     const std::vector<std::size_t>& master_facets,
                                                                     std::map<std::size_t, std::vector<std::size_t>>& contact_facet_map);
 
+    // Tabulate pairings between facet index and collided cell DoFs
+    static void tabulate_collided_cell_dofs(const Mesh& mesh, const GenericDofMap& dofmap,
+                                            const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave,
+                                            std::map<std::size_t, std::vector<std::size_t>>& facet_to_contacted_dofs,
+                                            std::map<std::size_t, std::vector<std::size_t>>& facet_to_off_proc_contacted_dofs);
+
     // Find number of cells in projected prism in 2D or 3D
     static std::size_t cells_per_facet(std::size_t tdim) { return (tdim - 1)*4; };
 
