@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Chris Richardson
+// Copyright (C) 2017 Chris Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -64,6 +64,8 @@ namespace dolfin_wrappers
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
              auto param = self.find_parameter(key);
+             if (!param)
+               throw std::runtime_error("Parameter not found in Parameters object");
              *param = value;
            })
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, bool value)
@@ -84,6 +86,7 @@ namespace dolfin_wrappers
       //.def("value", &dolfin::Parameter::value)
       .def("value", [](dolfin::Parameter& self)
            {
+             // Work-around for https://github.com/pybind/pybind11/issues/988
              //boost::variant<int, double> v = 2.3;
              //return v;
              auto _v = self.value();
