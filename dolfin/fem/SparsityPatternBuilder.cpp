@@ -383,88 +383,6 @@ void SparsityPatternBuilder::_build_multimesh_sparsity_pattern_interface(
   }
 }
 //-----------------------------------------------------------------------------
-//void
-//SparsityPatternBuilder::build_contact_sparsity_pattern(
-//    SparsityPattern& sparsity_pattern,
-//    const Mesh& mesh,
-//    const std::vector<const GenericDofMap*> dofmaps,
-//    const GeometricContact& gc,
-//    bool cells,
-//    bool interior_facets,
-//    bool exterior_facets,
-//    bool vertices,
-//    bool diagonal,
-//    bool init,
-//    bool finalize)
-//{
-//  // Map of master facets to slave facets
-//  const auto& m2s = gc.master_to_slave();
-//
-//  // Get global dimensions and local range
-//  const std::size_t rank = dofmaps.size();
-//  if (rank != 2)
-//  {
-//    dolfin_error("SparsityPatternBuilder.cpp",
-//                 "compute contact boundary sparsity pattern",
-//                 "contact boundary form must have rank 2.");
-//  }
-//
-//  // Create vector to point to dofs
-//  std::vector<ArrayView<const dolfin::la_index>> dofs(rank);
-//
-//  // Vector to store macro-dofs, if required (for interior facets)
-//  std::vector<std::vector<dolfin::la_index>> macro_dofs(rank);
-//
-//  for (const auto& pair : m2s)
-//  {
-//    const std::size_t master = pair.first;
-//    const std::vector<std::size_t> proc_slave = pair.second;
-//
-//    // Master facet's cell
-//    Facet facet0(mesh, master);
-//    dolfin_assert(facet0.exterior());
-//    Cell cell0(mesh, facet0.entities(mesh.topology().dim())[0]);
-//
-//    for (std::size_t j=0; j<proc_slave.size(); j+=2)
-//    {
-//      // Slave facet's cell
-//      // TODO: get the slave process owner and assemble in parallel
-//      Facet facet1(mesh, proc_slave[j+1]);
-//      dolfin_assert(facet1.exterior());
-//      Cell cell1(mesh, facet1.entities(mesh.topology().dim())[0]);
-//
-//      // Tabulate dofs for each dimension on non-conforming boundary
-//      for (std::size_t i = 0; i < rank; i++)
-//      {
-//        // Get dofs for each cell
-//        const auto cell_dofs0
-//            = dofmaps[i]->cell_dofs(cell0.index());
-//        const auto cell_dofs1
-//            = dofmaps[i]->cell_dofs(cell1.index());
-//
-//        // Create space in macro dof vector
-//        macro_dofs[i].resize(cell_dofs0.size() + cell_dofs1.size());
-//
-//        // Copy cell dofs into macro dof vector
-//        std::copy(cell_dofs0.data(), cell_dofs0.data() + cell_dofs0.size(),
-//                  macro_dofs[i].begin());
-//        std::copy(cell_dofs1.data(), cell_dofs1.data() + cell_dofs1.size(),
-//                  macro_dofs[i].begin() + cell_dofs0.size());
-//
-//        // Store pointer to macro dofs
-//        dofs[i].set(macro_dofs[i]);
-//      }
-//
-//      // Insert dofs
-//      sparsity_pattern.insert_local(dofs);
-//    }
-//  }
-//
-//  if (finalize)
-//    sparsity_pattern.apply();
-//
-//}
-//-----------------------------------------------------------------------------
 void
 SparsityPatternBuilder::build_contact_sparsity_pattern(
     SparsityPattern& sparsity_pattern,
@@ -531,7 +449,7 @@ SparsityPatternBuilder::build_contact_sparsity_pattern(
     // Insert dofs
     sparsity_pattern.insert_local(dofs);
   }
-  
+
   if (finalize)
     sparsity_pattern.apply();
 
