@@ -59,10 +59,16 @@ namespace dolfin
                                          const std::vector<std::size_t>& master_facets,
                                          const std::vector<std::size_t>& slave_facets);
 
-    /// Get mapping
+    /// Get master to slave mapping
     const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave() const
     {
       return _master_to_slave;
+    }
+
+    /// Get slave to master mapping
+    const std::map<std::size_t, std::vector<std::size_t>>& slave_to_master() const
+    {
+      return _slave_to_master;
     }
 
     /// Get dof matchup
@@ -107,12 +113,12 @@ namespace dolfin
                                                std::size_t local_facet_idx);
 
     // Tabulate pairings between collided displacement volume meshes.
-    static void tabulate_displacement_volume_mesh_pairs(const Mesh& mesh,
-                                                        const Mesh& slave_mesh,
-                                                        const Mesh& master_mesh,
-                                                        const std::vector<std::size_t>& slave_facets,
-                                                        std::vector<std::vector<std::size_t>>& send_facets,
-                                                        std::vector<std::vector<double>>& send_coordinates);
+    static void tabulate_off_process_displacement_volume_mesh_pairs(const Mesh& mesh,
+                                                                    const Mesh& slave_mesh,
+                                                                    const Mesh& master_mesh,
+                                                                    const std::vector<std::size_t>& slave_facets,
+                                                                    const std::vector<std::size_t>& master_facets,
+                                                                    std::map<std::size_t, std::vector<std::size_t>>& contact_facet_map);
 
     // Find number of cells in projected prism in 2D or 3D
     static std::size_t cells_per_facet(std::size_t tdim) { return (tdim - 1)*4; };

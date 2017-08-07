@@ -230,15 +230,15 @@ void GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
   m_ed.close();
 }
 //-----------------------------------------------------------------------------
-void GeometricContact::tabulate_displacement_volume_mesh_pairs(const Mesh& mesh,
-                                                               const Mesh& slave_mesh,
-                                                               const Mesh& master_mesh,
-                                                               const std::vector<std::size_t>& slave_facets,
-                                                               std::vector<std::vector<std::size_t>>& send_facets,
-                                                               std::vector<std::vector<double>>& send_coordinates)
+void GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(const Mesh& mesh,
+                                                                           const Mesh& slave_mesh,
+                                                                           const Mesh& master_mesh,
+                                                                           const std::vector<std::size_t>& slave_facets,
+                                                                           const std::vector<std::size_t>& master_facets,
+                                                                           std::map<std::size_t, std::vector<std::size_t>>& contact_facet_map)
 {
-  send_coordinates.clear();
-  send_facets.clear();
+  std::vector<std::vector<std::size_t>> send_facets;
+  std::vector<std::vector<double>> send_coordinates;
 
   const std::size_t mpi_size = MPI::size(mesh.mpi_comm());
   const std::size_t mpi_rank = MPI::rank(mesh.mpi_comm());
@@ -296,6 +296,44 @@ void GeometricContact::tabulate_displacement_volume_mesh_pairs(const Mesh& mesh,
       coords_p.insert(coords_p.end(), coord_vals, coord_vals + gdim*v_per_f);
       // Convert from local prism index to main mesh local facet indexing
       q = slave_facets[q];
+    }
+  }
+
+  std::vector<std::vector<std::size_t>> recv_facets(mpi_size);
+  MPI::all_to_all(mesh.mpi_comm(), send_facets, recv_facets);
+
+  std::vector<std::vector<double>> recv_coordinates(mpi_size);
+  MPI::all_to_all(mesh.mpi_comm(), send_coordinates, recv_coordinates);
+
+  for (std::size_t proc = 0; proc != mpi_size; ++proc)
+  {
+    auto& rfacet = recv_facets[proc];
+    auto& coord = recv_coordinates[proc];
+    dolfin_assert(coord.size() == gdim*v_per_f*rfacet.size());
+
+    for (std::size_t j = 0; j < rfacet.size(); ++j)
+    {
+      // FIXME: inefficient? but difficult to use BBT with primitives
+      // so create a small Mesh for each received prism
+      Mesh prism_mesh(MPI_COMM_SELF);
+      GeometricContact::create_communicated_prism_mesh(prism_mesh, mesh, coord, j);
+
+      // Check all local master facets against received slave data
+      for (std::size_t i = 0; i < master_facets.size(); ++i)
+      {
+        bool collision;
+        if (tdim == 3)
+          collision = check_tri_set_collision(master_mesh, i*c_per_f, prism_mesh, 0);
+        else
+          collision = check_edge_set_collision(master_mesh, i*c_per_f, prism_mesh, 0);
+
+        if (collision)
+        {
+          const std::size_t mf = master_facets[i];
+          contact_facet_map[mf].push_back(proc);
+          contact_facet_map[mf].push_back(rfacet[j]);
+        }
+      }
     }
   }
 }
@@ -375,45 +413,11 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
     std::vector<std::vector<std::size_t>> send_facets;
     std::vector<std::vector<double>> send_coordinates;
 
-    GeometricContact::tabulate_displacement_volume_mesh_pairs(mesh, slave_mesh, master_mesh, slave_facets, send_facets, send_coordinates);
+    GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(mesh, slave_mesh, master_mesh, slave_facets,
+                                                                          master_facets, _master_to_slave);
 
-    std::vector<std::vector<std::size_t>> recv_facets(mpi_size);
-    MPI::all_to_all(mesh.mpi_comm(), send_facets, recv_facets);
-
-    std::vector<std::vector<double>> recv_coordinates(mpi_size);
-    MPI::all_to_all(mesh.mpi_comm(), send_coordinates, recv_coordinates);
-
-    for (std::size_t proc = 0; proc != mpi_size; ++proc)
-    {
-      auto& rfacet = recv_facets[proc];
-      auto& coord = recv_coordinates[proc];
-      dolfin_assert(coord.size() == gdim*v_per_f*rfacet.size());
-
-      for (std::size_t j = 0; j < rfacet.size(); ++j)
-      {
-        // FIXME: inefficient? but difficult to use BBT with primitives
-        // so create a small Mesh for each received prism
-        Mesh prism_mesh(MPI_COMM_SELF);
-        GeometricContact::create_communicated_prism_mesh(prism_mesh, mesh, coord, j);
-
-        // Check all local master facets against received slave data
-        for (std::size_t i = 0; i < master_facets.size(); ++i)
-        {
-          bool collision;
-          if (tdim == 3)
-            collision = check_tri_set_collision(master_mesh, i*c_per_f, prism_mesh, 0);
-          else
-            collision = check_edge_set_collision(master_mesh, i*c_per_f, prism_mesh, 0);
-
-          if (collision)
-          {
-            const std::size_t mf = master_facets[i];
-            _master_to_slave[mf].push_back(proc);
-            _master_to_slave[mf].push_back(rfacet[j]);
-          }
-        }
-      }
-    }
+    GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(mesh, master_mesh, slave_mesh, master_facets,
+                                                                          slave_facets, _slave_to_master);
 
   }
 }
