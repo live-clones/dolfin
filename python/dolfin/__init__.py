@@ -37,7 +37,7 @@ if has_hdf5():
 
 from .cpp.ale import ALE
 from .cpp import MPI
-from .cpp.function import Expression, Constant, FunctionAXPY
+from .cpp.function import Expression, Constant, FunctionAXPY, LagrangeInterpolator
 from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
                       DiscreteOperators, LinearVariationalProblem, NonlinearVariationalProblem, LinearVariationalSolver, NonlinearVariationalSolver, SparsityPatternBuilder)

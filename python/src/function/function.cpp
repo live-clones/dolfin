@@ -29,6 +29,7 @@
 #include <dolfin/function/Function.h>
 #include <dolfin/function/FunctionAXPY.h>
 #include <dolfin/function/FunctionSpace.h>
+#include <dolfin/function/LagrangeInterpolator.h>
 #include <dolfin/function/MultiMeshFunction.h>
 #include <dolfin/function/SpecialFunctions.h>
 #include <dolfin/fem/FiniteElement.h>
@@ -266,6 +267,17 @@ namespace dolfin_wrappers
              py::array_t<double> c({coords.size()/gdim, gdim}, coords.data() );
              return c;
            });
+
+    py::class_<dolfin::LagrangeInterpolator> (m, "LagrangeInterpolator")
+      .def_static("interpolate", (void (*)(dolfin::Function&, const dolfin::Function&))
+                  &dolfin::LagrangeInterpolator::interpolate)
+      .def_static("interpolate", [](py::object f1, py::object f2)
+                  {
+                    auto _f1 = f1.attr("_cpp_object").cast<dolfin::Function*>();
+                    auto _f2 = f2.attr("_cpp_object").cast<const dolfin::Function*>();
+                    dolfin::LagrangeInterpolator::interpolate(*_f1, *_f2);
+                  });
+
 
   }
 
