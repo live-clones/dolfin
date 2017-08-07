@@ -48,7 +48,7 @@ def triangulation_to_mesh_2d(triangulation):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
+@pytest.mark.skip("Skipping multimesh")
 def test_integrate():
     # Create two meshes of the unit square
     mesh_0 = UnitSquareMesh(10, 10)

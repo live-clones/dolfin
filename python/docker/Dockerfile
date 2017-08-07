@@ -31,4 +31,5 @@ RUN /bin/bash -c "FENICS_SRC_DIR=/tmp/src /home/fenics/bin/fenics-build && \
                rm -rf $FENICS_HOME/bin && \
                echo '' >> $FENICS_HOME/.profile"
 
-RUN rm -rvf /usr/local/lib/python3 && sudo pip3 install pkgconfig
+RUN rm -rvf /usr/local/lib/python3 && sudo pip3 install pkgconfig pytest six --upgrade
+
