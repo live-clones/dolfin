@@ -44,7 +44,7 @@ import dolfin.cpp as cpp
 from dolfin.fem.form import Form
 # from dolfin.functions.multimeshfunction import *
 
-__all__ = ["assemble", "assemble_system", "assemble_multimesh",
+__all__ = ["assemble", "assemble_local", "assemble_system", "assemble_multimesh",
            "SystemAssembler"]
 
 
@@ -68,6 +68,20 @@ def _create_dolfin_form(form, form_compiler_parameters=None,
     else:
         raise TypeError("Invalid form type %s" % (type(form),))
 
+def assemble_local(form, cell, form_compiler_parameters=None):
+    """JIT assemble_local"""
+    # Create dolfin Form object
+    if isinstance(form, cpp.fem.Form):
+        dolfin_form = form
+    else:
+        dolfin_form = _create_dolfin_form(form, form_compiler_parameters)
+    result = cpp.fem.assemble_local(dolfin_form, cell)
+    if result.shape[1] == 1:
+        if result.shape[0] == 1:
+            result = result[0][0]
+        else:
+            result = result.reshape((result.shape[0]))
+    return result
 
 # JIT assembler
 def assemble(form,

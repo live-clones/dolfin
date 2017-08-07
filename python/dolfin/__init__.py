@@ -40,7 +40,7 @@ from .cpp import MPI
 from .cpp.function import Expression, Constant, FunctionAXPY
 from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
-                      DiscreteOperators, assemble_local, LinearVariationalProblem, NonlinearVariationalProblem, LinearVariationalSolver, NonlinearVariationalSolver, SparsityPatternBuilder)
+                      DiscreteOperators, LinearVariationalProblem, NonlinearVariationalProblem, LinearVariationalSolver, NonlinearVariationalSolver, SparsityPatternBuilder)
 
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitDiscMesh, UnitQuadMesh, UnitHexMesh, UnitTriangleMesh,
@@ -85,7 +85,7 @@ from .common import timer
 from .common.timer import Timer, timed
 from .common.plotting import plot
 
-from .fem.assembling import assemble, assemble_system, SystemAssembler
+from .fem.assembling import assemble, assemble_system, SystemAssembler, assemble_local
 from .fem.form import Form
 from .fem.norms import norm
 from .fem.dirichletbc import DirichletBC, AutoSubDomain
