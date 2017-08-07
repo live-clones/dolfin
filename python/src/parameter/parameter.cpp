@@ -82,9 +82,23 @@ namespace dolfin_wrappers
     // dolfin::Parameter
     py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>(m, "Parameter")
       //.def("value", &dolfin::Parameter::value)
-      .def("value", [](dolfin::Parameter& self) -> boost::variant<double, int>
+      .def("value", [](dolfin::Parameter& self)
            {
-             boost::variant<double, int> v = 2.6
+             auto _v = self.value();
+             mapbox::util::variant<bool, int, double, std::string> v;
+             if (_v.which() == 0)
+               v = boost::get<bool>(_v);
+             else if (_v.which() == 1)
+               v = boost::get<int>(_v);
+             else if (_v.which() == 2)
+               v = boost::get<double>(_v);
+             else if (_v.which() == 3)
+               v = boost::get<std::string>(_v);
+             else
+             {
+               // Error
+             }
+
              return v;
            })
       .def("__str__", &dolfin::Parameter::value_str);
