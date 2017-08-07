@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Chris Richardson
+// Copyright (C) 2017 Chris Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -22,11 +22,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-
 #include "includes/mapbox/variant.hpp"
-
 //#include <boost/variant.hpp>
-//#include <boost/optional.hpp>
+#include <boost/optional.hpp>
 
 
 #ifdef HAS_MPI
@@ -38,7 +36,6 @@
 #endif
 
 namespace py = pybind11;
-
 
 // Caster for boost::optional
 namespace pybind11 { namespace detail {
