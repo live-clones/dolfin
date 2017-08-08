@@ -33,6 +33,7 @@
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/IndexMap.h>
 #include <dolfin/la/LinearAlgebraObject.h>
+#include <dolfin/la/LinearOperator.h>
 #include <dolfin/la/Matrix.h>
 #include <dolfin/la/Vector.h>
 #include <dolfin/la/Scalar.h>
@@ -541,6 +542,33 @@ namespace dolfin_wrappers
       .def("apply", &dolfin::Scalar::apply)
       .def("mpi_comm", &dolfin::Scalar::mpi_comm)
       .def("get_scalar_value", &dolfin::Scalar::get_scalar_value);
+
+    class PyLinearOperator : public dolfin::LinearOperator
+    {
+      using dolfin::LinearOperator::LinearOperator;
+
+      // pybdind11 has some issues when passing by reference (due to
+      // the return value policy), so the below is non-standard.  See
+      // https://github.com/pybind/pybind11/issues/250.
+
+      std::size_t size(std::size_t dim)
+      {
+        PYBIND11_OVERLOAD_PURE(std::size_t, dolfin::LinearOperator, size, );
+      }
+
+      void mult(const dolfin::GenericVector& x, dolfin::GenericVector& y)
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::LinearOperator, "mult", &x, &y);
+        py::pybind11_fail("Tried to call pure virtual function dolfin::LinearOpertor::mult");
+      }
+    };
+
+    // dolfin::LinearOperator
+    py::class_<dolfin::LinearOperator, std::shared_ptr<dolfin::LinearOperator>,
+               PyLinearOperator, dolfin::GenericLinearOperator>
+      (m, "LinearOperator");
+    //.def(py::init<>())
+    //  .def(py::init<const dolfin::GenericVector&, const dolfin::GenericVector&>());
 
     //----------------------------------------------------------------------------
     // dolfin::GenericLinearAlgebraFactory class
