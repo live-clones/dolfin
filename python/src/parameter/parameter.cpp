@@ -47,9 +47,9 @@ namespace dolfin_wrappers
       .def("name", &dolfin::Parameters::name)
       .def("rename", &dolfin::Parameters::rename)
       .def("str", &dolfin::Parameters::str)
-      .def("_update", &dolfin::Parameters::update)
       .def("has_parameter", &dolfin::Parameters::has_parameter)
       .def("has_parameter_set", &dolfin::Parameters::has_parameter_set)
+      .def("_update", &dolfin::Parameters::update)
       .def("_get_parameter", (dolfin::Parameter& (dolfin::Parameters::*)(std::string))
            &dolfin::Parameters::operator[], py::return_value_policy::reference)
       .def("_get_parameter_set", (dolfin::Parameters& (dolfin::Parameters::*)(std::string))
@@ -111,6 +111,11 @@ namespace dolfin_wrappers
            {
              auto param = self.find_parameter(key);
              *param = value;
+           })
+      .def("__setitem__", [](dolfin::Parameters& self, std::string key, const dolfin::Parameters& other)
+           {
+             auto param = self.find_parameter_set(key);
+             *param = other;
            })
       .def("copy", [](dolfin::Parameters& self) { return dolfin::Parameters(self); })
       .def("assign", [](dolfin::Parameters& self, dolfin::Parameters& other) { self = other;});
