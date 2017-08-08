@@ -21,6 +21,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/common/Variable.h>
 #include <dolfin/parameter/Parameters.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
@@ -111,57 +112,37 @@ namespace dolfin_wrappers
       .def(py::init<>())
       .def(py::init<MPI_Comm>())
       .def("solve", &dolfin::NewtonSolver::solve)
-      //.def("base_converged", &PyNewtonSolver::base_converged);
-      .def("mbase_converged", [](PyNewtonSolver& self, const dolfin::GenericVector& r,
+      // Expose proteced member function via the trampoline class PyNewtonSolver
+      .def("converged", [](PyNewtonSolver& self, const dolfin::GenericVector& r,
+                           const dolfin::NonlinearProblem& nonlinear_problem,
+                           std::size_t iteration)
+           { return self.base_converged(r, nonlinear_problem, iteration); })
+      .def("solver_setup", [](PyNewtonSolver& self,
+                              std::shared_ptr<const dolfin::GenericMatrix> A,
+                              std::shared_ptr<const dolfin::GenericMatrix> P,
+                              const dolfin::NonlinearProblem& nonlinear_problem,
+                              std::size_t iteration)
+           { return self.base_solver_setup(A, P, nonlinear_problem,  iteration); })
+      .def("update_solution", [](PyNewtonSolver& self,
+                                 dolfin::GenericVector& x,
+                                 const dolfin::GenericVector& dx,
+                                 double relaxation_parameter,
                                  const dolfin::NonlinearProblem& nonlinear_problem,
                                  std::size_t iteration)
-           {
-             return self.base_converged(r, nonlinear_problem, iteration);
-           })
-      .def("mbase_solver_setup", [](PyNewtonSolver& self,
-                                   std::shared_ptr<const dolfin::GenericMatrix> A,
-                                   std::shared_ptr<const dolfin::GenericMatrix> P,
-                                   const dolfin::NonlinearProblem& nonlinear_problem,
-                                   std::size_t iteration)
-           {
-             return self.base_solver_setup(A, P, nonlinear_problem,  iteration);
-           })
-      .def("mbase_update_solution", [](PyNewtonSolver& self,
-                                      dolfin::GenericVector& x,
-                                      const dolfin::GenericVector& dx,
-                                      double relaxation_parameter,
-                                      const dolfin::NonlinearProblem& nonlinear_problem,
-                                      std::size_t iteration)
            {
              return self.base_update_solution(x, dx, relaxation_parameter,
                                               nonlinear_problem, iteration);
            });
 
-/*
-      .def("converged", [](&dolfin::NewtonSolver& self, const dolfin::GenericVector& r,
-                           const dolfin::NonlinearProblem& nonlinear_problem,
-                           std::size_t iteration)
-           {
-             return self.converged(r, nonlinear_problem, iteration);
-           });
-      */
-//.def("converged", &dolfin::NewtonSolver::converged);
-      /*
-      .def("solve", [](dolfin::NewtonSolver& self, dolfin::NonlinearProblem& nonlinear_problem,
-                       dolfin::GenericVector& x)
-           {
-             std::cout << "Here I am" << std::endl;
-             auto res = self.solve(nonlinear_problem, x);
-             std::cout << "Retirn Here I am" << std::endl;
-             return 1;
-             //return py::make_tuple(res.first, res.second);
-           });
-      */
-
 #ifdef HAS_PETSC
     py::class_<dolfin::PETScSNESSolver, std::shared_ptr<dolfin::PETScSNESSolver>,
                dolfin::PETScObject>(m, "PETScSNESSolver")
-      .def(py::init<MPI_Comm, std::string>());
+      .def(py::init<std::string>(), py::arg("nls_type")="default")
+      .def(py::init<MPI_Comm, std::string>(), py::arg("comm"), py::arg("nls_type")="default")
+      .def_readwrite("parameters", &dolfin::PETScSNESSolver::parameters)
+      .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScSNESSolver::*)(dolfin::NonlinearProblem&,
+                                                                               dolfin::GenericVector&))
+           &dolfin::PETScSNESSolver::solve);
 
     py::class_<dolfin::TAOLinearBoundSolver>(m, "TAOLinearBoundSolver")
       .def(py::init<MPI_Comm>())

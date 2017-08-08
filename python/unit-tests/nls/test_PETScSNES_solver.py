@@ -183,16 +183,14 @@ def test_preconditioner_interface(V, parameter_backend):
             assert isinstance(r, cpp.la.GenericVector)
             assert isinstance(p, NonlinearProblem)
             assert isinstance(i, numbers.Integral)
-            #return super(MyNewtonSolver, self).converged(r, p, i)
-            return self.mbase_converged(r, p, i)
+            return super(MyNewtonSolver, self).converged(r, p, i)
         def solver_setup(self, A, J, p, i):
             self._solver_setup_called = True
             assert isinstance(A, cpp.la.GenericMatrix)
             assert isinstance(J, cpp.la.GenericMatrix)
             assert isinstance(p, NonlinearProblem)
             assert isinstance(i, numbers.Integral)
-            #super(MyNewtonSolver, self).solver_setup(A, J, p, i)
-            self.mbase_solver_setup(A, J, p, i)
+            super(MyNewtonSolver, self).solver_setup(A, J, p, i)
         def update_solution(self, x, dx, rp, p, i):
             self._update_solution_called = True
             assert isinstance(x, cpp.la.GenericVector)
@@ -200,16 +198,14 @@ def test_preconditioner_interface(V, parameter_backend):
             assert isinstance(rp, float)
             assert isinstance(p, NonlinearProblem)
             assert isinstance(i, numbers.Integral)
-            #super(MyNewtonSolver, self).update_solution(x, dx, rp, p, i)
-            self.mbase_update_solution(x, dx, rp, p, i)
+            super(MyNewtonSolver, self).update_solution(x, dx, rp, p, i)
         @property
         def check_overloads_called(self):
             assert getattr(self, "_converged_called", False)
             assert getattr(self, "_solver_setup_called", False)
             assert getattr(self, "_update_solution_called", False)
 
-    #for solverclass in [NewtonSolver, MyNewtonSolver, PETScSNESSolver]:
-    for solverclass in [MyNewtonSolver]:
+    for solverclass in [NewtonSolver, MyNewtonSolver, PETScSNESSolver]:
         problem = Problem(V)
         x = problem.u.vector()
 
