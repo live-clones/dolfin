@@ -225,12 +225,13 @@ def test_preconditioner_interface(V, parameter_backend):
 
 
 @skip_if_not_PETSc
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_snes_solver_bound_vectors(F, u, bcs, J,
                                    snes_solver_parameters_bounds,
                                    lb, ub, parameter_degree,
                                    parameter_backend):
     problem = NonlinearVariationalProblem(F, u, bcs, J)
+
     problem.set_bounds(lb, ub)
 
     solver = NonlinearVariationalSolver(problem)

@@ -186,7 +186,7 @@ namespace dolfin_wrappers
     // dolfin::SparsityPatternBuilder
     py::class_<dolfin::SparsityPatternBuilder>(m, "SparsityPatternBuilder")
       .def_static("build", &dolfin::SparsityPatternBuilder::build,
-                  py::arg("sparsity_pattern"),py::arg("mesh"),
+                  py::arg("sparsity_pattern"), py::arg("mesh"),
                   py::arg("dofmaps"), py::arg("cells"),
                   py::arg("interior_facets"), py::arg("exterior_facets"),
                   py::arg("vertices"), py::arg("diagonal"),
@@ -318,7 +318,20 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::Form>,
            std::shared_ptr<dolfin::Function>,
            std::vector<std::shared_ptr<const dolfin::DirichletBC>>,
-           std::shared_ptr<const dolfin::Form>>());
+           std::shared_ptr<const dolfin::Form>>())
+      // FIXME: is there a better way to handle the casting
+      .def("set_bounds", (void (dolfin::NonlinearVariationalProblem::*)(std::shared_ptr<const dolfin::GenericVector>,
+                                                                        std::shared_ptr<const dolfin::GenericVector>))
+           &dolfin::NonlinearVariationalProblem::set_bounds)
+      .def("set_bounds", (void (dolfin::NonlinearVariationalProblem::*)(const dolfin::Function&, const dolfin::Function&))
+           &dolfin::NonlinearVariationalProblem::set_bounds)
+      .def("set_bounds", [](dolfin::NonlinearVariationalProblem& self, py::object lb, py::object ub)
+           {
+             auto& _lb = lb.attr("_cpp_object").cast<dolfin::Function&>();
+             auto& _ub = ub.attr("_cpp_object").cast<dolfin::Function&>();
+             self.set_bounds(_lb, _ub);
+           });
+
 
     // dolfin::NonlinearVariationalSolver class
     py::class_<dolfin::NonlinearVariationalSolver,
