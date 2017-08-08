@@ -29,9 +29,7 @@ __all__ = ["MeshCoordinates", "FacetArea", "FacetNormal", "CellSize", "CellVolum
 # Import UFL and SWIG-generated extension module (DOLFIN C++)
 import ufl
 import dolfin.cpp as cpp
-
-# Local imports
-from dolfin.cpp.function import Expression
+from dolfin.function.expression import BaseExpression
 
 def _mesh2domain(mesh):
     "Deprecation mechanism for symbolic geometry."
@@ -44,51 +42,43 @@ def _mesh2domain(mesh):
         raise TypeError("Cannot construct geometry from a Cell. Pass the mesh instead, for example use FacetNormal(mesh) instead of FacetNormal(triangle) or triangle.n")
     return mesh.ufl_domain()
 
-# class MeshCoordinates(Expression, ufl.Coefficient, cpp.function.MeshCoordinates):
-#     def __init__(self, mesh):
-#         "Create function that evaluates to the mesh coordinates at each vertex."
-#         # Initialize C++ part
-#         cpp.function.MeshCoordinates.__init__(self, mesh)
+class MeshCoordinates(BaseExpression):
+    def __init__(self, mesh):
+        "Create function that evaluates to the mesh coordinates at each vertex."
+        # Initialize C++ part
+        self._cpp_object = cpp.function.MeshCoordinates(mesh)
 
-#         # Initialize UFL part
-#         ufl_element = mesh.ufl_domain().ufl_coordinate_element()
-#         if ufl_element.family() != "Lagrange" or ufl_element.degree() != 1:
-#             cpp.dolfin_error("specialfunctions.py",
-#                              "initialize MeshCoordinates",
-#                              "dolfin::MeshCoordinates only supports affine meshes")
-#         ufl_function_space = ufl.FunctionSpace(mesh.ufl_domain(), ufl_element)
-#         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
+        # Initialize UFL part
+        ufl_element = mesh.ufl_domain().ufl_coordinate_element()
+        if ufl_element.family() != "Lagrange" or ufl_element.degree() != 1:
+            raise RuntimeError("MeshCoordinates only supports affine meshes")
+        super().__init__(element=ufl_element, domain=mesh.ufl_domain())
 
-# MeshCoordinates.__doc__ = cpp.function.MeshCoordinates.__doc__
+class FacetArea(BaseExpression):
+    def __init__(self, mesh):
+        """
+        Create function that evaluates to the facet area/length on each facet.
 
-# class FacetArea(Expression, ufl.Coefficient, cpp.function.FacetArea):
-#     def __init__(self, mesh):
-#         """
-#         Create function that evaluates to the facet area/length on each facet.
+        *Arguments*
+            mesh
+                a :py:class:`Mesh <dolfin.cpp.Mesh>`.
 
-#         *Arguments*
-#             mesh
-#                 a :py:class:`Mesh <dolfin.cpp.Mesh>`.
+        *Example of usage*
 
-#         *Example of usage*
+            .. code-block:: python
 
-#             .. code-block:: python
+                mesh = UnitSquare(4,4)
+                fa = FacetArea(mesh)
 
-#                 mesh = UnitSquare(4,4)
-#                 fa = FacetArea(mesh)
+        """
 
-#         """
+        # Initialize C++ part
+        self._cpp_object = cpp.function.FacetArea(mesh)
 
-#         # Initialize C++ part
-#         cpp.function.FacetArea.__init__(self, mesh)
-
-#         # Initialize UFL part
-#         # NB! This is defined as a piecewise constant function for each cell, not for each facet!
-#         ufl_element = ufl.FiniteElement("Discontinuous Lagrange", mesh.ufl_cell(), 0)
-#         ufl_function_space = ufl.FunctionSpace(mesh.ufl_domain(), ufl_element)
-#         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
-
-# FacetArea.__doc__ = cpp.function.FacetArea.__doc__
+        # Initialize UFL part
+        # NB! This is defined as a piecewise constant function for each cell, not for each facet!
+        ufl_element = ufl.FiniteElement("Discontinuous Lagrange", mesh.ufl_cell(), 0)
+        super().__init__(domain=mesh.ufl_domain(), element=ufl_element, label="FacetArea")
 
 # Simple definition of FacetNormal via UFL
 def FacetNormal(mesh):

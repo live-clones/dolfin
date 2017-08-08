@@ -146,13 +146,15 @@ namespace dolfin_wrappers
     // dolfin::FacetArea
     py::class_<dolfin::FacetArea, std::shared_ptr<dolfin::FacetArea>,
                dolfin::Expression, dolfin::GenericFunction>
-      (m, "FacetArea");
+      (m, "FacetArea")
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>>());
 
     //-----------------------------------------------------------------------------
     // dolfin::MeshCoordinates
     py::class_<dolfin::MeshCoordinates, std::shared_ptr<dolfin::MeshCoordinates>,
                dolfin::Expression, dolfin::GenericFunction>
-      (m, "MeshCoordinates");
+      (m, "MeshCoordinates")
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>>());
 
     //-----------------------------------------------------------------------------
     // dolfin::Function
@@ -268,6 +270,7 @@ namespace dolfin_wrappers
              return c;
            });
 
+    // dolfin::LagrangeInterpolator
     py::class_<dolfin::LagrangeInterpolator> (m, "LagrangeInterpolator")
       .def_static("interpolate", (void (*)(dolfin::Function&, const dolfin::Function&))
                   &dolfin::LagrangeInterpolator::interpolate)
