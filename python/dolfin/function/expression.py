@@ -262,7 +262,9 @@ class Expression(BaseExpression):
                 raise KeyError("Must supply element or degree")
             value_shape = tuple(self.value_dimension(i)
                                 for i in range(self.value_rank()))
-            element = _select_element(family=None, cell=None, degree=degree,
+            if domain is not None and cell is None:
+                cell = domain.ufl_cell()
+            element = _select_element(family=None, cell=cell, degree=degree,
                                       value_shape=value_shape)
 
         BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
