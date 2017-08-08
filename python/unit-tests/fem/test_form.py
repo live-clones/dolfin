@@ -491,7 +491,6 @@ def test_circumradius(m, bottom1, bottom2, bottom3):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_facetarea(bottom1, bottom2, bottom3, m):
     "Testing assembly of facet area for embedded meshes"
 

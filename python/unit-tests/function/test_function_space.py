@@ -166,7 +166,7 @@ def test_in_operator(f, g, V, V2, W, W2):
     assert g in W
     assert g in W2
 
-@pytest.mark.xfail
+
 def test_collapse(W, V):
     Vs = W.sub(2)
     with pytest.raises(RuntimeError):

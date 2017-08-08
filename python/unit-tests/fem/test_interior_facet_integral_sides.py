@@ -1,4 +1,3 @@
-#!/usr/bin/env py.test
 import ufl
 import pytest
 from dolfin import *
@@ -7,7 +6,6 @@ from dolfin_utils.test import skip_in_parallel
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_interior_facet_integral_sides():
     n = 1
     mesh = UnitSquareMesh(n, n)
