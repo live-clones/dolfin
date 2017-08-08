@@ -251,12 +251,12 @@ namespace dolfin_wrappers
            std::vector<std::shared_ptr<const dolfin::DirichletBC>>>())
       .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericMatrix&, dolfin::GenericVector&))
            &dolfin::SystemAssembler::assemble)
+      .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericMatrix&)) &dolfin::SystemAssembler::assemble)
+      .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericVector&)) &dolfin::SystemAssembler::assemble)
       .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericMatrix&, dolfin::GenericVector&,
                                                           const dolfin::GenericVector&))
            &dolfin::SystemAssembler::assemble)
-      .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericMatrix&))
-           &dolfin::SystemAssembler::assemble)
-      .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericVector&))
+      .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
            &dolfin::SystemAssembler::assemble);
 
     // dolfin::DiscreteOperators

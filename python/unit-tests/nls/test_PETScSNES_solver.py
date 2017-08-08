@@ -206,6 +206,7 @@ def test_preconditioner_interface(V, parameter_backend):
             assert getattr(self, "_update_solution_called", False)
 
     for solverclass in [NewtonSolver, MyNewtonSolver, PETScSNESSolver]:
+    #for solverclass in [NewtonSolver]:
         problem = Problem(V)
         x = problem.u.vector()
 
@@ -225,7 +226,6 @@ def test_preconditioner_interface(V, parameter_backend):
 
 
 @skip_if_not_PETSc
-#@pytest.mark.xfail
 def test_snes_solver_bound_vectors(F, u, bcs, J,
                                    snes_solver_parameters_bounds,
                                    lb, ub, parameter_degree,

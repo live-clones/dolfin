@@ -43,7 +43,20 @@ namespace dolfin_wrappers
   {
     py::class_<dolfin::NewtonSolver, std::shared_ptr<dolfin::NewtonSolver>,
                dolfin::Variable>(m, "NewtonSolver")
-      .def(py::init<MPI_Comm>());
+      .def(py::init<>())
+      .def(py::init<MPI_Comm>())
+      .def("solve", &dolfin::NewtonSolver::solve);
+      /*
+      .def("solve", [](dolfin::NewtonSolver& self, dolfin::NonlinearProblem& nonlinear_problem,
+                       dolfin::GenericVector& x)
+           {
+             std::cout << "Here I am" << std::endl;
+             auto res = self.solve(nonlinear_problem, x);
+             std::cout << "Retirn Here I am" << std::endl;
+             return 1;
+             //return py::make_tuple(res.first, res.second);
+           });
+      */
 
 #ifdef HAS_PETSC
     py::class_<dolfin::PETScSNESSolver, std::shared_ptr<dolfin::PETScSNESSolver>,
@@ -93,15 +106,25 @@ namespace dolfin_wrappers
     {
       using dolfin::NonlinearProblem::NonlinearProblem;
 
+      // pybdind11 has some issues when passing by reference (due to
+      // the return value policy), so the below is non-standard.  See
+      // https://github.com/pybind/pybind11/issues/250.
+
       void J(dolfin::GenericMatrix& A, const dolfin::GenericVector& x) override
-      { PYBIND11_OVERLOAD_PURE(void, dolfin::NonlinearProblem, J, A, x); }
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::NonlinearProblem, "J", &A, &x);
+        py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::J");
+      }
 
       void F(dolfin::GenericVector& b, const dolfin::GenericVector& x) override
-      { PYBIND11_OVERLOAD_PURE(void, dolfin::NonlinearProblem, F, b, x); }
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::NonlinearProblem, "F", &b, &x);
+        py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::F");
+      }
 
       void form(dolfin::GenericMatrix& A, dolfin::GenericMatrix& P,
                 dolfin::GenericVector& b, const dolfin::GenericVector& x) override
-      { PYBIND11_OVERLOAD(void, dolfin::NonlinearProblem, form, A, P, b, x); }
+      { PYBIND11_OVERLOAD_INT(void, dolfin::NonlinearProblem, "form", &A, &P, &b, &x); }
 
     };
 
