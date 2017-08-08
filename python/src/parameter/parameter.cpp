@@ -41,6 +41,7 @@ namespace dolfin_wrappers
       .def(py::init<std::string>())
       .def(py::init<dolfin::Parameters>())
       .def("add", (void (dolfin::Parameters::*)(std::string, std::string)) &dolfin::Parameters::add)
+      .def("add", (void (dolfin::Parameters::*)(std::string, bool)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, int)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, double)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(const dolfin::Parameters&)) &dolfin::Parameters::add)
