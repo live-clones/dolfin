@@ -50,8 +50,8 @@ PYBIND11_MODULE({classname}, m)
 
 """
 
-    _property_code = """    .def_property("{a}", [](dolfin::{classname}& self){{return self.{a};}},
-                       [](dolfin::{classname}& self, {type} val){{self.{a} = val;}})
+    _property_code = """    .def_property("{a}", [](dolfin::{classname}& self){{return self.py_{a};}},
+                       [](dolfin::{classname}& self, {type} val){{self.py_{a} = val;}})
 """
 
     statements = class_data["statements"]
@@ -59,7 +59,13 @@ PYBIND11_MODULE({classname}, m)
 
     property_values = class_data["properties"]
     for key in property_values:
-        statement_code += "         const auto& ref = *{a};\n".format(a=key)
+        val = property_values[key]
+        if (isinstance(val, float)):
+            statement_code += "         const double {a} = py_{a}.cast<double>();\n".format(a=key)
+            value_type="double"
+        else:
+            print(type(val))
+            statement_code += "         const auto& {a} = *(py_{a}.cast<{value_type}*>());\n".format(a=key,value_type=value_type)
 
     for i, val in enumerate(statements):
         statement_code += "          values[" + str(i) + "] = " + val + ";\n"
@@ -71,14 +77,8 @@ PYBIND11_MODULE({classname}, m)
     properties_code = ""
 
     for key in property_values:
-        if isinstance(property_values[key], float):
-            members_code += "double {a};\n".format(a=key)
-            properties_code += _property_code.format(a=key, type='double', classname=classname)
-        else:
-            # *** temporary hacked in MeshFunction
-            members_code += "std::shared_ptr<dolfin::MeshFunction<std::size_t>> {a};\n".format(a=key)
-            properties_code += _property_code.format(a=key, type='std::shared_ptr<dolfin::MeshFunction<std::size_t>>', classname=classname)
-
+        members_code += "py::object py_{a};\n".format(a=key)
+        properties_code += _property_code.format(a=key, type='py::object', classname=classname)
 
     # Set the value_shape
     if len(statements) > 1:
@@ -93,7 +93,8 @@ PYBIND11_MODULE({classname}, m)
     return code_h, code_c, depends
 
 def compile_expression(statements, properties):
-    """Compile a user C(++) string to a Python object"""
+    """Compile a user C(++) string to a Python object with pybind11.
+       Note this is still experimental."""
 
     import pkgconfig
     if not pkgconfig.exists('dolfin'):
@@ -127,7 +128,7 @@ def compile_expression(statements, properties):
     keystr = tuple(key for key in properties)
     #FIXME: include properties (class variable names) in hash
     module_hash = hashlib.md5("".join(statements + keystr).encode('utf-8')).hexdigest()
-    module_name = "dolfin_expression_" + module_hash
+    module_name = "dolfin_py11_expression_" + module_hash
 
     class_data = {"statements": statements, "properties": properties}
 
