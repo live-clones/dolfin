@@ -41,11 +41,111 @@ namespace dolfin_wrappers
 
   void nls(py::module& m)
   {
-    py::class_<dolfin::NewtonSolver, std::shared_ptr<dolfin::NewtonSolver>,
+    // dolfin::NewtonSolver 'trampoline'
+    class PyNewtonSolver : public dolfin::NewtonSolver
+    {
+      using dolfin::NewtonSolver::NewtonSolver;
+
+      // pybdind11 has some issues when passing by reference (due to
+      // the return value policy), so the below is non-standard.  See
+      // https://github.com/pybind/pybind11/issues/250.
+
+      bool converged(const dolfin::GenericVector& r,
+                     const dolfin::NonlinearProblem& nonlinear_problem,
+                     std::size_t iteration)
+      {
+        PYBIND11_OVERLOAD_INT(bool, dolfin::NewtonSolver, "converged", &r, &nonlinear_problem, iteration);
+        return dolfin::NewtonSolver::converged(r, nonlinear_problem, iteration);
+      }
+
+      void solver_setup(std::shared_ptr<const dolfin::GenericMatrix> A,
+                        std::shared_ptr<const dolfin::GenericMatrix> P,
+                        const dolfin::NonlinearProblem& nonlinear_problem,
+                        std::size_t iteration)
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::NewtonSolver, "solver_setup", A, P,
+                          &nonlinear_problem, iteration);
+        return dolfin::NewtonSolver::solver_setup(A, P, nonlinear_problem, iteration);
+      }
+
+      void update_solution(dolfin::GenericVector& x, const dolfin::GenericVector& dx,
+                           double relaxation_parameter,
+                           const dolfin::NonlinearProblem& nonlinear_problem,
+                           std::size_t iteration)
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::NewtonSolver, "update_solution",
+                              &x, &dx, relaxation_parameter, nonlinear_problem,
+                              iteration);
+        return dolfin::NewtonSolver::update_solution(x, dx, relaxation_parameter,
+                                                     nonlinear_problem, iteration);
+      }
+
+    public:
+
+      bool base_converged(const dolfin::GenericVector& r,
+                          const dolfin::NonlinearProblem& nonlinear_problem,
+                          std::size_t iteration)
+      { return dolfin::NewtonSolver::converged(r, nonlinear_problem, iteration); }
+
+      void base_solver_setup(std::shared_ptr<const dolfin::GenericMatrix> A,
+                             std::shared_ptr<const dolfin::GenericMatrix> P,
+                             const dolfin::NonlinearProblem& nonlinear_problem,
+                             std::size_t iteration)
+      { return dolfin::NewtonSolver::solver_setup(A, P, nonlinear_problem, iteration); }
+
+      void base_update_solution(dolfin::GenericVector& x,
+                                const dolfin::GenericVector& dx,
+                                double relaxation_parameter,
+                                const dolfin::NonlinearProblem& nonlinear_problem,
+                                std::size_t iteration)
+      {
+        return dolfin::NewtonSolver::update_solution(x, dx, relaxation_parameter,
+                                                     nonlinear_problem, iteration);
+      }
+
+
+    };
+
+    py::class_<dolfin::NewtonSolver, std::shared_ptr<dolfin::NewtonSolver>, PyNewtonSolver,
                dolfin::Variable>(m, "NewtonSolver")
       .def(py::init<>())
       .def(py::init<MPI_Comm>())
-      .def("solve", &dolfin::NewtonSolver::solve);
+      .def("solve", &dolfin::NewtonSolver::solve)
+      //.def("base_converged", &PyNewtonSolver::base_converged);
+      .def("mbase_converged", [](PyNewtonSolver& self, const dolfin::GenericVector& r,
+                                 const dolfin::NonlinearProblem& nonlinear_problem,
+                                 std::size_t iteration)
+           {
+             return self.base_converged(r, nonlinear_problem, iteration);
+           })
+      .def("mbase_solver_setup", [](PyNewtonSolver& self,
+                                   std::shared_ptr<const dolfin::GenericMatrix> A,
+                                   std::shared_ptr<const dolfin::GenericMatrix> P,
+                                   const dolfin::NonlinearProblem& nonlinear_problem,
+                                   std::size_t iteration)
+           {
+             return self.base_solver_setup(A, P, nonlinear_problem,  iteration);
+           })
+      .def("mbase_update_solution", [](PyNewtonSolver& self,
+                                      dolfin::GenericVector& x,
+                                      const dolfin::GenericVector& dx,
+                                      double relaxation_parameter,
+                                      const dolfin::NonlinearProblem& nonlinear_problem,
+                                      std::size_t iteration)
+           {
+             return self.base_update_solution(x, dx, relaxation_parameter,
+                                              nonlinear_problem, iteration);
+           });
+
+/*
+      .def("converged", [](&dolfin::NewtonSolver& self, const dolfin::GenericVector& r,
+                           const dolfin::NonlinearProblem& nonlinear_problem,
+                           std::size_t iteration)
+           {
+             return self.converged(r, nonlinear_problem, iteration);
+           });
+      */
+//.def("converged", &dolfin::NewtonSolver::converged);
       /*
       .def("solve", [](dolfin::NewtonSolver& self, dolfin::NonlinearProblem& nonlinear_problem,
                        dolfin::GenericVector& x)
