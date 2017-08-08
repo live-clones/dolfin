@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Chris Richardson
+// Copyright (C) 2017 Chris Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -22,6 +22,9 @@
 #include <dolfin/parameter/GlobalParameters.h>
 #include <dolfin/parameter/Parameter.h>
 #include <dolfin/parameter/Parameters.h>
+
+
+#include "../mpi_interface.h"
 
 namespace py = pybind11;
 
@@ -51,9 +54,43 @@ namespace dolfin_wrappers
            &dolfin::Parameters::operator[], py::return_value_policy::reference)
       .def("_get_parameter_set", (dolfin::Parameters& (dolfin::Parameters::*)(std::string))
            &dolfin::Parameters::operator(), py::return_value_policy::reference)
+      /*
+        // With boost::variant, need to figure out how to set the
+        // return policy per type in variant
+      .def("__getitem__", [](dolfin::Parameters& self, std::string key)
+           {
+             mapbox::util::variant<bool, int, double, std::string, dolfin::Parameters*> v;
+             auto param = self.find_parameter(key);
+             if (auto param = self.find_parameter(key))
+             {
+               // FIXME: This will be simple once boost::variant is working
+               //return param->value();
+               auto _v = param->value();
+               if (_v.which() == 1)
+                 v = boost::get<bool>(_v);
+               else if (_v.which() == 2)
+                 v = boost::get<int>(_v);
+               else if (_v.which() == 3)
+                 v = boost::get<double>(_v);
+               else if (_v.which() == 4)
+                 v = boost::get<std::string>(_v);
+               else
+                 throw std::runtime_error("Cannot get parameter value");
+               return v;
+             }
+             else if (auto param = self.find_parameter_set(key))
+             {
+               //v = &(*param);
+               v = &self("key");
+               return v;
+             }
+             else
+               throw std::runtime_error("Invalid parameter key: " + key);
+           }, py::return_value_policy::automatic_reference)
+      */
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, py::none value)
            {
-             dolfin::Parameter* param = self.find_parameter(key);
+             auto param = self.find_parameter(key);
              if (!param)
                throw std::runtime_error("Parameter not found in Parameters object");
              param->reset();
@@ -61,6 +98,8 @@ namespace dolfin_wrappers
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
              auto param = self.find_parameter(key);
+             if (!param)
+               throw std::runtime_error("Parameter not found in Parameters object");
              *param = value;
            })
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, bool value)
@@ -74,38 +113,32 @@ namespace dolfin_wrappers
              *param = value;
            })
       .def("copy", [](dolfin::Parameters& self) { return dolfin::Parameters(self); })
-
       .def("assign", [](dolfin::Parameters& self, dolfin::Parameters& other) { self = other;});
 
     // dolfin::Parameter
-    py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>
-      (m, "Parameter");
+    py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>(m, "Parameter")
+      //.def("value", &dolfin::Parameter::value)
+      .def("value", [](dolfin::Parameter& self)
+           {
+             // Work-around for https://github.com/pybind/pybind11/issues/988
+             //boost::variant<int, double> v = 2.3;
+             //return v;
+             auto _v = self.value();
+             mapbox::util::variant<bool, int, double, std::string> v;
+             if (_v.which() == 1)
+               v = boost::get<bool>(_v);
+             else if (_v.which() == 2)
+               v = boost::get<int>(_v);
+             else if (_v.which() == 3)
+               v = boost::get<double>(_v);
+             else if (_v.which() == 4)
+               v = boost::get<std::string>(_v);
+             else
+               throw std::runtime_error("Cannot get parameter value");
 
-    // dolfin::IntParameter
-    py::class_<dolfin::IntParameter, std::shared_ptr<dolfin::IntParameter>,
-      dolfin::Parameter>
-      (m, "IntParameter")
-      .def("value", [](dolfin::IntParameter& self) { return int(self); })
-      .def("__str__", &dolfin::IntParameter::value_str);
-
-    // dolfin::IntParameter
-    py::class_<dolfin::DoubleParameter, std::shared_ptr<dolfin::DoubleParameter>,
-      dolfin::Parameter>
-      (m, "DoubleParameter")
-      .def("value", [](dolfin::DoubleParameter& self) { return double(self); })
-      .def("__str__", &dolfin::DoubleParameter::value_str);
-
-    py::class_<dolfin::StringParameter, std::shared_ptr<dolfin::StringParameter>,
-               dolfin::Parameter>
-      (m, "StringParameter")
-      .def("value", [](dolfin::StringParameter& self) { return std::string(self); })
-      .def("__str__", &dolfin::StringParameter::value_str);
-
-    py::class_<dolfin::BoolParameter, std::shared_ptr<dolfin::BoolParameter>,
-      dolfin::Parameter>
-      (m, "BoolParameter")
-      .def("value", [](dolfin::BoolParameter& self) { return bool(self); })
-      .def("__str__", &dolfin::BoolParameter::value_str);
+             return v;
+           })
+      .def("__str__", &dolfin::Parameter::value_str);
 
     py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,
       dolfin::Parameters> (m, "GlobalParameters");

@@ -18,6 +18,7 @@ add_subdirectory(pybind11)
 # Create the binding library
 pybind11_add_module(cpp SHARED
   src/dolfin.cpp
+  src/parameter/parameter.cpp
   src/adaptivity/adaptivity.cpp
   src/ale/ale.cpp
   src/common/common.cpp
@@ -33,7 +34,6 @@ pybind11_add_module(cpp SHARED
   src/io/io.cpp
   src/la/la.cpp
   src/nls/nls.cpp
-  src/parameter/parameter.cpp
   src/refinement/refinement.cpp
   )
 
