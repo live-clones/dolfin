@@ -120,7 +120,6 @@ def snes_solver_parameters_bounds():
 
 
 @skip_if_not_PETSc
-@pytest.mark.xfail
 def test_snes_solver(F, bcs, u, snes_solver_parameters_sign, parameter_degree,
                      parameter_backend):
     u.interpolate(Constant(-1000.0))
@@ -129,7 +128,6 @@ def test_snes_solver(F, bcs, u, snes_solver_parameters_sign, parameter_degree,
 
 
 @skip_if_not_PETSc
-@pytest.mark.xfail
 def test_newton_solver(F, u, bcs, newton_solver_parameters, parameter_degree,
                        parameter_backend):
     u.interpolate(Constant(-1000.0))
@@ -224,25 +222,6 @@ def test_preconditioner_interface(V, parameter_backend):
 
         # Check that overloading NewtonSolver members works
         getattr(solver, "check_overloads_called", None)
-
-
-@skip_if_not_PETSc
-@pytest.mark.xfail
-def test_snes_solver_bound_vectors(F, u, bcs, J,
-                                   snes_solver_parameters_bounds,
-                                   lb, ub, parameter_degree,
-                                   parameter_backend):
-    u.interpolate(Constant(-1000.0))
-    problem = NonlinearVariationalProblem(F, u, bcs, J)
-    problem.set_bounds(lb, ub)
-
-    solver = NonlinearVariationalSolver(problem)
-    solver.parameters.update(snes_solver_parameters_bounds)
-    u.interpolate(Constant(-1000.0))
-    solver.solve()
-    u.interpolate(Constant(-1000.0))
-    solver.solve()
-    assert u.vector().min() >= 0
 
 
 @skip_if_not_PETSc
