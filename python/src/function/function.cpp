@@ -252,6 +252,12 @@ namespace dolfin_wrappers
            std::shared_ptr<dolfin::GenericDofMap>>())
       .def(py::init<const dolfin::FunctionSpace&>())
       .def("dim", &dolfin::FunctionSpace::dim)
+      .def("collapse", [](dolfin::FunctionSpace& self)
+           {
+             std::unordered_map<std::size_t, std::size_t> dofs;
+             auto V = self.collapse(dofs);
+             return std::pair<std::shared_ptr<dolfin::FunctionSpace>, std::unordered_map<std::size_t, std::size_t>>({V, dofs});
+           })
       .def("component", &dolfin::FunctionSpace::component)
       .def("contains", &dolfin::FunctionSpace::contains)
       .def("element", &dolfin::FunctionSpace::element)

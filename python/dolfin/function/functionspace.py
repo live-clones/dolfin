@@ -142,6 +142,33 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
     def ufl_function_space(self):
         return self
 
+    def collapse(self, collapsed_dofs=False):
+        """
+        Collapse a subspace and return a new function space and a map
+        from new to old dofs
+
+        *Arguments*
+            collapsed_dofs (bool)
+                Return the map from new to old dofs
+
+       *Returns*
+           _FunctionSpace_
+                The new function space.
+           dict
+                The map from new to old dofs (optional)
+        """
+        # Get the cpp version of the FunctionSpace
+        cpp_space, dofs = cpp.function.FunctionSpace.collapse(self)
+
+        # Extend with the python layer
+        V = FunctionSpace(cpp_space)
+
+        if collapsed_dofs:
+            return V, dofs
+        else:
+            return V
+
+
 
 def VectorFunctionSpace(mesh, family, degree, dim=None, form_degree=None,
                         constrained_domain=None, restriction=None):
@@ -165,3 +192,4 @@ def TensorFunctionSpace(mesh, family, degree, shape=None, symmetry=None,
 
     # Return (Py)DOLFIN FunctionSpace
     return FunctionSpace(mesh, element, constrained_domain=constrained_domain)
+
