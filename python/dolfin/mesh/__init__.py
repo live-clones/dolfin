@@ -28,6 +28,9 @@ def ufl_domain(self):
                                     cargo=self)
     return self._ufl_domain
 
+def geometric_dimension(self):
+    """Returns geometric dimension for ufl interface"""
+    return self.geometry().dim()
 
 def _repr_html_(self):
     return cpp.io.X3DOM.html(self)
@@ -40,8 +43,9 @@ def _repr_svg_(self):
 cpp.mesh.Mesh.ufl_cell = ufl_cell
 cpp.mesh.Mesh.ufl_coordinate_element = ufl_coordinate_element
 cpp.mesh.Mesh.ufl_domain = ufl_domain
+cpp.mesh.Mesh.geometric_dimension = geometric_dimension
 
 cpp.mesh.Mesh._repr_html_ = _repr_html_
 cpp.mesh.Mesh._repr_svg_ = _repr_svg_
 
-del ufl_cell, ufl_coordinate_element, ufl_domain, _repr_html_, _repr_svg_
+del ufl_cell, ufl_coordinate_element, ufl_domain, geometric_dimension, _repr_html_, _repr_svg_
