@@ -40,7 +40,7 @@ from .cpp import MPI
 from .cpp.function import Expression, Constant, FunctionAXPY, LagrangeInterpolator
 from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
-                      DiscreteOperators, LinearVariationalProblem, LinearVariationalSolver,
+                      DiscreteOperators, LinearVariationalSolver,
                       NonlinearVariationalSolver, SparsityPatternBuilder)
 
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
@@ -94,14 +94,16 @@ from .fem.norms import norm
 from .fem.dirichletbc import DirichletBC, AutoSubDomain
 from .fem.interpolation import interpolate
 from .fem.projection import project
-from .fem.solving import solve, LocalSolver, NonlinearVariationalProblem
+from .fem.solving import (solve, LocalSolver, LinearVariationalProblem,
+                          NonlinearVariationalProblem)
 from .fem.formmanipulations import derivative, adjoint, increase_order, tear
 
 from .function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
 from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
 from .function.constant import Constant
-from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate, CellVolume, Circumradius, FacetArea, MeshCoordinates
+from .function.specialfunctions import (FacetNormal, CellSize, SpatialCoordinate,
+                                        CellVolume, Circumradius, FacetArea, MeshCoordinates)
 from .function.expression import CompiledExpression, Expression, UserExpression
 
 from .la import as_backend_type

@@ -401,23 +401,26 @@ def _extract_args(*args, **kwargs):
                     "form_compiler_parameters", "solver_parameters"]
     for kwarg in six.iterkeys(kwargs):
         if kwarg not in valid_kwargs:
-            cpp.dolfin_error("solving.py",
-                             "solve variational problem",
-                             "Illegal keyword argument \"%s\"; valid keywords are %s" %
-                             (kwarg,
-                              ", ".join("\"%s\"" % kwarg for kwarg in valid_kwargs)))
+            raise RuntimeError("Illegal keyword argument")
+            #cpp.dolfin_error("solving.py",
+            #                 "solve variational problem",
+            #                 "Illegal keyword argument \"%s\"; valid keywords are %s" %
+            #                 (kwarg,
+            #                  ", ".join("\"%s\"" % kwarg for kwarg in valid_kwargs)))
 
     # Extract equation
     if not len(args) >= 2:
-        cpp.dolfin_error("solving.py",
-                         "solve variational problem",
-                         "Missing arguments, expecting solve(lhs == rhs, "
-                         "u, bcs=bcs), where bcs is optional")
+        raise RuntimeError("Missing argument")
+        #cpp.dolfin_error("solving.py",
+        #                 "solve variational problem",
+        #                 "Missing arguments, expecting solve(lhs == rhs, "
+        #                 "u, bcs=bcs), where bcs is optional")
     if len(args) > 3:
-        cpp.dolfin_error("solving.py",
-                         "solve variational problem",
-                         "Too many arguments, expecting solve(lhs == rhs, "
-                         "u, bcs=bcs), where bcs is optional")
+        raise RuntimeError("Too many arguments")
+        #cpp.dolfin_error("solving.py",
+        #                 "solve variational problem",
+        #                 "Too many arguments, expecting solve(lhs == rhs, "
+        #                 "u, bcs=bcs), where bcs is optional")
 
     # Extract equation
     eq = _extract_eq(args[0])
@@ -480,9 +483,10 @@ def _extract_u(u):
     if isinstance(u, Function):
         return u
 
-    cpp.dolfin_error("solving.py",
-                         "solve variational problem",
-                         "Expecting second argument to be a Function")
+    raise RuntimeError("Expecting second argument to be a Function")
+    #cpp.dolfin_error("solving.py",
+    #                     "solve variational problem",
+    #                     "Expecting second argument to be a Function")
     return u
 
 
@@ -494,7 +498,8 @@ def _extract_bcs(bcs):
         bcs = [bcs]
     for bc in bcs:
         if not isinstance(bc, cpp.fem.DirichletBC):
-            cpp.dolfin_error("solving.py",
-                             "solve variational problem",
-                             "Unable to extract boundary condition arguments")
+            raise RuntimeError("Unable to extract boundary condition arguments")
+            #cpp.dolfin_error("solving.py",
+            #                 "solve variational problem",
+            #                 "Unable to extract boundary condition arguments")
     return bcs
