@@ -54,12 +54,14 @@ from .cpp.la import (has_linear_algebra_backend,
                      in_nullspace)
 
 if has_linear_algebra_backend('PETSc'):
-    from .cpp.la import PETScVector, PETScMatrix, PETScFactory, PETScOptions, PETScKrylovSolver, PETScPreconditioner
+    from .cpp.la import (PETScVector, PETScMatrix, PETScFactory, PETScOptions,
+                         PETScKrylovSolver, PETScPreconditioner)
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
 from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar, EigenMatrix,
-                     EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout)
+                     EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout,
+                     LinearOperator)
 from .cpp.log import info, Table
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,

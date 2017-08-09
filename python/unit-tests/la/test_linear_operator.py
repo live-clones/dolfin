@@ -29,7 +29,6 @@ backends = ["PETSc"]
 
 # Backends supporting the LinearOperator interface
 @pytest.mark.parametrize('backend', backends)
-@pytest.mark.xfail
 def test_linear_operator(backend):
 
     # Check whether backend is available

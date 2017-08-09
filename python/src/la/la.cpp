@@ -551,12 +551,12 @@ namespace dolfin_wrappers
       // the return value policy), so the below is non-standard.  See
       // https://github.com/pybind/pybind11/issues/250.
 
-      std::size_t size(std::size_t dim)
+      std::size_t size(std::size_t dim) const
       {
         PYBIND11_OVERLOAD_PURE(std::size_t, dolfin::LinearOperator, size, );
       }
 
-      void mult(const dolfin::GenericVector& x, dolfin::GenericVector& y)
+      void mult(const dolfin::GenericVector& x, dolfin::GenericVector& y) const
       {
         PYBIND11_OVERLOAD_INT(void, dolfin::LinearOperator, "mult", &x, &y);
         py::pybind11_fail("Tried to call pure virtual function dolfin::LinearOpertor::mult");
@@ -566,9 +566,9 @@ namespace dolfin_wrappers
     // dolfin::LinearOperator
     py::class_<dolfin::LinearOperator, std::shared_ptr<dolfin::LinearOperator>,
                PyLinearOperator, dolfin::GenericLinearOperator>
-      (m, "LinearOperator");
-    //.def(py::init<>())
-    //  .def(py::init<const dolfin::GenericVector&, const dolfin::GenericVector&>());
+      (m, "LinearOperator")
+      //.def(py::init<>())
+      .def(py::init<const dolfin::GenericVector&, const dolfin::GenericVector&>());
 
     //----------------------------------------------------------------------------
     // dolfin::GenericLinearAlgebraFactory class
