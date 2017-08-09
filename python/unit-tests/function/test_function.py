@@ -54,7 +54,6 @@ def test_name_argument(W):
     assert str(v) == "v"
 
 
-@pytest.mark.xfail
 def test_in_function_space(W):
     u = Function(W)
     v = Function(W)

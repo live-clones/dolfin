@@ -31,6 +31,8 @@ import numpy as np
 import ufl
 import dolfin.cpp as cpp
 import dolfin.la as la
+from dolfin.function.functionspace import FunctionSpace
+#from dolfin.function.argument import  Argument
 
 def _check_mul_and_division(e, linear_comb, scalar_weight=1.0, multi_index=None):
     """
@@ -180,7 +182,29 @@ class Function(ufl.Coefficient):
     def __init__(self, *args, **kwargs):
         """Initialize Function."""
 
-        if isinstance(args[0], cpp.function.FunctionSpace):
+        if isinstance(args[0], Function):
+            other = args[0]
+            if len(args) == 1:
+                # Copy constructor used to be here
+                raise RuntimeError("Use 'Function.copy(deepcopy=True)' for copying.")
+            elif len(args) == 2:
+                i = args[1]
+                if not isinstance(i, int):
+                    raise TypeError("Invalid subfunction number %s" % (i,))
+                num_sub_spaces = other.function_space().num_sub_spaces()
+                if num_sub_spaces == 1:
+                    raise RuntimeError("No subfunctions to extract")
+                if not i < num_sub_spaces:
+                    raise RuntimeError("Can only extract subfunctions "
+                                        "with i = 0..%d"% num_sub_spaces)
+                self._cpp_object = cpp.function.Function(other._cpp_object, i)
+                ufl.Coefficient.__init__(self, self.function_space().ufl_function_space(), count=self._cpp_object.id())
+            else:
+                raise TypeError("expected one or two arguments when "
+                                "instantiating from another Function")
+        elif isinstance(args[0], cpp.function.Function):
+            raise RuntimeError("Not implemented yet")
+        elif isinstance(args[0], cpp.function.FunctionSpace):
             V = args[0]
 
             # If initialising from a FunctionSpace
@@ -204,6 +228,11 @@ class Function(ufl.Coefficient):
         # Set name as given or automatic
         name = kwargs.get("name") or "f_%d" % self.count()
         self.rename(name, "a Function")
+
+    def function_space(self):
+        "Return the FunctionSpace"
+        return FunctionSpace(self._cpp_object.function_space())
+        #return self._cpp_object.function_space()
 
     def value_dimension(self, i):
         return self._cpp_object.value_dimension(i)
@@ -266,7 +295,6 @@ class Function(ufl.Coefficient):
                   "length %d"%dim)
 
         # The actual evaluation
-        print(x, str(x))
         self._cpp_object.eval(values, x)
 
         # If scalar return statement, return scalar value.
@@ -293,9 +321,6 @@ class Function(ufl.Coefficient):
 
     def compute_vertex_values(self, mesh):
         return self._cpp_object.compute_vertex_values(mesh)
-
-    def function_space(self):
-        return self._cpp_object.function_space()
 
     def set_allow_extrapolation(self, value):
         self._cpp_object.set_allow_extrapolation(value)
@@ -378,6 +403,9 @@ class Function(ufl.Coefficient):
     def rename(self, name, s):
         self._cpp_object.rename(name, s)
 
+    def id(self):
+        return self._cpp_object.id()
+
     def __str__(self):
         """Return a pretty print representation of it self."""
         return self.name()
@@ -385,8 +413,7 @@ class Function(ufl.Coefficient):
     def cpp_object(self):
         return self._cpp_object
 
-
-    def sub(self, i, deepcopy = False):
+    def sub(self, i, deepcopy=False):
         """
         Return a sub function.
 

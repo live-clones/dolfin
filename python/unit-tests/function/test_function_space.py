@@ -97,6 +97,7 @@ def test_equality(V, V2, W, W2):
     assert W == W
     assert W == W2
 
+
 @pytest.mark.xfail
 def test_inclusion(V, Q):
     assert V.contains(V)

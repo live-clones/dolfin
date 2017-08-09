@@ -3,7 +3,7 @@ import ufl
 import types
 
 import dolfin.cpp as cpp
-from  . import function
+from . import function
 
 class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
 
@@ -192,4 +192,3 @@ def TensorFunctionSpace(mesh, family, degree, shape=None, symmetry=None,
 
     # Return (Py)DOLFIN FunctionSpace
     return FunctionSpace(mesh, element, constrained_domain=constrained_domain)
-
