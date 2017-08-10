@@ -385,7 +385,6 @@ def test_reference_assembly(filedir, pushpop_parameters):
         print("Cannot run this test without SciPy")
 
 
-@pytest.mark.xfail
 def test_ways_to_pass_mesh_to_assembler():
     mesh = UnitSquareMesh(16, 16)
 

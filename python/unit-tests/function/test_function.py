@@ -280,7 +280,6 @@ def test_real_function_float_conversion1(R):
     assert float(c) == 0.0
 
 
-@pytest.mark.xfail
 def test_real_function_float_conversion2(R):
     c = Function(R)
     c.assign(Constant(2.34))

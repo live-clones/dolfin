@@ -140,6 +140,16 @@ namespace dolfin_wrappers
       .def("values", [](const dolfin::Constant& self)
            { auto v =  self.values(); return py::array_t<double>(v.size(), v.data()); })
       .def("__float__", [](const dolfin::Constant& instance) -> double { return instance; })
+      .def("_assign", [](dolfin::Constant& self, const dolfin::Constant& other) -> const dolfin::Constant&
+           {self = other; return self; })
+      .def("_assign", [](dolfin::Constant& self, double value) -> const dolfin::Constant&
+           {self = value; return self; })
+      /*
+      .def("_assign", (const dolfin::Constant& (dolfin::Constant::*)(const dolfin::Constant&))
+                       &dolfin::Constant::operator=)
+      .def("_assign", (const dolfin::Constant& (dolfin::Constant::*)(double))
+                       &dolfin::Constant::operator=)
+      */
       .def("str", &dolfin::Constant::str);
 
     //-----------------------------------------------------------------------------
@@ -164,6 +174,8 @@ namespace dolfin_wrappers
       .def(py::init<dolfin::Function&, std::size_t>())
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>, std::shared_ptr<dolfin::GenericVector>>())
       .def("_assign", (const dolfin::Function& (dolfin::Function::*)(const dolfin::Function&))
+           &dolfin::Function::operator=)
+      .def("_assign", (const dolfin::Function& (dolfin::Function::*)(const dolfin::Expression&))
            &dolfin::Function::operator=)
       .def("_assign", (void (dolfin::Function::*)(const dolfin::FunctionAXPY&))
            &dolfin::Function::operator=)

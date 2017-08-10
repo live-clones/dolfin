@@ -72,8 +72,23 @@ class BaseExpression(ufl.Coefficient):
     def __init__(self, cell=None, element=None, domain=None, name=None,
                  label=None):
 
+        # Some messy cell/domain handling for compatibility, will be
+        # straightened out later
+        if domain is None:
+            ufl_domain = None
+        else:
+            if isinstance(domain, ufl.domain.AbstractDomain):
+                ufl_domain = domain
+            else:
+                # Probably getting a Mesh here, from existing dolfin
+                # tests. Will be the same later anyway.
+                ufl_domain = domain.ufl_domain()
+
+            if cell is None:
+                cell = ufl_domain.ufl_cell()
+
         # Initialise base class
-        ufl_function_space = ufl.FunctionSpace(domain, element)
+        ufl_function_space = ufl.FunctionSpace(ufl_domain, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
         name = name or "f_" + str(ufl.Coefficient.count(self))

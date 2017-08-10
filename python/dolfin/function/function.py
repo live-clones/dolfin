@@ -32,6 +32,8 @@ import ufl
 import dolfin.cpp as cpp
 import dolfin.la as la
 from dolfin.function.functionspace import FunctionSpace
+from dolfin.function.expression import Expression
+from dolfin.function.constant import Constant
 #from dolfin.function.argument import  Argument
 
 def _check_mul_and_division(e, linear_comb, scalar_weight=1.0, multi_index=None):
@@ -303,9 +305,9 @@ class Function(ufl.Coefficient):
 
         return values
 
-    def _assign(self, u):
-        if isinstance(u, cpp.function.FunctionAXPY):
-            self._cpp_object._assign(u)
+    #def _assign(self, u):
+    #    if isinstance(u, cpp.function.FunctionAXPY):
+    #        self._cpp_object._assign(u)
 
     def extrapolate(self, u):
         if isinstance(u, ufl.Coefficient):
@@ -341,12 +343,21 @@ class Function(ufl.Coefficient):
                 combination is passed all Functions need to be in the same
                 FunctionSpaces.
         """
+
+        print("TTT:", type(self._cpp_object), type(rhs))
+
         from ufl.classes import ComponentTensor, Sum, Product, Division
+        #if isinstance(rhs, (cpp.function.Function, cpp.function.Expression, cpp.function.FunctionAXPY)):
         if isinstance(rhs, (cpp.function.Function, cpp.function.Expression, cpp.function.FunctionAXPY)):
             # Avoid self assignment
             if self == rhs:
                 return
-            self._assign(rhs)
+            self._cpp_object._assign(rhs)
+        elif isinstance(rhs, (Constant, Function, Expression)):
+            # Avoid self assignment
+            if self == rhs:
+                return
+            self._cpp_object._assign(rhs._cpp_object)
         elif isinstance(rhs, (Sum, Product, Division, ComponentTensor)):
             if isinstance(rhs, ComponentTensor):
                 rhs, multi_index = rhs.ufl_operands
