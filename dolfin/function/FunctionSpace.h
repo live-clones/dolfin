@@ -344,7 +344,6 @@ namespace dolfin
     std::vector<std::size_t> _component;
 
     // The identifier of root space
-  public:
     std::size_t _root_space_id;
 
   private:

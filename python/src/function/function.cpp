@@ -261,7 +261,6 @@ namespace dolfin_wrappers
              auto V = self.collapse(dofs);
              return std::pair<std::shared_ptr<dolfin::FunctionSpace>, std::unordered_map<std::size_t, std::size_t>>({V, dofs});
            })
-      .def_readonly("root_id", &dolfin::FunctionSpace::_root_space_id)
       .def("component", &dolfin::FunctionSpace::component)
       .def("contains", &dolfin::FunctionSpace::contains)
       .def("element", &dolfin::FunctionSpace::element)
