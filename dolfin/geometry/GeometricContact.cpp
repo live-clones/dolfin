@@ -381,7 +381,6 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
 
   // Find number of cells/vertices in projected prism in 2D or 3D
   const std::size_t c_per_f = GeometricContact::cells_per_facet(tdim);
-  const std::size_t v_per_f = GeometricContact::vertices_per_facet(tdim);
 
   // Check each master 'prism' against each slave 'prism'
   // Map is stored as local_master_facet -> [mpi_rank, local_index, mpi_rank, local_index ...]
@@ -435,7 +434,6 @@ void GeometricContact::tabulate_collided_cell_dofs(const Mesh& mesh, const Gener
   dofmap.tabulate_local_to_global_dofs(local_to_global_dofs);
 
   const std::size_t tdim = mesh.topology().dim();
-  const std::size_t gdim = mesh.geometry().dim();
 
   // Send the master cell's dofs to the slave.
   // [proc: [local_slave, contact master dofs, local slave, contact master dofs, ...]]

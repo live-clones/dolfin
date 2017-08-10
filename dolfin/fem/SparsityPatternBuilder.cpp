@@ -397,9 +397,6 @@ SparsityPatternBuilder::build_contact_sparsity_pattern(
     bool init,
     bool finalize)
 {
-  // Map of master facets to slave facets
-  const auto& m2s = gc.master_to_slave();
-
   // Get global dimensions and local range
   const std::size_t rank = dofmaps.size();
   if (rank != 2)
