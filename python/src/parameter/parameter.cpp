@@ -45,6 +45,13 @@ namespace dolfin_wrappers
       .def("add", (void (dolfin::Parameters::*)(std::string, int)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, double)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(const dolfin::Parameters&)) &dolfin::Parameters::add)
+      .def("get_range", [](dolfin::Parameters& self, std::string key)
+           {
+             const auto& p = self.find_parameter(key);
+             std::set<std::string> range;
+             p->get_range(range);
+             return range;
+           })
       .def("name", &dolfin::Parameters::name)
       .def("rename", &dolfin::Parameters::rename)
       .def("str", &dolfin::Parameters::str)
