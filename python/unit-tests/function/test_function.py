@@ -318,7 +318,6 @@ def test_scalar_conditions(R):
         not c < 0
 
 
-
 def test_interpolation_mismatch_rank0(W):
     f = Expression("1.0", degree=0)
     with pytest.raises(RuntimeError):

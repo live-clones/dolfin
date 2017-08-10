@@ -54,7 +54,7 @@ class Argument(ufl.Argument):
 
         # Check argument
 #        if not isinstance(V, (FunctionSpace, cpp.MultiMeshFunctionSpace)):
-        if not isinstance(V, cpp.function.FunctionSpace):
+        if not isinstance(V, FunctionSpace):
             if isinstance(V, (ufl.FiniteElementBase, ufl.FunctionSpace)):
                 raise TypeError(_ufl_dolfin_difference_message)
             else:

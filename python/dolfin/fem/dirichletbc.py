@@ -7,6 +7,7 @@ import dolfin.cpp as cpp
 from dolfin.mesh.subdomain import CompiledSubDomain
 from dolfin.function.constant import Constant
 from dolfin.function.function import Function
+from dolfin.function.functionspace import FunctionSpace
 from dolfin.fem.projection import project
 
 class AutoSubDomain(cpp.mesh.SubDomain):
@@ -56,7 +57,7 @@ class DirichletBC(cpp.fem.DirichletBC):
             return
 
         # Get FunctionSpace
-        if not isinstance(args[0], cpp.function.FunctionSpace):
+        if not isinstance(args[0], FunctionSpace):
             raise RuntimeError("First argument must be of type FunctionSpace")
 
         # FIXME: correct the below comment
@@ -82,6 +83,8 @@ class DirichletBC(cpp.fem.DirichletBC):
             raise RuntimeError("Second argument must be convertiable to a GenericFunction: ",
                                args[1], type(args[1]))
         args = args[:1] + (u,) + args[2:]
+
+        args = (args[0]._cpp_object,) + args[1:]
 
         # Case: Special sub domain 'inside' function provided as a
         # function

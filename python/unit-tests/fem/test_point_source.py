@@ -45,9 +45,9 @@ def test_pointsource_vector_node(mesh, point):
     v = TestFunction(V)
     b = assemble(Constant(0.0)*v*dx)
     if rank == 0:
-        ps = PointSource(V, point, 10.0)
+        ps = PointSource(V._cpp_object, point, 10.0)
     else:
-        ps = PointSource(V, [])
+        ps = PointSource(V._cpp_object, [])
     ps.apply(b)
 
     # Checks array sums to correct value
@@ -79,9 +79,9 @@ def test_pointsource_vector(mesh):
     v = TestFunction(V)
     b = assemble(Constant(0.0)*v*dx)
     if rank == 0:
-        ps = PointSource(V, point, 10.0)
+        ps = PointSource(V._cpp_object, point, 10.0)
     else:
-        ps = PointSource(V, [])
+        ps = PointSource(V._cpp_object, [])
     ps.apply(b)
 
     # Checks array sums to correct value
@@ -103,9 +103,9 @@ def test_pointsource_vector_fs(mesh, point):
     v = TestFunction(V)
     b = assemble(dot(Constant([0.0]*mesh.geometry().dim()), v)*dx)
     if rank == 0:
-        ps = PointSource(V, point, 10.0)
+        ps = PointSource(V._cpp_object, point, 10.0)
     else:
-        ps = PointSource(V, [])
+        ps = PointSource(V._cpp_object, [])
     ps.apply(b)
 
     # Checks array sums to correct value
@@ -140,9 +140,9 @@ def test_pointsource_mixed_space(mesh, point):
     v = TestFunction(V)
     b = assemble(dot(Constant([0.0]*value_dimension), v)*dx)
     if rank == 0:
-        ps = PointSource(V, point, 10.0)
+        ps = PointSource(V._cpp_object, point, 10.0)
     else:
-        ps = PointSource(V, [])
+        ps = PointSource(V._cpp_object, [])
     ps.apply(b)
 
     # Checks array sums to correct value
@@ -160,7 +160,7 @@ def test_point_outside():
     # Runtime Error is only produced on one process which causes the
     # whole function to fail but makes this test hang in parallel.
     with pytest.raises(RuntimeError):
-        PointSource(V, point, 10.0)
+        PointSource(V._cpp_object, point, 10.0)
 
 
 @pytest.mark.parametrize("mesh, point", data)
@@ -177,9 +177,9 @@ def test_pointsource_matrix(mesh, point):
     w = Function(V)
     A = assemble(Constant(0.0)*u*v*dx)
     if rank == 0:
-        ps = PointSource(V, point, 10.0)
+        ps = PointSource(V._cpp_object, point, 10.0)
     else:
-        ps = PointSource(V, [])
+        ps = PointSource(V._cpp_object, [])
     ps.apply(A)
 
     # Checks array sums to correct value
@@ -214,9 +214,9 @@ def test_pointsource_matrix_second_constructor(mesh, point):
     w = Function(V1)
     A = assemble(Constant(0.0)*u*v*dx)
     if rank == 0:
-        ps = PointSource(V1, V2, point, 10.0)
+        ps = PointSource(V1._cpp_object, V2._cpp_object, point, 10.0)
     else:
-        ps = PointSource(V1, V2, [])
+        ps = PointSource(V1._cpp_object, V2._cpp_object, [])
     ps.apply(A)
 
     # Checks array sums to correct value
@@ -255,7 +255,7 @@ def test_multi_ps_vector_node(mesh):
             point_coords[i-1] = p
         if rank == 0:
             source.append((Point(point_coords), 10.0))
-    ps = PointSource(V, source)
+    ps = PointSource(V._cpp_object, source)
     ps.apply(b)
 
     # Checks b sums to correct value
@@ -291,7 +291,7 @@ def test_multi_ps_vector_node_local(mesh):
     source = []
     point_coords = mesh.coordinates()[0]
     source.append((Point(point_coords), 10.0))
-    ps = PointSource(V, source)
+    ps = PointSource(V._cpp_object, source)
     ps.apply(b)
 
     # Checks b sums to correct value
@@ -320,7 +320,7 @@ def test_multi_ps_vector(mesh):
             cell = Cell(mesh, c_id)
             point = cell.midpoint()
             source.append((point, 10.0))
-    ps = PointSource(V, source)
+    ps = PointSource(V._cpp_object, source)
     ps.apply(b)
 
     # Checks b sums to correct value
@@ -352,7 +352,7 @@ def test_multi_ps_matrix_node(mesh):
             point_coords[i-1] = p
         if rank == 0:
             source.append((Point(point_coords), 10.0))
-    ps = PointSource(V, source)
+    ps = PointSource(V._cpp_object, source)
     ps.apply(A)
 
     # Checks matrix sums to correct value.
@@ -391,7 +391,7 @@ def test_multi_ps_matrix_node_local(mesh):
     source = []
     point_coords = mesh.coordinates()[0]
     source.append((Point(point_coords), 10.0))
-    ps = PointSource(V, source)
+    ps = PointSource(V._cpp_object, source)
     ps.apply(A)
 
     # Checks matrix sums to correct value.
@@ -425,7 +425,7 @@ def test_multi_ps_matrix_node_vector_fs(mesh):
             point_coords[i - 1] = p
         if rank == 0:
             source.append((Point(point_coords), 10.0))
-    ps = PointSource(V, source)
+    ps = PointSource(V._cpp_object, source)
     ps.apply(A)
 
     # Checks array sums to correct value
@@ -468,7 +468,7 @@ def test_multi_ps_matrix(mesh):
             cell = Cell(mesh, c_id)
             point = cell.midpoint()
             source.append((point, 10.0))
-    ps = PointSource(V, source)
+    ps = PointSource(V._cpp_object, source)
     ps.apply(A)
 
     # Checks b sums to correct value

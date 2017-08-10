@@ -204,16 +204,16 @@ class Function(ufl.Coefficient):
                                 "instantiating from another Function")
         elif isinstance(args[0], cpp.function.Function):
             raise RuntimeError("Not implemented yet")
-        elif isinstance(args[0], cpp.function.FunctionSpace):
+        elif isinstance(args[0], FunctionSpace):
             V = args[0]
 
             # If initialising from a FunctionSpace
             if len(args) == 1:
                 # If passing only the FunctionSpace
-                self._cpp_object = cpp.function.Function(V)
+                self._cpp_object = cpp.function.Function(V._cpp_object)
             elif len(args) == 2:
                 if isinstance(args[1], cpp.la.GenericVector):
-                    self._cpp_object = cpp.function.Function(V, args[1])
+                    self._cpp_object = cpp.function.Function(V._cpp_object, args[1])
                 else:
                     raise RuntimeError("Don't know what to do yet")
             else:

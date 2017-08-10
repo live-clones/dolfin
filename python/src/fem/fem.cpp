@@ -261,7 +261,15 @@ namespace dolfin_wrappers
 
     // dolfin::DiscreteOperators
     py::class_<dolfin::DiscreteOperators> (m, "DiscreteOperators")
-      .def_static("build_gradient", &dolfin::DiscreteOperators::build_gradient);
+      .def_static("build_gradient", &dolfin::DiscreteOperators::build_gradient)
+      .def_static("build_gradient", [](py::object V0, py::object V1)
+                  {
+                    auto _V0 = V0.attr("_cpp_object").cast<dolfin::FunctionSpace*>();
+                    auto _V1 = V1.attr("_cpp_object").cast<dolfin::FunctionSpace*>();
+                    return dolfin::DiscreteOperators::build_gradient(*_V0, *_V1);
+                  });
+
+
 
     // dolfin::Form class
     py::class_<dolfin::Form, std::shared_ptr<dolfin::Form>>
@@ -364,18 +372,24 @@ namespace dolfin_wrappers
              auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
              self.solve_local_rhs(*_u);
            })
-    .def("solve_global_rhs", [](dolfin::LocalSolver& self, py::object u)
-         {
-           auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
-           self.solve_global_rhs(*_u);
-         });
+      .def("solve_global_rhs", [](dolfin::LocalSolver& self, py::object u)
+           {
+             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+             self.solve_global_rhs(*_u);
+           });
 
 
 #ifdef HAS_PETSC
     // dolfin::PETScDMCollection
     py::class_<dolfin::PETScDMCollection, std::shared_ptr<dolfin::PETScDMCollection>>
       (m, "PETScDMCollection")
-      .def_static("create_transfer_matrix", &dolfin::PETScDMCollection::create_transfer_matrix);
+      .def_static("create_transfer_matrix", &dolfin::PETScDMCollection::create_transfer_matrix)
+      .def_static("create_transfer_matrix", [](py::object V_coarse, py::object V_fine)
+                  {
+                    auto _V0 = V_coarse.attr("_cpp_object").cast<std::shared_ptr<dolfin::FunctionSpace>>();
+                    auto _V1 = V_fine.attr("_cpp_object").cast<std::shared_ptr<dolfin::FunctionSpace>>();
+                    return dolfin::PETScDMCollection::create_transfer_matrix(_V0, _V1);
+                  });
 #endif
 
     // Assemble functions
@@ -409,11 +423,22 @@ namespace dolfin_wrappers
     m.def("get_coordinates", [](py::object u, const dolfin::MeshGeometry& geometry)
           {
             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
-            dolfin::get_coordinates(*_u, geometry);
+            return dolfin::get_coordinates(*_u, geometry);
           });
 
     m.def("vertex_to_dof_map", &dolfin::vertex_to_dof_map);
+    m.def("vertex_to_dof_map", [](py::object V)
+          {
+            auto _V = V.attr("_cpp_object").cast<dolfin::FunctionSpace*>();
+            return dolfin::vertex_to_dof_map(*_V);
+          });
     m.def("dof_to_vertex_map", &dolfin::dof_to_vertex_map);
+    m.def("dof_to_vertex_map", [](py::object V)
+          {
+            auto _V = V.attr("_cpp_object").cast<dolfin::FunctionSpace*>();
+            return dolfin::dof_to_vertex_map(*_V);
+          });
+
   }
 
 }

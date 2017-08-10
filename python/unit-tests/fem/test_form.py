@@ -516,7 +516,6 @@ def test_facetarea(bottom1, bottom2, bottom3, m):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_derivative(QQ2, QQ3):
     for W in [QQ2, QQ3]:
         w = Function(W)

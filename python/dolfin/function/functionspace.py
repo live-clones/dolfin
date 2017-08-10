@@ -5,7 +5,8 @@ import types
 import dolfin.cpp as cpp
 from . import function
 
-class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
+#class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
+class FunctionSpace(ufl.FunctionSpace):
 
     def __init__(self,  *args, **kwargs):
         """Create finite element function space."""
@@ -45,8 +46,8 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
             dolfin_dofmap = cpp.fem.DofMap(ufc_dofmap, mesh, constrained_domain)
 
         # Initialize the cpp.FunctionSpace
-        cpp.function.FunctionSpace.__init__(self, mesh, dolfin_element,
-                                            dolfin_dofmap)
+        self._cpp_object = cpp.function.FunctionSpace(mesh, dolfin_element,
+                                                      dolfin_dofmap)
 
     def _init_from_cpp(self, cppV, **kwargs):
         """
@@ -80,9 +81,10 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         ufl_domain = cppV.mesh().ufl_domain()
 
         # Initialize the ufl.FunctionSpace (not calling cpp.Function.__init__)
-        cpp.function.FunctionSpace.__init__(self, cppV)
+        #cpp.function.FunctionSpace.__init__(self, cppV)
+        self._cpp_object = cppV
 
-        self.set_id(cppV.id())
+        #self.set_id(cppV.id())
 
         # Initialize the ufl.FunctionSpace (not calling cpp.Function.__init__)
         ufl.FunctionSpace.__init__(self, ufl_domain, ufl_element)
@@ -98,7 +100,7 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
 
     def dolfin_element(self):
         "Return the DOLFIN element."
-        return self.element()
+        return self._cpp_object.element()
 
     def num_sub_spaces(self):
         "Return the number of sub spaces"
@@ -118,31 +120,63 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         assert hasattr(self.ufl_element(), "sub_elements")
 
         # Extend with the python layer
-        return FunctionSpace(cpp.function.FunctionSpace.sub(self, i))
+        return FunctionSpace(cpp.function.FunctionSpace.sub(self._cpp_object, i))
+
+    def component(self):
+        return self._cpp_object.component()
+
+    def contains(self, V):
+        "Check whether a function is in the FunctionSpace"
+        return self._cpp_object.contains(V._cpp_object)
+        #if isinstance(u, cpp.function.Function):
+        #    return u._in(self)
+        #elif isinstance(u, function.Function):
+        #    return u._cpp_object._in(self)
+        #return False
 
     def __contains__(self, u):
         "Check whether a function is in the FunctionSpace"
         if isinstance(u, cpp.function.Function):
-            return u._in(self)
+            return u._in(self._cpp_object)
         elif isinstance(u, function.Function):
-            return u._cpp_object._in(self)
+            return u._cpp_object._in(self._cpp_object)
         return False
 
-        return ufl.FunctionSpace.__eq__(self, other) and cpp.function.FunctionSpace.__eq__(self, other)
+        #return ufl.FunctionSpace.__eq__(self, other) and cpp.function.FunctionSpace.__eq__(self, other)
+        return ufl.FunctionSpace.__eq__(self, other) and self._cpp_object == other._cpp_object
 
     def __eq__(self, other):
         "Comparison for equality."
-        return ufl.FunctionSpace.__eq__(self, other) and cpp.function.FunctionSpace.__eq__(self, other)
+        #return ufl.FunctionSpace.__eq__(self, other) and cpp.function.FunctionSpace.__eq__(self, other)
+        return ufl.FunctionSpace.__eq__(self, other) and self._cpp_object == other._cpp_object
 
     def __ne__(self, other):
         "Comparison for inequality."
-        return ufl.FunctionSpace.__ne__(self, other) or cpp.function.FunctionSpace.__ne__(self, other)
+        return ufl.FunctionSpace.__ne__(self, other) or self._cpp_object != other._cpp_object
 
     def ufl_cell(self):
-        return self.mesh().ufl_cell()
+        return self._cpp_object.mesh().ufl_cell()
 
     def ufl_function_space(self):
         return self
+
+    def dim(self):
+        return self._cpp_object.dim()
+
+    def id(self):
+        return self._cpp_object.id()
+
+    def element(self):
+        return self._cpp_object.element()
+
+    def dofmap(self):
+        return self._cpp_object.dofmap()
+
+    def mesh(self):
+        return self._cpp_object.mesh()
+
+    def set_x(self, basis, x, component):
+        return self._cpp_object.set_x(basis, x, component)
 
     def collapse(self, collapsed_dofs=False):
         """
@@ -160,7 +194,8 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
                 The map from new to old dofs (optional)
         """
         # Get the cpp version of the FunctionSpace
-        cpp_space, dofs = cpp.function.FunctionSpace.collapse(self)
+        #cpp_space, dofs = cpp.function.FunctionSpace.collapse(self)
+        cpp_space, dofs = self._cpp_object.collapse()
 
         # Extend with the python layer
         V = FunctionSpace(cpp_space)
@@ -170,6 +205,12 @@ class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
         else:
             return V
 
+    def extract_sub_space(self, component):
+        V = self._cpp_object.extract_sub_space(component)
+        return FunctionSpace(V)
+
+    def tabulate_dof_coordinates(self):
+        return self._cpp_object.tabulate_dof_coordinates()
 
 
 def VectorFunctionSpace(mesh, family, degree, dim=None, form_degree=None,
