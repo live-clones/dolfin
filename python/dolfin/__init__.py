@@ -64,7 +64,7 @@ from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar, EigenMatr
                      LinearOperator)
 from .cpp.log import info, Table
 from .cpp.math import ipow, near, between
-from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
+from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity, MeshColoring,
                        Cell, Facet, Face, Edge, Vertex, cells,
                        facets, faces, edges, entities,
                        vertices, SubDomain, BoundaryMesh,

@@ -27,6 +27,7 @@
 #include <dolfin/geometry/BoundingBoxTree.h>
 #include <dolfin/mesh/BoundaryMesh.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshColoring.h>
 #include <dolfin/mesh/MeshData.h>
 #include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/CellType.h>
@@ -114,6 +115,10 @@ namespace dolfin_wrappers
                self.topology()(tdim, 0)().data());
            })
       .def("cell_orientations", &dolfin::Mesh::cell_orientations)
+      .def("color", (const std::vector<std::size_t>& (dolfin::Mesh::*)(std::string) const)
+           &dolfin::Mesh::color)
+      .def("color", (const std::vector<std::size_t>& (dolfin::Mesh::*)(std::vector<std::size_t>) const)
+           &dolfin::Mesh::color)
       .def("coordinates", [](dolfin::Mesh& self)
            {
              return Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>
@@ -168,7 +173,9 @@ namespace dolfin_wrappers
 
     // dolfin::MeshData class
     py::class_<dolfin::MeshData, std::shared_ptr<dolfin::MeshData>>(m, "MeshData", "Mesh data object")
-      .def("array", (std::vector<std::size_t>& (dolfin::MeshData::*)(std::string, std::size_t)) &dolfin::MeshData::array);
+      .def("array", (std::vector<std::size_t>& (dolfin::MeshData::*)(std::string, std::size_t)) &dolfin::MeshData::array)
+      .def("create_array", &dolfin::MeshData::create_array);
+
 
     // dolfin::MeshDomain
     py::class_<dolfin::MeshDomains, std::shared_ptr<dolfin::MeshDomains>>(m, "MeshDomains", "Mesh domains object")
@@ -507,6 +514,12 @@ namespace dolfin_wrappers
       (m, "PeriodicBoundaryComputation")
       .def_static("compute_periodic_pairs", &dolfin::PeriodicBoundaryComputation::compute_periodic_pairs)
       .def_static("masters_slaves", &dolfin::PeriodicBoundaryComputation::masters_slaves);
+
+    // dolfin::MeshColoring
+    py::class_<dolfin::MeshColoring>(m, "MeshColoring")
+      .def_static("cell_colors", (dolfin::CellFunction<std::size_t> (*)(std::shared_ptr<const dolfin::Mesh>, std::vector<std::size_t>))
+                  &dolfin::MeshColoring::cell_colors)
+      .def_static("color_cells", &dolfin::MeshColoring::color_cells);
 
     // dolfin::MeshTransformation
     py::class_<dolfin::MeshTransformation>(m, "MeshTransformation")
