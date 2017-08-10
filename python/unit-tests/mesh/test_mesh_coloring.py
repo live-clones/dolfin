@@ -21,7 +21,6 @@ import pytest
 from dolfin import *
 from dolfin_utils.test import pushpop_parameters
 
-@pytest.mark.xfail
 def test_by_entity_cell_coloring(pushpop_parameters):
     """Color mesh cells by connections."""
 
