@@ -63,7 +63,7 @@ def mplot_mesh(ax, mesh, **kwargs):
         color = kwargs.pop("color", '#808080')
         return ax.triplot(mesh2triang(mesh), color=color, **kwargs)
     elif gdim == 3 and tdim == 3:
-        bmesh = dolfin.BoundaryMesh(mesh, "exterior", order=False)
+        bmesh = dolfin.mesh.BoundaryMesh(mesh, "exterior", order=False)
         mplot_mesh(ax, bmesh, **kwargs)
     elif gdim == 3 and tdim == 2:
         xy = mesh.coordinates()

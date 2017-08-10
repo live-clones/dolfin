@@ -87,7 +87,7 @@ def project(v, V=None, bcs=None, mesh=None,
     if V is None:
         # Create function space based on Expression element if trying
         # to project an Expression
-        if isinstance(v, dolfin.function.Expression):
+        if isinstance(v, dolfin.function.expression.Expression):
             # FIXME: Add handling of cpp.MultiMesh
             if mesh is not None and isinstance(mesh, cpp.mesh.Mesh):
                 V = FunctionSpace(mesh, v.ufl_element())
