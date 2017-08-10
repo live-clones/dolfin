@@ -186,7 +186,7 @@ def test_poisson2D_in_3D():
 
 # TODO: Use pytest parameterization
 @skip_in_parallel
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_basis_evaluation_2D_in_3D():
     """This test checks that basis functions and their derivatives are
     unaffected by rotations."""
@@ -225,10 +225,10 @@ def basis_test(family, degree, basemesh, rotmesh, rotation, piola=False):
 
     for cell_base, cell_rot in zip(cells(basemesh), cells(rotmesh)):
 
-        values_base = numpy.zeros(f_base.element().value_dimension(0))
-        derivs_base = numpy.zeros(f_base.element().value_dimension(0)*3)
-        values_rot = numpy.zeros(f_rot.element().value_dimension(0))
-        derivs_rot = numpy.zeros(f_rot.element().value_dimension(0)*3)
+        #values_base = numpy.zeros(f_base.element().value_dimension(0))
+        #derivs_base = numpy.zeros(f_base.element().value_dimension(0)*3)
+        #values_rot = numpy.zeros(f_rot.element().value_dimension(0))
+        #derivs_rot = numpy.zeros(f_rot.element().value_dimension(0)*3)
 
         # Get cell vertices
         vertex_coordinates_base = cell_base.get_vertex_coordinates()
@@ -236,31 +236,30 @@ def basis_test(family, degree, basemesh, rotmesh, rotation, piola=False):
 
         for i in range(f_base.element().space_dimension()):
             for point in points:
-                f_base.element().evaluate_basis(i, values_base,
-                                                point,
-                                                vertex_coordinates_base,
-                                                cell_base.orientation())
+                values_base = f_base.element().evaluate_basis(i, point,
+                                                              vertex_coordinates_base,
+                                                              cell_base.orientation())
 
-                f_base.element().evaluate_basis_derivatives(i, 1, derivs_base,
-                                                            point,
-                                                            vertex_coordinates_base,
-                                                            cell_base.orientation())
+                derivs_base = f_base.element().evaluate_basis_derivatives(i, 1,
+                                                                          point,
+                                                                          vertex_coordinates_base,
+                                                                          cell_base.orientation())
 
-                f_rot.element().evaluate_basis(i, values_rot,
-                                                rotation.rotate_point(point),
-                                                vertex_coordinates_rot,
-                                                cell_rot.orientation())
-
-                f_base.element().evaluate_basis_derivatives(i, 1, derivs_rot,
+                values_rot = f_rot.element().evaluate_basis(i,
                                                             rotation.rotate_point(point),
                                                             vertex_coordinates_rot,
                                                             cell_rot.orientation())
 
+                derivs_rot = f_base.element().evaluate_basis_derivatives(i, 1,
+                                                                          rotation.rotate_point(point),
+                                                                          vertex_coordinates_rot,
+                                                                          cell_rot.orientation())
+
                 if piola:
                     values_cmp = rotation.rotate_point(values_base)
 
-                    derivs_rot2 = derivs_rot.reshape(f_rot.element().value_dimension(0),3)
-                    derivs_base2 = derivs_base.reshape(f_base.element().value_dimension(0),3)
+                    derivs_rot2 = derivs_rot.reshape(f_rot.element().value_dimension(0), 3)
+                    derivs_base2 = derivs_base.reshape(f_base.element().value_dimension(0), 3)
                     # If D is the unrotated derivative tensor, then
                     # RDR^T is the rotated version.
                     derivs_cmp = numpy.dot(rotation.mat,
