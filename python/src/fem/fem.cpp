@@ -252,6 +252,8 @@ namespace dolfin_wrappers
            &dolfin::DirichletBC::apply)
       .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericMatrix&) const)
            &dolfin::DirichletBC::apply)
+      .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericMatrix&, dolfin::GenericVector&) const)
+           &dolfin::DirichletBC::apply)
       .def("user_subdomain", &dolfin::DirichletBC::user_sub_domain)
       .def("set_value", &dolfin::DirichletBC::set_value)
       .def("set_value", [](dolfin::DirichletBC& self, py::object value)

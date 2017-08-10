@@ -27,6 +27,7 @@ finite element space."""
 # Import UFL and SWIG-generated extension module (DOLFIN C++)
 import ufl
 import dolfin.cpp as cpp
+import dolfin
 
 # Local imports
 from dolfin.function.argument import TestFunction, TrialFunction
