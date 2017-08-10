@@ -230,8 +230,9 @@ class UserExpression(BaseExpression):
         # Deduce element type if not provided
         if element is None:
             if hasattr(self, "value_shape"):
-                value_shape = tuple(self.value_dimension(i)
-                                    for i in range(self.value_rank()))
+                value_shape = self.value_shape()
+                #value_shape = tuple(self.value_dimension(i)
+                #                    for i in range(self.value_rank()))
             else:
                 print("WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.")
                 value_shape = ()
