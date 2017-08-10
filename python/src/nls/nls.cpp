@@ -80,31 +80,16 @@ namespace dolfin_wrappers
         return dolfin::NewtonSolver::update_solution(x, dx, relaxation_parameter,
                                                      nonlinear_problem, iteration);
       }
+    };
 
+    // Class used to expose protected dolfin::NewtonSolver members
+    // (see https://github.com/pybind/pybind11/issues/991)
+    class PyPublicNewtonSolver : public dolfin::NewtonSolver
+    {
     public:
-
-      bool base_converged(const dolfin::GenericVector& r,
-                          const dolfin::NonlinearProblem& nonlinear_problem,
-                          std::size_t iteration)
-      { return dolfin::NewtonSolver::converged(r, nonlinear_problem, iteration); }
-
-      void base_solver_setup(std::shared_ptr<const dolfin::GenericMatrix> A,
-                             std::shared_ptr<const dolfin::GenericMatrix> P,
-                             const dolfin::NonlinearProblem& nonlinear_problem,
-                             std::size_t iteration)
-      { return dolfin::NewtonSolver::solver_setup(A, P, nonlinear_problem, iteration); }
-
-      void base_update_solution(dolfin::GenericVector& x,
-                                const dolfin::GenericVector& dx,
-                                double relaxation_parameter,
-                                const dolfin::NonlinearProblem& nonlinear_problem,
-                                std::size_t iteration)
-      {
-        return dolfin::NewtonSolver::update_solution(x, dx, relaxation_parameter,
-                                                     nonlinear_problem, iteration);
-      }
-
-
+      using NewtonSolver::converged;
+      using NewtonSolver::solver_setup;
+      using NewtonSolver::update_solution;
     };
 
     py::class_<dolfin::NewtonSolver, std::shared_ptr<dolfin::NewtonSolver>, PyNewtonSolver,
@@ -112,27 +97,9 @@ namespace dolfin_wrappers
       .def(py::init<>())
       .def(py::init<MPI_Comm>())
       .def("solve", &dolfin::NewtonSolver::solve)
-      // Expose proteced member function via the trampoline class PyNewtonSolver
-      .def("converged", [](PyNewtonSolver& self, const dolfin::GenericVector& r,
-                           const dolfin::NonlinearProblem& nonlinear_problem,
-                           std::size_t iteration)
-           { return self.base_converged(r, nonlinear_problem, iteration); })
-      .def("solver_setup", [](PyNewtonSolver& self,
-                              std::shared_ptr<const dolfin::GenericMatrix> A,
-                              std::shared_ptr<const dolfin::GenericMatrix> P,
-                              const dolfin::NonlinearProblem& nonlinear_problem,
-                              std::size_t iteration)
-           { return self.base_solver_setup(A, P, nonlinear_problem,  iteration); })
-      .def("update_solution", [](PyNewtonSolver& self,
-                                 dolfin::GenericVector& x,
-                                 const dolfin::GenericVector& dx,
-                                 double relaxation_parameter,
-                                 const dolfin::NonlinearProblem& nonlinear_problem,
-                                 std::size_t iteration)
-           {
-             return self.base_update_solution(x, dx, relaxation_parameter,
-                                              nonlinear_problem, iteration);
-           });
+      .def("converged", &PyPublicNewtonSolver::converged)
+      .def("solver_setup", &PyPublicNewtonSolver::solver_setup)
+      .def("update_solution", &PyPublicNewtonSolver::update_solution);
 
 #ifdef HAS_PETSC
     py::class_<dolfin::PETScSNESSolver, std::shared_ptr<dolfin::PETScSNESSolver>,
@@ -169,17 +136,6 @@ namespace dolfin_wrappers
         .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScTAOSolver::*)(dolfin::OptimisationProblem&, dolfin::GenericVector&,
                                                                                 const dolfin::GenericVector&, const dolfin::GenericVector&))
              &dolfin::PETScTAOSolver::solve);
-    //.def("solve", [](dolfin::PETScTAOSolver& self, dolfin::OptimisationProblem& problem, dolfin::GenericVector& x)
-    //     { auto val = self.solve(problem, x); return py::make_tuple(val.first, val.second); })
-      //ef("solve", [](dolfin::PETScTAOSolver& self, dolfin::OptimisationProblem& problem, dolfin::GenericVector& x,
-      //              const dolfin::GenericVector& lb, const dolfin::GenericVector& ub)
-      //   {
-      //     //std::cout << "Here I am" << std::endl;
-      //     std::pair<std::size_t, bool> mval = self.solve(problem, x, lb, ub);
-      //    return 1;
-      //     //return py::make_tuple(val.first, val.second);
-      // });
-
 #endif
 
     // dolfin::NonlinearProblem 'trampoline'
@@ -205,7 +161,10 @@ namespace dolfin_wrappers
 
       void form(dolfin::GenericMatrix& A, dolfin::GenericMatrix& P,
                 dolfin::GenericVector& b, const dolfin::GenericVector& x) override
-      { PYBIND11_OVERLOAD_INT(void, dolfin::NonlinearProblem, "form", &A, &P, &b, &x); }
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::NonlinearProblem, "form", &A, &P, &b, &x);
+        return dolfin::NonlinearProblem::form(A, P, b, x);
+      }
 
     };
 
@@ -251,7 +210,6 @@ namespace dolfin_wrappers
     py::class_<dolfin::OptimisationProblem, std::shared_ptr<dolfin::OptimisationProblem>,
                PyOptimisationProblem>(m, "OptimisationProblem")
       .def(py::init<>())
-      //.def(py::init<const dolfin::OptimisationProblem&>())
       .def("f", &dolfin::OptimisationProblem::f)
       .def("F", &dolfin::OptimisationProblem::F)
       .def("J", &dolfin::OptimisationProblem::J);
