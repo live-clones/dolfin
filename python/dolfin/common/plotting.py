@@ -415,9 +415,7 @@ def plot(object, *args, **kwargs):
     mesh = kwargs.pop('mesh', None)
     if isinstance(object, cpp.mesh.Mesh):
         if mesh is not None and mesh.id() != object.id():
-            cpp.dolfin_error("plotting.py",
-                             "plot mesh",
-                             "Got different mesh in plot object and keyword argument")
+            raise RuntimeError("Got different mesh in plot object and keyword argument")
         mesh = object
     if mesh is None:
         if isinstance(object, cpp.function.Function):
@@ -427,15 +425,11 @@ def plot(object, *args, **kwargs):
 
     # Expressions do not carry their own mesh
     if isinstance(object, cpp.function.Expression) and mesh is None:
-        cpp.dolfin_error("plotting.py",
-                         "plot expression",
-                         "Expecting a mesh as keyword argument")
+        raise RuntimeError("Expecting a mesh as keyword argument")
 
     backend = kwargs.pop("backend", "matplotlib")
     if backend not in ("matplotlib", "x3dom"):
-        cpp.dolfin_error("plotting.py",
-                         "plot",
-                         "Plotting backend %s not recognised" % backend)
+        raise RuntimeError("Plotting backend %s not recognised" % backend)
 
     # Try to project if object is not a standard plottable type
     if not isinstance(object, _all_plottable_types):
@@ -448,7 +442,7 @@ def plot(object, *args, **kwargs):
         except Exception as e:
             msg = "Don't know how to plot given object:\n  %s\n" \
                   "and projection failed:\n  %s" % (str(object), str(e))
-            cpp.dolfin_error("plotting.py", "plot object", msg)
+            raise RuntimeError(msg)
 
     # Plot
     if backend == "matplotlib":
