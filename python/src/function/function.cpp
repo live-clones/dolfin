@@ -57,6 +57,7 @@ namespace dolfin_wrappers
                ufc::function, dolfin::Variable>
       (m, "GenericFunction")
       .def("value_dimension", &dolfin::GenericFunction::value_dimension)
+      .def("value_size", &dolfin::GenericFunction::value_size)
       .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>,
                                                       const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::GenericFunction::eval,

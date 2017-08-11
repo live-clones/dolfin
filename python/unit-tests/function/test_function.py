@@ -77,7 +77,7 @@ def test_compute_vertex_values(V, W, mesh):
 
     assert all(u_values == 1.)
 
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_assign(V, W):
     from ufl.algorithms import replace
 
@@ -398,14 +398,17 @@ def test_interpolation_jit_rank1(W):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_interpolation_old(V, W, mesh):
 
-    class F0(Expression):
+    class F0(UserExpression):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
         def eval(self, values, x):
             values[0] = 1.0
 
-    class F1(Expression):
+    class F1(UserExpression):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
         def eval(self, values, x):
             values[0] = 1.0
             values[1] = 1.0

@@ -284,6 +284,10 @@ namespace dolfin_wrappers
            { auto x = self.copy(); *x += a; return x;} )
       .def("__add__", [](const dolfin::GenericVector& self, const dolfin::GenericVector& x)
            { auto y = self.copy(); *y += x; return y;} )
+      .def("__radd__", [](const dolfin::GenericVector& self, double a)
+           { auto x = self.copy(); *x += a; return x;} )
+      .def("__radd__", [](const dolfin::GenericVector& self, const dolfin::GenericVector& x)
+           { auto y = self.copy(); *y += x; return y;} )
       // mult
       .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
            &dolfin::GenericVector::operator*=)

@@ -36,6 +36,13 @@ from dolfin.function.expression import Expression
 from dolfin.function.constant import Constant
 #from dolfin.function.argument import  Argument
 
+def _assign_error():
+    raise RuntimeError("Expected only linear combinations of Functions in the same FunctionSpaces")
+    #cpp.dolfin_error("function.py",
+    #                 "assign function",
+    #                 "Expects only linear combinations of Functions in "\
+    #                 "the same FunctionSpaces")
+
 def _check_mul_and_division(e, linear_comb, scalar_weight=1.0, multi_index=None):
     """
     Utility func for checking division and multiplication of a Function
@@ -330,6 +337,12 @@ class Function(ufl.Coefficient):
     def get_allow_extrapolation(self):
         return self._cpp_object.get_allow_extrapolation()
 
+    def copy(self, deepcopy=False):
+        # See https://bitbucket.org/fenics-project/dolfin/issues/702
+        if deepcopy:
+            return Function(self.function_space(), self._cpp_object.vector().copy())
+        return Function(self.function_space(), self._cpp_object.vector())
+
     def vector(self):
         return self._cpp_object.vector()
 
@@ -373,7 +386,7 @@ class Function(ufl.Coefficient):
 
             # Assign values from first func
             if not same_func_space:
-                self._assign(func)
+                self._cpp_object._assign(func._cpp_object)
                 vector = self.vector()
             else:
                 vector = self.vector()

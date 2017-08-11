@@ -422,8 +422,7 @@ class TestVectorForAnyBackend:
         xfail_type_py3(numpy.int0(42.0)),
         xfail_type_py3(numpy.int64(42.0)),
         xfail_type_py3(numpy.int_(42.0)),
-        xfail_type_py3(numpy.longlong(42.0)),
-    ])
+        xfail_type_py3(numpy.longlong(42.0)),])
 
 
     def test_vector_type_priority_with_numpy(self, any_backend, operand):
@@ -433,26 +432,26 @@ class TestVectorForAnyBackend:
         """
 
         def _test_binary_ops(v, operand):
-            assert isinstance(v+operand, GenericVector)
-            assert isinstance(v-operand, GenericVector)
-            assert isinstance(v*operand, GenericVector)
-            assert isinstance(v/operand, GenericVector)
-            assert isinstance(operand+v, GenericVector)
-            assert isinstance(operand-v, GenericVector)
-            assert isinstance(operand*v, GenericVector)
-            assert isinstance(v+v, GenericVector)
-            assert isinstance(v-v, GenericVector)
-            assert isinstance(v*v, GenericVector)
-            v += v.copy(); assert isinstance(v, GenericVector)
-            v -= v.copy(); assert isinstance(v, GenericVector)
-            v *= v.copy(); assert isinstance(v, GenericVector)
-            v += operand; assert isinstance(v, GenericVector)
-            v -= operand; assert isinstance(v, GenericVector)
-            v *= operand; assert isinstance(v, GenericVector)
-            v /= operand; assert isinstance(v, GenericVector)
-            op = copy(operand); op += v; assert isinstance(op, GenericVector)
-            op = copy(operand); op -= v; assert isinstance(op, GenericVector)
-            op = copy(operand); op *= v; assert isinstance(op, GenericVector)
+            assert isinstance(v+operand, cpp.la.GenericVector)
+            assert isinstance(v-operand, cpp.la.GenericVector)
+            assert isinstance(v*operand, cpp.la.GenericVector)
+            assert isinstance(v/operand, cpp.la.GenericVector)
+            assert isinstance(operand+v, cpp.la.GenericVector)
+            assert isinstance(operand-v, cpp.la.GenericVector)
+            assert isinstance(operand*v, cpp.la.GenericVector)
+            assert isinstance(v+v, cpp.la.GenericVector)
+            assert isinstance(v-v, cpp.la.GenericVector)
+            assert isinstance(v*v, cpp.la.GenericVector)
+            v += v.copy(); assert isinstance(v, cpp.la.GenericVector)
+            v -= v.copy(); assert isinstance(v, cpp.la.GenericVector)
+            v *= v.copy(); assert isinstance(v, cpp.la.GenericVector)
+            v += operand; assert isinstance(v, cpp.la.GenericVector)
+            v -= operand; assert isinstance(v, cpp.la.GenericVector)
+            v *= operand; assert isinstance(v, cpp.la.GenericVector)
+            v /= operand; assert isinstance(v, cpp.la.GenericVector)
+            op = copy(operand); op += v; assert isinstance(op, cpp.la.GenericVector)
+            op = copy(operand); op -= v; assert isinstance(op, cpp.la.GenericVector)
+            op = copy(operand); op *= v; assert isinstance(op, cpp.la.GenericVector)
 
         # Test with vector wrapper
         v = Vector(MPI.comm_world, 8)

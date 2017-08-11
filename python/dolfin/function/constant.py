@@ -102,6 +102,9 @@ class Constant(ufl.Coefficient):
     def values(self):
         return self._cpp_object.values()
 
+    def value_size(self):
+        return self._cpp_object.value_size()
+
     def id(self):
         return self._cpp_object.id()
 
