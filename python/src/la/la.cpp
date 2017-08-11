@@ -270,6 +270,8 @@ namespace dolfin_wrappers
            { auto u = self.copy(); (*u) -= a; return u; }, py::is_operator())
       .def("__sub__", [](dolfin::GenericVector& self, const dolfin::GenericVector& v)
            { auto u = self.copy(); (*u) -= v; return u; }, py::is_operator())
+      .def("__rsub__", [](dolfin::GenericVector& self, double a)
+           { auto u = self.copy(); (*u) *= -1 ; (*u) += a; return u; }, py::is_operator())
       // div
       .def("__itruediv__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
            &dolfin::GenericVector::operator/=)
