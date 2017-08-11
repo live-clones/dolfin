@@ -112,7 +112,6 @@ def test_slepc_eigensolver_gen_hermitian(K_M):
 
 
 @skip_if_not_PETsc_or_not_slepc
-@pytest.mark.xfail
 def test_slepc_null_space(K_M, V):
     "Test SLEPc eigen solver with nullspace as PETScVector"
 
@@ -139,7 +138,6 @@ def test_slepc_null_space(K_M, V):
 
 
 @skip_if_not_PETsc_or_not_slepc
-@pytest.mark.xfail
 def test_slepc_vector_null_space(K_M_vec, V_vec):
     "Test SLEPc eigen solver with nullspace as VectorSpaceBasis"
 
