@@ -59,6 +59,9 @@ if has_linear_algebra_backend('PETSc'):
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
+if has_slepc():
+    from .cpp.la import SLEPcEigenSolver
+
 from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar, EigenMatrix,
                      EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout,
                      LinearOperator)

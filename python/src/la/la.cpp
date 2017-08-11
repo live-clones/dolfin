@@ -50,6 +50,7 @@
 #include <dolfin/la/PETScVector.h>
 #include <dolfin/la/LUSolver.h>
 #include <dolfin/la/KrylovSolver.h>
+#include <dolfin/la/SLEPcEigenSolver.h>
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/la/solve.h>
 #include <dolfin/la/VectorSpaceBasis.h>
@@ -748,6 +749,25 @@ namespace dolfin_wrappers
       .def("solve", (std::size_t (dolfin::PETScKrylovSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
            &dolfin::PETScKrylovSolver::solve)
       .def("set_reuse_preconditioner", &dolfin::PETScKrylovSolver::set_reuse_preconditioner);
+    #endif
+
+    #ifdef HAS_SLEPC
+    py::class_<dolfin::SLEPcEigenSolver, std::shared_ptr<dolfin::SLEPcEigenSolver>, dolfin::Variable>(m, "SLEPcEigenSolver")
+      .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>, std::shared_ptr<const dolfin::PETScMatrix>>())
+      .def("set_deflation_space", (void (dolfin::SLEPcEigenSolver::*)(const dolfin::VectorSpaceBasis&))
+           &dolfin::SLEPcEigenSolver::set_deflation_space)
+      .def("set_deflation_space", (void (dolfin::SLEPcEigenSolver::*)(const dolfin::PETScVector&))
+           &dolfin::SLEPcEigenSolver::set_deflation_space)
+      .def("solve", (void (dolfin::SLEPcEigenSolver::*)(std::size_t))
+           &dolfin::SLEPcEigenSolver::solve)
+      .def("get_eigenpair", [](dolfin::SLEPcEigenSolver& self, std::size_t i)
+           {
+             double lr, lc;
+             dolfin::Vector r, c;
+             self.get_eigenpair(lr, lc, r, c, i);
+             return py::make_tuple(lr, lc, r, c);
+           });
+
     #endif
 
     // dolfin::VectorSpaceBasis
