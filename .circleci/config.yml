@@ -10,6 +10,10 @@ jobs:
           command: git lfs clone https://bitbucket.org/"${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}".git .
       - checkout
       - run:
+          name: Install/update dependencies  # Install with sudo as tests not run as superuser in circleci/python
+          command: |
+            sudo pip3 install pytest six --upgrade
+      - run:
           name: Install FIAT
           command: pip3 install git+https://bitbucket.org/fenics-project/fiat.git@master
       - run:
@@ -28,8 +32,11 @@ jobs:
           name: Configure DOLFIN
           command: mkdir -p build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Debug -DDOLFIN_ENABLE_TESTING=ON
       - run:
-          name: Build DOLFIN
+          name: Build DOLFIN and install
           command: cd build && make install
       - run:
-          name: Run Python unit tests
-          command: source /usr/local/share/dolfin/dolfin.conf && cd test/unit/python && python3 -m pytest .
+          name: Run unit tests
+          command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_unittests
+      - run:
+          name: Run regressions tests
+          command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_regressiontests
