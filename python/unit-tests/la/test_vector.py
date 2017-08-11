@@ -390,38 +390,17 @@ class TestVectorForAnyBackend:
             array.resize([10])
 
 
-    # xfail on TypeError
-    xfail_type = pytest.mark.xfail(strict=True, raises=TypeError)
-    if six.PY2:
-        xfail_type_py3 = lambda case: case  # Not failing with Py2
-    else:
-        xfail_type_py3 = pytest.mark.xfail(strict=True, raises=TypeError)
-
     @pytest.mark.parametrize("operand", [t(42) for t in six.integer_types]
-                             + [42.0,
-                                numpy.sin(1.0),
-                                numpy.float(42.0),
-                                numpy.float64(42.0),
-                                numpy.float_(42.0),
-                                numpy.int(42.0),
-                                numpy.long(42.0),
-
-                                # Cases where promotion to double doesn't work
-                                #xfail_type(numpy.float16(42.0)),
-                                #xfail_type(numpy.float32(42.0)),
-                                #xfail_type(numpy.float128(42.0)),
-                                #xfail_type(numpy.longfloat(42.0)),
-                                #xfail_type(numpy.int8(42.0)),
-                                #xfail_type(numpy.int16(42.0)),
-                                #xfail_type(numpy.int32(42.0)),
-                                #xfail_type(numpy.intc(42.0)),
-                                #xfail_type(numpy.longdouble(42.0)),
-
-                                # Cases where promotion to double doesn't work on Py3
-                                #xfail_type_py3(numpy.int0(42.0)),
-                                #xfail_type_py3(numpy.int64(42.0)),
-                                #xfail_type_py3(numpy.int_(42.0)),
-                                #xfail_type_py3(numpy.longlong(42.0)),
+                             + [42.0, numpy.sin(1.0), numpy.float(42.0),
+                                numpy.float64(42.0), numpy.float_(42.0),
+                                numpy.int(42.0), numpy.long(42.0),
+                                numpy.float16(42.0), numpy.float16(42.0),
+                                numpy.float32(42.0), numpy.float128(42.0),
+                                numpy.longfloat(42.0), numpy.int8(42.0),
+                                numpy.int16(42.0), numpy.int32(42.0),
+                                numpy.intc(42.0), numpy.longdouble(42.0),
+                                numpy.int0(42.0), numpy.int64(42.0),
+                                numpy.int_(42.0), numpy.longlong(42.0),
                              ])
     def test_vector_type_priority_with_numpy(self, any_backend, operand):
         """Test that DOLFIN return types are prefered over NumPy types for
