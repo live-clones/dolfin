@@ -426,7 +426,7 @@ class TestVectorForAnyBackend:
     ])
 
 
-    def xtest_vector_type_priority_with_numpy(self, any_backend, operand):
+    def test_vector_type_priority_with_numpy(self, any_backend, operand):
         """Test that DOLFIN return types are prefered over NumPy types for
         binary operations on NumPy objects
 
