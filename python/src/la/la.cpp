@@ -492,7 +492,10 @@ namespace dolfin_wrappers
              std::vector<double> values;
              instance.get_local(values);
              return py::array_t<double>(values.size(), values.data());
-           });
+           })
+      .def_property_readonly("__array_priority__", [](const dolfin::GenericVector& self){ return 1000.0; });
+
+
 
     // dolfin::Matrix class
     py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>, dolfin::GenericMatrix>
