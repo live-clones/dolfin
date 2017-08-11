@@ -180,7 +180,9 @@ namespace dolfin_wrappers
     // dolfin::MeshDomain
     py::class_<dolfin::MeshDomains, std::shared_ptr<dolfin::MeshDomains>>(m, "MeshDomains", "Mesh domains object")
       .def("set_marker", &dolfin::MeshDomains::set_marker)
-      .def("get_marker", &dolfin::MeshDomains::get_marker);
+      .def("get_marker", &dolfin::MeshDomains::get_marker)
+      .def("markers", (std::map<std::size_t, std::size_t>& (dolfin::MeshDomains::*)(std::size_t))
+           &dolfin::MeshDomains::markers);
 
     //-------------------------------------------------------------------------
     // dolfin::BoundaryMesh class
