@@ -347,6 +347,7 @@ namespace dolfin_wrappers
       .def("__init__", [](dolfin::MeshFunction<SCALAR>& instance, std::shared_ptr<const dolfin::Mesh> mesh, std::size_t dim) \
            { new (&instance) dolfin::MeshFunction<SCALAR>(mesh, dim, 0); }) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, SCALAR>()) \
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::string>()) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, const dolfin::MeshValueCollection<SCALAR>&>()) \
       .def("__getitem__", (const SCALAR& (dolfin::MeshFunction<SCALAR>::*) \
                            (std::size_t) const) \

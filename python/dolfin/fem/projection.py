@@ -36,7 +36,7 @@ from dolfin.fem.assembling import assemble_system
 
 #from dolfin.functions.multimeshfunction import *
 #from dolfin.functions.expression import *
-#from dolfin.functions.functionspace import *
+from dolfin.function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
 #from dolfin.fem.assembling import *
 
 __all__ = ['project']
