@@ -20,8 +20,14 @@
 
 #ifdef HAS_SUNDIALS
 
-#include <cvode/cvode.h>
 #include <dolfin/la/SUNDIALSNVector.h>
+
+#include <cvode/cvode.h>
+#include <cvode/cvode_impl.h>
+#include <cvode/cvode_spgmr.h>
+#include <sundials/sundials_dense.h>
+#include <sundials/sundials_types.h>
+#include <sundials/sundials_iterative.h>
 
 namespace dolfin
 {
@@ -31,7 +37,7 @@ namespace dolfin
   public:
 
     /// Constructor
-    CVode(int cv_lmm = CV_BDF, int cv_iter = CV_ADAMS) : t(0.0)
+    CVode(int cv_lmm, int cv_iter) : t(0.0)
     {
       
       this->cv_lmm = cv_lmm;
@@ -44,6 +50,11 @@ namespace dolfin
       // (for use in "f" below)
       int flag = CVodeSetUserData(cvode_mem, (void *)this);
       dolfin_assert(flag == 0);
+//    if(cv_iter == CV_NEWTON){
+//        flag = CVSpgmr(cvode_mem, PREC_LEFT, 0);
+//        if(check_flag(&flag, "CVSpgmr", 1)) return(1); 
+//          flag = CVSpilsSetPreconditioner(cvode_mem, NULL, 0);
+//      }
     }
 
     /// Destructor
