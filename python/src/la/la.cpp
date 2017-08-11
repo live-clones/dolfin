@@ -289,8 +289,6 @@ namespace dolfin_wrappers
            { auto y = self.copy(); *y += x; return y;} )
       .def("__radd__", [](const dolfin::GenericVector& self, double a)
            { auto x = self.copy(); *x += a; return x;} )
-      .def("__radd__", [](const dolfin::GenericVector& self, const dolfin::GenericVector& x)
-           { auto y = self.copy(); *y += x; return y;} )
       // mult
       .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
            &dolfin::GenericVector::operator*=)
@@ -493,7 +491,7 @@ namespace dolfin_wrappers
              instance.get_local(values);
              return py::array_t<double>(values.size(), values.data());
            })
-      .def_property_readonly("__array_priority__", [](const dolfin::GenericVector& self){ return 1000.0; });
+      .def_property_readonly("__array_priority__", [](const dolfin::GenericVector& self){ return 0; });
 
 
 
