@@ -71,7 +71,7 @@ def K_M_vec(V_vec):
 # Tests
 
 @skip_if_not_PETsc_or_not_slepc
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_slepc_eigensolver_gen_hermitian(K_M):
     "Test SLEPc eigen solver"
 

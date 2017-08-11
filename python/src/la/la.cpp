@@ -763,13 +763,19 @@ namespace dolfin_wrappers
            &dolfin::SLEPcEigenSolver::set_deflation_space)
       .def("solve", (void (dolfin::SLEPcEigenSolver::*)(std::size_t))
            &dolfin::SLEPcEigenSolver::solve)
+      .def("get_eigenvalue", [](dolfin::SLEPcEigenSolver& self, std::size_t i)
+           {
+             double lr, lc;
+             self.get_eigenvalue(lr, lc, i);
+             return py::make_tuple(lr, lc);
+           }, py::arg("i")=0)
       .def("get_eigenpair", [](dolfin::SLEPcEigenSolver& self, std::size_t i)
            {
              double lr, lc;
-             dolfin::Vector r, c;
+             dolfin::PETScVector r, c;
              self.get_eigenpair(lr, lc, r, c, i);
              return py::make_tuple(lr, lc, r, c);
-           });
+           }, py::arg("i")=0);
 
     #endif
 

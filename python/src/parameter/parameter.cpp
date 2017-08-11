@@ -96,6 +96,8 @@ namespace dolfin_wrappers
                throw std::runtime_error("Invalid parameter key: " + key);
            }, py::return_value_policy::automatic_reference)
       */
+      // FIXME: Implement checks and error handling below
+      // FIXME: Can these functions be consolidated. Maybe boost::variant can help?
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, py::none value)
            {
              auto param = self.find_parameter(key);
@@ -103,6 +105,12 @@ namespace dolfin_wrappers
                throw std::runtime_error("Parameter not found in Parameters object");
              param->reset();
            }, "Reset Parameter (mark as unset) by setting to None.")
+      .def("__setitem__", [](dolfin::Parameters& self, std::string key, bool value)
+           {
+             auto param = self.find_parameter(key);
+             *param = value;
+//           })
+           }, py::arg(), py::arg().noconvert())
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
              auto param = self.find_parameter(key);
@@ -110,12 +118,12 @@ namespace dolfin_wrappers
                throw std::runtime_error("Parameter not found in Parameters object");
              *param = value;
            })
-      .def("__setitem__", [](dolfin::Parameters& self, std::string key, bool value)
+      .def("__setitem__", [](dolfin::Parameters& self, std::string key, int value)
            {
              auto param = self.find_parameter(key);
              *param = value;
            })
-      .def("__setitem__", [](dolfin::Parameters& self, std::string key, int value)
+      .def("__setitem__", [](dolfin::Parameters& self, std::string key, double value)
            {
              auto param = self.find_parameter(key);
              *param = value;
