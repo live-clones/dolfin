@@ -88,10 +88,10 @@ int CVode::fJac(N_Vector v, N_Vector Jv, double t, N_Vector y, N_Vector fy, void
 
   CVode* cv = static_cast<CVode*>(user_data);
 
-  auto vvec = static_cast<SUNDIALSNVector*>(v->content)->vec();
+  auto vvec = static_cast<const SUNDIALSNVector*>(v->content)->vec();
   auto Jvvec = static_cast<SUNDIALSNVector*>(Jv->content)->vec();
 
-  auto yvec = static_cast<SUNDIALSNVector*>(y->content)->vec();
+  auto yvec = static_cast<const SUNDIALSNVector*>(y->content)->vec();
   auto fyvec = static_cast<SUNDIALSNVector*>(fy->content)->vec();
   auto tmpvec = static_cast<SUNDIALSNVector*>(tmp->content)->vec();
 
@@ -105,7 +105,7 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   // passed though in user_data
   CVode* cv = static_cast<CVode*>(user_data);
 
-  auto uvec = static_cast<SUNDIALSNVector*>(u->content)->vec();
+  auto uvec = static_cast<const SUNDIALSNVector*>(u->content)->vec();
   auto udotvec = static_cast<SUNDIALSNVector*>(udot->content)->vec();
 
   // Callback to actually calculate the derivatives (user function)
@@ -136,7 +136,7 @@ int CVode::Jacobian(std::shared_ptr<GenericVector> v,
 std::map<std::string, double> CVode::statistics()
 {
   std::map<std::string, double> stats;
-  auto cv = static_cast<CVodeMem>(cvode_mem);
+  auto cv = static_cast<const CVodeMem>(cvode_mem);
 
   stats["Steps"] = cv->cv_nst;
   stats["RHSEvals"] = cv->cv_nfe;
