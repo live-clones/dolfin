@@ -464,7 +464,8 @@ namespace dolfin_wrappers
       .def_static("radius_ratios", &dolfin::MeshQuality::radius_ratios)
       .def_static("radius_ratio_histogram_data", &dolfin::MeshQuality::radius_ratio_histogram_data)
       .def_static("radius_ratio_min_max", &dolfin::MeshQuality::radius_ratio_min_max)
-      .def_static("radius_ratio_matplotlib_histogram", &dolfin::MeshQuality::radius_ratio_matplotlib_histogram)
+      .def_static("radius_ratio_matplotlib_histogram", &dolfin::MeshQuality::radius_ratio_matplotlib_histogram,
+                  py::arg("mesh"), py::arg("num_bins")=50)
       .def_static("dihedral_angles_min_max", &dolfin::MeshQuality::dihedral_angles_min_max)
       .def_static("dihedral_angles_matplotlib_histogram", &dolfin::MeshQuality::dihedral_angles_matplotlib_histogram);
 
