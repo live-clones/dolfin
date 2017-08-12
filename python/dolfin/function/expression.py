@@ -57,7 +57,7 @@ class _InterfaceExpression(cpp.function.Expression):
         def wrapped_eval_cell(self, values, x, cell):
             self.user_expression.eval_cell(values, x, cell)
 
-        # Attach user-provied Python eval functions (if they exist in
+        # Attach user-provided Python eval functions (if they exist in
         # the user expression class) to the C++ class
         if hasattr(user_expression, 'eval'):
             self.eval = types.MethodType(wrapped_eval, self)

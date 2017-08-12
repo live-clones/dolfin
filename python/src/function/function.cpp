@@ -308,8 +308,18 @@ namespace dolfin_wrappers
       .def_static("interpolate", [](py::object f1, py::object f2)
                   {
                     auto _f1 = f1.attr("_cpp_object").cast<dolfin::Function*>();
-                    auto _f2 = f2.attr("_cpp_object").cast<const dolfin::Function*>();
-                    dolfin::LagrangeInterpolator::interpolate(*_f1, *_f2);
+                    auto _f2cpp = f2.attr("_cpp_object");
+                    if (py::isinstance<dolfin::Function>(_f2cpp))
+                    {
+                      auto _f2 = _f2cpp.cast<const dolfin::Function*>();
+                      dolfin::LagrangeInterpolator::interpolate(*_f1, *_f2);
+                    }
+                    if (py::isinstance<dolfin::Expression>(_f2cpp))
+                    {
+                      auto _f2 = _f2cpp.cast<const dolfin::Expression*>();
+                      dolfin::LagrangeInterpolator::interpolate(*_f1, *_f2);
+                    }
+
                   });
 
 

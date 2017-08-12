@@ -37,7 +37,6 @@ class Quadratic3D(UserExpression):
         values[0] = x[0]*x[0] + x[1]*x[1] + x[2]*x[2] + 1.0
 
 
-@pytest.mark.xfail
 def test_functional2D():
     """Test integration of function interpolated in non-matching meshes"""
 
@@ -63,7 +62,6 @@ def test_functional2D():
     assert round(assemble(u0*dx) - assemble(u1*dx), 10) == 0
 
 
-@pytest.mark.xfail
 def test_functional3D():
     """Test integration of function interpolated in non-matching meshes"""
 
