@@ -402,7 +402,6 @@ def test_fail_expression_compilation():
         invalidCppExpression()
 
 
-@pytest.mark.xfail
 def test_element_instantiation():
     class F0(UserExpression):
         def eval(self, values, x):
@@ -572,7 +571,6 @@ def test_generic_function_attributes(mesh, V):
         te.user_parameters.__setitem__("values", 1.0)
 
 
-@pytest.mark.xfail
 def test_doc_string_eval():
     """
     This test tests all features documented in the doc string of
@@ -787,7 +785,6 @@ def test_doc_string_compiled_expression_with_system_headers():
         Expression(code_not_compile)
 
 
-@pytest.mark.xfail
 def test_doc_string_python_expressions(mesh):
     """This test tests all features documented in the doc string of
     Expression. If this test breaks and it is fixed the corresponding
