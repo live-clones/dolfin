@@ -487,19 +487,19 @@ namespace dolfin_wrappers
     {
       using dolfin::SubDomain::SubDomain;
 
-      bool inside(const Eigen::Ref<Eigen::VectorXd> x, bool on_boundary) const override
+      bool inside(Eigen::Ref<const Eigen::VectorXd> x, bool on_boundary) const override
       { PYBIND11_OVERLOAD(bool, dolfin::SubDomain, inside, x, on_boundary); }
 
-      void map(const Eigen::Ref<Eigen::VectorXd> x, Eigen::Ref<Eigen::VectorXd> y) const override
+      void map(Eigen::Ref<const Eigen::VectorXd> x, Eigen::Ref<Eigen::VectorXd> y) const override
       { PYBIND11_OVERLOAD(void, dolfin::SubDomain, map, x, y); }
     };
 
     py::class_<dolfin::SubDomain, std::shared_ptr<dolfin::SubDomain>, PySubDomain>
       (m, "SubDomain", "DOLFIN SubDomain object")
       .def(py::init<double>(), py::arg("map_tol")=DOLFIN_EPS)
-      .def("inside", (bool (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>, bool) const)
+      .def("inside", (bool (dolfin::SubDomain::*)(Eigen::Ref<const Eigen::VectorXd>, bool) const)
            &dolfin::SubDomain::inside)
-      .def("map", (void (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<Eigen::VectorXd>) const)
+      .def("map", (void (dolfin::SubDomain::*)(Eigen::Ref<const Eigen::VectorXd>, Eigen::Ref<Eigen::VectorXd>) const)
            &dolfin::SubDomain::map)
       .def("set_property", &dolfin::SubDomain::set_property)
       .def("get_property", &dolfin::SubDomain::get_property)

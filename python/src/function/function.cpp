@@ -67,10 +67,10 @@ namespace dolfin_wrappers
       .def("value_dimension", &dolfin::GenericFunction::value_dimension)
       .def("value_size", &dolfin::GenericFunction::value_size)
       .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>,
-                                                      const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
+                                                      Eigen::Ref<const Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::GenericFunction::eval,
            "Evaluate GenericFunction (cell version)")
-      .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>) const)
+      .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<const Eigen::VectorXd>) const)
            &dolfin::GenericFunction::eval, py::arg("values"), py::arg("x"), "Evaluate GenericFunction")
       .def("compute_vertex_values", [](dolfin::GenericFunction& self, const dolfin::Mesh& mesh)
            { std::vector<double> values;
@@ -98,11 +98,11 @@ namespace dolfin_wrappers
       using dolfin::Expression::Expression;
 
       void eval(Eigen::Ref<Eigen::VectorXd> values,
-                const Eigen::Ref<Eigen::VectorXd> x) const override
+                Eigen::Ref<const Eigen::VectorXd> x) const override
       { PYBIND11_OVERLOAD(void, dolfin::Expression, eval, values, x); }
 
       void eval(Eigen::Ref<Eigen::VectorXd> values,
-                const Eigen::Ref<Eigen::VectorXd> x,
+                Eigen::Ref<const Eigen::VectorXd> x,
                 const ufc::cell& cell) const override
       { PYBIND11_OVERLOAD_NAME(void, dolfin::Expression, "eval_cell", eval, values, x, cell); }
 
@@ -114,7 +114,7 @@ namespace dolfin_wrappers
       .def(py::init<std::size_t>())
       .def(py::init<std::size_t, std::size_t>())
       .def(py::init<std::vector<std::size_t>>())
-      .def("__call__", [](const dolfin::Expression& self, const Eigen::Ref<Eigen::VectorXd> x)
+      .def("__call__", [](const dolfin::Expression& self, Eigen::Ref<const Eigen::VectorXd> x)
            {
              Eigen::VectorXd f(self.value_size());
              self.eval(f, x);
@@ -128,10 +128,10 @@ namespace dolfin_wrappers
              return f;
            })
       .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>,
-                                                      const Eigen::Ref<Eigen::VectorXd>, const ufc::cell&) const)
+                                                 Eigen::Ref<const Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::Expression::eval,
            "Evaluate Expression (cell version)")
-      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, const Eigen::Ref<Eigen::VectorXd>) const)
+      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<const Eigen::VectorXd>) const)
            &dolfin::Expression::eval, py::arg("values"), py::arg("x"), "Evaluate Expression")
       .def("value_rank", &dolfin::Expression::value_rank)
       .def("value_dimension", &dolfin::Expression::value_dimension)

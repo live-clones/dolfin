@@ -218,26 +218,25 @@ class UserExpression(BaseExpression):
         #self._cpp_object = _InterfaceExpression(self)
 
         # Extract data
-        #arguments = ("element", "degree", "cell", "domain", "name", "label", "mpi_comm")
-        element = kwargs.get("element", None)
-        degree = kwargs.get("degree", None)
-        cell = kwargs.get("cell", None)
-        domain = kwargs.get("domain", None)
-        name = kwargs.get("name", None)
-        label = kwargs.get("label", None)
-        mpi_comm = kwargs.get("mpi_comm", None)
+        element = kwargs.pop("element", None)
+        degree = kwargs.pop("degree", 2)
+        cell = kwargs.pop("cell", None)
+        domain = kwargs.pop("domain", None)
+        name = kwargs.pop("name", None)
+        label = kwargs.pop("label", None)
+        mpi_comm = kwargs.pop("mpi_comm", None)
+        if (len(kwargs) > 0):
+            raise RuntimeError("Invalid keyword argument")
 
         # Deduce element type if not provided
         if element is None:
             if hasattr(self, "value_shape"):
                 value_shape = self.value_shape()
-                #value_shape = tuple(self.value_dimension(i)
-                #                    for i in range(self.value_rank()))
             else:
                 print("WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.")
                 value_shape = ()
 
-            element = _select_element(family=None, cell=cell, degree=2,
+            element = _select_element(family=None, cell=cell, degree=degree,
                                       value_shape=value_shape)
         else:
             value_shape = element.value_shape()

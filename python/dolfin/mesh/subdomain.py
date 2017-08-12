@@ -40,7 +40,7 @@ namespace dolfin
           }}
 
        // Return true for points inside the sub domain
-       bool inside(const Eigen::Ref<Eigen::VectorXd> x, bool on_boundary) const final
+       bool inside(const Eigen::Ref<const Eigen::VectorXd> x, bool on_boundary) const final
        {{
          return {inside};
        }}

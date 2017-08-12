@@ -48,7 +48,6 @@ class Form(cpp.fem.Form):
             if isinstance(self.coefficients[i], cpp.function.GenericFunction):
                 self.set_coefficient(i, self.coefficients[i])
 
-
         # Attach mesh (because function spaces and coefficients may be
         # empty lists)
         if not function_spaces:
