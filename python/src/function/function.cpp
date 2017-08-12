@@ -314,12 +314,13 @@ namespace dolfin_wrappers
                       auto _f2 = _f2cpp.cast<const dolfin::Function*>();
                       dolfin::LagrangeInterpolator::interpolate(*_f1, *_f2);
                     }
-                    if (py::isinstance<dolfin::Expression>(_f2cpp))
+                    else if (py::isinstance<dolfin::Expression>(_f2cpp))
                     {
                       auto _f2 = _f2cpp.cast<const dolfin::Expression*>();
                       dolfin::LagrangeInterpolator::interpolate(*_f1, *_f2);
                     }
-
+                    else
+                      throw py::type_error("Can only interpolate Expression or Function");
                   });
 
 
