@@ -132,6 +132,8 @@ namespace dolfin_wrappers
            &dolfin::Mesh::data, "Data associated with a mesh")
       .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)()) &dolfin::Mesh::geometry,
            py::return_value_policy::reference, "Mesh geometry")
+      .def("hmax", &dolfin::Mesh::hmax)
+      .def("hmin", &dolfin::Mesh::hmin)
       .def("id", &dolfin::Mesh::id)
       .def("init_global", &dolfin::Mesh::init_global)
       .def("init", (void (dolfin::Mesh::*)() const) &dolfin::Mesh::init)

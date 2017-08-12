@@ -691,7 +691,8 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::PETScPreconditioner, std::shared_ptr<dolfin::PETScPreconditioner>>
       (m, "PETScPreconditioner", "DOLFIN PETScPreconditioner object")
-      .def(py::init<std::string>(), py::arg("type")="default");
+      .def(py::init<std::string>(), py::arg("type")="default")
+      .def("preconditioners", &dolfin::PETScPreconditioner::preconditioners);
 
     #endif
     //-----------------------------------------------------------------------------

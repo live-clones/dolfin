@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from six import string_types
+import numpy
 import hashlib
 import dijitso
 import dolfin.cpp as cpp
@@ -26,14 +28,19 @@ def compile_class(cpp_data):
     params['build']['libs'] = d["libraries"]
     params['build']['lib_dirs'] = d["library_dirs"]
 
-#    if not isinstance(statements, (string_types, tuple, list)):
-#        raise RuntimeError("Expression must be a string, or a list or tuple of strings")
-
     name = cpp_data['name']
     if name not in ('subdomain', 'expression'):
         raise ValueError("DOLFIN JIT only for SubDomain and Expression")
     statements = cpp_data['statements']
     properties = cpp_data['properties']
+
+    if not isinstance(statements, (string_types, tuple, list)):
+        raise RuntimeError("Expression must be a string, or a list or tuple of strings")
+
+    # Flatten tuple of tuples (2D array) and get value_shape
+    statement_array = numpy.array(statements)
+    cpp_data['statements'] = tuple(statement_array.flatten())
+    cpp_data['value_shape'] = statement_array.shape
 
     hash_str = str(statements) + str(properties.keys())
     module_hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()

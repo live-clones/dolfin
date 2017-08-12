@@ -38,7 +38,7 @@ if has_hdf5():
 from .cpp.ale import ALE
 from .cpp import MPI
 from .cpp.function import Expression, Constant, FunctionAXPY, LagrangeInterpolator
-from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates,
+from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates, create_mesh,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
                       DiscreteOperators, LinearVariationalSolver,
                       NonlinearVariationalSolver, SparsityPatternBuilder)
@@ -117,7 +117,7 @@ from .mesh.meshvaluecollection import MeshValueCollection
 from .mesh.subdomain import CompiledSubDomain
 
 # ufl
-from ufl import (FiniteElement, VectorElement, MixedElement, rhs, lhs,
+from ufl import (FiniteElement, TensorElement, VectorElement, MixedElement, rhs, lhs,
                  conditional, le, lt, ge, gt, split,
                  inner, dot, grad, dx, div, Measure, det, pi, sin, cos, ln, exp, sqrt, Dx,
                  ds, dS, dP, triangle, tetrahedron, avg, jump, sym, tr, Identity,

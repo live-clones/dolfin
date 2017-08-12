@@ -271,7 +271,7 @@ def mplot_dirichletbc(ax, obj, **kwargs):
 
 def _plot_matplotlib(obj, mesh, kwargs):
     if not isinstance(obj, _matplotlib_plottable_types):
-        cpp.warning("Don't know how to plot type %s." % type(obj))
+        print("Don't know how to plot type %s." % type(obj))
         return
 
     # Plotting is not working with all ufl cells

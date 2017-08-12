@@ -439,10 +439,18 @@ namespace dolfin_wrappers
                                        const dolfin::GenericVector&))
           &dolfin::assemble_system);
 
-     m.def("assemble_local", (Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(*)(const dolfin::Form&, const dolfin::Cell&))
+    m.def("assemble_local", (Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(*)(const dolfin::Form&, const dolfin::Cell&))
            &dolfin::assemble_local);
 
     // FEM utils functions
+    m.def("create_mesh", &dolfin::create_mesh)
+     .def("create_mesh", [](const py::object u)
+          {
+            auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+            dolfin::create_mesh(*_u);
+          });
+
+
     m.def("set_coordinates", &dolfin::set_coordinates);
     m.def("set_coordinates", [](dolfin::MeshGeometry& geometry, const py::object u)
           {
