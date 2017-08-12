@@ -289,7 +289,6 @@ def test_meshfunction_expression():
     assert v[1] == float(c[1])
 
 
-@pytest.mark.xfail
 def test_no_write_to_const_array():
     class F1(UserExpression):
         def eval(self, values, x):
