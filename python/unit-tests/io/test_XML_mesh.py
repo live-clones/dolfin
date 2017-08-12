@@ -40,7 +40,7 @@ def test_save_plain_mesh3D(cd_tempdir):
     f << mesh
 
 @skip_in_parallel
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_mesh_domains_io(cd_tempdir):
     "Test input/output for mesh domains"
 

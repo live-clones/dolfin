@@ -100,7 +100,7 @@ def test_ipow():
     assert ipow(12345, 1) == 12345
     assert ipow(2, 15) == 32768
 
-@pytest.mark.xfail
+@pytest.mark.skip
 def test_ipow_overflow():
     # This will fail because of overflow in dolfin/math/basic.cpp
     # on 64-bit size_t. When __builtin_mul_overflow is employed
