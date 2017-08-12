@@ -121,11 +121,11 @@ def test_arbitrary_eval(mesh):
 
 @pytest.mark.xfail
 def test_ufl_eval():
-    class F0(Expression):
+    class F0(UserExpression):
         def eval(self, values, x):
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
 
-    class V0(Expression):
+    class V0(UserExpression):
         def eval(self, values, x):
             values[0] = x[0]**2
             values[1] = x[1]**2
@@ -321,32 +321,32 @@ def test_compute_vertex_values(mesh):
 def test_wrong_sub_classing():
 
     def noAttributes():
-        class NoAttributes(Expression):
+        class NoAttributes(UserExpression):
             pass
 
     def wrongEvalAttribute():
-        class WrongEvalAttribute(Expression):
+        class WrongEvalAttribute(UserExpression):
             def eval(values, x):
                 pass
 
     def wrongEvalDataAttribute():
-        class WrongEvalDataAttribute(Expression):
+        class WrongEvalDataAttribute(UserExpression):
             def eval_cell(values, data):
                 pass
 
     def noEvalAttribute():
-        class NoEvalAttribute(Expression):
+        class NoEvalAttribute(UserExpression):
             def evaluate(self, values, data):
                 pass
 
     def wrongArgs():
-        class WrongArgs(Expression):
+        class WrongArgs(UserExpression):
             def eval(self, values, x):
                 pass
         e = WrongArgs(V)
 
     def deprecationWarning():
-        class Deprecated(Expression):
+        class Deprecated(UserExpression):
             def eval(self, values, x):
                 pass
 
@@ -497,50 +497,47 @@ def test_expression_self_assignment(mesh, V):
         e2(0, 0)
 
 
-@pytest.mark.xfail
+@pytest.mark.skip("Attaches GenericFunction to Expression - not working")
 def test_generic_function_attributes(mesh, V):
 
-#    Commenting out until we decide what to do about
-#    attaching GenericFunctions to JIT Expressions
-#
     tc = Constant(2.0)
-#    te = Expression("value", value=tc, degree=0)
+    te = Expression("value", value=tc, degree=0)
 
-#    assert round(tc(0) - te(0), 7) == 0
-#    tc.assign(1.0)
-#    assert round(tc(0) - te(0), 7) == 0
+    assert round(tc(0) - te(0), 7) == 0
+    tc.assign(1.0)
+    assert round(tc(0) - te(0), 7) == 0
 
-#    tf = Function(V)
-#    tf.vector()[:] = 1.0
+    tf = Function(V)
+    tf.vector()[:] = 1.0
 
-#    e0 = Expression(["2*t", "-t"], t=tc, degree=0)
+    e0 = Expression(["2*t", "-t"], t=tc, degree=0)
     e1 = Expression(["2*t0", "-t0"], t0=1.0, degree=0)
-#    e2 = Expression("t", t=te, degree=0)
-#    e3 = Expression("t", t=tf, degree=0)
+    e2 = Expression("t", t=te, degree=0)
+    e3 = Expression("t", t=tf, degree=0)
 
-#    assert (round(assemble(inner(e0, e0)*dx(mesh)) -
-#                  assemble(inner(e1, e1)*dx(mesh)), 7) == 0)
+    assert (round(assemble(inner(e0, e0)*dx(mesh)) -
+                  assemble(inner(e1, e1)*dx(mesh)), 7) == 0)
 
-#    assert (round(assemble(inner(e2, e2)*dx(mesh)) -
-#                  assemble(inner(e3, e3)*dx(mesh)), 7) == 0)
+    assert (round(assemble(inner(e2, e2)*dx(mesh)) -
+                  assemble(inner(e3, e3)*dx(mesh)), 7) == 0)
 
-#    tc.assign(3.0)
+    tc.assign(3.0)
     e1.t0 = float(tc)
 
-#    assert (round(assemble(inner(e0, e0)*dx(mesh)) -
-#                  assemble(inner(e1, e1)*dx(mesh)), 7) == 0)
+    assert (round(assemble(inner(e0, e0)*dx(mesh)) -
+                  assemble(inner(e1, e1)*dx(mesh)), 7) == 0)
 
     tc.assign(5.0)
 
-#    assert assemble(inner(e2, e2)*dx(mesh)) != assemble(inner(e3, e3)*dx(mesh))
+    assert assemble(inner(e2, e2)*dx(mesh)) != assemble(inner(e3, e3)*dx(mesh))
 
-#    assert (round(assemble(e0[0]*dx(mesh)) -
-#                  assemble(2*e2*dx(mesh)), 7) == 0)
+    assert (round(assemble(e0[0]*dx(mesh)) -
+                  assemble(2*e2*dx(mesh)), 7) == 0)
 
-#    e2.t = e3.t
+    e2.t = e3.t
 
-#    assert (round(assemble(inner(e2, e2)*dx(mesh)) -
-#                  assemble(inner(e3, e3)*dx(mesh)), 7) == 0)
+    assert (round(assemble(inner(e2, e2)*dx(mesh)) -
+                  assemble(inner(e3, e3)*dx(mesh)), 7) == 0)
 
     W = FunctionSpace(mesh, V.ufl_element()*V.ufl_element())
 
@@ -800,7 +797,7 @@ def test_doc_string_python_expressions(mesh):
 
     square = UnitSquareMesh(4, 4)
 
-    class MyExpression0(Expression):
+    class MyExpression0(UserExpression):
         def eval(self, value, x):
             dx = x[0] - 0.5
             dy = x[1] - 0.5
@@ -821,7 +818,7 @@ def test_doc_string_python_expressions(mesh):
     ufc_cell_attrs = ["cell_shape", "index", "topological_dimension",
                       "geometric_dimension", "local_facet", "mesh_identifier"]
 
-    class MyExpression1(Expression):
+    class MyExpression1(UserExpression):
         def eval_cell(self_expr, value, x, ufc_cell):
             # Check attributes in ufc cell
             for attr in ufc_cell_attrs:
@@ -835,7 +832,7 @@ def test_doc_string_python_expressions(mesh):
     f1 = MyExpression1(degree=0)
     assemble(f1*ds(square))
 
-    class MyExpression2(Expression):
+    class MyExpression2(UserExpression):
         def __init__(self, mesh, domain, *arg, **kwargs):
             self._mesh = mesh
             self._domain = domain
