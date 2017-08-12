@@ -691,7 +691,8 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::PETScPreconditioner, std::shared_ptr<dolfin::PETScPreconditioner>>
       (m, "PETScPreconditioner", "DOLFIN PETScPreconditioner object")
-      .def(py::init<std::string>(), py::arg("type")="default");
+      .def(py::init<std::string>(), py::arg("type")="default")
+      .def("preconditioners", &dolfin::PETScPreconditioner::preconditioners);
 
     #endif
     //-----------------------------------------------------------------------------
@@ -702,7 +703,8 @@ namespace dolfin_wrappers
       (m, "GenericLinearSolver", "DOLFIN GenericLinearSolver object");
 
     // dolfin::LUSolver class
-    py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>>
+    py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>,
+      dolfin::GenericLinearSolver>
     (m, "LUSolver", "DOLFIN LUSolver object")
       .def(py::init<>())
       .def(py::init<std::shared_ptr<const dolfin::GenericLinearOperator>, std::string>(),

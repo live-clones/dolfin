@@ -40,6 +40,7 @@ namespace dolfin_wrappers
     m.def("info", [](const dolfin::Variable& v){ dolfin::info(v); });
     m.def("info", [](const dolfin::Variable& v, bool verbose){ dolfin::info(v, verbose); });
     m.def("info", [](std::string s){ dolfin::info(s); });
+    m.def("info", [](const dolfin::Parameters& p, bool verbose){ dolfin::info(p, verbose); });
 
   }
 

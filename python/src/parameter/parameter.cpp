@@ -133,6 +133,20 @@ namespace dolfin_wrappers
              auto param = self.find_parameter_set(key);
              *param = other;
            })
+      .def("parse", [](dolfin::Parameters& self, py::list argv)
+           {
+             if(argv.size() == 0)
+               argv = py::module::import("sys").attr("argv").cast<py::list>();
+             int argc = argv.size();
+             std::vector<const char*> aptr;
+             std::vector<std::string> a;
+             for (auto q : argv)
+             {
+               a.push_back(q.cast<std::string>());
+               aptr.push_back(a.back().c_str());
+             }
+             self.parse(argc, const_cast<char**>(aptr.data()));
+           }, py::arg("argv")=py::list())
       .def("copy", [](dolfin::Parameters& self) { return dolfin::Parameters(self); })
       .def("assign", [](dolfin::Parameters& self, dolfin::Parameters& other) { self = other;});
 

@@ -68,7 +68,7 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
     _set_prop = """ if (name == "{name}") {name} = value;\n"""
     _get_prop = """ if (name == "{name}") return {name};\n"""
 
-    inside_code = class_data['statements']
+    inside_code = class_data['statements'][0]
 
     members = ""
     get_props = ""
