@@ -45,11 +45,19 @@ namespace dolfin_wrappers
 
   void function(py::module& m)
   {
-    // Delcare ufc::cell
+    // ufc::shape
+    py::class_<ufc::shape>(m, "ufc_shape");
+
+    // ufc::cell
     py::class_<ufc::cell, std::shared_ptr<ufc::cell>>(m, "ufc_cell")
+      .def_readonly("cell_shape", &ufc::cell::cell_shape)
+      .def_readonly("topological_dimension", &ufc::cell::topological_dimension)
+      .def_readonly("geometric_dimension", &ufc::cell::geometric_dimension)
+      .def_readonly("local_facet", &ufc::cell::local_facet)
+      .def_readonly("mesh_identifier", &ufc::cell::mesh_identifier)
       .def_readonly("index", &ufc::cell::index);
 
-    // Delcare ufc::function
+    // ufc::function
     py::class_<ufc::function, std::shared_ptr<ufc::function>>(m, "ufc_function");
 
     // dolfin::GenericFunction

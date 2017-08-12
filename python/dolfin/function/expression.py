@@ -237,7 +237,7 @@ class UserExpression(BaseExpression):
                 print("WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.")
                 value_shape = ()
 
-            element = _select_element(family=None, cell=None, degree=2,
+            element = _select_element(family=None, cell=cell, degree=2,
                                       value_shape=value_shape)
         else:
             value_shape = element.value_shape()
