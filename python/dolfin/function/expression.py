@@ -212,14 +212,6 @@ class UserExpression(BaseExpression):
 
     """
 
-    # Swap out __init__ on subclasses and call UserExpression.__init__ first
-    def __init_subclass__(self):
-        def init(self, *args, **kwargs):
-            UserExpression.__init__(self, **kwargs)
-            self._user_init(*args, **kwargs)
-        self._user_init = self.__init__
-        self.__init__ = init
-
     def __init__(self, *args, **kwargs):
         #self._cpp_object = _InterfaceExpression(self)
 
