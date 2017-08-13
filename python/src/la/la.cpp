@@ -742,6 +742,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::PETScKrylovSolver, std::shared_ptr<dolfin::PETScKrylovSolver>,
                dolfin::GenericLinearSolver>
       (m, "PETScKrylovSolver", "DOLFIN PETScKrylovSolver object")
+      .def(py::init<>())
+      .def(py::init<std::string>())
       .def(py::init<std::string, std::string>())
       .def(py::init<std::string, std::shared_ptr<dolfin::PETScPreconditioner>>())
       .def("set_operator",  (void (dolfin::PETScKrylovSolver::*)(std::shared_ptr<const dolfin::GenericLinearOperator>))
@@ -751,16 +753,21 @@ namespace dolfin_wrappers
            &dolfin::PETScKrylovSolver::set_operators)
       .def("solve", (std::size_t (dolfin::PETScKrylovSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
            &dolfin::PETScKrylovSolver::solve)
+      .def("set_from_options", &dolfin::PETScKrylovSolver::set_from_options)
       .def("set_reuse_preconditioner", &dolfin::PETScKrylovSolver::set_reuse_preconditioner);
     #endif
 
     #ifdef HAS_SLEPC
     py::class_<dolfin::SLEPcEigenSolver, std::shared_ptr<dolfin::SLEPcEigenSolver>, dolfin::Variable>(m, "SLEPcEigenSolver")
+      .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>>())
       .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>, std::shared_ptr<const dolfin::PETScMatrix>>())
+      .def("get_number_converged", &dolfin::SLEPcEigenSolver::get_number_converged)
       .def("set_deflation_space", (void (dolfin::SLEPcEigenSolver::*)(const dolfin::VectorSpaceBasis&))
            &dolfin::SLEPcEigenSolver::set_deflation_space)
       .def("set_deflation_space", (void (dolfin::SLEPcEigenSolver::*)(const dolfin::PETScVector&))
            &dolfin::SLEPcEigenSolver::set_deflation_space)
+      .def("solve", (void (dolfin::SLEPcEigenSolver::*)())
+           &dolfin::SLEPcEigenSolver::solve)
       .def("solve", (void (dolfin::SLEPcEigenSolver::*)(std::size_t))
            &dolfin::SLEPcEigenSolver::solve)
       .def("get_eigenvalue", [](dolfin::SLEPcEigenSolver& self, std::size_t i)
