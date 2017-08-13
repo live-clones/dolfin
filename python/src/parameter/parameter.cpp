@@ -18,12 +18,11 @@
 #include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <dolfin/parameter/GlobalParameters.h>
 #include <dolfin/parameter/Parameter.h>
 #include <dolfin/parameter/Parameters.h>
-
-
 #include "../mpi_interface.h"
 
 namespace py = pybind11;
@@ -40,6 +39,7 @@ namespace dolfin_wrappers
       .def(py::init<>())
       .def(py::init<std::string>())
       .def(py::init<dolfin::Parameters>())
+      // Use boost::variant to simplify
       .def("add", (void (dolfin::Parameters::*)(std::string, std::string)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, bool)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, int)) &dolfin::Parameters::add)
@@ -109,7 +109,7 @@ namespace dolfin_wrappers
            {
              auto param = self.find_parameter(key);
              *param = value;
-//           })
+           })
            }, py::arg(), py::arg().noconvert())
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
@@ -152,27 +152,7 @@ namespace dolfin_wrappers
 
     // dolfin::Parameter
     py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>(m, "Parameter")
-      //.def("value", &dolfin::Parameter::value)
-      .def("value", [](dolfin::Parameter& self)
-           {
-             // Work-around for https://github.com/pybind/pybind11/issues/988
-             //boost::variant<int, double> v = 2.3;
-             //return v;
-             auto _v = self.value();
-             mapbox::util::variant<bool, int, double, std::string> v;
-             if (_v.which() == 1)
-               v = boost::get<bool>(_v);
-             else if (_v.which() == 2)
-               v = boost::get<int>(_v);
-             else if (_v.which() == 3)
-               v = boost::get<double>(_v);
-             else if (_v.which() == 4)
-               v = boost::get<std::string>(_v);
-             else
-               throw std::runtime_error("Cannot get parameter value");
-
-             return v;
-           })
+      .def("value", &dolfin::Parameter::value)
       .def("__str__", &dolfin::Parameter::value_str);
 
     py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,
