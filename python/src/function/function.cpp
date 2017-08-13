@@ -204,6 +204,7 @@ namespace dolfin_wrappers
              auto _v = v.attr("_cpp_object").cast<dolfin::Function*>();
              instance.extrapolate(*_v);
            })
+      .def("sub", &dolfin::Function::operator[])
       .def("get_allow_extrapolation", &dolfin::Function::get_allow_extrapolation)
       .def("interpolate", (void (dolfin::Function::*)(const dolfin::GenericFunction&))
            &dolfin::Function::interpolate, "Interpolate the function u")

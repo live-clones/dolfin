@@ -223,8 +223,10 @@ class Function(ufl.Coefficient):
             elif len(args) == 2:
                 if isinstance(args[1], cpp.la.GenericVector):
                     self._cpp_object = cpp.function.Function(V._cpp_object, args[1])
+                elif isinstance(args[1], cpp.function.Function):
+                    self._cpp_object = args[1]
                 else:
-                    raise RuntimeError("Don't know what to do yet")
+                    raise RuntimeError("Don't know what to do with ", type(args[1]))
             else:
                 raise RuntimeError("Don't know what to do yet")
 
@@ -360,7 +362,7 @@ class Function(ufl.Coefficient):
         print("TTT:", type(self._cpp_object), type(rhs))
 
         from ufl.classes import ComponentTensor, Sum, Product, Division
-        #if isinstance(rhs, (cpp.function.Function, cpp.function.Expression, cpp.function.FunctionAXPY)):
+
         if isinstance(rhs, (cpp.function.Function, cpp.function.Expression, cpp.function.FunctionAXPY)):
             # Avoid self assignment
             if self == rhs:
@@ -460,8 +462,8 @@ class Function(ufl.Coefficient):
 
         # Create and instantiate the Function
         if deepcopy:
-            return Function(self.function_space().sub(i), \
-                            cpp.Function.sub(self, i), \
+            return Function(self.function_space().sub(i),
+                            self.cpp_object().sub(i),
                             name='%s-%d' % (str(self), i))
         else:
             return Function(self, i, name='%s-%d' % (str(self), i))
