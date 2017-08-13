@@ -33,6 +33,7 @@
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/IndexMap.h>
 #include <dolfin/la/LinearAlgebraObject.h>
+#include <dolfin/la/LinearOperator.h>
 #include <dolfin/la/Matrix.h>
 #include <dolfin/la/Vector.h>
 #include <dolfin/la/Scalar.h>
@@ -49,6 +50,7 @@
 #include <dolfin/la/PETScVector.h>
 #include <dolfin/la/LUSolver.h>
 #include <dolfin/la/KrylovSolver.h>
+#include <dolfin/la/SLEPcEigenSolver.h>
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/la/solve.h>
 #include <dolfin/la/VectorSpaceBasis.h>
@@ -269,6 +271,8 @@ namespace dolfin_wrappers
            { auto u = self.copy(); (*u) -= a; return u; }, py::is_operator())
       .def("__sub__", [](dolfin::GenericVector& self, const dolfin::GenericVector& v)
            { auto u = self.copy(); (*u) -= v; return u; }, py::is_operator())
+      .def("__rsub__", [](dolfin::GenericVector& self, double a)
+           { auto u = self.copy(); (*u) *= -1 ; (*u) += a; return u; }, py::is_operator())
       // div
       .def("__itruediv__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
            &dolfin::GenericVector::operator/=)
@@ -283,6 +287,8 @@ namespace dolfin_wrappers
            { auto x = self.copy(); *x += a; return x;} )
       .def("__add__", [](const dolfin::GenericVector& self, const dolfin::GenericVector& x)
            { auto y = self.copy(); *y += x; return y;} )
+      .def("__radd__", [](const dolfin::GenericVector& self, double a)
+           { auto x = self.copy(); *x += a; return x;} )
       // mult
       .def("__imul__", (const dolfin::GenericVector& (dolfin::GenericVector::*)(double))
            &dolfin::GenericVector::operator*=)
@@ -484,7 +490,10 @@ namespace dolfin_wrappers
              std::vector<double> values;
              instance.get_local(values);
              return py::array_t<double>(values.size(), values.data());
-           });
+           })
+      .def_property_readonly("__array_priority__", [](const dolfin::GenericVector& self){ return 0; });
+
+
 
     // dolfin::Matrix class
     py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>, dolfin::GenericMatrix>
@@ -541,6 +550,33 @@ namespace dolfin_wrappers
       .def("apply", &dolfin::Scalar::apply)
       .def("mpi_comm", &dolfin::Scalar::mpi_comm)
       .def("get_scalar_value", &dolfin::Scalar::get_scalar_value);
+
+    class PyLinearOperator : public dolfin::LinearOperator
+    {
+      using dolfin::LinearOperator::LinearOperator;
+
+      // pybdind11 has some issues when passing by reference (due to
+      // the return value policy), so the below is non-standard.  See
+      // https://github.com/pybind/pybind11/issues/250.
+
+      std::size_t size(std::size_t dim) const
+      {
+        PYBIND11_OVERLOAD_PURE(std::size_t, dolfin::LinearOperator, size, );
+      }
+
+      void mult(const dolfin::GenericVector& x, dolfin::GenericVector& y) const
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::LinearOperator, "mult", &x, &y);
+        py::pybind11_fail("Tried to call pure virtual function dolfin::LinearOpertor::mult");
+      }
+    };
+
+    // dolfin::LinearOperator
+    py::class_<dolfin::LinearOperator, std::shared_ptr<dolfin::LinearOperator>,
+               PyLinearOperator, dolfin::GenericLinearOperator>
+      (m, "LinearOperator")
+      //.def(py::init<>())
+      .def(py::init<const dolfin::GenericVector&, const dolfin::GenericVector&>());
 
     //----------------------------------------------------------------------------
     // dolfin::GenericLinearAlgebraFactory class
@@ -655,7 +691,8 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::PETScPreconditioner, std::shared_ptr<dolfin::PETScPreconditioner>>
       (m, "PETScPreconditioner", "DOLFIN PETScPreconditioner object")
-      .def(py::init<std::string>(), py::arg("type")="default");
+      .def(py::init<std::string>(), py::arg("type")="default")
+      .def("preconditioners", &dolfin::PETScPreconditioner::preconditioners);
 
     #endif
     //-----------------------------------------------------------------------------
@@ -666,7 +703,8 @@ namespace dolfin_wrappers
       (m, "GenericLinearSolver", "DOLFIN GenericLinearSolver object");
 
     // dolfin::LUSolver class
-    py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>>
+    py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>,
+      dolfin::GenericLinearSolver>
     (m, "LUSolver", "DOLFIN LUSolver object")
       .def(py::init<>())
       .def(py::init<std::shared_ptr<const dolfin::GenericLinearOperator>, std::string>(),
@@ -704,6 +742,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::PETScKrylovSolver, std::shared_ptr<dolfin::PETScKrylovSolver>,
                dolfin::GenericLinearSolver>
       (m, "PETScKrylovSolver", "DOLFIN PETScKrylovSolver object")
+      .def(py::init<>())
+      .def(py::init<std::string>())
       .def(py::init<std::string, std::string>())
       .def(py::init<std::string, std::shared_ptr<dolfin::PETScPreconditioner>>())
       .def("set_operator",  (void (dolfin::PETScKrylovSolver::*)(std::shared_ptr<const dolfin::GenericLinearOperator>))
@@ -713,7 +753,37 @@ namespace dolfin_wrappers
            &dolfin::PETScKrylovSolver::set_operators)
       .def("solve", (std::size_t (dolfin::PETScKrylovSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
            &dolfin::PETScKrylovSolver::solve)
+      .def("set_from_options", &dolfin::PETScKrylovSolver::set_from_options)
       .def("set_reuse_preconditioner", &dolfin::PETScKrylovSolver::set_reuse_preconditioner);
+    #endif
+
+    #ifdef HAS_SLEPC
+    py::class_<dolfin::SLEPcEigenSolver, std::shared_ptr<dolfin::SLEPcEigenSolver>, dolfin::Variable>(m, "SLEPcEigenSolver")
+      .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>>())
+      .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>, std::shared_ptr<const dolfin::PETScMatrix>>())
+      .def("get_number_converged", &dolfin::SLEPcEigenSolver::get_number_converged)
+      .def("set_deflation_space", (void (dolfin::SLEPcEigenSolver::*)(const dolfin::VectorSpaceBasis&))
+           &dolfin::SLEPcEigenSolver::set_deflation_space)
+      .def("set_deflation_space", (void (dolfin::SLEPcEigenSolver::*)(const dolfin::PETScVector&))
+           &dolfin::SLEPcEigenSolver::set_deflation_space)
+      .def("solve", (void (dolfin::SLEPcEigenSolver::*)())
+           &dolfin::SLEPcEigenSolver::solve)
+      .def("solve", (void (dolfin::SLEPcEigenSolver::*)(std::size_t))
+           &dolfin::SLEPcEigenSolver::solve)
+      .def("get_eigenvalue", [](dolfin::SLEPcEigenSolver& self, std::size_t i)
+           {
+             double lr, lc;
+             self.get_eigenvalue(lr, lc, i);
+             return py::make_tuple(lr, lc);
+           }, py::arg("i")=0)
+      .def("get_eigenpair", [](dolfin::SLEPcEigenSolver& self, std::size_t i)
+           {
+             double lr, lc;
+             dolfin::PETScVector r, c;
+             self.get_eigenpair(lr, lc, r, c, i);
+             return py::make_tuple(lr, lc, r, c);
+           }, py::arg("i")=0);
+
     #endif
 
     // dolfin::VectorSpaceBasis

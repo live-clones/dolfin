@@ -463,17 +463,26 @@ bool FunctionSpace::contains(const FunctionSpace& V) const
 {
   // Is the root space same?
   if (_root_space_id != V._root_space_id)
+  {
+    std::cout << "root ids" << std::endl;
     return false;
+  }
 
   // Is V possibly our superspace?
   if (_component.size() > V._component.size())
+  {
+    std::cout << "super" << std::endl;
     return false;
+  }
 
   // Are our components same as leading components of V?
   for (std::size_t i = 0; i < _component.size(); ++i)
   {
     if (_component[i] != V._component[i])
+    {
+      std::cout << "Comp" << std::endl;
       return false;
+    }
   }
 
   // Ok, V is really our subspace

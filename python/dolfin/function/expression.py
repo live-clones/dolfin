@@ -57,7 +57,7 @@ class _InterfaceExpression(cpp.function.Expression):
         def wrapped_eval_cell(self, values, x, cell):
             self.user_expression.eval_cell(values, x, cell)
 
-        # Attach user-provied Python eval functions (if they exist in
+        # Attach user-provided Python eval functions (if they exist in
         # the user expression class) to the C++ class
         if hasattr(user_expression, 'eval'):
             self.eval = types.MethodType(wrapped_eval, self)
@@ -72,8 +72,23 @@ class BaseExpression(ufl.Coefficient):
     def __init__(self, cell=None, element=None, domain=None, name=None,
                  label=None):
 
+        # Some messy cell/domain handling for compatibility, will be
+        # straightened out later
+        if domain is None:
+            ufl_domain = None
+        else:
+            if isinstance(domain, ufl.domain.AbstractDomain):
+                ufl_domain = domain
+            else:
+                # Probably getting a Mesh here, from existing dolfin
+                # tests. Will be the same later anyway.
+                ufl_domain = domain.ufl_domain()
+
+            if cell is None:
+                cell = ufl_domain.ufl_cell()
+
         # Initialise base class
-        ufl_function_space = ufl.FunctionSpace(domain, element)
+        ufl_function_space = ufl.FunctionSpace(ufl_domain, element)
         ufl.Coefficient.__init__(self, ufl_function_space, count=self.id())
 
         name = name or "f_" + str(ufl.Coefficient.count(self))
@@ -191,7 +206,6 @@ class BaseExpression(ufl.Coefficient):
     def compute_vertex_values(self, mesh):
         return self._cpp_object.compute_vertex_values(mesh)
 
-
 class UserExpression(BaseExpression):
     """Base class for user-defined Python Expression classes, where the
     user overloads eval or eval_cell
@@ -199,29 +213,28 @@ class UserExpression(BaseExpression):
     """
 
     def __init__(self, *args, **kwargs):
-
         #self._cpp_object = _InterfaceExpression(self)
 
         # Extract data
-        #arguments = ("element", "degree", "cell", "domain", "name", "label", "mpi_comm")
-        element = kwargs.get("element", None)
-        degree = kwargs.get("degree", None)
-        cell = kwargs.get("cell", None)
-        domain = kwargs.get("domain", None)
-        name = kwargs.get("name", None)
-        label = kwargs.get("label", None)
-        mpi_comm = kwargs.get("mpi_comm", None)
+        element = kwargs.pop("element", None)
+        degree = kwargs.pop("degree", 2)
+        cell = kwargs.pop("cell", None)
+        domain = kwargs.pop("domain", None)
+        name = kwargs.pop("name", None)
+        label = kwargs.pop("label", None)
+        mpi_comm = kwargs.pop("mpi_comm", None)
+        if (len(kwargs) > 0):
+            raise RuntimeError("Invalid keyword argument")
 
         # Deduce element type if not provided
         if element is None:
             if hasattr(self, "value_shape"):
-                value_shape = tuple(self.value_dimension(i)
-                                    for i in range(self.value_rank()))
+                value_shape = self.value_shape()
             else:
                 print("WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.")
                 value_shape = ()
 
-            element = _select_element(family=None, cell=None, degree=2,
+            element = _select_element(family=None, cell=cell, degree=degree,
                                       value_shape=value_shape)
         else:
             value_shape = element.value_shape()
@@ -262,7 +275,9 @@ class Expression(BaseExpression):
                 raise KeyError("Must supply element or degree")
             value_shape = tuple(self.value_dimension(i)
                                 for i in range(self.value_rank()))
-            element = _select_element(family=None, cell=None, degree=degree,
+            if domain is not None and cell is None:
+                cell = domain.ufl_cell()
+            element = _select_element(family=None, cell=cell, degree=degree,
                                       value_shape=value_shape)
 
         BaseExpression.__init__(self, cell=cell, element=element, domain=domain,

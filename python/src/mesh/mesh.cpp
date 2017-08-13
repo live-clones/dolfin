@@ -27,6 +27,7 @@
 #include <dolfin/geometry/BoundingBoxTree.h>
 #include <dolfin/mesh/BoundaryMesh.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshColoring.h>
 #include <dolfin/mesh/MeshData.h>
 #include <dolfin/mesh/MeshEditor.h>
 #include <dolfin/mesh/CellType.h>
@@ -114,6 +115,10 @@ namespace dolfin_wrappers
                self.topology()(tdim, 0)().data());
            })
       .def("cell_orientations", &dolfin::Mesh::cell_orientations)
+      .def("color", (const std::vector<std::size_t>& (dolfin::Mesh::*)(std::string) const)
+           &dolfin::Mesh::color)
+      .def("color", (const std::vector<std::size_t>& (dolfin::Mesh::*)(std::vector<std::size_t>) const)
+           &dolfin::Mesh::color)
       .def("coordinates", [](dolfin::Mesh& self)
            {
              return Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>
@@ -127,6 +132,8 @@ namespace dolfin_wrappers
            &dolfin::Mesh::data, "Data associated with a mesh")
       .def("geometry", (dolfin::MeshGeometry& (dolfin::Mesh::*)()) &dolfin::Mesh::geometry,
            py::return_value_policy::reference, "Mesh geometry")
+      .def("hmax", &dolfin::Mesh::hmax)
+      .def("hmin", &dolfin::Mesh::hmin)
       .def("id", &dolfin::Mesh::id)
       .def("init_global", &dolfin::Mesh::init_global)
       .def("init", (void (dolfin::Mesh::*)() const) &dolfin::Mesh::init)
@@ -155,7 +162,7 @@ namespace dolfin_wrappers
       .def("size_global", &dolfin::Mesh::size_global)
       .def("smooth", &dolfin::Mesh::smooth, py::arg("num_iterations")=1)
       .def("smooth_boundary", &dolfin::Mesh::smooth_boundary)
-      .def("snap_boundary", &dolfin::Mesh::snap_boundary)
+      .def("snap_boundary", &dolfin::Mesh::snap_boundary, py::arg("subdomain"), py::arg("harmonic_smoothing")=true)
       .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
            &dolfin::Mesh::topology, "Mesh topology")
       .def("translate", &dolfin::Mesh::translate)
@@ -168,12 +175,16 @@ namespace dolfin_wrappers
 
     // dolfin::MeshData class
     py::class_<dolfin::MeshData, std::shared_ptr<dolfin::MeshData>>(m, "MeshData", "Mesh data object")
-      .def("array", (std::vector<std::size_t>& (dolfin::MeshData::*)(std::string, std::size_t)) &dolfin::MeshData::array);
+      .def("array", (std::vector<std::size_t>& (dolfin::MeshData::*)(std::string, std::size_t)) &dolfin::MeshData::array)
+      .def("create_array", &dolfin::MeshData::create_array);
+
 
     // dolfin::MeshDomain
     py::class_<dolfin::MeshDomains, std::shared_ptr<dolfin::MeshDomains>>(m, "MeshDomains", "Mesh domains object")
       .def("set_marker", &dolfin::MeshDomains::set_marker)
-      .def("get_marker", &dolfin::MeshDomains::get_marker);
+      .def("get_marker", &dolfin::MeshDomains::get_marker)
+      .def("markers", (std::map<std::size_t, std::size_t>& (dolfin::MeshDomains::*)(std::size_t))
+           &dolfin::MeshDomains::markers);
 
     //-------------------------------------------------------------------------
     // dolfin::BoundaryMesh class
@@ -340,6 +351,7 @@ namespace dolfin_wrappers
       .def("__init__", [](dolfin::MeshFunction<SCALAR>& instance, std::shared_ptr<const dolfin::Mesh> mesh, std::size_t dim) \
            { new (&instance) dolfin::MeshFunction<SCALAR>(mesh, dim, 0); }) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, SCALAR>()) \
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::string>()) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, const dolfin::MeshValueCollection<SCALAR>&>()) \
       .def("__getitem__", (const SCALAR& (dolfin::MeshFunction<SCALAR>::*) \
                            (std::size_t) const) \
@@ -456,7 +468,8 @@ namespace dolfin_wrappers
       .def_static("radius_ratios", &dolfin::MeshQuality::radius_ratios)
       .def_static("radius_ratio_histogram_data", &dolfin::MeshQuality::radius_ratio_histogram_data)
       .def_static("radius_ratio_min_max", &dolfin::MeshQuality::radius_ratio_min_max)
-      .def_static("radius_ratio_matplotlib_histogram", &dolfin::MeshQuality::radius_ratio_matplotlib_histogram)
+      .def_static("radius_ratio_matplotlib_histogram", &dolfin::MeshQuality::radius_ratio_matplotlib_histogram,
+                  py::arg("mesh"), py::arg("num_bins")=50)
       .def_static("dihedral_angles_min_max", &dolfin::MeshQuality::dihedral_angles_min_max)
       .def_static("dihedral_angles_matplotlib_histogram", &dolfin::MeshQuality::dihedral_angles_matplotlib_histogram);
 
@@ -474,19 +487,19 @@ namespace dolfin_wrappers
     {
       using dolfin::SubDomain::SubDomain;
 
-      bool inside(const Eigen::Ref<Eigen::VectorXd> x, bool on_boundary) const override
+      bool inside(Eigen::Ref<const Eigen::VectorXd> x, bool on_boundary) const override
       { PYBIND11_OVERLOAD(bool, dolfin::SubDomain, inside, x, on_boundary); }
 
-      void map(const Eigen::Ref<Eigen::VectorXd> x, Eigen::Ref<Eigen::VectorXd> y) const override
+      void map(Eigen::Ref<const Eigen::VectorXd> x, Eigen::Ref<Eigen::VectorXd> y) const override
       { PYBIND11_OVERLOAD(void, dolfin::SubDomain, map, x, y); }
     };
 
     py::class_<dolfin::SubDomain, std::shared_ptr<dolfin::SubDomain>, PySubDomain>
       (m, "SubDomain", "DOLFIN SubDomain object")
       .def(py::init<double>(), py::arg("map_tol")=DOLFIN_EPS)
-      .def("inside", (bool (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>, bool) const)
+      .def("inside", (bool (dolfin::SubDomain::*)(Eigen::Ref<const Eigen::VectorXd>, bool) const)
            &dolfin::SubDomain::inside)
-      .def("map", (void (dolfin::SubDomain::*)(const Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<Eigen::VectorXd>) const)
+      .def("map", (void (dolfin::SubDomain::*)(Eigen::Ref<const Eigen::VectorXd>, Eigen::Ref<Eigen::VectorXd>) const)
            &dolfin::SubDomain::map)
       .def("set_property", &dolfin::SubDomain::set_property)
       .def("get_property", &dolfin::SubDomain::get_property)
@@ -507,6 +520,12 @@ namespace dolfin_wrappers
       (m, "PeriodicBoundaryComputation")
       .def_static("compute_periodic_pairs", &dolfin::PeriodicBoundaryComputation::compute_periodic_pairs)
       .def_static("masters_slaves", &dolfin::PeriodicBoundaryComputation::masters_slaves);
+
+    // dolfin::MeshColoring
+    py::class_<dolfin::MeshColoring>(m, "MeshColoring")
+      .def_static("cell_colors", (dolfin::CellFunction<std::size_t> (*)(std::shared_ptr<const dolfin::Mesh>, std::vector<std::size_t>))
+                  &dolfin::MeshColoring::cell_colors)
+      .def_static("color_cells", &dolfin::MeshColoring::color_cells);
 
     // dolfin::MeshTransformation
     py::class_<dolfin::MeshTransformation>(m, "MeshTransformation")

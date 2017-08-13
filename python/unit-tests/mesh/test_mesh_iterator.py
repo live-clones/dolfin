@@ -28,11 +28,12 @@ from dolfin import *
 from six.moves import xrange as range
 
 
-@pytest.mark.xfail
 def test_vertex_iterators():
     "Iterate over vertices"
 
     mesh = UnitCubeMesh(5, 5, 5)
+    for i in range(4):
+        mesh.init(0, i)
 
     # Test connectivity
     cons = [(i, mesh.topology()(0,i)) for i in range(4)]
@@ -60,11 +61,12 @@ def test_vertex_iterators():
     #assert end_point[1] + 2 == mesh.coordinates()[-1,1]
     #assert end_point[2] + 2 == mesh.coordinates()[-1,2]
 
-@pytest.mark.xfail
 def test_edge_iterators():
     "Iterate over edges"
 
     mesh = UnitCubeMesh(5, 5, 5)
+    for i in range(4):
+        mesh.init(1, i)
 
     # Test connectivity
     cons = [(i, mesh.topology()(1,i)) for i in range(4)]
@@ -84,11 +86,12 @@ def test_edge_iterators():
 
     assert n == mesh.num_edges()
 
-@pytest.mark.xfail
 def test_face_iterator():
     "Iterate over faces"
 
     mesh = UnitCubeMesh(5, 5, 5)
+    for i in range(4):
+        mesh.init(2, i)
 
     # Test connectivity
     cons = [(i, mesh.topology()(2,i)) for i in range(4)]
@@ -116,10 +119,11 @@ def test_facet_iterators():
         n += 1
     assert n == mesh.num_facets()
 
-@pytest.mark.xfail
 def test_cell_iterators():
     "Iterate over cells"
     mesh = UnitCubeMesh(5, 5, 5)
+    for i in range(4):
+        mesh.init(3, i)
 
     # Test connectivity
     cons = [(i, mesh.topology()(3,i)) for i in range(4)]

@@ -106,7 +106,7 @@ namespace dolfin
     /// @param    cell (ufc::cell)
     ///         The cell which contains the given point.
     virtual void eval(Eigen::Ref<Eigen::VectorXd> values,
-                      const Eigen::Ref<Eigen::VectorXd> x,
+                      Eigen::Ref<const Eigen::VectorXd> x,
                       const ufc::cell& cell) const override;
 
     /// Evaluate at given point (deprecated)
@@ -124,7 +124,7 @@ namespace dolfin
     /// @param x (Eigen::Ref<Eigen::VectorXd>)
     ///         The coordinates of the point.
     virtual void eval(Eigen::Ref<Eigen::VectorXd> values,
-                      const Eigen::Ref<Eigen::VectorXd> x) const override;
+                      Eigen::Ref<const Eigen::VectorXd> x) const override;
 
     /// Return value rank.
     ///

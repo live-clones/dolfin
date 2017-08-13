@@ -202,7 +202,7 @@ to overload the ``value_shape`` method.
 ::
 
     # Define function G such that G \cdot n = g
-    class BoundarySource(Expression):
+    class BoundarySource(UserExpression):
         def __init__(self, mesh, **kwargs):
             self.mesh = mesh
         def eval_cell(self, values, x, ufc_cell):

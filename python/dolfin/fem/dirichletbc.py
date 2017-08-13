@@ -6,6 +6,8 @@ import ufl
 import dolfin.cpp as cpp
 from dolfin.mesh.subdomain import CompiledSubDomain
 from dolfin.function.constant import Constant
+from dolfin.function.function import Function
+from dolfin.function.functionspace import FunctionSpace
 from dolfin.fem.projection import project
 
 class AutoSubDomain(cpp.mesh.SubDomain):
@@ -43,6 +45,8 @@ class AutoSubDomain(cpp.mesh.SubDomain):
 class DirichletBC(cpp.fem.DirichletBC):
     def __init__(self, *args, **kwargs):
 
+        # FIXME: the logic in this function is really messy and unclear
+
         # Copy constructor
         if len(args) == 1:
             if not isinstance(args[0], cpp.fem.DirichletBC):
@@ -53,17 +57,20 @@ class DirichletBC(cpp.fem.DirichletBC):
             return
 
         # Get FunctionSpace
-        if not isinstance(args[0], cpp.function.FunctionSpace):
+        if not isinstance(args[0], FunctionSpace):
             raise RuntimeError("First argument must be of type FunctionSpace")
 
         # FIXME: correct the below comment
         # Case: boundary value specified as float, tuple or similar
-        if len(args) >= 2 and not isinstance(args[1], cpp.function.GenericFunction):
-            if isinstance(args[1], ufl.classes.Expr):
-                expr = project(args[1], args[0])  # FIXME: This should really be interpolaton (project is expensive)
-            else:
-                expr = Constant(args[1])
-            args = args[:1] + (expr,) + args[2:]
+        #if len(args) >= 2 and not isinstance(args[1], (cpp.function.GenericFunction):
+        if len(args) >= 2:
+            # Check if we have a UFL expression or a concrete type
+            if not hasattr(args[1], "_cpp_object"):
+                if isinstance(args[1], ufl.classes.Expr):
+                    expr = project(args[1], args[0])  # FIXME: This should really be interpolaton (project is expensive)
+                else:
+                    expr = Constant(args[1])
+                args = args[:1] + (expr,) + args[2:]
 
         # Get boundary condition field (the condition that is applied)
         if isinstance(args[1], float) or isinstance(args[1], int):
@@ -76,6 +83,8 @@ class DirichletBC(cpp.fem.DirichletBC):
             raise RuntimeError("Second argument must be convertiable to a GenericFunction: ",
                                args[1], type(args[1]))
         args = args[:1] + (u,) + args[2:]
+
+        args = (args[0]._cpp_object,) + args[1:]
 
         # Case: Special sub domain 'inside' function provided as a
         # function
@@ -90,11 +99,11 @@ class DirichletBC(cpp.fem.DirichletBC):
         # handled here too?
         # Create SubDomain object
         if isinstance(args[2], cpp.mesh.SubDomain):
-             self.sub_domain = args[2]
-             args = args[:2] + (self.sub_domain,) + args[3:]
+            self.sub_domain = args[2]
+            args = args[:2] + (self.sub_domain,) + args[3:]
         elif isinstance(args[2], string_types):
-             self.sub_domain = CompiledSubDomain(args[2])
-             args = args[:2] + (self.sub_domain,) + args[3:]
+            self.sub_domain = CompiledSubDomain(args[2])
+            args = args[:2] + (self.sub_domain,) + args[3:]
         elif isinstance(args[2], cpp.mesh.MeshFunctionSizet):
             pass
         else:

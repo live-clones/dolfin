@@ -50,6 +50,7 @@ def Q(mesh):
 
 @fixture
 def f(V):
+    print("tttttttttttttt:", type(V))
     return Function(V)
 
 @fixture
@@ -97,7 +98,7 @@ def test_equality(V, V2, W, W2):
     assert W == W
     assert W == W2
 
-@pytest.mark.xfail
+
 def test_inclusion(V, Q):
     assert V.contains(V)
     assert not Q.contains(V)
@@ -151,7 +152,7 @@ def test_not_equal(W, V, W2, V2):
     assert W != V
     assert W2 != V2
 
-@pytest.mark.xfail
+
 def test_sub_equality(W, Q):
     assert W.sub(0) == W.sub(0)
     assert W.sub(0) != W.sub(1)
@@ -166,7 +167,7 @@ def test_in_operator(f, g, V, V2, W, W2):
     assert g in W
     assert g in W2
 
-@pytest.mark.xfail
+
 def test_collapse(W, V):
     Vs = W.sub(2)
     with pytest.raises(RuntimeError):

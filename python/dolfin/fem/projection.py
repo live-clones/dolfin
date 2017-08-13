@@ -27,6 +27,7 @@ finite element space."""
 # Import UFL and SWIG-generated extension module (DOLFIN C++)
 import ufl
 import dolfin.cpp as cpp
+import dolfin
 
 # Local imports
 from dolfin.function.argument import TestFunction, TrialFunction
@@ -35,7 +36,7 @@ from dolfin.fem.assembling import assemble_system
 
 #from dolfin.functions.multimeshfunction import *
 #from dolfin.functions.expression import *
-#from dolfin.functions.functionspace import *
+from dolfin.function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
 #from dolfin.fem.assembling import *
 
 __all__ = ['project']
@@ -87,7 +88,7 @@ def project(v, V=None, bcs=None, mesh=None,
     if V is None:
         # Create function space based on Expression element if trying
         # to project an Expression
-        if isinstance(v, dolfin.function.Expression):
+        if isinstance(v, dolfin.function.expression.Expression):
             # FIXME: Add handling of cpp.MultiMesh
             if mesh is not None and isinstance(mesh, cpp.mesh.Mesh):
                 V = FunctionSpace(mesh, v.ufl_element())

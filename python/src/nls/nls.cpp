@@ -21,6 +21,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/common/Variable.h>
 #include <dolfin/parameter/Parameters.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
@@ -41,14 +42,74 @@ namespace dolfin_wrappers
 
   void nls(py::module& m)
   {
-    py::class_<dolfin::NewtonSolver, std::shared_ptr<dolfin::NewtonSolver>,
+    // dolfin::NewtonSolver 'trampoline'
+    class PyNewtonSolver : public dolfin::NewtonSolver
+    {
+      using dolfin::NewtonSolver::NewtonSolver;
+
+      // pybdind11 has some issues when passing by reference (due to
+      // the return value policy), so the below is non-standard.  See
+      // https://github.com/pybind/pybind11/issues/250.
+
+      bool converged(const dolfin::GenericVector& r,
+                     const dolfin::NonlinearProblem& nonlinear_problem,
+                     std::size_t iteration)
+      {
+        PYBIND11_OVERLOAD_INT(bool, dolfin::NewtonSolver, "converged", &r, &nonlinear_problem, iteration);
+        return dolfin::NewtonSolver::converged(r, nonlinear_problem, iteration);
+      }
+
+      void solver_setup(std::shared_ptr<const dolfin::GenericMatrix> A,
+                        std::shared_ptr<const dolfin::GenericMatrix> P,
+                        const dolfin::NonlinearProblem& nonlinear_problem,
+                        std::size_t iteration)
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::NewtonSolver, "solver_setup", A, P,
+                          &nonlinear_problem, iteration);
+        return dolfin::NewtonSolver::solver_setup(A, P, nonlinear_problem, iteration);
+      }
+
+      void update_solution(dolfin::GenericVector& x, const dolfin::GenericVector& dx,
+                           double relaxation_parameter,
+                           const dolfin::NonlinearProblem& nonlinear_problem,
+                           std::size_t iteration)
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::NewtonSolver, "update_solution",
+                              &x, &dx, relaxation_parameter, nonlinear_problem,
+                              iteration);
+        return dolfin::NewtonSolver::update_solution(x, dx, relaxation_parameter,
+                                                     nonlinear_problem, iteration);
+      }
+    };
+
+    // Class used to expose protected dolfin::NewtonSolver members
+    // (see https://github.com/pybind/pybind11/issues/991)
+    class PyPublicNewtonSolver : public dolfin::NewtonSolver
+    {
+    public:
+      using NewtonSolver::converged;
+      using NewtonSolver::solver_setup;
+      using NewtonSolver::update_solution;
+    };
+
+    py::class_<dolfin::NewtonSolver, std::shared_ptr<dolfin::NewtonSolver>, PyNewtonSolver,
                dolfin::Variable>(m, "NewtonSolver")
-      .def(py::init<MPI_Comm>());
+      .def(py::init<>())
+      .def(py::init<MPI_Comm>())
+      .def("solve", &dolfin::NewtonSolver::solve)
+      .def("converged", &PyPublicNewtonSolver::converged)
+      .def("solver_setup", &PyPublicNewtonSolver::solver_setup)
+      .def("update_solution", &PyPublicNewtonSolver::update_solution);
 
 #ifdef HAS_PETSC
     py::class_<dolfin::PETScSNESSolver, std::shared_ptr<dolfin::PETScSNESSolver>,
                dolfin::PETScObject>(m, "PETScSNESSolver")
-      .def(py::init<MPI_Comm, std::string>());
+      .def(py::init<std::string>(), py::arg("nls_type")="default")
+      .def(py::init<MPI_Comm, std::string>(), py::arg("comm"), py::arg("nls_type")="default")
+      .def_readwrite("parameters", &dolfin::PETScSNESSolver::parameters)
+      .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScSNESSolver::*)(dolfin::NonlinearProblem&,
+                                                                               dolfin::GenericVector&))
+           &dolfin::PETScSNESSolver::solve);
 
     py::class_<dolfin::TAOLinearBoundSolver>(m, "TAOLinearBoundSolver")
       .def(py::init<MPI_Comm>())
@@ -75,17 +136,6 @@ namespace dolfin_wrappers
         .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScTAOSolver::*)(dolfin::OptimisationProblem&, dolfin::GenericVector&,
                                                                                 const dolfin::GenericVector&, const dolfin::GenericVector&))
              &dolfin::PETScTAOSolver::solve);
-    //.def("solve", [](dolfin::PETScTAOSolver& self, dolfin::OptimisationProblem& problem, dolfin::GenericVector& x)
-    //     { auto val = self.solve(problem, x); return py::make_tuple(val.first, val.second); })
-      //ef("solve", [](dolfin::PETScTAOSolver& self, dolfin::OptimisationProblem& problem, dolfin::GenericVector& x,
-      //              const dolfin::GenericVector& lb, const dolfin::GenericVector& ub)
-      //   {
-      //     //std::cout << "Here I am" << std::endl;
-      //     std::pair<std::size_t, bool> mval = self.solve(problem, x, lb, ub);
-      //    return 1;
-      //     //return py::make_tuple(val.first, val.second);
-      // });
-
 #endif
 
     // dolfin::NonlinearProblem 'trampoline'
@@ -93,15 +143,28 @@ namespace dolfin_wrappers
     {
       using dolfin::NonlinearProblem::NonlinearProblem;
 
+      // pybdind11 has some issues when passing by reference (due to
+      // the return value policy), so the below is non-standard.  See
+      // https://github.com/pybind/pybind11/issues/250.
+
       void J(dolfin::GenericMatrix& A, const dolfin::GenericVector& x) override
-      { PYBIND11_OVERLOAD_PURE(void, dolfin::NonlinearProblem, J, A, x); }
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::NonlinearProblem, "J", &A, &x);
+        py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::J");
+      }
 
       void F(dolfin::GenericVector& b, const dolfin::GenericVector& x) override
-      { PYBIND11_OVERLOAD_PURE(void, dolfin::NonlinearProblem, F, b, x); }
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::NonlinearProblem, "F", &b, &x);
+        py::pybind11_fail("Tried to call pure virtual function dolfin::OptimisationProblem::F");
+      }
 
       void form(dolfin::GenericMatrix& A, dolfin::GenericMatrix& P,
                 dolfin::GenericVector& b, const dolfin::GenericVector& x) override
-      { PYBIND11_OVERLOAD(void, dolfin::NonlinearProblem, form, A, P, b, x); }
+      {
+        PYBIND11_OVERLOAD_INT(void, dolfin::NonlinearProblem, "form", &A, &P, &b, &x);
+        return dolfin::NonlinearProblem::form(A, P, b, x);
+      }
 
     };
 
@@ -147,7 +210,6 @@ namespace dolfin_wrappers
     py::class_<dolfin::OptimisationProblem, std::shared_ptr<dolfin::OptimisationProblem>,
                PyOptimisationProblem>(m, "OptimisationProblem")
       .def(py::init<>())
-      //.def(py::init<const dolfin::OptimisationProblem&>())
       .def("f", &dolfin::OptimisationProblem::f)
       .def("F", &dolfin::OptimisationProblem::F)
       .def("J", &dolfin::OptimisationProblem::J);

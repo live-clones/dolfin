@@ -346,6 +346,8 @@ namespace dolfin
     // The identifier of root space
     std::size_t _root_space_id;
 
+  private:
+
     // Cache of subspaces
     mutable std::map<std::vector<std::size_t>,
                      std::shared_ptr<FunctionSpace> > _subspaces;

@@ -53,17 +53,17 @@ namespace dolfin
             {constructor}
           }}
 
-       void eval(Eigen::Ref<Eigen::VectorXd> values, const Eigen::Ref<Eigen::VectorXd> x) const override
+       void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x) const override
        {{
 {statement}
        }}
 
-       void set_property(std::string name, double value)
+       void set_property(std::string name, double value) override
        {{
 {set_props}
        }}
 
-       double get_property(std::string name) const
+       double get_property(std::string name) const override
        {{
 {get_props}
        }}
@@ -102,8 +102,8 @@ extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
         get_props += _get_props.format(name=k)
 
     # Set the value_shape
-    if isinstance(statements, (tuple, list)):
-        constructor += "_value_shape.push_back(" + str(len(statements)) + ");"
+    for dim in class_data['value_shape']:
+        constructor += "_value_shape.push_back(" + str(dim) + ");"
 
     classname = signature
     code_c = template_code.format(statement=statement, classname=classname,

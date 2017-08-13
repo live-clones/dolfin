@@ -54,7 +54,6 @@ def test_name_argument(W):
     assert str(v) == "v"
 
 
-@pytest.mark.xfail
 def test_in_function_space(W):
     u = Function(W)
     v = Function(W)
@@ -78,7 +77,7 @@ def test_compute_vertex_values(V, W, mesh):
 
     assert all(u_values == 1.)
 
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_assign(V, W):
     from ufl.algorithms import replace
 
@@ -281,7 +280,6 @@ def test_real_function_float_conversion1(R):
     assert float(c) == 0.0
 
 
-@pytest.mark.xfail
 def test_real_function_float_conversion2(R):
     c = Function(R)
     c.assign(Constant(2.34))
@@ -317,7 +315,6 @@ def test_scalar_conditions(R):
         bool(c < 0)
     with pytest.raises(ufl.UFLException):
         not c < 0
-
 
 
 def test_interpolation_mismatch_rank0(W):
@@ -401,14 +398,17 @@ def test_interpolation_jit_rank1(W):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_interpolation_old(V, W, mesh):
 
-    class F0(Expression):
+    class F0(UserExpression):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
         def eval(self, values, x):
             values[0] = 1.0
 
-    class F1(Expression):
+    class F1(UserExpression):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
         def eval(self, values, x):
             values[0] = 1.0
             values[1] = 1.0

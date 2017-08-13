@@ -38,9 +38,10 @@ if has_hdf5():
 from .cpp.ale import ALE
 from .cpp import MPI
 from .cpp.function import Expression, Constant, FunctionAXPY, LagrangeInterpolator
-from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates,
+from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates, create_mesh,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
-                      DiscreteOperators, LinearVariationalProblem, NonlinearVariationalProblem, LinearVariationalSolver, NonlinearVariationalSolver, SparsityPatternBuilder)
+                      DiscreteOperators, LinearVariationalSolver,
+                      NonlinearVariationalSolver, SparsityPatternBuilder)
 
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitDiscMesh, UnitQuadMesh, UnitHexMesh, UnitTriangleMesh,
@@ -53,15 +54,20 @@ from .cpp.la import (has_linear_algebra_backend,
                      in_nullspace)
 
 if has_linear_algebra_backend('PETSc'):
-    from .cpp.la import PETScVector, PETScMatrix, PETScFactory, PETScOptions, PETScKrylovSolver, PETScPreconditioner
+    from .cpp.la import (PETScVector, PETScMatrix, PETScFactory, PETScOptions,
+                         PETScKrylovSolver, PETScPreconditioner)
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
+if has_slepc():
+    from .cpp.la import SLEPcEigenSolver
+
 from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar, EigenMatrix,
-                     EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout)
+                     EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout,
+                     LinearOperator)
 from .cpp.log import info, Table
 from .cpp.math import ipow, near, between
-from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
+from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity, MeshColoring,
                        Cell, Facet, Face, Edge, Vertex, cells,
                        facets, faces, edges, entities,
                        vertices, SubDomain, BoundaryMesh,
@@ -91,14 +97,16 @@ from .fem.norms import norm
 from .fem.dirichletbc import DirichletBC, AutoSubDomain
 from .fem.interpolation import interpolate
 from .fem.projection import project
-from .fem.solving import solve, LocalSolver
+from .fem.solving import (solve, LocalSolver, LinearVariationalProblem,
+                          NonlinearVariationalProblem)
 from .fem.formmanipulations import derivative, adjoint, increase_order, tear
 
 from .function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
 from .function.function import Function
 from .function.argument import TestFunction, TrialFunction, TestFunctions, TrialFunctions
 from .function.constant import Constant
-from .function.specialfunctions import FacetNormal, CellSize, SpatialCoordinate, CellVolume, Circumradius
+from .function.specialfunctions import (FacetNormal, CellSize, SpatialCoordinate,
+                                        CellVolume, Circumradius, FacetArea, MeshCoordinates)
 from .function.expression import CompiledExpression, Expression, UserExpression
 
 # experimental
@@ -106,16 +114,19 @@ from .jit.pybind11jit import CompiledExpressionPyBind11
 
 from .la import as_backend_type
 
+from .mesh.ale import (compute_vertex_map, compute_edge_map, init_parent_edge_indices)
 from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
 from .mesh.subdomain import CompiledSubDomain
 
 # ufl
-from ufl import (FiniteElement, VectorElement, MixedElement, rhs, lhs,
-                 conditional, le, lt, ge, gt,
-                 inner, dot, grad, dx, div, Measure, det, sin, cos, ln, exp, sqrt,
-                 ds, dS, dP, triangle, tetrahedron, avg, jump, sym, tr, Identity)
+from ufl import (FiniteElement, TensorElement, VectorElement, MixedElement, rhs, lhs,
+                 conditional, le, lt, ge, gt, split,
+                 inner, dot, grad, curl, dx, div, Measure, det, pi, sin, cos, tan,
+                 acos, asin, atan, ln, exp, sqrt, bessel_I, bessel_J, bessel_K, bessel_Y,
+                 Dx, ds, dS, dP, triangle, tetrahedron, avg, jump, sym, tr, Identity,
+                 as_vector, as_tensor, as_matrix)
 from ufl.formoperators import action
 
 # FIXME

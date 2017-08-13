@@ -15,20 +15,23 @@ def __getitem__(self, key):
     else:
         raise RuntimeError("Invalid parameter: {}".format(key))
 
-
+# FIXME: This is probably better handled on the C++ side using py::dict
 def update(self, params):
     if isinstance(params, cpp.parameter.Parameters):
         self._update(params)
     elif isinstance(params, dict):
         for key in params:
-            self[key] = params[key]
+            if isinstance(params[key], dict):
+                self[key].update(params[key])
+            else:
+                self[key] = params[key]
     else:
         raise ValueError("Parameters or dict")
 
 # Extend the cpp.parameter.Parameters class and clean-up
 cpp.parameter.Parameters.__getitem__ = __getitem__
 cpp.parameter.Parameters.update = update
-del __getitem__, update
+del __getitem__,  update
 
 
 # Import global form compiler parameters from FFC

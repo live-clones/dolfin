@@ -35,7 +35,7 @@ from dolfin import *
 from math import sqrt
 import os
 
-from dolfin_utils.test import fixture, skip_in_parallel, xfail_in_parallel, cd_tempdir
+from dolfin_utils.test import fixture, skip_in_parallel, xfail_in_parallel, cd_tempdir, skip_in_serial
 
 
 @fixture
@@ -454,7 +454,7 @@ def test_cell_orientations():
     print(mesh.cell_orientations())
 
 
-@pytest.mark.xfail
+@skip_in_serial
 def test_shared_entities():
     for ind, MeshClass in enumerate([UnitIntervalMesh, UnitSquareMesh,
                                      UnitCubeMesh]):

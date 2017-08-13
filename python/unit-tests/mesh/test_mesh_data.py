@@ -26,7 +26,6 @@ import pytest
 from dolfin import *
 
 
-@pytest.mark.xfail
 def test_meshfunction():
     "Test input/output"
 

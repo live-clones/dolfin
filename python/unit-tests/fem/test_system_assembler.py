@@ -367,7 +367,6 @@ def test_facet_assembly_cellwise_insertion(filedir):
     run_test(Mesh(os.path.join(filedir, "gmsh_unit_interval.xml")))
 
 
-@pytest.mark.xfail
 def test_non_square_assembly():
     mesh = UnitSquareMesh(14, 14)
 

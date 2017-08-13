@@ -157,7 +157,7 @@ def test_diff_then_integrate():
         assert f_integral - F_diff <= delta
 
 
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_div_grad_then_integrate_over_cells_and_boundary():
 
     # Define 2D geometry
@@ -189,37 +189,37 @@ def test_div_grad_then_integrate_over_cells_and_boundary():
     reg([xs**(xs**3)], 6)
     reg([xs**(xs**4)], 2)
     # Special functions:
-    reg([atan(xs)], 8)
-    reg([sin(x), cos(x), exp(x)], 5)
+    reg([ufl.atan(xs)], 8)
+    reg([ufl.sin(x), ufl.cos(x), ufl.exp(x)], 5)
     reg([ln(xs), pow(x, 2.7), pow(2.7, x)], 3)
-    reg([asin(xs), acos(xs)], 1)
-    reg([tan(xs)], 7)
+    reg([ufl.asin(xs), ufl.acos(xs)], 1)
+    reg([ufl.tan(xs)], 7)
 
     # To handle tensor algebra, make an x dependent input tensor
     # xx and square all expressions
     def reg2(exprs, acc=10):
         for expr in exprs:
             F_list.append((inner(expr,expr), acc))
-    xx = as_matrix([[2*x**2, 3*x**3], [11*x**5, 7*x**4]])
-    xxs = as_matrix([[2*xs**2, 3*xs**3], [11*xs**5, 7*xs**4]])
-    x3v = as_vector([3*x**2, 5*x**3, 7*x**4])
-    cc = as_matrix([[2, 3], [4, 5]])
+    xx = ufl.as_matrix([[2*x**2, 3*x**3], [11*x**5, 7*x**4]])
+    xxs = ufl.as_matrix([[2*xs**2, 3*xs**3], [11*xs**5, 7*xs**4]])
+    x3v = ufl.as_vector([3*x**2, 5*x**3, 7*x**4])
+    cc = ufl.as_matrix([[2, 3], [4, 5]])
     reg2([xx]) # TODO: Make unit test for UFL from this, results in listtensor with free indices
     reg2([x3v])
-    reg2([cross(3*x3v, as_vector([-x3v[1], x3v[0], x3v[2]]))])
+    reg2([ufl.cross(3*x3v, ufl.as_vector([-x3v[1], x3v[0], x3v[2]]))])
     reg2([xx.T])
     reg2([tr(xx)])
     reg2([det(xx)])
     reg2([dot(xx,0.1*xx)])
-    reg2([outer(xx,xx.T)])
-    reg2([dev(xx)])
+    reg2([ufl.outer(xx,xx.T)])
+    reg2([ufl.dev(xx)])
     reg2([sym(xx)])
-    reg2([skew(xx)])
-    reg2([elem_mult(7*xx, cc)])
-    reg2([elem_div(7*xx, xx+cc)])
-    reg2([elem_pow(1e-3*xxs, 1e-3*cc)])
-    reg2([elem_pow(1e-3*cc, 1e-3*xx)])
-    reg2([elem_op(lambda z: sin(z)+2, 0.03*xx)], 2) # pretty inaccurate...
+    reg2([ufl.skew(xx)])
+    reg2([ufl.elem_mult(7*xx, cc)])
+    reg2([ufl.elem_div(7*xx, xx+cc)])
+    reg2([ufl.elem_pow(1e-3*xxs, 1e-3*cc)])
+    reg2([ufl.elem_pow(1e-3*cc, 1e-3*xx)])
+    reg2([ufl.elem_op(lambda z: sin(z)+2, 0.03*xx)], 2) # pretty inaccurate...
 
     # FIXME: Add tests for all UFL operators:
     # These cause discontinuities and may be harder to test in the

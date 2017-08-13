@@ -116,7 +116,7 @@ A class which will be used to represent the initial conditions is then
 created::
 
     # Class representing the intial conditions
-    class InitialConditions(Expression):
+    class InitialConditions(UserExpression):
         def __init__(self, **kwargs):
             random.seed(2 + MPI.rank(mpi_comm_world()))
         def eval(self, values, x):
