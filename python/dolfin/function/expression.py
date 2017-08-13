@@ -206,15 +206,21 @@ class BaseExpression(ufl.Coefficient):
     def compute_vertex_values(self, mesh):
         return self._cpp_object.compute_vertex_values(mesh)
 
-
 class UserExpression(BaseExpression):
     """Base class for user-defined Python Expression classes, where the
     user overloads eval or eval_cell
 
     """
 
-    def __init__(self, *args, **kwargs):
+    # Swap out __init__ on subclasses and call UserExpression.__init__ first
+    def __init_subclass__(self):
+        def init(self, *args, **kwargs):
+            UserExpression.__init__(self, **kwargs)
+            self._user_init(*args, **kwargs)
+        self._user_init = self.__init__
+        self.__init__ = init
 
+    def __init__(self, *args, **kwargs):
         #self._cpp_object = _InterfaceExpression(self)
 
         # Extract data
