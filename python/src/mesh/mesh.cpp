@@ -175,7 +175,11 @@ namespace dolfin_wrappers
 
     // dolfin::MeshData class
     py::class_<dolfin::MeshData, std::shared_ptr<dolfin::MeshData>>(m, "MeshData", "Mesh data object")
-      .def("array", (std::vector<std::size_t>& (dolfin::MeshData::*)(std::string, std::size_t)) &dolfin::MeshData::array)
+      .def("array", [](dolfin::MeshData& self, std::string key, std::size_t i)
+           {
+             const std::vector<std::size_t>& a = self.array(key, i);
+             return py::array_t<std::size_t>(a.size(), a.data());
+           })
       .def("create_array", &dolfin::MeshData::create_array);
 
 
