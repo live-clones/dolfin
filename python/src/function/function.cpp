@@ -66,6 +66,7 @@ namespace dolfin_wrappers
       (m, "GenericFunction")
       .def("value_dimension", &dolfin::GenericFunction::value_dimension)
       .def("value_size", &dolfin::GenericFunction::value_size)
+      .def("value_rank", &dolfin::GenericFunction::value_rank)
       .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>,
                                                       Eigen::Ref<const Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::GenericFunction::eval,
@@ -133,7 +134,6 @@ namespace dolfin_wrappers
            "Evaluate Expression (cell version)")
       .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<const Eigen::VectorXd>) const)
            &dolfin::Expression::eval, py::arg("values"), py::arg("x"), "Evaluate Expression")
-      .def("value_rank", &dolfin::Expression::value_rank)
       .def("value_dimension", &dolfin::Expression::value_dimension)
       .def("get_property", &dolfin::Expression::get_property)
       .def("set_property", &dolfin::Expression::set_property);
