@@ -109,7 +109,6 @@ namespace dolfin_wrappers
            {
              auto param = self.find_parameter(key);
              *param = value;
-           })
            }, py::arg(), py::arg().noconvert())
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
