@@ -272,6 +272,7 @@ namespace dolfin_wrappers
       .def("facet_area", &dolfin::Cell::facet_area)
       .def("h", &dolfin::Cell::h)
       .def("inradius", &dolfin::Cell::inradius)
+      .def("normal", (dolfin::Point (dolfin::Cell::*)(std::size_t) const) &dolfin::Cell::normal)
       .def("circumradius", &dolfin::Cell::circumradius)
       .def("radius_ratio", &dolfin::Cell::radius_ratio)
       .def("triangulate_intersection", &dolfin::Cell::triangulate_intersection)

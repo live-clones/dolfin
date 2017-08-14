@@ -123,7 +123,7 @@ from ufl import (FiniteElement, TensorElement, VectorElement, MixedElement, rhs,
                  inner, dot, grad, curl, dx, div, Measure, det, pi, sin, cos, tan,
                  acos, asin, atan, ln, exp, sqrt, bessel_I, bessel_J, bessel_K, bessel_Y,
                  Dx, ds, dS, dP, triangle, tetrahedron, avg, jump, sym, tr, Identity,
-                 as_vector, as_tensor, as_matrix)
+                 variable, diff, as_vector, as_tensor, as_matrix)
 from ufl.formoperators import action
 
 # FIXME
