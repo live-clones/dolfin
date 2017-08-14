@@ -185,7 +185,6 @@ def test_1_1_assigner(w, ww, wr, wrr, q, r, qqv, u0, u1, u2, W, V, WW):
         assign(wrr.sub(1), w)
 
 
-@pytest.mark.xfail
 def test_N_1_assigner(u0, u1, u2, qq, qqv, rr, w, wrr, r, W, V):
 
     vv = Function(W)
@@ -211,7 +210,6 @@ def test_N_1_assigner(u0, u1, u2, qq, qqv, rr, w, wrr, r, W, V):
         assign(wrr, [w, r, r])
 
 
-@pytest.mark.xfail
 def test_1_N_assigner(u0, u1, u2, w, qq, qqv, V, W):
 
     assigner = FunctionAssigner([V,V,V], W)
