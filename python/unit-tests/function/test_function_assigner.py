@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 """Unit tests for the FunctionAssigner class"""
 
 # Copyright (C) 2013 Johan Hake
@@ -18,9 +16,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# First added:  2013-11-07
-# Last changed: 2013-11-07
 
 import pytest
 from dolfin import *

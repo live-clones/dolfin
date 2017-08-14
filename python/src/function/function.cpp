@@ -27,6 +27,7 @@
 #include <dolfin/function/Constant.h>
 #include <dolfin/function/Expression.h>
 #include <dolfin/function/Function.h>
+#include <dolfin/function/FunctionAssigner.h>
 #include <dolfin/function/FunctionAXPY.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/LagrangeInterpolator.h>
@@ -324,6 +325,21 @@ namespace dolfin_wrappers
                       throw py::type_error("Can only interpolate Expression or Function");
                   });
 
+    // dolfin::FunctionAssigner
+    py::class_<dolfin::FunctionAssigner, std::shared_ptr<dolfin::FunctionAssigner>>
+      (m, "FunctionAssigner")
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
+           std::shared_ptr<const dolfin::FunctionSpace>>())
+      .def(py::init<std::vector<std::shared_ptr<const dolfin::FunctionSpace>>,
+           std::shared_ptr<const dolfin::FunctionSpace>>())
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
+           std::vector<std::shared_ptr<const dolfin::FunctionSpace>>>())
+      .def("__init__", [](dolfin::FunctionAssigner& self, py::object V0, py::object V1)
+           {
+             auto _V0 = V0.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
+             auto _V1 = V1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
+             new (&self) dolfin::FunctionAssigner(_V0, _V1);
+           });
 
   }
 
