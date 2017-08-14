@@ -24,6 +24,7 @@
 #include <pybind11/operators.h>
 
 #include <dolfin/common/Array.h>
+#include <dolfin/function/assign.h>
 #include <dolfin/function/Constant.h>
 #include <dolfin/function/Expression.h>
 #include <dolfin/function/Function.h>
@@ -339,6 +340,23 @@ namespace dolfin_wrappers
              auto _V0 = V0.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
              auto _V1 = V1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
              new (&self) dolfin::FunctionAssigner(_V0, _V1);
+           })
+      .def("assign", (void (dolfin::FunctionAssigner::*)(std::shared_ptr<dolfin::Function>,
+                                                         std::shared_ptr<const dolfin::Function>) const)
+           &dolfin::FunctionAssigner::assign)
+      .def("assign", [](const dolfin::FunctionAssigner& self, py::object v0, py::object v1)
+           {
+             auto _v0 = v0.attr("_cpp_object").cast<std::shared_ptr<dolfin::Function>>();
+             auto _v1 = v1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>();
+             self.assign(_v0, _v1);
+           });
+
+    // dolfin::assign interface
+    m.def("assign", [](py::object v0, py::object v1)
+           {
+             auto _v0 = v0.attr("_cpp_object").cast<std::shared_ptr<dolfin::Function>>();
+             auto _v1 = v1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>();
+             dolfin::assign(_v0, _v1);
            });
 
   }
