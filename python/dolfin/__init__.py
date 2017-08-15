@@ -29,7 +29,8 @@ del sys
 from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          has_hdf5_parallel, has_mpi, has_petsc, has_parmetis,
                          has_slepc, git_commit_hash, DOLFIN_EPS,
-                         DOLFIN_PI, TimingClear, TimingType, timing, timings, list_timings)
+                         DOLFIN_PI, TimingClear, TimingType, timing, timings,
+                         list_timings, dump_timings_to_xml)
 
 if has_hdf5():
     from .cpp.adaptivity import TimeSeries
@@ -134,3 +135,6 @@ def has_petsc4py():
 
 def mpi_comm_world():
     return MPI.comm_world
+
+def mpi_comm_self():
+    return MPI.comm_self
