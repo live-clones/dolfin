@@ -5,6 +5,21 @@ import hashlib
 import dijitso
 import dolfin.cpp as cpp
 
+_cpp_math_builtins = [
+    # <cmath> functions: from http://www.cplusplus.com/reference/cmath/
+    "cos", "sin", "tan", "acos", "asin", "atan", "atan2",
+    "cosh", "sinh", "tanh", "exp", "frexp", "ldexp", "log", "log10", "modf",
+    "pow", "sqrt", "ceil", "fabs", "floor", "fmod",
+    "max", "min"]
+
+_math_header = """
+// cmath functions
+%s
+
+const double pi = DOLFIN_PI;
+""" % "\n".join("using std::%s;" % mf for mf in _cpp_math_builtins)
+
+
 def compile_class(cpp_data):
     """Compile a user C(++) string or set of statements to a Python object
 
