@@ -513,6 +513,10 @@ namespace dolfin_wrappers
       .def("mark_facets", (void (dolfin::SubDomain::*)(dolfin::Mesh&, std::size_t, bool) const)
            &dolfin::SubDomain::mark_facets, py::arg("mesh"), py::arg("sub_domain"), py::arg("check_midpoint")=true)
       .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<std::size_t>&, std::size_t, bool) const)
+           &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true)
+      .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<double>&, double, bool) const)
+           &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true)
+      .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<bool>&, bool, bool) const)
            &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true);
 
     // dolfin::DomainBoundary
