@@ -41,9 +41,12 @@ namespace dolfin_wrappers
       .def(py::init<dolfin::Parameters>())
       // Use boost::variant to simplify
       .def("add", (void (dolfin::Parameters::*)(std::string, std::string)) &dolfin::Parameters::add)
+      .def("add", (void (dolfin::Parameters::*)(std::string, std::string, std::set<std::string>)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, bool)) &dolfin::Parameters::add)
+      .def("add", (void (dolfin::Parameters::*)(std::string, int, int, int)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, int)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, double)) &dolfin::Parameters::add)
+      .def("add", (void (dolfin::Parameters::*)(std::string, double, double, double)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(const dolfin::Parameters&)) &dolfin::Parameters::add)
       .def("get_range", [](dolfin::Parameters& self, std::string key)
            {

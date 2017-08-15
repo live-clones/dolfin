@@ -27,6 +27,7 @@
 #include <dolfin/common/Timer.h>
 #include <dolfin/common/Variable.h>
 #include <dolfin/common/timing.h>
+#include <dolfin/log/Table.h>
 
 #include "../mpi_interface.h"
 
@@ -116,6 +117,7 @@ namespace dolfin_wrappers
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)
+      .def_static("sum", &dolfin::MPI::sum<dolfin::Table>)
       /*
 #ifdef HAS_MPI4PY
       .def("to_mpi4py_comm", [](py::object obj){
