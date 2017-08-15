@@ -727,12 +727,16 @@ namespace dolfin_wrappers
     py::class_<dolfin::KrylovSolver, std::shared_ptr<dolfin::KrylovSolver>,
                dolfin::GenericLinearSolver>
       (m, "KrylovSolver", "DOLFIN KrylovSolver object")
+      .def(py::init<std::string, std::string>(), py::arg("method")="default",
+           py::arg("preconditioner")="default")
       .def(py::init<std::shared_ptr<const dolfin::GenericLinearOperator>,
            std::string, std::string>(), py::arg("A"),
            py::arg("method")="default", py::arg("preconditioner")="default")
       .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::GenericLinearOperator>,
            std::string, std::string>(), py::arg("comm"), py::arg("A"),
            py::arg("method")="default", py::arg("preconditioner")="default")
+      .def("set_operator", &dolfin::KrylovSolver::set_operator)
+      .def("set_operators", &dolfin::KrylovSolver::set_operators)
       .def("solve", (std::size_t (dolfin::KrylovSolver::*)(dolfin::GenericVector&,
                                                            const dolfin::GenericVector&))
            &dolfin::KrylovSolver::solve);

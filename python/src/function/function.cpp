@@ -216,7 +216,9 @@ namespace dolfin_wrappers
              instance.interpolate(*_v);
            }, "Interpolate the function u")
       .def("set_allow_extrapolation", &dolfin::Function::set_allow_extrapolation)
-      .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
+      // FIXME: A lot of error when using non-const version - misused
+      // by Python interface?
+      .def("vector", (std::shared_ptr<const dolfin::GenericVector> (dolfin::Function::*)() const)
            &dolfin::Function::vector, "Return the vector associated with the finite element Function");
 
     // FIXME: why is this floating here?
