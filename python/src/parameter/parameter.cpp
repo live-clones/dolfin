@@ -48,6 +48,13 @@ namespace dolfin_wrappers
       .def("add", (void (dolfin::Parameters::*)(std::string, double)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, double, double, double)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(const dolfin::Parameters&)) &dolfin::Parameters::add)
+      // These set_range function should be remove - they're just duplication
+      .def("set_range", [](dolfin::Parameters& self, std::string name, double min, double max)
+           { self[name].set_range(min, max);} )
+      .def("set_range", [](dolfin::Parameters& self, std::string name, int min, int max)
+           { self[name].set_range(min, max);} )
+      .def("set_range", [](dolfin::Parameters& self, std::string name, std::set<std::string> range)
+           { self[name].set_range(range);} )
       .def("get_range", [](dolfin::Parameters& self, std::string key)
            {
              const auto& p = self.find_parameter(key);
@@ -155,6 +162,9 @@ namespace dolfin_wrappers
     // dolfin::Parameter
     py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>(m, "Parameter")
       .def("value", &dolfin::Parameter::value)
+      .def("set_range", (void (dolfin::Parameter::*)(double, double)) &dolfin::Parameter::set_range)
+      .def("set_range", (void (dolfin::Parameter::*)(int, int)) &dolfin::Parameter::set_range)
+      .def("set_range", (void (dolfin::Parameter::*)(std::set<std::string>)) &dolfin::Parameter::set_range)
       .def("__str__", &dolfin::Parameter::value_str);
 
     py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,

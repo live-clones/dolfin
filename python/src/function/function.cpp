@@ -151,10 +151,14 @@ namespace dolfin_wrappers
       .def("values", [](const dolfin::Constant& self)
            { auto v =  self.values(); return py::array_t<double>(v.size(), v.data()); })
       .def("__float__", [](const dolfin::Constant& instance) -> double { return instance; })
+      /*
       .def("_assign", [](dolfin::Constant& self, const dolfin::Constant& other) -> const dolfin::Constant&
-           {self = other; return self; })
+           {self = other;})
       .def("_assign", [](dolfin::Constant& self, double value) -> const dolfin::Constant&
-           {self = value; return self; })
+           {self = value;})
+      */
+      .def("assign", [](dolfin::Constant& self, const dolfin::Constant& other) {self = other;})
+      .def("assign", [](dolfin::Constant& self, double value) {self = value;})
       /*
       .def("_assign", (const dolfin::Constant& (dolfin::Constant::*)(const dolfin::Constant&))
                        &dolfin::Constant::operator=)
