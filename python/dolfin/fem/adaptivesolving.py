@@ -37,10 +37,10 @@ from dolfin.fem.solving import NonlinearVariationalProblem
 
 from dolfin.fem.errorcontrolgenerator import DOLFINErrorControlGenerator
 
-class AdaptiveLinearVariationalSolver(cpp.AdaptiveLinearVariationalSolver):
+class AdaptiveLinearVariationalSolver(cpp.adaptivity.AdaptiveLinearVariationalSolver):
 
     # Reuse doc-string
-    __doc__ = cpp.AdaptiveLinearVariationalSolver.__doc__
+    __doc__ = cpp.adaptivity.AdaptiveLinearVariationalSolver.__doc__
 
     def __init__(self, problem, goal):
         """
@@ -63,7 +63,7 @@ class AdaptiveLinearVariationalSolver(cpp.AdaptiveLinearVariationalSolver):
         M = Form(goal, form_compiler_parameters=p)
 
         # Initialize C++ base class
-        cpp.AdaptiveLinearVariationalSolver.__init__(self, problem, M, ec)
+        cpp.adaptivity.AdaptiveLinearVariationalSolver.__init__(self, problem, M, ec)
 
     def solve(self, tol):
         """
@@ -78,12 +78,12 @@ class AdaptiveLinearVariationalSolver(cpp.AdaptiveLinearVariationalSolver):
         """
 
         # Call cpp.AdaptiveLinearVariationalSolver.solve directly
-        cpp.AdaptiveLinearVariationalSolver.solve(self, tol)
+        cpp.adaptivity.AdaptiveLinearVariationalSolver.solve(self, tol)
 
-class AdaptiveNonlinearVariationalSolver(cpp.AdaptiveNonlinearVariationalSolver):
+class AdaptiveNonlinearVariationalSolver(cpp.adaptivity.AdaptiveNonlinearVariationalSolver):
 
     # Reuse doc-string
-    __doc__ = cpp.AdaptiveNonlinearVariationalSolver.__doc__
+    __doc__ = cpp.adaptivity.AdaptiveNonlinearVariationalSolver.__doc__
 
     def __init__(self, problem, goal):
         """
@@ -106,7 +106,7 @@ class AdaptiveNonlinearVariationalSolver(cpp.AdaptiveNonlinearVariationalSolver)
         M = Form(goal, form_compiler_parameters=p)
 
         # Initialize C++ base class
-        cpp.AdaptiveNonlinearVariationalSolver.__init__(self, problem, M, ec)
+        cpp.adaptivity.AdaptiveNonlinearVariationalSolver.__init__(self, problem, M, ec)
 
     def solve(self, tol):
         """
@@ -121,7 +121,7 @@ class AdaptiveNonlinearVariationalSolver(cpp.AdaptiveNonlinearVariationalSolver)
         """
 
         # Call cpp.AdaptiveNonlinearVariationlSolver.solve with ec
-        cpp.AdaptiveNonlinearVariationalSolver.solve(self, tol)
+        cpp.adaptivity.AdaptiveNonlinearVariationalSolver.solve(self, tol)
 
 def generate_error_control(problem, goal):
     """
@@ -151,7 +151,7 @@ def generate_error_control(problem, goal):
 
     # Create cpp.ErrorControl object
     forms += [is_linear]  # NOTE: Lingering design inconsistency.
-    ec = cpp.ErrorControl(*forms)
+    ec = cpp.adaptivity.ErrorControl(*forms)
 
     # Return generated ErrorControl
     return ec
@@ -177,7 +177,8 @@ def generate_error_control_forms(problem, goal):
     """
 
     msg = "Generating forms required for error control, this may take some time..."
-    cpp.info(msg)
+    #cpp.info(msg)
+    print(msg)
 
     # Paranoid checks added after introduction of multidomain features in ufl:
     for form in [goal]:

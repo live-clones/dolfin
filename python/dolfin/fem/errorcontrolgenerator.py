@@ -23,7 +23,8 @@ forms defined over DOLFIN objects.
 
 from ffc.errorcontrol.errorcontrolgenerators import ErrorControlGenerator
 
-from dolfin import Function, FunctionSpace
+from dolfin.function.function import Function
+from dolfin.function.functionspace import FunctionSpace
 from dolfin.fem.formmanipulations import tear, increase_order
 
 
