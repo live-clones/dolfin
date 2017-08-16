@@ -19,7 +19,15 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/adaptivity/AdaptiveLinearVariationalSolver.h>
+#include <dolfin/adaptivity/AdaptiveNonlinearVariationalSolver.h>
+#include <dolfin/adaptivity/ErrorControl.h>
+#include <dolfin/adaptivity/GenericAdaptiveVariationalSolver.h>
+#include <dolfin/adaptivity/GoalFunctional.h>
 #include <dolfin/adaptivity/TimeSeries.h>
+#include <dolfin/fem/Form.h>
+#include <dolfin/fem/LinearVariationalProblem.h>
+#include <dolfin/fem/NonlinearVariationalProblem.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/mesh/Mesh.h>
 
@@ -44,6 +52,35 @@ namespace dolfin_wrappers
       .def("vector_times", &dolfin::TimeSeries::vector_times)
       .def("mesh_times", &dolfin::TimeSeries::mesh_times);
 #endif
+
+    py::class_<dolfin::ErrorControl, std::shared_ptr<dolfin::ErrorControl>,
+               dolfin::Variable>
+      (m, "Error control", "Error control");
+
+    py::class_<dolfin::GoalFunctional, std::shared_ptr<dolfin::GoalFunctional>,
+               dolfin::Form>
+      (m, "GoalFunctional", "Goal functional", py::multiple_inheritance());
+
+    py::class_<dolfin::GenericAdaptiveVariationalSolver, std::shared_ptr<dolfin::GenericAdaptiveVariationalSolver>,
+               dolfin::Variable>
+      (m, "GenericAdaptiveVariationalSolver", "Generic adaptive variational solver");
+
+    py::class_<dolfin::AdaptiveLinearVariationalSolver, std::shared_ptr<dolfin::AdaptiveLinearVariationalSolver>>
+      (m, "AdaptiveLinearVariationalSolver", "Adaptive linear variational solver")
+      .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>,
+           std::shared_ptr<dolfin::GoalFunctional>>())
+      .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>,
+           std::shared_ptr<dolfin::GoalFunctional>,
+           std::shared_ptr<dolfin::ErrorControl>>());
+
+    py::class_<dolfin::AdaptiveNonlinearVariationalSolver, std::shared_ptr<dolfin::AdaptiveNonlinearVariationalSolver>>
+      (m, "AdaptiveNonlinearVariationalSolver", "Adaptive nonlinear variational solver")
+      .def(py::init<std::shared_ptr<dolfin::NonlinearVariationalProblem>,
+           std::shared_ptr<dolfin::GoalFunctional>>())
+      .def(py::init<std::shared_ptr<dolfin::NonlinearVariationalProblem>,
+           std::shared_ptr<dolfin::Form>,
+           std::shared_ptr<dolfin::ErrorControl>>());
+
   }
 
 }

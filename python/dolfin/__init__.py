@@ -36,6 +36,8 @@ if has_hdf5():
     from .cpp.adaptivity import TimeSeries
     from .cpp.io import HDF5File
 
+from .cpp.adaptivity import AdaptiveLinearVariationalSolver, AdaptiveNonlinearVariationalSolver
+
 from .cpp.ale import ALE
 from .cpp import MPI
 from .cpp.function import (Expression, Constant, FunctionAXPY,
