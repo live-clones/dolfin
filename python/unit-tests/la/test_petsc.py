@@ -26,7 +26,7 @@ from dolfin import has_petsc
 if has_petsc():
     from dolfin import (PETScVector, PETScMatrix, PETScLUSolver,
                         PETScKrylovSolver, UnitSquareMesh, TrialFunction,
-                        TestFunction, mpi_comm_self, mpi_comm_world,
+                        TestFunction, MPI,
                         FunctionSpace, assemble, Constant, dx, parameters)
 from dolfin_utils.test import (skip_if_not_PETSc,
                                skip_if_not_petsc4py, pushpop_parameters)
@@ -52,11 +52,11 @@ def test_krylov_solver_norm_type():
 
     """
 
-    norm_type = (PETScKrylovSolver.norm_type_default_norm,
-                 PETScKrylovSolver.norm_type_natural,
-                 PETScKrylovSolver.norm_type_preconditioned,
-                 PETScKrylovSolver.norm_type_none,
-                 PETScKrylovSolver.norm_type_unpreconditioned)
+    norm_type = (PETScKrylovSolver.norm_type.default_norm,
+                 PETScKrylovSolver.norm_type.natural,
+                 PETScKrylovSolver.norm_type.preconditioned,
+                 PETScKrylovSolver.norm_type.none,
+                 PETScKrylovSolver.norm_type.unpreconditioned)
 
     for norm in norm_type:
         # Solve a system of equations
@@ -75,7 +75,7 @@ def test_krylov_solver_norm_type():
         solver.solve(b.copy(), b)
         solver.get_norm_type()
 
-        if norm is not PETScKrylovSolver.norm_type_default_norm:
+        if norm is not PETScKrylovSolver.norm_type.default_norm:
             assert solver.get_norm_type() == norm
 
 
