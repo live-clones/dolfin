@@ -69,6 +69,7 @@ namespace dolfin_wrappers
       .def("value_dimension", &dolfin::GenericFunction::value_dimension)
       .def("value_size", &dolfin::GenericFunction::value_size)
       .def("value_rank", &dolfin::GenericFunction::value_rank)
+      .def_property_readonly("value_shape", &dolfin::GenericFunction::value_shape)
       .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>,
                                                       Eigen::Ref<const Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::GenericFunction::eval,

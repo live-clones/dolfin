@@ -96,7 +96,7 @@ def mplot_expression(ax, f, mesh, **kwargs):
     # TODO: Can probably avoid creating the function space here by
     # restructuring mplot_function a bit so it can handle Expression
     # natively
-    V = create_cg1_function_space(mesh, f.ufl_shape)
+    V = create_cg1_function_space(mesh, f.value_shape)
     g = dolfin.interpolate(f, V)
     return mplot_function(ax, g, **kwargs)
 

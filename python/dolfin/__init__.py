@@ -138,6 +138,3 @@ def mpi_comm_self():
 
 def mpi_comm_world():
     return MPI.comm_world
-
-def mpi_comm_self():
-    return MPI.comm_self

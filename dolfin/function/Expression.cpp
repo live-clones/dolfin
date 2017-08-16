@@ -117,6 +117,11 @@ std::size_t Expression::value_dimension(std::size_t i) const
   return _value_shape[i];
 }
 //-----------------------------------------------------------------------------
+std::vector<std::size_t> Expression::value_shape() const
+{
+  return _value_shape;
+}
+//-----------------------------------------------------------------------------
 void Expression::set_property(std::string name, double value)
 {
   dolfin_error("Expression.cpp",
@@ -131,7 +136,6 @@ double Expression::get_property(std::string name) const
                "This method should be overloaded in the derived class");
   return 0.0;
 }
-//-----------------------------------------------------------------------------
 void Expression::restrict(double* w,
                           const FiniteElement& element,
                           const Cell& dolfin_cell,

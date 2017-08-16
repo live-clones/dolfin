@@ -248,8 +248,14 @@ class Function(ufl.Coefficient):
         return FunctionSpace(self._cpp_object.function_space())
         #return self._cpp_object.function_space()
 
+    def value_rank(self):
+        return self._cpp_object.value_rank()
+
     def value_dimension(self, i):
         return self._cpp_object.value_dimension(i)
+
+    def value_shape(self):
+        return self._cpp_object.value_shape
 
     def __call__(self, *args, **kwargs):
         if len(args)==0:
