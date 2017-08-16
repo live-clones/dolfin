@@ -212,7 +212,7 @@ class Function(ufl.Coefficient):
                 raise TypeError("expected one or two arguments when "
                                 "instantiating from another Function")
         elif isinstance(args[0], cpp.function.Function):
-            raise RuntimeError("Not implemented yet")
+            raise RuntimeError("Construction from a cpp function not implemented yet")
         elif isinstance(args[0], FunctionSpace):
             V = args[0]
 
@@ -237,7 +237,7 @@ class Function(ufl.Coefficient):
             ufl.Coefficient.__init__(self, V.ufl_function_space(), count=self._cpp_object.id())
 
         else:
-            raise TypeError("expected a FunctionSpace or a Function as argument 1")
+            raise TypeError("Expected a FunctionSpace or a Function as argument 1")
 
         # Set name as given or automatic
         name = kwargs.get("name") or "f_%d" % self.count()
@@ -444,6 +444,16 @@ class Function(ufl.Coefficient):
     def __str__(self):
         """Return a pretty print representation of it self."""
         return self.name()
+
+    def root_node(self):
+        u = self._cpp_object.root_node()
+        return Function(FunctionSpace(u.function_space()), u.vector())
+        #return Function(self._cpp_object.root_node())
+
+    def leaf_node(self):
+        u = self._cpp_object.leaf_node()
+        return Function(FunctionSpace(u.function_space()), u.vector())
+        #return Function(self._cpp_object.leaf_node())
 
     def cpp_object(self):
         return self._cpp_object
