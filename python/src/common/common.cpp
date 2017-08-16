@@ -117,6 +117,9 @@ namespace dolfin_wrappers
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)
+      .def_static("avg", &dolfin::MPI::sum<dolfin::Table>)
+      .def_static("max", &dolfin::MPI::sum<dolfin::Table>)
+      .def_static("min", &dolfin::MPI::sum<dolfin::Table>)
       .def_static("sum", &dolfin::MPI::sum<dolfin::Table>)
       /*
 #ifdef HAS_MPI4PY
