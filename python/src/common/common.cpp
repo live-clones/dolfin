@@ -74,6 +74,7 @@ namespace dolfin_wrappers
     m.def("timing", &dolfin::timing);
     m.def("timings", &dolfin::timings);
     m.def("list_timings", &dolfin::list_timings);
+    m.def("dump_timings_to_xml", &dolfin::dump_timings_to_xml);
 
     py::enum_<dolfin::TimingClear>(m, "TimingClear")
       .value("clear", dolfin::TimingClear::clear)
@@ -117,10 +118,10 @@ namespace dolfin_wrappers
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)
-      .def_static("avg", &dolfin::MPI::sum<dolfin::Table>)
-      .def_static("max", &dolfin::MPI::sum<dolfin::Table>)
-      .def_static("min", &dolfin::MPI::sum<dolfin::Table>)
+      .def_static("min", &dolfin::MPI::min<dolfin::Table>)
+      .def_static("max", &dolfin::MPI::max<dolfin::Table>)
       .def_static("sum", &dolfin::MPI::sum<dolfin::Table>)
+      .def_static("avg", &dolfin::MPI::avg<dolfin::Table>)
       /*
 #ifdef HAS_MPI4PY
       .def("to_mpi4py_comm", [](py::object obj){

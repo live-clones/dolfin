@@ -225,6 +225,9 @@ class Function(ufl.Coefficient):
                     self._cpp_object = cpp.function.Function(V._cpp_object, args[1])
                 elif isinstance(args[1], cpp.function.Function):
                     self._cpp_object = args[1]
+                elif isinstance(args[1], string_types):
+                    # Read from xml filename in string
+                    self._cpp_object = cpp.function.Function(V._cpp_object, args[1])
                 else:
                     raise RuntimeError("Don't know what to do with ", type(args[1]))
             else:

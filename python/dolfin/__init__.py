@@ -29,7 +29,8 @@ del sys
 from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          has_hdf5_parallel, has_mpi, has_petsc, has_parmetis,
                          has_slepc, git_commit_hash, DOLFIN_EPS,
-                         DOLFIN_PI, TimingClear, TimingType, timing, timings, list_timings)
+                         DOLFIN_PI, TimingClear, TimingType, timing, timings,
+                         list_timings, dump_timings_to_xml)
 
 if has_hdf5():
     from .cpp.adaptivity import TimeSeries
@@ -65,7 +66,7 @@ if has_slepc():
 
 from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar, EigenMatrix,
                      EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout,
-                     LinearOperator)
+                     LinearOperator, BlockMatrix, BlockVector)
 from .cpp.log import info, Table, set_log_level
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity, MeshColoring,
@@ -137,3 +138,6 @@ def mpi_comm_self():
 
 def mpi_comm_world():
     return MPI.comm_world
+
+def mpi_comm_self():
+    return MPI.comm_self
