@@ -187,6 +187,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshDomains, std::shared_ptr<dolfin::MeshDomains>>(m, "MeshDomains", "Mesh domains object")
       .def("set_marker", &dolfin::MeshDomains::set_marker)
       .def("get_marker", &dolfin::MeshDomains::get_marker)
+      .def("init", &dolfin::MeshDomains::init)
       .def("markers", (std::map<std::size_t, std::size_t>& (dolfin::MeshDomains::*)(std::size_t))
            &dolfin::MeshDomains::markers);
 
@@ -482,6 +483,7 @@ namespace dolfin_wrappers
     // dolfin::SubMesh class
     py::class_<dolfin::SubMesh, std::shared_ptr<dolfin::SubMesh>, dolfin::Mesh>
       (m, "SubMesh", "DOLFIN SubMesh")
+      .def(py::init<const dolfin::Mesh&, std::size_t>())
       .def(py::init<const dolfin::Mesh&, const dolfin::SubDomain&>())
       .def(py::init<const dolfin::Mesh&, const dolfin::MeshFunction<std::size_t>&, std::size_t>());
 
