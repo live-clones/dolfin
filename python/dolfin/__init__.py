@@ -36,7 +36,7 @@ if has_hdf5():
     from .cpp.adaptivity import TimeSeries
     from .cpp.io import HDF5File
 
-from .cpp.adaptivity import AdaptiveLinearVariationalSolver, AdaptiveNonlinearVariationalSolver
+#from .cpp.adaptivity import AdaptiveLinearVariationalSolver, AdaptiveNonlinearVariationalSolver
 
 from .cpp.ale import ALE
 from .cpp import MPI
@@ -90,6 +90,8 @@ from . import io
 from . import la
 from . import mesh
 from . import parameter
+
+from .fem.adaptivesolving import AdaptiveLinearVariationalSolver, AdaptiveNonlinearVariationalSolver
 
 from .common import timer
 from .common.timer import Timer, timed
