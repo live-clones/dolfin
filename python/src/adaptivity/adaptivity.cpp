@@ -83,7 +83,7 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>,
            std::shared_ptr<dolfin::GoalFunctional>>())
       .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>,
-           std::shared_ptr<dolfin::GoalFunctional>,
+           std::shared_ptr<dolfin::Form>,
            std::shared_ptr<dolfin::ErrorControl>>());
 
     py::class_<dolfin::AdaptiveNonlinearVariationalSolver, std::shared_ptr<dolfin::AdaptiveNonlinearVariationalSolver>,
