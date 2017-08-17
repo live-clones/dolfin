@@ -259,11 +259,13 @@ namespace dolfin_wrappers
       .def("normal", (double (dolfin::Face::*)(std::size_t) const) &dolfin::Face::normal)
       .def("area", &dolfin::Face::area);
 
+
     //--------------------------------------------------------------------------
     // dolfin::Facet class
     py::class_<dolfin::Facet, std::shared_ptr<dolfin::Facet>, dolfin::MeshEntity>
       (m, "Facet", "DOLFIN Facet object")
-      .def(py::init<const dolfin::Mesh&, std::size_t>());
+      .def(py::init<const dolfin::Mesh&, std::size_t>())
+      .def("exterior", &dolfin::Facet::exterior);
 
     //--------------------------------------------------------------------------
     // dolfin::Cell class

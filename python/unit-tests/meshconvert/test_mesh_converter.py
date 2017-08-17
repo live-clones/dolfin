@@ -293,8 +293,10 @@ class AbaqusTest(_ConverterTest):
         return handler
 
 class TestGmsh(_ConverterTest):
-    """ Test Gmsh convertor.
+    """Test Gmsh convertor.
+
     """
+
     def test_success(self):
         """ Test success case.
         """
@@ -436,6 +438,7 @@ class TestGmsh(_ConverterTest):
 @skip_in_parallel
 class TestTriangle(Tester):
 
+    #@pytest.mark.xfail
     def test_convert_triangle(self): # Disabled because it fails, see FIXME below
 
         # test no. 1
@@ -524,6 +527,7 @@ class TestTriangle(Tester):
 
 @skip_in_parallel
 class TestDiffPack(Tester):
+
     def test_convert_diffpack(self):
 
         from dolfin import Mesh, MPI, MeshFunction, mpi_comm_world
