@@ -45,7 +45,7 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol)
 {
   dolfin_assert(cvode_mem);
 
-  long int N, mu, ml;
+  //  long int N, mu, ml;
   auto fu = std::shared_ptr<GenericVector>();
 
   // Make a sundials n_vector sharing data with u0
@@ -130,6 +130,7 @@ int CVode::Jacobian(std::shared_ptr<GenericVector> v,
   dolfin_error("CVode.cpp",
 	       "Jacobian function",
 	       "This function should be overloaded");
+  return 0;
 }
 
 //-----------------------------------------------------------------------------
