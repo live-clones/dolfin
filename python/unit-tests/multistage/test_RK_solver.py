@@ -45,8 +45,8 @@ def convergence_order(errors, base = 2):
 @skip_in_parallel
 def test_butcher_schemes_scalar():
 
-    LEVEL = cpp.get_log_level()
-    cpp.set_log_level(cpp.WARNING)
+    LEVEL = get_log_level()
+    set_log_level(LogLevel.WARNING)
     mesh = UnitSquareMesh(4, 4)
 
     V = FunctionSpace(mesh, "R", 0)
@@ -77,8 +77,8 @@ def test_butcher_schemes_scalar():
 @skip_in_parallel
 def test_butcher_schemes_vector():
 
-    LEVEL = cpp.get_log_level()
-    cpp.set_log_level(cpp.WARNING)
+    LEVEL = get_log_level()
+    set_log_level(LogLevel.WARNING)
     mesh = UnitSquareMesh(4, 4)
 
     V = VectorFunctionSpace(mesh, "R", 0, dim=2)

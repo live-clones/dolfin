@@ -45,6 +45,16 @@ namespace dolfin_wrappers
     m.def("info", [](const dolfin::Mesh& mesh, bool verbose){ dolfin::info(mesh, verbose); },
           py::arg("mesh"), py::arg("verbose")=false);
     m.def("set_log_level", &dolfin::set_log_level);
+    m.def("get_log_level", &dolfin::get_log_level);
+
+    py::enum_<dolfin::LogLevel>(m, "LogLevel")
+      .value("DEBUG", dolfin::LogLevel::DBG)
+      .value("TRACE", dolfin::LogLevel::TRACE)
+      .value("PROGRESS", dolfin::LogLevel::PROGRESS)
+      .value("INFO", dolfin::LogLevel::INFO)
+      .value("WARNING", dolfin::LogLevel::WARNING)
+      .value("ERROR", dolfin::LogLevel::ERROR)
+      .value("CRITICAL", dolfin::LogLevel::CRITICAL);
 
   }
 

@@ -69,7 +69,7 @@ if has_slepc():
 from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar, EigenMatrix,
                      EigenVector, EigenFactory, LUSolver, KrylovSolver, TensorLayout,
                      LinearOperator, BlockMatrix, BlockVector)
-from .cpp.log import info, Table, set_log_level
+from .cpp.log import info, Table, set_log_level, get_log_level, LogLevel
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity, MeshColoring,
                        Cell, Facet, Face, Edge, Vertex, cells,
