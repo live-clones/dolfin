@@ -45,6 +45,7 @@
 #include <dolfin/la/EigenMatrix.h>
 #include <dolfin/la/EigenVector.h>
 #include <dolfin/la/PETScKrylovSolver.h>
+#include <dolfin/la/PETScLUSolver.h>
 #include <dolfin/la/PETScFactory.h>
 #include <dolfin/la/PETScMatrix.h>
 #include <dolfin/la/PETScOptions.h>
@@ -709,6 +710,8 @@ namespace dolfin_wrappers
       .def(py::init<>())
       .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::size_t>())
+      .def("get_options_prefix", &dolfin::PETScVector::get_options_prefix)
+      .def("set_options_prefix", &dolfin::PETScVector::set_options_prefix)
       .def("update_ghost_values", &dolfin::PETScVector::update_ghost_values);
 
     // dolfin::PETScBaseMatrix class
@@ -721,6 +724,8 @@ namespace dolfin_wrappers
       (m, "PETScMatrix", "DOLFIN PETScMatrix object")
       .def(py::init<>())
       .def(py::init<MPI_Comm>())
+      .def("get_options_prefix", &dolfin::PETScMatrix::get_options_prefix)
+      .def("set_options_prefix", &dolfin::PETScMatrix::set_options_prefix)
       .def("set_nullspace", &dolfin::PETScMatrix::set_nullspace)
       .def("set_near_nullspace", &dolfin::PETScMatrix::set_near_nullspace);
 
@@ -756,6 +761,16 @@ namespace dolfin_wrappers
                                                        const dolfin::GenericVector&))
            &dolfin::LUSolver::solve);
 
+    #ifdef HAS_PETSC
+    py::class_<dolfin::PETScLUSolver, std::shared_ptr<dolfin::PETScLUSolver>,
+      dolfin::GenericLinearSolver>
+      (m, "PETScLUSolver", "DOLFIN PETScLUSolver object")
+      .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::PETScMatrix>, std::string>())
+      .def("get_options_prefix", &dolfin::PETScLUSolver::get_options_prefix)
+      .def("set_options_prefix", &dolfin::PETScLUSolver::set_options_prefix)
+      .def("solve", (std::size_t (dolfin::PETScLUSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
+           &dolfin::PETScLUSolver::solve);
+    #endif
 
     //-----------------------------------------------------------------------------
     // dolfin::KrylovSolver class
@@ -779,12 +794,25 @@ namespace dolfin_wrappers
     #ifdef HAS_PETSC
     // dolfin::PETScKrylovSolver class
     py::class_<dolfin::PETScKrylovSolver, std::shared_ptr<dolfin::PETScKrylovSolver>,
-               dolfin::GenericLinearSolver>
-      (m, "PETScKrylovSolver", "DOLFIN PETScKrylovSolver object")
-      .def(py::init<>())
+      dolfin::GenericLinearSolver>
+    petsc_ks(m, "PETScKrylovSolver", "DOLFIN PETScKrylovSolver object");
+
+    py::enum_<dolfin::PETScKrylovSolver::norm_type>(petsc_ks, "norm_type")
+      .value("none", dolfin::PETScKrylovSolver::norm_type::none)
+      .value("default_norm", dolfin::PETScKrylovSolver::norm_type::default_norm)
+      .value("preconditioned", dolfin::PETScKrylovSolver::norm_type::preconditioned)
+      .value("unpreconditioned", dolfin::PETScKrylovSolver::norm_type::unpreconditioned)
+      .value("natural", dolfin::PETScKrylovSolver::norm_type::natural);
+
+    petsc_ks.def(py::init<>())
       .def(py::init<std::string>())
       .def(py::init<std::string, std::string>())
       .def(py::init<std::string, std::shared_ptr<dolfin::PETScPreconditioner>>())
+      .def("get_options_prefix", &dolfin::PETScKrylovSolver::get_options_prefix)
+      .def("set_options_prefix", &dolfin::PETScKrylovSolver::set_options_prefix)
+      .def("get_norm_type", (dolfin::PETScKrylovSolver::norm_type (dolfin::PETScKrylovSolver::*)() const)
+           &dolfin::PETScKrylovSolver::get_norm_type)
+      .def("set_norm_type", &dolfin::PETScKrylovSolver::set_norm_type)
       .def("set_operator",  (void (dolfin::PETScKrylovSolver::*)(std::shared_ptr<const dolfin::GenericLinearOperator>))
            &dolfin::PETScKrylovSolver::set_operator)
       .def("set_operators", (void (dolfin::PETScKrylovSolver::*)(std::shared_ptr<const dolfin::GenericLinearOperator>,
@@ -794,6 +822,8 @@ namespace dolfin_wrappers
            &dolfin::PETScKrylovSolver::solve)
       .def("set_from_options", &dolfin::PETScKrylovSolver::set_from_options)
       .def("set_reuse_preconditioner", &dolfin::PETScKrylovSolver::set_reuse_preconditioner);
+
+
     #endif
 
     #ifdef HAS_SLEPC

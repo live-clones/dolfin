@@ -36,7 +36,7 @@ if has_hdf5():
     from .cpp.adaptivity import TimeSeries
     from .cpp.io import HDF5File
 
-from .cpp.adaptivity import AdaptiveLinearVariationalSolver, AdaptiveNonlinearVariationalSolver
+#from .cpp.adaptivity import AdaptiveLinearVariationalSolver, AdaptiveNonlinearVariationalSolver
 
 from .cpp.ale import ALE
 from .cpp import MPI
@@ -59,7 +59,7 @@ from .cpp.la import (has_linear_algebra_backend,
 
 if has_linear_algebra_backend('PETSc'):
     from .cpp.la import (PETScVector, PETScMatrix, PETScFactory, PETScOptions,
-                         PETScKrylovSolver, PETScPreconditioner)
+                         PETScLUSolver, PETScKrylovSolver, PETScPreconditioner)
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
 
@@ -91,6 +91,8 @@ from . import la
 from . import mesh
 from . import parameter
 
+from .fem.adaptivesolving import AdaptiveLinearVariationalSolver, AdaptiveNonlinearVariationalSolver
+
 from .common import timer
 from .common.timer import Timer, timed
 from .common.plotting import plot
@@ -120,6 +122,8 @@ from .mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction, EdgeFunction, VertexFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
 from .mesh.subdomain import CompiledSubDomain
+
+from .multistage.multistagescheme import RK4, CN2, ExplicitMidPoint, ESDIRK3, ESDIRK4
 
 # ufl
 from ufl import (FiniteElement, TensorElement, VectorElement, MixedElement, rhs, lhs,

@@ -70,6 +70,7 @@ setup(
               "dolfin.io",
               "dolfin.jit",
               "dolfin.mesh",
+              "dolfin.multistage",
               "dolfin.parameter",
               "dolfin_utils.meshconvert",
               "dolfin_utils.test"],

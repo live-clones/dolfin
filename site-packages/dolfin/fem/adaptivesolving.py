@@ -37,10 +37,10 @@ from dolfin.fem.solving import NonlinearVariationalProblem
 
 from dolfin.fem.errorcontrolgenerator import DOLFINErrorControlGenerator
 
-class AdaptiveLinearVariationalSolver(cpp.adaptivity.AdaptiveLinearVariationalSolver):
+class AdaptiveLinearVariationalSolver(cpp.AdaptiveLinearVariationalSolver):
 
     # Reuse doc-string
-    #__doc__ = cpp.AdaptiveLinearVariationalSolver.__doc__
+    __doc__ = cpp.AdaptiveLinearVariationalSolver.__doc__
 
     def __init__(self, problem, goal):
         """
@@ -80,10 +80,10 @@ class AdaptiveLinearVariationalSolver(cpp.adaptivity.AdaptiveLinearVariationalSo
         # Call cpp.AdaptiveLinearVariationalSolver.solve directly
         cpp.AdaptiveLinearVariationalSolver.solve(self, tol)
 
-class AdaptiveNonlinearVariationalSolver(cpp.adaptivity.AdaptiveNonlinearVariationalSolver):
+class AdaptiveNonlinearVariationalSolver(cpp.AdaptiveNonlinearVariationalSolver):
 
     # Reuse doc-string
-    #__doc__ = cpp.AdaptiveNonlinearVariationalSolver.__doc__
+    __doc__ = cpp.AdaptiveNonlinearVariationalSolver.__doc__
 
     def __init__(self, problem, goal):
         """
