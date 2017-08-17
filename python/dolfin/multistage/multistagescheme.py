@@ -140,7 +140,7 @@ def _time_dependent_expressions(rhs_form, time):
     for coefficient in rhs_form.coefficients():
         if hasattr(coefficient, "user_parameters"):
             for c_name, c in list(coefficient.user_parameters.items()):
-                if isinstance(c, cpp.GenericFunction) and time.id() == c.id():
+                if isinstance(c, cpp.function.GenericFunction) and time.id() == c.id():
                     if coefficient not in time_dependent_expressions:
                         time_dependent_expressions[coefficient] = [c_name]
                     else:
@@ -586,8 +586,8 @@ class MultiStageScheme(cpp.multistage.MultiStageScheme):
         self.contraction = contraction
 
         # Pass args to C++ constructor
-        cpp.MultiStageScheme.__init__(self, dolfin_stage_forms, last_stage,
-                                      stage_solutions, solution, time, dt,
+        cpp.multistage.MultiStageScheme.__init__(self, dolfin_stage_forms, last_stage,
+                                      stage_solutions, solution.cpp_object(), time, dt,
                                       dt_stage_offsets, jacobian_indices, order,
                                       self.__class__.__name__,
                                       human_form, bcs)
