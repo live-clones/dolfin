@@ -51,7 +51,7 @@ def convergence_order(errors, base = 2):
 
     return orders
 
-@pytest.mark.skip
+@pytest.mark.xfail
 @pytest.mark.slow
 def test_butcher_schemes_scalar_time(Scheme, optimize):
     mesh = UnitSquareMesh(10, 10)
@@ -84,7 +84,7 @@ def test_butcher_schemes_scalar_time(Scheme, optimize):
     assert scheme.order()-min(convergence_order(u_errors))<0.1
 
 
-@pytest.mark.skip
+@pytest.mark.xfail
 @pytest.mark.slow
 def test_butcher_schemes_scalar(Scheme, optimize):
 
@@ -128,7 +128,7 @@ def test_butcher_schemes_scalar(Scheme, optimize):
     assert scheme.order()-min(convergence_order(u_errors))<0.1
 
 
-@pytest.mark.skip
+@pytest.mark.xfail
 @pytest.mark.slow
 def test_butcher_schemes_vector(Scheme, optimize):
 

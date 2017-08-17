@@ -24,7 +24,7 @@ import platform
 from dolfin import *
 from dolfin_utils.test import skip_if_not_PETSc, skip_in_serial, skip_if_not_petsc4py
 
-@pytest.mark.xfail
+
 def test_nasty_jit_caching_bug():
 
     # This may result in something like "matrices are not aligned"
@@ -87,7 +87,6 @@ def test_compile_extension_module_kwargs():
     assert not m2.__file__ == m0.__file__
 
 
-@pytest.mark.xfail
 @skip_if_not_petsc4py
 @skip_in_serial
 def test_mpi_dependent_jiting():
