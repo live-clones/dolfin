@@ -82,7 +82,6 @@ def ec(problem, goal):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_check_domains(goal, mesh, a, L):
     # Asserting that domains are ok before trying error control generation
     msg = "Expecting only the domain from the mesh to get here through u."
@@ -95,7 +94,6 @@ def test_check_domains(goal, mesh, a, L):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_error_estimation(problem, u, ec):
 
     # Solve variational problem once
@@ -111,7 +109,6 @@ def test_error_estimation(problem, u, ec):
 
 
 @skip_in_parallel
-@pytest.mark.xfail
 def test_error_indicators(problem, u, mesh):
 
     # Solve variational problem once

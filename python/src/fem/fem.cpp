@@ -342,7 +342,8 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::Form>,
            std::shared_ptr<const dolfin::Form>,
            std::shared_ptr<dolfin::Function>,
-           std::vector<std::shared_ptr<const dolfin::DirichletBC>>>());
+           std::vector<std::shared_ptr<const dolfin::DirichletBC>>>())
+      .def("bcs", &dolfin::LinearVariationalProblem::bcs);
 
     // dolfin::LinearVariationalSolver class
     py::class_<dolfin::LinearVariationalSolver,
