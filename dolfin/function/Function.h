@@ -219,7 +219,7 @@ namespace dolfin
     ///
     /// @param    values (Eigen::Ref<Eigen::VectorXd> values)
     ///         The values.
-    /// @param    x (Eigen::Ref<Eigen::VectorXd> x)
+    /// @param    x (Eigen::Ref<const Eigen::VectorXd> x)
     ///         The coordinates.
     void eval(Eigen::Ref<Eigen::VectorXd> values,
               Eigen::Ref<const Eigen::VectorXd> x) const override;
@@ -229,7 +229,7 @@ namespace dolfin
     /// *Arguments*
     /// @param    values (Eigen::Ref<Eigen::VectorXd>)
     ///         The values.
-    /// @param    x (Eigen::Ref<Eigen::VectorXd>)
+    /// @param    x (Eigen::Ref<const Eigen::VectorXd>)
     ///         The coordinates.
     /// @param    dolfin_cell (_Cell_)
     ///         The cell.
@@ -294,7 +294,7 @@ namespace dolfin
     ///
     /// @param    values (Eigen::Ref<Eigen::VectorXd>)
     ///         The values at the point.
-    /// @param   x (Eigen::Ref<Eigen::VectorXd>
+    /// @param   x (Eigen::Ref<const Eigen::VectorXd>
     ///         The coordinates of the point.
     /// @param    cell (ufc::cell)
     ///         The cell which contains the given point.

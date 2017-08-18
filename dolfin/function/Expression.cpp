@@ -64,8 +64,7 @@ Expression::~Expression()
   // Do nothing
 }
 //-----------------------------------------------------------------------------
-void Expression::eval(Array<double>& values,
-                      const Array<double>& x,
+void Expression::eval(Array<double>& values, const Array<double>& x,
                       const ufc::cell& cell) const
 {
   // Redirect to Eigen eval
