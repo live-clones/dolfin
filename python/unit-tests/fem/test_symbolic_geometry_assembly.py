@@ -463,7 +463,6 @@ def test_manifold_coordinate_projection(square3d, any_representation):
     assert round(assemble((v1[2]-x[2])**2*dx(1)), 7) == 0.0
 
 
-@pytest.mark.xfail
 @skip_in_parallel
 def test_manifold_point_evaluation(square3d, any_representation):
     mesh = square3d

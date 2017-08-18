@@ -71,6 +71,15 @@ namespace dolfin_wrappers
       .def("value_size", &dolfin::GenericFunction::value_size)
       .def("value_rank", &dolfin::GenericFunction::value_rank)
       .def_property_readonly("value_shape", &dolfin::GenericFunction::value_shape)
+      // FIXME: Change eval function to return NumPy array
+      // FIXME: Add C++ version that takes a dolfin::Cell
+      .def("eval", [](const dolfin::GenericFunction& self, Eigen::Ref<Eigen::VectorXd> u,
+                      Eigen::Ref<const Eigen::VectorXd> x, const dolfin::Cell& cell)
+           {
+             ufc::cell ufc_cell;
+             cell.get_cell_data(ufc_cell);
+             self.eval(u, x, ufc_cell);
+           }, "Evaluate GenericFunction (cell version)")
       .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>,
                                                       Eigen::Ref<const Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::GenericFunction::eval,
@@ -132,12 +141,6 @@ namespace dolfin_wrappers
              self.eval(f, x);
              return f;
            })
-      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>,
-                                                 Eigen::Ref<const Eigen::VectorXd>, const ufc::cell&) const)
-           &dolfin::Expression::eval,
-           "Evaluate Expression (cell version)")
-      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<const Eigen::VectorXd>) const)
-           &dolfin::Expression::eval, py::arg("values"), py::arg("x"), "Evaluate Expression")
       .def("value_dimension", &dolfin::Expression::value_dimension)
       .def("get_property", &dolfin::Expression::get_property)
       .def("set_property", &dolfin::Expression::set_property);

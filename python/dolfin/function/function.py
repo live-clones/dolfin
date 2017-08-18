@@ -327,6 +327,12 @@ class Function(ufl.Coefficient):
     #    if isinstance(u, cpp.function.FunctionAXPY):
     #        self._cpp_object._assign(u)
 
+    def eval_cell(self, u, x, cell):
+        return self._cpp_object.eval(u, x, cell)
+
+    def eval(self, u, x):
+        return self._cpp_object.eval(u, x)
+
     def extrapolate(self, u):
         if isinstance(u, ufl.Coefficient):
             self._cpp_object.extrapolate(u._cpp_object)
