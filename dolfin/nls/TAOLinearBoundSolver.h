@@ -40,7 +40,6 @@ namespace dolfin
   class GenericVector;
   class PETScMatrix;
   class PETScVector;
-  class PETScPreconditioner;
   class PETScKrylovSolver;
   class PETScKSPDeleter;
 
@@ -172,9 +171,6 @@ namespace dolfin
 
     // Tao solver pointer
     Tao _tao;
-
-    // Petsc preconditioner
-    std::shared_ptr<PETScPreconditioner> _preconditioner;
 
     // Operator (the matrix) and the vector
     std::shared_ptr<const PETScMatrix> _matA;

@@ -167,10 +167,12 @@ namespace dolfin
     /// Return PETSc KSP pointer
     KSP ksp() const;
 
-    /// Return a list of available solver methods
+    /// Return a list of names solver methods. For access to all
+    /// methods, use PETScOptions.
     static std::map<std::string, std::string> methods();
 
-    /// Return a list of available named preconditioners
+    /// Return a list of named preconditioner shortcuts. For access to
+    /// all methods, use PETScOptions.
     static std::map<std::string, std::string> preconditioners();
 
     /// Default parameter values
@@ -191,6 +193,10 @@ namespace dolfin
 
   private:
 
+    // Temporary work-arounds
+    static std::map<std::string, const KSPType> petsc_methods();
+    static std::map<std::string, const PCType> petsc_pc_methods();
+
     // Return norm_type enum for norm string
     static PETScKrylovSolver::norm_type get_norm_type(std::string norm);
 
@@ -203,12 +209,6 @@ namespace dolfin
 
     void check_dimensions(const PETScBaseMatrix& A, const GenericVector& x,
                           const GenericVector& b) const;
-
-    // Available solvers
-    static const std::map<std::string, const KSPType> _methods;
-
-    // Available solvers descriptions
-    static const std::map<std::string, std::string> _methods_descr;
 
     // PETSc solver pointer
     KSP _ksp;

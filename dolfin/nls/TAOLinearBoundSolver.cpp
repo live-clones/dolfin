@@ -29,7 +29,6 @@
 #include "dolfin/la/PETScMatrix.h"
 #include "dolfin/la/PETScVector.h"
 #include "dolfin/la/PETScKrylovSolver.h"
-#include "dolfin/la/PETScPreconditioner.h"
 #include "TAOLinearBoundSolver.h"
 #include "petscksp.h"
 #include "petscvec.h"
@@ -73,7 +72,7 @@ std::map<std::string, std::string> TAOLinearBoundSolver::krylov_solvers()
 //-----------------------------------------------------------------------------
 std::map<std::string, std::string> TAOLinearBoundSolver::preconditioners()
 {
-  return PETScPreconditioner::preconditioners();
+  return PETScKrylovSolver::preconditioners();
 }
 //-----------------------------------------------------------------------------
 TAOLinearBoundSolver::TAOLinearBoundSolver(MPI_Comm comm)
@@ -89,8 +88,7 @@ TAOLinearBoundSolver::TAOLinearBoundSolver(MPI_Comm comm)
 TAOLinearBoundSolver::TAOLinearBoundSolver(const std::string method,
                                            const std::string ksp_type,
                                            const std::string pc_type)
-  : _tao(NULL), _preconditioner(new PETScPreconditioner(pc_type)),
-    _preconditioner_set(false)
+  : _tao(NULL), _preconditioner_set(false)
 {
   // Set parameter values
   parameters = default_parameters();
@@ -428,12 +426,14 @@ void TAOLinearBoundSolver::set_ksp_options()
     if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetTolerances");
 
     // Set preconditioner
+    /*
     if (_preconditioner && !_preconditioner_set)
     {
       PETScKrylovSolver dolfin_ksp(ksp);
       _preconditioner->set(dolfin_ksp);
       _preconditioner_set = true;
     }
+    */
   }
 }
 //-----------------------------------------------------------------------------

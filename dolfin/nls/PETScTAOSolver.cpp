@@ -31,7 +31,6 @@
 #include <dolfin/la/PETScKrylovSolver.h>
 #include <dolfin/la/PETScMatrix.h>
 #include <dolfin/la/PETScLUSolver.h>
-#include <dolfin/la/PETScPreconditioner.h>
 #include <dolfin/la/PETScVector.h>
 #include "OptimisationProblem.h"
 #include "PETScTAOSolver.h"
@@ -469,19 +468,19 @@ void PETScTAOSolver::set_ksp_options()
     }
 
     // Set type for iterative Krylov solver
-    else if (PETScKrylovSolver::_methods.count(ksp_type) != 0)
+    else if (PETScKrylovSolver::petsc_methods().count(ksp_type) != 0)
     {
       std::map<std::string, const KSPType>::const_iterator ksp_pair
-        = PETScKrylovSolver::_methods.find(ksp_type);
-      dolfin_assert(ksp_pair != PETScKrylovSolver::_methods.end());
+        = PETScKrylovSolver::petsc_methods().find(ksp_type);
+      dolfin_assert(ksp_pair != PETScKrylovSolver::petsc_methods().end());
       ierr = KSPSetType(ksp, ksp_pair->second);
       if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetType");
 
       if (pc_type != "default")
       {
         std::map<std::string, const PCType>::const_iterator pc_pair
-          = PETScPreconditioner::_methods.find(pc_type);
-        dolfin_assert(pc_pair != PETScPreconditioner::_methods.end());
+          = PETScKrylovSolver::petsc_pc_methods().find(pc_type);
+        dolfin_assert(pc_pair != PETScKrylovSolver::petsc_pc_methods().end());
         ierr = PCSetType(pc, pc_pair->second);
         if (ierr != 0) petsc_error(ierr, __FILE__, "PCSetType");
       }

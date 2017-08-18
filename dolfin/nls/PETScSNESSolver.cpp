@@ -35,7 +35,6 @@
 #include <dolfin/la/PETScKrylovSolver.h>
 #include <dolfin/la/PETScMatrix.h>
 #include <dolfin/la/PETScLUSolver.h>
-#include <dolfin/la/PETScPreconditioner.h>
 #include <dolfin/la/PETScVector.h>
 #include "NonlinearProblem.h"
 #include "PETScSNESSolver.h"
@@ -472,17 +471,18 @@ void PETScSNESSolver::set_linear_solver_parameters()
   {
     // Do nothing
   }
-  else if (PETScKrylovSolver::_methods.count(linear_solver) != 0)
+  else if (PETScKrylovSolver::petsc_methods().count(linear_solver) != 0)
   {
-    auto  solver_pair = PETScKrylovSolver::_methods.find(linear_solver);
-    dolfin_assert(solver_pair != PETScKrylovSolver::_methods.end());
+    auto solver_pair = PETScKrylovSolver::petsc_methods().find(linear_solver);
+    dolfin_assert(solver_pair != PETScKrylovSolver::petsc_methods().end());
     ierr = KSPSetType(ksp, solver_pair->second);
     if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetType");
+
     if (preconditioner != "default"
-        && PETScPreconditioner::_methods.count(preconditioner) != 0)
+        && PETScKrylovSolver::petsc_pc_methods().count(preconditioner) != 0)
     {
-      auto it = PETScPreconditioner::_methods.find(preconditioner);
-      dolfin_assert(it != PETScPreconditioner::_methods.end());
+      auto it = PETScKrylovSolver::petsc_pc_methods().find(preconditioner);
+      dolfin_assert(it != PETScKrylovSolver::petsc_pc_methods().end());
       ierr = PCSetType(pc, it->second);
       if (ierr != 0) petsc_error(ierr, __FILE__, "PCSetType");
     }
