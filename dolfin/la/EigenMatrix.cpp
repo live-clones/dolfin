@@ -249,9 +249,7 @@ void EigenMatrix::mult(const GenericVector& x, GenericVector& y) const
                  "Vector for matrix-vector result has wrong size");
   }
 
-  dolfin_assert(xx.vec());
-  dolfin_assert(yy.vec());
-  *yy.vec() = _matA*(*xx.vec());
+  yy.vec() = _matA*(xx.vec());
 }
 //-----------------------------------------------------------------------------
 void EigenMatrix::get_diagonal(GenericVector& x) const
@@ -265,7 +263,7 @@ void EigenMatrix::get_diagonal(GenericVector& x) const
 
   auto xx = as_type<EigenVector>(x).vec();
   for (std::size_t i = 0; i != x.size(); ++i)
-    (*xx)[i] = _matA.coeff(i, i);
+    xx[i] = _matA.coeff(i, i);
 }
 //-----------------------------------------------------------------------------
 void EigenMatrix::set_diagonal(const GenericVector& x)
@@ -279,7 +277,7 @@ void EigenMatrix::set_diagonal(const GenericVector& x)
 
   auto xx = as_type<const EigenVector>(x).vec();
   for (std::size_t i = 0; i != x.size(); ++i)
-    _matA.coeffRef(i, i) = (*xx)[i];
+    _matA.coeffRef(i, i) = xx[i];
 }
 //----------------------------------------------------------------------------
 void EigenMatrix::transpmult(const GenericVector& x,
@@ -306,9 +304,7 @@ void EigenMatrix::transpmult(const GenericVector& x,
                  "Vector for matrix-vector result has wrong size");
   }
 
-  dolfin_assert(xx.vec());
-  dolfin_assert(yy.vec());
-  *yy.vec() = _matA.transpose()*(*xx.vec());
+  yy.vec() = _matA.transpose()*(xx.vec());
 }
 //----------------------------------------------------------------------------
 const EigenMatrix& EigenMatrix::operator*= (double a)

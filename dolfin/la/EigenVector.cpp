@@ -36,34 +36,35 @@ EigenVector::EigenVector() : EigenVector(MPI_COMM_SELF)
   // Do nothing
 }
 //-----------------------------------------------------------------------------
-EigenVector::EigenVector(MPI_Comm comm) : _x(new Eigen::VectorXd),
-                                          _mpi_comm(comm)
+EigenVector::EigenVector(MPI_Comm comm) : _mpi_comm(comm)
 {
   // Check size of communicator
   check_mpi_size(comm);
 }
 //-----------------------------------------------------------------------------
 EigenVector::EigenVector(MPI_Comm comm, std::size_t N)
-  : _x(new Eigen::VectorXd(N)), _mpi_comm(comm)
+  : _x(N), _mpi_comm(comm)
 {
   // Check size of communicator
   check_mpi_size(comm);
 
   // Zero vector
-  _x->setZero();
+  _x.setZero();
 }
 //-----------------------------------------------------------------------------
 EigenVector::EigenVector(const EigenVector& x)
-  : _x(new Eigen::VectorXd(*(x._x))), _mpi_comm(x._mpi_comm.comm())
+  : _x(x.vec()), _mpi_comm(x._mpi_comm.comm())
 {
   // Do nothing
 }
 //-----------------------------------------------------------------------------
+/*
 EigenVector::EigenVector(std::shared_ptr<Eigen::VectorXd> x)
   : _x(x), _mpi_comm(MPI_COMM_SELF)
 {
   // Do nothing
 }
+*/
 //-----------------------------------------------------------------------------
 EigenVector::~EigenVector()
 {
@@ -72,14 +73,14 @@ EigenVector::~EigenVector()
 //-----------------------------------------------------------------------------
 std::shared_ptr<GenericVector> EigenVector::copy() const
 {
-  std::shared_ptr<GenericVector> y(new EigenVector(*this));
-  return y;
+  return std::make_shared<EigenVector>(*this);
+  //std::shared_ptr<GenericVector> y(new EigenVector(*this));
+  //return y;
 }
 //-----------------------------------------------------------------------------
 bool EigenVector::empty() const
 {
-  dolfin_assert(_x);
-  if (_x->size() == 0)
+  if (_x.size() == 0)
     return true;
   else
     return false;
@@ -87,7 +88,7 @@ bool EigenVector::empty() const
 //-----------------------------------------------------------------------------
 std::size_t EigenVector::size() const
 {
-  return _x->size();
+  return _x.size();
 }
 //-----------------------------------------------------------------------------
 std::pair<std::int64_t, std::int64_t> EigenVector::local_range() const
@@ -107,28 +108,28 @@ void EigenVector::get_local(double* block, std::size_t m,
                             const dolfin::la_index* rows) const
 {
   for (std::size_t i = 0; i < m; i++)
-    block[i] = (*_x)(rows[i]);
+    block[i] = _x(rows[i]);
 }
 //-----------------------------------------------------------------------------
 void EigenVector::get_local(std::vector<double>& values) const
 {
   values.resize(size());
   for (std::size_t i = 0; i < size(); i++)
-    values[i] = (*_x)(i);
+    values[i] = _x(i);
 }
 //-----------------------------------------------------------------------------
 void EigenVector::set_local(const std::vector<double>& values)
 {
   dolfin_assert(values.size() == size());
   for (std::size_t i = 0; i < size(); i++)
-    (*_x)(i) = values[i];
+    _x(i) = values[i];
 }
 //-----------------------------------------------------------------------------
 void EigenVector::add_local(const Array<double>& values)
 {
   dolfin_assert(values.size() == size());
   for (std::size_t i = 0; i < size(); i++)
-    (*_x)(i) += values[i];
+    _x(i) += values[i];
 }
 //-----------------------------------------------------------------------------
 void EigenVector::gather(GenericVector& x,
@@ -144,7 +145,7 @@ void EigenVector::gather(std::vector<double>& x,
   x.resize(_size);
   dolfin_assert(x.size() == _size);
   for (std::size_t i = 0; i < _size; i++)
-    x[i] = (*_x)(indices[i]);
+    x[i] = _x(indices[i]);
 }
 //-----------------------------------------------------------------------------
 void EigenVector::gather_on_zero(std::vector<double>& x) const
@@ -156,14 +157,14 @@ void EigenVector::set(const double* block, std::size_t m,
                       const dolfin::la_index* rows)
 {
   for (std::size_t i = 0; i < m; i++)
-    (*_x)(rows[i]) = block[i];
+    _x(rows[i]) = block[i];
 }
 //-----------------------------------------------------------------------------
 void EigenVector::add(const double* block, std::size_t m,
                       const dolfin::la_index* rows)
 {
   for (std::size_t i = 0; i < m; i++)
-    (*_x)(rows[i]) += block[i];
+    _x(rows[i]) += block[i];
 }
 //-----------------------------------------------------------------------------
 void EigenVector::apply(std::string mode)
@@ -173,19 +174,17 @@ void EigenVector::apply(std::string mode)
 //-----------------------------------------------------------------------------
 void EigenVector::zero()
 {
-  dolfin_assert(_x);
-  _x->setZero();
+  _x.setZero();
 }
 //-----------------------------------------------------------------------------
 double EigenVector::norm(std::string norm_type) const
 {
-  dolfin_assert(_x);
   if (norm_type == "l1")
-    return _x->lpNorm<1>();
+    return _x.lpNorm<1>();
   else if (norm_type == "l2")
-    return _x->lpNorm<2>();
+    return _x.lpNorm<2>();
   else if (norm_type == "linf")
-    return _x->lpNorm<Eigen::Infinity>();
+    return _x.lpNorm<Eigen::Infinity>();
   else
   {
     dolfin_error("EigenVector.cpp",
@@ -198,20 +197,17 @@ double EigenVector::norm(std::string norm_type) const
 //-----------------------------------------------------------------------------
 double EigenVector::min() const
 {
-  dolfin_assert(_x);
-  return _x->minCoeff();
+  return _x.minCoeff();
 }
 //-----------------------------------------------------------------------------
 double EigenVector::max() const
 {
-  dolfin_assert(_x);
-  return _x->maxCoeff();
+  return _x.maxCoeff();
 }
 //-----------------------------------------------------------------------------
 double EigenVector::sum() const
 {
-  dolfin_assert(_x);
-  return _x->sum();
+  return _x.sum();
 }
 //-----------------------------------------------------------------------------
 double EigenVector::sum(const Array<std::size_t>& rows) const
@@ -224,7 +220,7 @@ double EigenVector::sum(const Array<std::size_t>& rows) const
     dolfin_assert(index < size());
     if (row_set.find(index) == row_set.end())
     {
-      _sum += (*_x)[index];
+      _sum += _x[index];
       row_set.insert(index);
     }
   }
@@ -241,22 +237,18 @@ void EigenVector::axpy(double a, const GenericVector& y)
   }
 
   auto _y = as_type<const EigenVector>(y).vec();
-  dolfin_assert(_y);
-  (*_x) = _x->array() + a * _y->array();
+  _x = _x.array() + a * _y.array();
 }
 //-----------------------------------------------------------------------------
 void EigenVector::abs()
 {
-  dolfin_assert(_x);
-  (*_x) = _x->array().abs();
+  _x = _x.array().abs();
 }
 //-----------------------------------------------------------------------------
 double EigenVector::inner(const GenericVector& y) const
 {
-  dolfin_assert(_x);
   auto _y = as_type<const EigenVector>(y).vec();
-  dolfin_assert(_y);
-  return _x->dot(*_y);
+  return _x.dot(_y);
 }
 //-----------------------------------------------------------------------------
 const GenericVector& EigenVector::operator= (const GenericVector& v)
@@ -275,66 +267,58 @@ const EigenVector& EigenVector::operator= (const EigenVector& v)
                  "Consider using the copy constructor instead");
   }
 
-  dolfin_assert(_x);
-  dolfin_assert(v.vec());
-  *_x = *(v.vec());
+  _x = v.vec();
   return *this;
 }
 //-----------------------------------------------------------------------------
 const EigenVector& EigenVector::operator= (double a)
 {
-  dolfin_assert(_x);
-  _x->setConstant(a);
+  _x.setConstant(a);
   return *this;
 }
 //-----------------------------------------------------------------------------
 const EigenVector& EigenVector::operator*= (const double a)
 {
-  dolfin_assert(_x);
-  (*_x) *= a;
+  _x *= a;
   return *this;
 }
 //-----------------------------------------------------------------------------
 const EigenVector& EigenVector::operator*= (const GenericVector& y)
 {
-  dolfin_assert(_x);
   auto _y = as_type<const EigenVector>(y).vec();
-  dolfin_assert(_y);
-  (*_x) = _x->cwiseProduct(*_y);
+  _x = _x.cwiseProduct(_y);
   return *this;
 }
 //-----------------------------------------------------------------------------
 const EigenVector& EigenVector::operator/= (const double a)
 {
-  (*_x) /= a;
+  _x /= a;
   return *this;
 }
 //-----------------------------------------------------------------------------
 const EigenVector& EigenVector::operator+= (const GenericVector& y)
 {
   auto _y = as_type<const EigenVector>(y).vec();
-  dolfin_assert(_y);
-  *_x = _x->array() + _y->array();
+  _x = _x.array() + _y.array();
   return *this;
 }
 //-----------------------------------------------------------------------------
 const EigenVector& EigenVector::operator+= (double a)
 {
-  *_x = _x->array() + a;
+  _x = _x.array() + a;
   return *this;
 }
 //-----------------------------------------------------------------------------
 const EigenVector& EigenVector::operator-= (const GenericVector& y)
 {
   auto _y = as_type<const EigenVector>(y).vec();
-  dolfin_assert(_y);
-  *_x = _x->array() - _y->array();
+  _x = _x.array() - _y.array();
   return *this;
 }
 //-----------------------------------------------------------------------------
 const EigenVector& EigenVector::operator-= (double a)
 {
-  *_x = _x->array() - a;
+  _x = _x.array() - a;
   return *this;
 }
 //-----------------------------------------------------------------------------
@@ -351,7 +335,7 @@ std::string EigenVector::str(bool verbose) const
       std::stringstream entry;
       entry << std::setiosflags(std::ios::scientific);
       entry << std::setprecision(16);
-      entry << (*_x)[i] << " ";
+      entry << _x[i] << " ";
       s << entry.str() << std::endl;
     }
     s << "]";
@@ -372,21 +356,19 @@ void EigenVector::resize(std::size_t N)
   if (size() == N)
     return;
   else
-    _x->resize(N);
+    _x.resize(N);
 
   // Set vector to zero
-  _x->setZero();
+  _x.setZero();
 }
 //-----------------------------------------------------------------------------
 double* EigenVector::data()
 {
-  dolfin_assert(_x);
-  return _x->data();
+  return _x.data();
 }
 //-----------------------------------------------------------------------------
 const double* EigenVector::data() const
 {
-  dolfin_assert(_x);
-  return _x->data();
+  return _x.data();
 }
 //-----------------------------------------------------------------------------

@@ -59,7 +59,7 @@ namespace dolfin
     EigenVector(const EigenVector& x);
 
     /// Construct vector from an Eigen shared_ptr
-    explicit EigenVector(std::shared_ptr<Eigen::VectorXd> x);
+    //explicit EigenVector(std::shared_ptr<Eigen::VectorXd> x);
 
     /// Destructor
     virtual ~EigenVector();
@@ -264,20 +264,20 @@ namespace dolfin
     virtual void resize(std::size_t N);
 
     /// Return reference to Eigen vector (const version)
-    std::shared_ptr<const Eigen::VectorXd> vec() const
+    Eigen::Ref<const Eigen::VectorXd> vec() const
     { return _x; }
 
     /// Return reference to Eigen vector (non-const version)
-    std::shared_ptr<Eigen::VectorXd> vec()
+    Eigen::Ref<Eigen::VectorXd> vec()
     { return _x; }
 
     /// Access value of given entry (const version)
     virtual double operator[] (dolfin::la_index i) const
-    { return (*_x)(i); }
+    { return _x(i); }
 
     /// Access value of given entry (non-const version)
     double& operator[] (dolfin::la_index i)
-    { return (*_x)(i); }
+    { return _x(i); }
 
     /// Assignment operator
     const EigenVector& operator= (const EigenVector& x);
@@ -300,8 +300,8 @@ namespace dolfin
       }
     }
 
-    // Pointer to Eigen vector object
-    std::shared_ptr<Eigen::VectorXd> _x;
+    // Eigen vector object
+    Eigen::VectorXd _x;
 
     // MPI communicator
     dolfin::MPI::Comm _mpi_comm;
