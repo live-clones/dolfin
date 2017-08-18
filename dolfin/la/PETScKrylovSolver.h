@@ -42,7 +42,6 @@ namespace dolfin
   class PETScBaseMatrix;
   class PETScMatrix;
   class PETScVector;
-  class PETScPreconditioner;
   class PETScUserPreconditioner;
   class PETScSNESSolver;
   class VectorSpaceBasis;
@@ -72,17 +71,6 @@ namespace dolfin
     /// preconditioner
     PETScKrylovSolver(std::string method="default",
                       std::string preconditioner="default");
-
-    /// Create Krylov solver for a particular method and
-    /// PETScPreconditioner (shared_ptr version)
-    PETScKrylovSolver(MPI_Comm comm,
-                      std::string method,
-                      std::shared_ptr<PETScPreconditioner> preconditioner);
-
-    /// Create Krylov solver for a particular method and
-    /// PETScPreconditioner (shared_ptr version)
-    PETScKrylovSolver(std::string method,
-                      std::shared_ptr<PETScPreconditioner> preconditioner);
 
     /// Create Krylov solver for a particular method and
     /// PETScPreconditioner (shared_ptr version)
@@ -227,9 +215,6 @@ namespace dolfin
 
     // DOLFIN-defined PETScUserPreconditioner
     PETScUserPreconditioner* pc_dolfin;
-
-    // Preconditioner
-    std::shared_ptr<PETScPreconditioner> _preconditioner;
 
     bool preconditioner_set;
 

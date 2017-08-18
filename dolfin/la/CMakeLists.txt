@@ -34,7 +34,6 @@ set(HEADERS
   PETScMatrix.h
   PETScObject.h
   PETScOptions.h
-  PETScPreconditioner.h
   PETScUserPreconditioner.h
   PETScVector.h
   Scalar.h
@@ -81,7 +80,6 @@ set(SOURCES
   PETScMatrix.cpp
   PETScObject.cpp
   PETScOptions.cpp
-  PETScPreconditioner.cpp
   PETScUserPreconditioner.cpp
   PETScVector.cpp
   SLEPcEigenSolver.cpp

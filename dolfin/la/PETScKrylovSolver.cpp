@@ -32,7 +32,6 @@
 #include "KrylovSolver.h"
 #include "PETScBaseMatrix.h"
 #include "PETScMatrix.h"
-#include "PETScPreconditioner.h"
 #include "PETScUserPreconditioner.h"
 #include "PETScVector.h"
 #include "VectorSpaceBasis.h"
@@ -67,6 +66,51 @@ PETScKrylovSolver::_methods_descr
   {"richardson", "Richardson method"},
   {"bicgstab",   "Biconjugate gradient stabilized method"} };
 
+
+// Mapping from preconditioner string to PETSc
+const std::map<std::string, const PCType> PETScKrylovSolver::_pc_methods
+= { {"default",          ""},
+    {"ilu",              PCILU},
+    {"icc",              PCICC},
+    {"jacobi",           PCJACOBI},
+    {"bjacobi",          PCBJACOBI},
+    {"sor",              PCSOR},
+    {"additive_schwarz", PCASM},
+    {"petsc_amg",        PCGAMG},
+#if PETSC_HAVE_HYPRE
+    {"hypre_amg",        PCHYPRE},
+    {"hypre_euclid",     PCHYPRE},
+    {"hypre_parasails",  PCHYPRE},
+#endif
+#if PETSC_HAVE_ML
+    {"amg",              PCML},
+    {"ml_amg",           PCML},
+#elif PETSC_HAVE_HYPRE
+    {"amg",              PCHYPRE},
+#endif
+    {"none",             PCNONE} };
+
+// Mapping from preconditioner string to description string
+const std::map<std::string, std::string>
+PETScKrylovSolver::_pc_methods_descr
+= { {"default",          "default preconditioner"},
+    {"ilu",              "Incomplete LU factorization"},
+    {"icc",              "Incomplete Cholesky factorization"},
+    {"jacobi",           "Jacobi iteration"},
+    {"sor",              "Successive over-relaxation"},
+    {"petsc_amg",        "PETSc algebraic multigrid"},
+#if PETSC_HAVE_HYPRE
+    {"amg",              "Algebraic multigrid"},
+    {"hypre_amg",        "Hypre algebraic multigrid (BoomerAMG)"},
+    {"hypre_euclid",     "Hypre parallel incomplete LU factorization"},
+    {"hypre_parasails",  "Hypre parallel sparse approximate inverse"},
+#endif
+#if PETSC_HAVE_ML
+    {"ml_amg",           "ML algebraic multigrid"},
+#endif
+    {"none",             "No preconditioner"} };
+
+
 //-----------------------------------------------------------------------------
 std::map<std::string, std::string> PETScKrylovSolver::methods()
 {
@@ -75,7 +119,7 @@ std::map<std::string, std::string> PETScKrylovSolver::methods()
 //-----------------------------------------------------------------------------
 std::map<std::string, std::string> PETScKrylovSolver::preconditioners()
 {
-  return PETScPreconditioner::preconditioners();
+  return PETScKrylovSolver::_pc_methods_descr;
 }
 //-----------------------------------------------------------------------------
 Parameters PETScKrylovSolver::default_parameters()
@@ -120,40 +164,17 @@ PETScKrylovSolver::PETScKrylovSolver(MPI_Comm comm, std::string method,
   }
 
   // Set preconditioner type
-  PETScPreconditioner::set_type(*this, preconditioner);
+  /*
+  if (preconditioner != "default")
+  {
+    ierr = PCSetType(_pc, _pc_methods.find(preconditioner)->second);
+    if (ierr != 0) petsc_error(ierr, __FILE__, "PCSetType");
+  }
+  */
 }
 //-----------------------------------------------------------------------------
 PETScKrylovSolver::PETScKrylovSolver(std::string method,
                                      std::string preconditioner)
-  : PETScKrylovSolver(MPI_COMM_WORLD, method, preconditioner)
-{
-  // Do nothing
-}
-//-----------------------------------------------------------------------------
-PETScKrylovSolver::PETScKrylovSolver(MPI_Comm comm, std::string method,
-  std::shared_ptr<PETScPreconditioner> preconditioner)
-  : _ksp(NULL), pc_dolfin(NULL), _preconditioner(preconditioner),
-  preconditioner_set(false)
-{
-  // Set parameter values
-  parameters = default_parameters();
-
-  PetscErrorCode ierr;
-
-  // Create PETSc KSP object
-  ierr = KSPCreate(comm, &_ksp);
-  if (ierr != 0) petsc_error(ierr, __FILE__, "KSPCreate");
-
-  // Set Krylov solver type
-  if (method != "default")
-  {
-    ierr = KSPSetType(_ksp, _methods.find(method)->second);
-    if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetType");
-  }
-}
-//-----------------------------------------------------------------------------
-PETScKrylovSolver::PETScKrylovSolver(std::string method,
-  std::shared_ptr<PETScPreconditioner> preconditioner)
   : PETScKrylovSolver(MPI_COMM_WORLD, method, preconditioner)
 {
   // Do nothing
@@ -332,12 +353,7 @@ std::size_t PETScKrylovSolver::solve(PETScVector& x, const PETScVector& b,
   // FIXME: Solve using matrix-free matrices fails if no user provided
   //        Prec is provided
   // Set preconditioner if necessary
-  if (_preconditioner && !preconditioner_set)
-  {
-    _preconditioner->set(*this);
-    preconditioner_set = true;
-  }
-  else if (pc_dolfin && !preconditioner_set)
+  if (pc_dolfin && !preconditioner_set)
   {
     // User defined preconditioner
     PETScUserPreconditioner::setup(_ksp, *pc_dolfin);
