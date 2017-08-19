@@ -53,7 +53,7 @@ def test_krylov_samg_solver_elasticity(pushpop_parameters):
         null_space.orthonormalize()
         return null_space
 
-    def amg_solve(N, method):
+    def amg_solve(N, pc_method):
         # Elasticity parameters
         E = 1.0e9
         nu = 0.3
@@ -92,8 +92,7 @@ def test_krylov_samg_solver_elasticity(pushpop_parameters):
 
         # Create PETSC smoothed aggregation AMG preconditioner, and
         # create CG solver
-        pc = PETScPreconditioner(method)
-        solver = PETScKrylovSolver("cg", pc)
+        solver = PETScKrylovSolver("cg", pc_method)
 
         # Set matrix operator
         solver.set_operator(A)
@@ -111,8 +110,6 @@ def test_krylov_samg_solver_elasticity(pushpop_parameters):
 
     # Build list of smoothed aggregation preconditioners
     methods = ["petsc_amg"]
-    # if "ml_amg" in PETScPreconditioner.preconditioners():
-    #    methods.append("ml_amg")
 
     # Test iteration count with increasing mesh size for each
     # preconditioner
