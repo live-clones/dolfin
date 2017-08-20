@@ -109,7 +109,7 @@ def test_krylov_samg_solver_elasticity(pushpop_parameters):
     PETScOptions.set("mg_levels_ksp_chebyshev_esteig_steps", 50)
 
     # Build list of smoothed aggregation preconditioners
-    methods = ["petsc_amg"]
+    methods = ["gamg"]
 
     # Test iteration count with increasing mesh size for each
     # preconditioner

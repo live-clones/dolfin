@@ -76,14 +76,15 @@ namespace
       {"bjacobi",          PCBJACOBI},
       {"sor",              PCSOR},
       {"additive_schwarz", PCASM},
-      {"petsc_amg",        PCGAMG},
+      {"petsc_amg",        PCGAMG},  // Remove
+      {"gamg",             PCGAMG},
 #if PETSC_HAVE_HYPRE
       {"hypre_amg",        PCHYPRE},
       {"hypre_euclid",     PCHYPRE},
       {"hypre_parasails",  PCHYPRE},
 #endif
 #if PETSC_HAVE_ML
-      {"amg",              PCML},
+      {"amg",              PCML},  // Remove
       {"ml_amg",           PCML},
 #elif PETSC_HAVE_HYPRE
       {"amg",              PCHYPRE},
@@ -154,21 +155,23 @@ PETScKrylovSolver::PETScKrylovSolver(MPI_Comm comm, std::string method,
   ierr = KSPCreate(comm, &_ksp);
   if (ierr != 0) petsc_error(ierr, __FILE__, "KSPCreate");
 
-  // Set Krylov solver type
+  // Set Krylov solver type (if specified by user)
   if (method != "default")
   {
     ierr = KSPSetType(_ksp, _methods.find(method)->second);
     if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetType");
   }
 
-  // Set preconditioner type
-  /*
+  // Set preconditioner type (if specified by user)
   if (preconditioner != "default")
   {
-    ierr = PCSetType(_pc, _pc_methods.find(preconditioner)->second);
+    PC pc;
+    ierr = KSPGetPC(_ksp, &pc);
+    if (ierr != 0) dolfin::PETScObject::petsc_error(ierr, __FILE__, "KSPGetPC");
+
+    ierr = PCSetType(pc, _pc_methods.find(preconditioner)->second);
     if (ierr != 0) petsc_error(ierr, __FILE__, "PCSetType");
   }
-  */
 }
 //-----------------------------------------------------------------------------
 PETScKrylovSolver::PETScKrylovSolver(std::string method,
