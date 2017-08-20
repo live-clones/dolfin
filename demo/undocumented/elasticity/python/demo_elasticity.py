@@ -116,9 +116,10 @@ null_space = build_nullspace(V, u.vector())
 # Attach near nullspace to matrix
 as_backend_type(A).set_near_nullspace(null_space)
 
-# Create PETSC smoothed aggregation AMG preconditioner and attach near
-# null space
-pc = PETScPreconditioner("petsc_amg")
+
+# Set solver options
+PETScOptions.set("ksp_type", "cg")
+PETScOptions.set("pc_type", "gamg")
 
 # Use Chebyshev smoothing for multigrid
 PETScOptions.set("mg_levels_ksp_type", "chebyshev")
@@ -126,11 +127,14 @@ PETScOptions.set("mg_levels_pc_type", "jacobi")
 
 # Improve estimate of eigenvalues for Chebyshev smoothing
 PETScOptions.set("mg_levels_esteig_ksp_type", "cg")
-PETScOptions.set("mg_levels_ksp_chebyshev_esteig_steps", 50)
+PETScOptions.set("mg_levels_ksp_chebyshev_esteig_steps", 20)
 
-# Create CG Krylov solver and turn convergence monitoring on
-solver = PETScKrylovSolver("cg", pc)
-solver.parameters["monitor_convergence"] = True
+# Monitor solver
+PETScOptions.set("ksp_monitor");
+
+# Create Krylov solver
+solver = PETScKrylovSolver()
+solver.set_from_options()
 
 # Set matrix operator
 solver.set_operator(A);

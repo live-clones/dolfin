@@ -143,8 +143,9 @@ int main()
   // Attach near nullspace to matrix
   A.set_near_nullspace(near_null_space);
 
-  // Create PETSc smoothed aggregation AMG preconditioner
-  auto pc = std::make_shared<PETScPreconditioner>("petsc_amg");
+  // Set solver options
+  PETScOptions::set("ksp_type", "cg");
+  PETScOptions::set("pc_type", "gamg");
 
   // Use Chebyshev smoothing for multigrid
   PETScOptions::set("mg_levels_ksp_type", "chebyshev");
@@ -152,11 +153,15 @@ int main()
 
   // Improve estimate of eigenvalues for Chebyshev smoothing
   PETScOptions::set("mg_levels_esteig_ksp_type", "cg");
-  PETScOptions::set("mg_levels_ksp_chebyshev_esteig_steps", 50);
+  PETScOptions::set("mg_levels_ksp_chebyshev_esteig_steps", 20);
 
-  // Create CG PETSc linear solver and turn on convergence monitor
-  PETScKrylovSolver solver("cg", pc);
-  solver.parameters["monitor_convergence"] = true;
+  // Monitor solver
+  PETScOptions::set("ksp_monitor");
+
+  // Create PETSc linear solver
+  PETScKrylovSolver solver;
+  solver.set_from_options();
+
 
   // Solve
   solver.solve(A, *(u->vector()), b);
@@ -201,7 +206,7 @@ int main()
     file << partitions;
   }
 
-  // Displace mesh and write 
+  // Displace mesh and write
   ALE::move(*mesh, *u);
   XDMFFile("deformed_mesh.xdmf").write(*mesh);
 
