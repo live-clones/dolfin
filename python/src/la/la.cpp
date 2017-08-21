@@ -87,6 +87,49 @@ namespace
   }
 }
 
+#ifdef HAS_PETSC4PY
+namespace pybind11
+{
+  namespace detail
+  {
+    //template <> class type_caster<ompi_communicator_t>
+    template <> class type_caster<_p_KSP>
+    {
+    public:
+      PYBIND11_TYPE_CASTER(KSP, _("ksp"));
+
+      // Pass communicator from Python to C++
+      bool load(handle src, bool)
+      {
+        // FIXME: check reference counting
+        std::cout << "Py to c++" << std::endl;
+        value = PyPetscKSP_Get(src.ptr());
+        /*
+        PyObject* obj = src.ptr();
+        void* v = PyLong_AsVoidPtr(obj);
+        value = reinterpret_cast<MPI_Comm>(v);
+        if (PyErr_Occurred())
+          return false;
+        */
+
+        return true;
+      }
+
+      // Cast from C++ to Python (cast to pointer)
+      static handle cast(KSP src, py::return_value_policy policy, handle parent)
+      {
+        // FIXME: check reference counting
+        std::cout << "C++ to Python" << std::endl;
+        return py::handle(PyPetscKSP_New(src));
+      }
+
+      //operator KSP()
+      //{ return value; }
+    };
+  }
+}
+#endif
+
 namespace dolfin_wrappers
 {
 
@@ -884,7 +927,8 @@ namespace dolfin_wrappers
            &dolfin::PETScKrylovSolver::solve)
       .def("set_from_options", &dolfin::PETScKrylovSolver::set_from_options)
       .def("set_reuse_preconditioner", &dolfin::PETScKrylovSolver::set_reuse_preconditioner)
-      //.def("ksp", &dolfin::PETScKrylovSolver::ksp);
+      .def("ksp", &dolfin::PETScKrylovSolver::ksp);
+      /*
       .def("ksp", [](dolfin::PETScKrylovSolver& self)
            {
              #ifdef HAS_PETSC4PY
@@ -893,7 +937,8 @@ namespace dolfin_wrappers
              #else
              throw std::runtime_error("DOLFIN has not been configured with petsc4py. PETScKyrlovSolver::ksp requires petsc4py");
              #endif
-           });
+             });
+      */
 
     py::enum_<dolfin::PETScKrylovSolver::norm_type>(petsc_ks, "norm_type")
       .value("none", dolfin::PETScKrylovSolver::norm_type::none)
