@@ -586,6 +586,7 @@ class MultiStageScheme(cpp.multistage.MultiStageScheme):
         self.contraction = contraction
 
         # Pass args to C++ constructor
+        stage_solutions = [s.cpp_object() for s in stage_solutions]
 
         cpp.multistage.MultiStageScheme.__init__(self, dolfin_stage_forms, last_stage,
                                       stage_solutions, solution.cpp_object(), time.cpp_object(), dt.cpp_object(),

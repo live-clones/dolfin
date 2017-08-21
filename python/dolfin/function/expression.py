@@ -286,15 +286,23 @@ class Expression(BaseExpression):
     def __getattr__(self, name):
         "Pass attributes through to (JIT compiled) Expression object"
         if name in self._properties.keys():
-            return self._cpp_object.get_property(name)
+            if isinstance(self._properties[name], (float, int)):
+                return self._cpp_object.get_property(name)
+            else:
+                return self._cpp_object.get_generic_function(name)
         else:
-            raise(AttributeError)
+            raise AttributeError
 
     def __setattr__(self, name, value):
         if name.startswith("_"):
             super().__setattr__(name, value)
         elif name in self._properties.keys():
-            self._cpp_object.set_property(name, value)
+            if isinstance(self._properties[name], (float, int)):
+                self._cpp_object.set_property(name, value)
+            elif hasattr(value, "cpp_object"):
+                self._cpp_object.set_generic_function(name, value.cpp_object())
+            else:
+                raise KeyError
 
 # Temporary alias for CompiledExpression name
 class CompiledExpression(Expression):
