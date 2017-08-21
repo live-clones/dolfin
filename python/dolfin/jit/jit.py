@@ -77,7 +77,9 @@ def compile_class(cpp_data):
     for k in properties:
         if isinstance(properties[k], (float, int)):
             python_object.set_property(k, properties[k])
-        else:
+        elif hasattr(properties[k], "cpp_object"):
             python_object.set_generic_function(k, properties[k].cpp_object())
+        else:
+            raise TypeError("Cannot set property")
 
     return python_object
