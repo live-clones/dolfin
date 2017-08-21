@@ -151,7 +151,6 @@ std::shared_ptr<GenericFunction> Expression::get_generic_function(std::string na
   return std::shared_ptr<GenericFunction>();
 }
 //-----------------------------------------------------------------------------
->>>>>>> chris/expression-attach-generic-function
 void Expression::restrict(double* w,
                           const FiniteElement& element,
                           const Cell& dolfin_cell,
