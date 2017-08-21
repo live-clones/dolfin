@@ -51,6 +51,9 @@
 #include <dolfin/la/PETScOptions.h>
 #include <dolfin/la/PETScPreconditioner.h>
 #include <dolfin/la/PETScVector.h>
+#include <dolfin/la/TpetraFactory.h>
+#include <dolfin/la/TpetraMatrix.h>
+#include <dolfin/la/TpetraVector.h>
 #include <dolfin/la/LUSolver.h>
 #include <dolfin/la/KrylovSolver.h>
 #include <dolfin/la/SLEPcEigenSolver.h>
@@ -735,6 +738,37 @@ namespace dolfin_wrappers
       .def("preconditioners", &dolfin::PETScPreconditioner::preconditioners);
 
     #endif
+
+    #ifdef HAS_TRILINOS
+
+    // dolfin::TpetraFactory class
+    py::class_<dolfin::TpetraFactory, std::shared_ptr<dolfin::TpetraFactory>,
+      dolfin::GenericLinearAlgebraFactory>
+      (m, "TpetraFactory", "DOLFIN TpetraFactory object")
+      .def("instance", &dolfin::TpetraFactory::instance)
+      .def("create_matrix", &dolfin::TpetraFactory::create_matrix)
+      .def("create_vector", &dolfin::TpetraFactory::create_vector);
+
+    //----------------------------------------------------------------------------
+    // dolfin::TpetraVector class
+    py::class_<dolfin::TpetraVector, std::shared_ptr<dolfin::TpetraVector>,
+               dolfin::GenericVector>
+      (m, "TpetraVector", "DOLFIN TpetraVector object")
+      .def(py::init<>())
+      .def(py::init<MPI_Comm>())
+      .def(py::init<MPI_Comm, std::size_t>());
+
+
+    // dolfin::TpetraMatrix class
+    py::class_<dolfin::TpetraMatrix, std::shared_ptr<dolfin::TpetraMatrix>,
+               dolfin::GenericMatrix>
+      (m, "TpetraMatrix", "DOLFIN TpetraMatrix object")
+      .def(py::init<>())
+      .def(py::init<MPI_Comm>());
+
+    #endif
+
+
     //-----------------------------------------------------------------------------
 
     // dolfin::GenericLinearSolver class
