@@ -54,6 +54,7 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
   // Get global dimensions and local range
   const std::size_t rank = dofmaps.size();
   std::vector<std::shared_ptr<const IndexMap>> index_maps(rank);
+
   for (std::size_t i = 0; i < rank; ++i)
   {
     dolfin_assert(dofmaps[i]);
@@ -95,13 +96,31 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
   if (cells)
   {
     Progress p("Building sparsity pattern over cells", mesh.num_cells());
+    auto mapping = mesh.topology().mapping;
+
     for (CellIterator cell(mesh); !cell.end(); ++cell)
     {
       // Tabulate dofs for each dimension and get local dimensions
-      for (std::size_t i = 0; i < rank; ++i)
+
+      // FIXME/Mixed-domains/Note : the PETSc matrices are row-oriented [primary_dim member of SparsityPattern is always 0 = test functions/rows]
+      // If the test function are defined of a (parent) mesh whose nb dofs is larger than the integration domain (mesh) => (nb rows > nb cols) :
+      // dofs[0] should be defined from the cell indices in the parent mesh instead of the submesh (integration domain)
+      // Otherwise, the non-zero entries are not the right ones. This cause a PETSc error when add_local (applied to an entry which is supposed to be zero)
+      if(mapping && rank > 1) // Only if we have a matrix AND if the considered mesh comes from a parent mesh
       {
-        auto dmap = dofmaps[i]->cell_dofs(cell->index());
-        dofs[i].set(dmap.size(), dmap.data());
+	int max_rows = dofmaps[0]->index_map()->local_range().second; // nb test functions
+	int max_cols = dofmaps[1]->index_map()->local_range().second; // nb trial function
+	if(max_rows > max_cols) // Test functions in mesh while trial functions in the submesh
+	  dofs[0] = dofmaps[0]->cell_dofs(mapping->cell_map()[cell->index()]); // Index (cell) in the parent mesh
+	else
+	  dofs[0] = dofmaps[0]->cell_dofs(cell->index());
+	// No changes for dofs[1]
+	dofs[1] = dofmaps[1]->cell_dofs(cell->index());
+      }
+      else
+      {
+	for (std::size_t i = 0; i < rank; ++i)
+	  dofs[i] = dofmaps[i]->cell_dofs(cell->index());
       }
 
       // Insert non-zeroes in sparsity pattern
