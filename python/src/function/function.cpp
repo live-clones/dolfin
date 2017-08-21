@@ -143,7 +143,8 @@ namespace dolfin_wrappers
            })
       .def("value_dimension", &dolfin::Expression::value_dimension)
       .def("get_property", &dolfin::Expression::get_property)
-      .def("set_property", &dolfin::Expression::set_property);
+      .def("set_property", &dolfin::Expression::set_property)
+      .def("set_generic_function", &dolfin::Expression::set_generic_function);
 
 
     //-----------------------------------------------------------------------------

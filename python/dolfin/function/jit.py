@@ -34,9 +34,9 @@ namespace dolfin
        {members}
 
        {classname}()
-          {{
+       {{
             {constructor}
-          }}
+       }}
 
        void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x) const override
        {{
@@ -46,11 +46,20 @@ namespace dolfin
        void set_property(std::string name, double value) override
        {{
 {set_props}
+       throw std::runtime_error("No such property");
        }}
 
        double get_property(std::string name) const override
        {{
 {get_props}
+       throw std::runtime_error("No such property");
+       return 0.0;
+       }}
+
+       void set_generic_function(std::string name, std::shared_ptr<dolfin::GenericFunction> value) override
+       {{
+{set_generic_function}
+       throw std::runtime_error("No such property");
        }}
 
   }};
@@ -63,7 +72,7 @@ extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
 
 """
     _get_props = """          if (name == "{name}") return {name};"""
-    _set_props = """          if (name == "{name}") {{ {name} = value; return; }}"""
+    _set_props = """          if (name == "{key_name}") {{ {name} = value; return; }}"""
 
     statements = class_data["statements"]
     statement = ""
@@ -77,14 +86,27 @@ extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
     members = ""
     set_props = ""
     get_props = ""
+    set_generic_function = ""
 
     # Add code for setting and getting property values
     properties = class_data["properties"]
     for k in properties:
         value = properties[k]
-        members += "double " + k + ";\n"
-        set_props += _set_props.format(name=k)
-        get_props += _get_props.format(name=k)
+        if isinstance(value, (float, int)):
+            members += "double " + k + ";\n"
+            set_props += _set_props.format(key_name=k, name=k)
+            get_props += _get_props.format(name=k)
+        elif hasattr(value, "cpp_object"):
+            members += "std::shared_ptr<dolfin::GenericFunction> generic_function_{key};\n".format(key=k)
+            set_generic_function += _set_props.format(key_name=k, name="generic_function_"+k)
+            value_size = value.cpp_object().value_size()
+            if value_size == 1:
+                _setup_statement = """          double {key};
+            generic_function_{key}->eval(Eigen::Map<Eigen::Matrix<double, 1, 1>>(&{key}), x);\n""".format(key=k)
+            else:
+                _setup_statement = """          double {key}[{value_size}];
+            generic_function_{key}->eval(Eigen::Map<Eigen::Matrix<double, {value_size}, 1>>({key}), x);\n""".format(key=k, value_size=value_size)
+            statement = _setup_statement + statement
 
     # Set the value_shape
     for dim in class_data['value_shape']:
@@ -94,6 +116,7 @@ extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
     code_c = template_code.format(statement=statement, classname=classname,
                                   members=members, constructor=constructor,
                                   set_props=set_props, get_props=get_props,
+                                  set_generic_function=set_generic_function,
                                   math_header=_math_header)
     code_h = ""
     depends = []

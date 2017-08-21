@@ -218,7 +218,6 @@ def test_wrong_eval():
             f(zeros(4), values=zeros(3))
 
 
-@pytest.mark.skip("Attaching GenericFunctions to JIT Expressions - not working")
 def test_vector_valued_expression_member_function(mesh):
     V = FunctionSpace(mesh,'CG',1)
     W = VectorFunctionSpace(mesh,'CG',1, dim=3)
@@ -483,7 +482,6 @@ def test_name_space_usage(mesh):
     assert round(assemble(e0*dx(mesh)) - assemble(e1*dx(mesh)), 7) == 0
 
 
-@pytest.mark.skip("Attaching GenericFunction to JIT Expression - not working")
 def test_expression_self_assignment(mesh, V):
     tc = Constant(2.0)
     te = Expression("value", value=tc, degree=0)
@@ -495,7 +493,6 @@ def test_expression_self_assignment(mesh, V):
         e2(0, 0)
 
 
-@pytest.mark.skip("Attaches GenericFunction to Expression - not working")
 def test_generic_function_attributes(mesh, V):
 
     tc = Constant(2.0)
