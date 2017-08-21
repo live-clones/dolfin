@@ -45,6 +45,9 @@ namespace dolfin
   /// Assemble tensor
   void assemble(GenericTensor& A, const Form& a);
 
+  /// Assemble tensor
+  void assemble_mixed(GenericTensor& A, const Form& a);
+
   /// Assemble system (A, b) and apply Dirichlet boundary conditions
   void assemble_system(GenericMatrix& A, GenericVector& b,
                        const Form& a, const Form& L,
@@ -64,6 +67,9 @@ namespace dolfin
 
   /// Assemble scalar
   double assemble(const Form& a);
+
+  /// Assemble scalar
+  double assemble_mixed(const Form& a);
 
   /// Assemble scalar from multimesh form
   double assemble_multimesh(const MultiMeshForm& a);
