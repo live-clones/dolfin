@@ -33,8 +33,7 @@ import ufl
 import dolfin.cpp as cpp
 from dolfin.fem.form import Form
 
-__all__ = ["assemble", "assemble_local", "assemble_system", "SystemAssembler"]
-
+__all__ = ["assemble", "assemble_mixed", "assemble_local", "assemble_system", "SystemAssembler"]
 
 def _create_dolfin_form(form, form_compiler_parameters=None,
                         function_spaces=None):
@@ -216,6 +215,35 @@ def assemble(form, tensor=None, form_compiler_parameters=None,
     # Return value
     return tensor
 
+# JIT assembler
+def assemble_mixed(form,
+                   tensor=None,
+                   form_compiler_parameters=None,
+                   add_values=False,
+                   finalize_tensor=True,
+                   keep_diagonal=False,
+                   backend=None):
+
+    # Create dolfin Form object referencing all data needed by assembler
+    dolfin_form = _create_dolfin_form(form, form_compiler_parameters)
+
+    # Create tensor
+    comm = dolfin_form.mesh().mpi_comm()
+    tensor = _create_tensor(comm, form, dolfin_form.rank(), backend, tensor)
+
+    # Call C++ assemble function
+    assembler = cpp.MixedAssembler()
+    assembler.add_values = add_values
+    assembler.finalize_tensor = finalize_tensor
+    assembler.keep_diagonal = keep_diagonal
+    assembler.assemble(tensor, dolfin_form)
+
+    # Convert to float for scalars
+    if dolfin_form.rank() == 0:
+        tensor = tensor.get_scalar_value()
+
+    # Return value
+    return tensor
 
 def assemble_system(A_form, b_form, bcs=None, x0=None,
                     form_compiler_parameters=None, add_values=False,

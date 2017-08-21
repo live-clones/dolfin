@@ -21,6 +21,7 @@
 #include "Form.h"
 #include "MultiMeshForm.h"
 #include "Assembler.h"
+#include "MixedAssembler.h"
 #include "SystemAssembler.h"
 #include "MultiMeshAssembler.h"
 #include "assemble.h"
@@ -31,6 +32,12 @@ using namespace dolfin;
 void dolfin::assemble(GenericTensor& A, const Form& a)
 {
   Assembler assembler;
+  assembler.assemble(A, a);
+}
+//-----------------------------------------------------------------------------
+void dolfin::assemble_mixed(GenericTensor& A, const Form& a)
+{
+  MixedAssembler assembler;
   assembler.assemble(A, a);
 }
 //-----------------------------------------------------------------------------
@@ -75,6 +82,22 @@ double dolfin::assemble(const Form& a)
 
   // Assemble
   Assembler assembler;
+  assembler.assemble(s, a);
+  return s.get_scalar_value();
+}
+//-----------------------------------------------------------------------------
+double dolfin::assemble_mixed(const Form& a)
+{
+  if (a.rank() != 0)
+  {
+    dolfin_error("assemble.cpp",
+                 "assemble form",
+                 "Expecting a scalar form but rank is %d",
+                 a.rank());
+  }
+
+  Scalar s;
+  MixedAssembler assembler;
   assembler.assemble(s, a);
   return s.get_scalar_value();
 }

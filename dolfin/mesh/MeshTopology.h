@@ -28,6 +28,7 @@
 
 #include <dolfin/common/Variable.h>
 #include "MeshConnectivity.h"
+#include "MeshViewMapping.h"
 
 namespace dolfin
 {

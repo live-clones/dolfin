@@ -29,7 +29,7 @@
 #include <dolfin/la/LinearSolver.h>
 #include <dolfin/la/PETScNestMatrix.h>
 #include <dolfin/la/PETScKrylovSolver.h>
-#include "Assembler.h"
+#include "MixedAssembler.h"
 #include "SystemAssembler.h"
 #include "assemble.h"
 #include "DirichletBC.h"
@@ -88,8 +88,7 @@ void MixedLinearVariationalSolver::solve()
     {
       dolfin_assert(a[i*u.size() + j]);
       std::shared_ptr<GenericMatrix> A = u[j]->vector()->factory().create_matrix(comm);
-      // TEMPORARY : Do no consider the non-diagonal blocks
-      if (i == j)
+      if(a[i*u.size() + j]->ufc_form())
 	As.push_back(A);
       else
 	As.push_back(NULL);
@@ -122,13 +121,14 @@ void MixedLinearVariationalSolver::solve()
       for (int j=0; j<u.size(); ++j)
       {
 	// Block-by-block assembly
-	if (i==j) // TEMPORARY : Do not consider the non-diagonal blocks for now
-	    assemble(*(As[i*u.size() + j]), *(a[i*u.size() + j]));
+	// std::cout << "a block (" << i << "," << j << ")"<< std::endl;
+	if(a[i*u.size() + j]->ufc_form()) // If block(i,j) not empty
+	  assemble_mixed(*(As[i*u.size() + j]), *(a[i*u.size() + j]));
       }
       if (L[i]->ufc_form())
       {
 	// Block-by-block assembly
-	assemble(*(bs[i]), *(L[i]));
+	assemble_mixed(*(bs[i]), *(L[i]));
       }
       else
       {
@@ -139,10 +139,8 @@ void MixedLinearVariationalSolver::solve()
 		       "Empty linear forms cannot have coefficient");
 	}
 	for (int j=0; j<u.size(); ++j)
-	{
-	    if (i==j) // TEMPORARY : Do not consider the non-diagonal blocks for now
-		As[i*u.size() + j]->init_vector(*(bs[i]), 0);
-	}
+	  if(a[i*u.size() + j]->ufc_form()) // If block(i,j) not empty
+	    As[i*u.size() + j]->init_vector(*(bs[i]), 0);
       }
     }
 
@@ -171,6 +169,7 @@ void MixedLinearVariationalSolver::solve()
   // TEMPORARY : Force PETScKrylovSolver (need to be carefully configured)
   PETScKrylovSolver solver(comm, solver_type, pc_type);
   solver.parameters.update(parameters("krylov_solver"));
+
   solver.set_operators(A,A);
   solver.solve(*x,*b);
 
