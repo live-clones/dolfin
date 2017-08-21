@@ -85,7 +85,7 @@ def test_mg_solver_laplace(pushpop_parameters):
 
 
 @skip_if_not_petsc4py
-def xtest_mg_solver_stokes(pushpop_parameters):
+def test_mg_solver_stokes(pushpop_parameters):
 
     parameters["linear_algebra_backend"] = "PETSc"
 
