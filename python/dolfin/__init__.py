@@ -48,7 +48,8 @@ from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates, create_
                       NonlinearVariationalSolver, SparsityPatternBuilder)
 
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
-from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitDiscMesh, UnitQuadMesh, UnitHexMesh, UnitTriangleMesh,
+from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitDiscMesh,
+                             UnitQuadMesh, UnitHexMesh, UnitTriangleMesh,
                              UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh)
 from .cpp.graph import GraphBuilder
 from .cpp.io import File, XDMFFile, VTKFile
@@ -62,6 +63,9 @@ if has_linear_algebra_backend('PETSc'):
                          PETScLUSolver, PETScKrylovSolver, PETScPreconditioner)
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver
+
+if has_linear_algebra_backend('Tpetra'):
+    from .cpp.la import (TpetraVector, TpetraMatrix, TpetraFactory, MueluPreconditioner, BelosKrylovSolver)
 
 if has_slepc():
     from .cpp.la import SLEPcEigenSolver
