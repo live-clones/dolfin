@@ -24,6 +24,10 @@
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
 
+#ifdef HAS_PETSC4PY
+#include <petsc4py/petsc4py.h>
+#endif
+
 #include <dolfin/common/Array.h>
 #include <dolfin/la/solve.h>
 #include <dolfin/la/BlockVector.h>
@@ -67,7 +71,6 @@
 
 #include "../mpi_interface.h"
 
-
 namespace py = pybind11;
 
 namespace
@@ -89,6 +92,12 @@ namespace dolfin_wrappers
 
   void la(py::module& m)
   {
+#ifdef HAS_PETSC4PY
+    int ierr = import_petsc4py();
+    if (ierr != 0)
+      throw std::runtime_error("Failed to import petsc4py");
+#endif
+
     // dolfin::IndexMap
     py::class_<dolfin::IndexMap, std::shared_ptr<dolfin::IndexMap>> index_map(m, "IndexMap");
     index_map.def("size", &dolfin::IndexMap::size);
@@ -854,15 +863,8 @@ namespace dolfin_wrappers
     #ifdef HAS_PETSC
     // dolfin::PETScKrylovSolver class
     py::class_<dolfin::PETScKrylovSolver, std::shared_ptr<dolfin::PETScKrylovSolver>,
-      dolfin::GenericLinearSolver>
-    petsc_ks(m, "PETScKrylovSolver", "DOLFIN PETScKrylovSolver object");
-
-    py::enum_<dolfin::PETScKrylovSolver::norm_type>(petsc_ks, "norm_type")
-      .value("none", dolfin::PETScKrylovSolver::norm_type::none)
-      .value("default_norm", dolfin::PETScKrylovSolver::norm_type::default_norm)
-      .value("preconditioned", dolfin::PETScKrylovSolver::norm_type::preconditioned)
-      .value("unpreconditioned", dolfin::PETScKrylovSolver::norm_type::unpreconditioned)
-      .value("natural", dolfin::PETScKrylovSolver::norm_type::natural);
+               dolfin::GenericLinearSolver>
+      petsc_ks(m, "PETScKrylovSolver", "DOLFIN PETScKrylovSolver object");
 
     petsc_ks.def(py::init<>())
       .def(py::init<std::string>())
@@ -881,7 +883,24 @@ namespace dolfin_wrappers
       .def("solve", (std::size_t (dolfin::PETScKrylovSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
            &dolfin::PETScKrylovSolver::solve)
       .def("set_from_options", &dolfin::PETScKrylovSolver::set_from_options)
-      .def("set_reuse_preconditioner", &dolfin::PETScKrylovSolver::set_reuse_preconditioner);
+      .def("set_reuse_preconditioner", &dolfin::PETScKrylovSolver::set_reuse_preconditioner)
+      //.def("ksp", &dolfin::PETScKrylovSolver::ksp);
+      .def("ksp", [](dolfin::PETScKrylovSolver& self)
+           {
+             #ifdef HAS_PETSC4PY
+             // FIXME: Check reference counting
+             return py::handle(PyPetscKSP_New(self.ksp()));
+             #else
+             throw std::runtime_error("DOLFIN has not been configured with petsc4py. PETScKyrlovSolver::ksp requires petsc4py");
+             #endif
+           });
+
+    py::enum_<dolfin::PETScKrylovSolver::norm_type>(petsc_ks, "norm_type")
+      .value("none", dolfin::PETScKrylovSolver::norm_type::none)
+      .value("default_norm", dolfin::PETScKrylovSolver::norm_type::default_norm)
+      .value("preconditioned", dolfin::PETScKrylovSolver::norm_type::preconditioned)
+      .value("unpreconditioned", dolfin::PETScKrylovSolver::norm_type::unpreconditioned)
+      .value("natural", dolfin::PETScKrylovSolver::norm_type::natural);
 
 
     #endif
