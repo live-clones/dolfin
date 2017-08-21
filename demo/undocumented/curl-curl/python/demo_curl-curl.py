@@ -50,11 +50,6 @@ if not has_petsc():
     print("This demo requires DOLFIN to be configured with PETSc.")
     exit()
 
-# Check that PETSc has been configured with HYPRE
-if not "hypre_amg" in PETScPreconditioner.preconditioners():
-    print("This demo requires PETSc to be configured with HYPRE.")
-    exit()
-
 if not has_petsc4py():
     print("DOLFIN has not been compiled with petsc4py support.")
     exit()
