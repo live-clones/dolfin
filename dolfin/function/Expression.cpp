@@ -148,7 +148,7 @@ std::shared_ptr<GenericFunction> Expression::get_generic_function(std::string na
   dolfin_error("Expression.cpp",
                "get parameter",
                "This method should be overloaded in the derived class");
-  return 0.0;
+  return std::shared_ptr<GenericFunction>();
 }
 //-----------------------------------------------------------------------------
 void Expression::restrict(double* w,
