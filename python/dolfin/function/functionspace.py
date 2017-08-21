@@ -84,8 +84,6 @@ class FunctionSpace(ufl.FunctionSpace):
         #cpp.function.FunctionSpace.__init__(self, cppV)
         self._cpp_object = cppV
 
-        #self.set_id(cppV.id())
-
         # Initialize the ufl.FunctionSpace (not calling cpp.Function.__init__)
         ufl.FunctionSpace.__init__(self, ufl_domain, ufl_element)
 

@@ -50,7 +50,7 @@ def test_scalar_p1():
     assert diff.vector().norm("l2") < 1.0e-12
 
 
-def xtest_scalar_p1_scaled_mesh():
+def test_scalar_p1_scaled_mesh():
     # Make coarse mesh smaller than fine mesh
     meshc = UnitCubeMesh(2, 2, 2)
     for x in meshc.coordinates():

@@ -302,7 +302,6 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::FunctionSpace&>())
       .def("__eq__", &dolfin::FunctionSpace::operator==)
       .def("dim", &dolfin::FunctionSpace::dim)
-      .def("set_id", &dolfin::Variable::set_id)
       .def("collapse", [](dolfin::FunctionSpace& self)
            {
              std::unordered_map<std::size_t, std::size_t> dofs;
