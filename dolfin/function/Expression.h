@@ -153,6 +153,12 @@ namespace dolfin
     /// Parameter getter
     virtual double get_property(std::string name) const;
 
+    /// GenericFunction setter
+    virtual void set_generic_function(std::string name, std::shared_ptr<GenericFunction> f);
+
+    /// GenericFunction getter
+    virtual std::shared_ptr<dolfin::GenericFunction> get_generic_function(std::string name) const;
+
     /// Restrict function to local cell (compute expansion coefficients w).
     ///
     /// @param    w (list of doubles)
