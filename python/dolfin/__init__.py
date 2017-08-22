@@ -42,7 +42,8 @@ from .cpp.ale import ALE
 from .cpp import MPI
 from .cpp.function import (Expression, Constant, FunctionAXPY,
                            LagrangeInterpolator, FunctionAssigner, assign)
-from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates, create_mesh,
+from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates,
+                      create_mesh,
                       set_coordinates, vertex_to_dof_map, dof_to_vertex_map, PointSource,
                       DiscreteOperators, LinearVariationalSolver,
                       NonlinearVariationalSolver, SparsityPatternBuilder)
