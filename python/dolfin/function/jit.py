@@ -103,11 +103,11 @@ extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
             members += "double " + k + ";\n"
             set_props += _set_props.format(key_name=k, name=k)
             get_props += _get_props.format(key_name=k, name=k)
-        elif hasattr(value, "cpp_object"):
+        elif hasattr(value, "_cpp_object"):
             members += "std::shared_ptr<dolfin::GenericFunction> generic_function_{key};\n".format(key=k)
             set_generic_function += _set_props.format(key_name=k, name="generic_function_"+k)
             get_generic_function += _get_props.format(key_name=k, name="generic_function_"+k)
-            value_size = value.cpp_object().value_size()
+            value_size = value._cpp_object.value_size()
             if value_size == 1:
                 _setup_statement = """          double {key};
             generic_function_{key}->eval(Eigen::Map<Eigen::Matrix<double, 1, 1>>(&{key}), x);\n""".format(key=k)

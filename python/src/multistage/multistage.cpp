@@ -54,7 +54,8 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::RKSolver, std::shared_ptr<dolfin::RKSolver>>
       (m, "RKSolver")
-      .def(py::init<std::shared_ptr<dolfin::MultiStageScheme>>());
+      .def(py::init<std::shared_ptr<dolfin::MultiStageScheme>>())
+      .def("step_interval", &dolfin::RKSolver::step_interval);
 
     py::class_<dolfin::PointIntegralSolver, std::shared_ptr<dolfin::PointIntegralSolver>>
       (m, "PointIntegralSolver")

@@ -299,8 +299,8 @@ class Expression(BaseExpression):
         elif name in self._properties.keys():
             if isinstance(self._properties[name], (float, int)):
                 self._cpp_object.set_property(name, value)
-            elif hasattr(value, "cpp_object"):
-                self._cpp_object.set_generic_function(name, value.cpp_object())
+            elif hasattr(value, "_cpp_object"):
+                self._cpp_object.set_generic_function(name, value._cpp_object)
             else:
                 raise KeyError
 

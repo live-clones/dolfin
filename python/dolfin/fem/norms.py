@@ -230,10 +230,10 @@ def errornorm(u, uh, norm_type="l2", degree_rise=3, mesh=None):
         mesh = u.function_space().mesh()
     if isinstance(uh, cpp.function.Function) and mesh is None:
         mesh = uh.function_space().mesh()
-    if hasattr(uh, "cpp_object") and mesh is None:
-        mesh = uh.cpp_object().function_space().mesh()
-    if hasattr(u, "cpp_object") and mesh is None:
-        mesh = u.cpp_object().function_space().mesh()
+    if hasattr(uh, "_cpp_object") and mesh is None:
+        mesh = uh._cpp_object.function_space().mesh()
+    if hasattr(u, "_cpp_object") and mesh is None:
+        mesh = u._cpp_object.function_space().mesh()
     if mesh is None:
         cpp.dolfin_error("norms.py",
                          "compute error norm",
