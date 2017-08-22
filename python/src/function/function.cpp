@@ -139,8 +139,12 @@ namespace dolfin_wrappers
       .def("value_dimension", &dolfin::Expression::value_dimension)
       .def("get_property", &dolfin::Expression::get_property)
       .def("set_property", &dolfin::Expression::set_property)
-      .def("get_generic_function", &dolfin::Expression::get_generic_function)
-      .def("set_generic_function", &dolfin::Expression::set_generic_function);
+      .def("set_property", [](dolfin::Expression& self, std::string name, py::object value)
+           {
+             auto _v = value.attr("_cpp_object").cast<std::shared_ptr<dolfin::GenericFunction>>();
+             self.set_generic_function(name, _v);
+           })
+      .def("get_generic_function", &dolfin::Expression::get_generic_function);
 
 
     //-----------------------------------------------------------------------------

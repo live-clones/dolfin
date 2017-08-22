@@ -12,7 +12,7 @@ import types
 
 import dijitso
 
-# Import UFL and SWIG-generated extension module (DOLFIN C++)
+# Import UFL and extension module (DOLFIN C++)
 import ufl
 from ufl import product
 from ufl.utils.indexflattening import flatten_multiindex, shape_to_strides
@@ -297,12 +297,7 @@ class Expression(BaseExpression):
         if name.startswith("_"):
             super().__setattr__(name, value)
         elif name in self._properties.keys():
-            if isinstance(self._properties[name], (float, int)):
-                self._cpp_object.set_property(name, value)
-            elif hasattr(value, "_cpp_object"):
-                self._cpp_object.set_generic_function(name, value._cpp_object)
-            else:
-                raise KeyError
+            self._cpp_object.set_property(name, value)
 
 # Temporary alias for CompiledExpression name
 class CompiledExpression(Expression):
