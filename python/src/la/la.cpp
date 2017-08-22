@@ -832,7 +832,12 @@ namespace dolfin_wrappers
     py::class_<dolfin::PETScLUSolver, std::shared_ptr<dolfin::PETScLUSolver>,
       dolfin::GenericLinearSolver>
       (m, "PETScLUSolver", "DOLFIN PETScLUSolver object")
-      .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::PETScMatrix>, std::string>())
+      .def(py::init<MPI_Comm, std::string>(), py::arg("comm"), py::arg("method")="default")
+      .def(py::init<std::string>(), py::arg("method")="default")
+      .def(py::init<MPI_Comm, std::shared_ptr<const dolfin::PETScMatrix>, std::string>(),
+           py::arg("comm"), py::arg("A"), py::arg("method")="default")
+      .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>, std::string>(),
+           py::arg("A"), py::arg("method")="default")
       .def("get_options_prefix", &dolfin::PETScLUSolver::get_options_prefix)
       .def("set_options_prefix", &dolfin::PETScLUSolver::set_options_prefix)
       .def("solve", (std::size_t (dolfin::PETScLUSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
