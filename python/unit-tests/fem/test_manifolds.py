@@ -275,8 +275,7 @@ def basis_test(family, degree, basemesh, rotmesh, rotation, piola=False):
     parameters["form_compiler"]["no-evaluate_basis_derivatives"] = basis_derivatives
 
 
-@pytest.mark.skip
-def xtest_elliptic_eqn_on_intersecting_surface(datadir):
+def test_elliptic_eqn_on_intersecting_surface(datadir):
     """Solves -grad^2 u + u = f on domain of two intersecting square
      surfaces embedded in 3D with natural bcs. Test passes if at end
      \int u dx = \int f dx over whole domain
@@ -295,7 +294,10 @@ def xtest_elliptic_eqn_on_intersecting_surface(datadir):
     u = TrialFunction(V)
     v = TestFunction(V)
 
-    class Source(Expression):
+    class Source(UserExpression):
+        def __init__(self, degree):
+            UserExpression.__init__(self, degree)
+
         def eval(self, value, x):
             # r0 should be less than 0.5 * sqrt(2) in order for source to be
             # exactly zero on vertical part of domain

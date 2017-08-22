@@ -135,6 +135,22 @@ double Expression::get_property(std::string name) const
                "This method should be overloaded in the derived class");
   return 0.0;
 }
+//-----------------------------------------------------------------------------
+void Expression::set_generic_function(std::string name, std::shared_ptr<GenericFunction>)
+{
+  dolfin_error("Expression.cpp",
+               "set parameter",
+               "This method should be overloaded in the derived class");
+}
+//-----------------------------------------------------------------------------
+std::shared_ptr<GenericFunction> Expression::get_generic_function(std::string name) const
+{
+  dolfin_error("Expression.cpp",
+               "get parameter",
+               "This method should be overloaded in the derived class");
+  return std::shared_ptr<GenericFunction>();
+}
+//-----------------------------------------------------------------------------
 void Expression::restrict(double* w,
                           const FiniteElement& element,
                           const Cell& dolfin_cell,
