@@ -439,10 +439,11 @@ namespace dolfin_wrappers
       .def_static("create_transfer_matrix", &dolfin::PETScDMCollection::create_transfer_matrix)
       .def_static("create_transfer_matrix", [](py::object V_coarse, py::object V_fine)
                   {
-                    auto _V0 = V_coarse.attr("_cpp_object").cast<std::shared_ptr<dolfin::FunctionSpace>>();
-                    auto _V1 = V_fine.attr("_cpp_object").cast<std::shared_ptr<dolfin::FunctionSpace>>();
-                    return dolfin::PETScDMCollection::create_transfer_matrix(_V0, _V1);
+                    auto _V0 = V_coarse.attr("_cpp_object").cast<dolfin::FunctionSpace*>();
+                    auto _V1 = V_fine.attr("_cpp_object").cast<dolfin::FunctionSpace*>();
+                    return dolfin::PETScDMCollection::create_transfer_matrix(*_V0, *_V1);
                   })
+      .def("check_ref_count", &dolfin::PETScDMCollection::check_ref_count)
       .def("get_dm", &dolfin::PETScDMCollection::get_dm);
 #endif
 

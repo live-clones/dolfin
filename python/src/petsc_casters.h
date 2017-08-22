@@ -81,6 +81,7 @@ namespace pybind11
         #ifdef HAS_PETSC4PY
         std::cout << "Py to C++ (DM)" << std::endl;
         value = PyPetscDM_Get(src.ptr());
+        std::cout << "Returning" << std::endl;
         return true;
         #else
         throw std::runtime_error("DOLFIN has not been configured with petsc4py. Accessing underlying PETSc object requires petsc4py");

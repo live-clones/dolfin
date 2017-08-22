@@ -63,8 +63,13 @@ def test_mg_solver_laplace(pushpop_parameters):
     PETScOptions.set("ksp_rtol", 1.0e-12)
     solver.set_from_options()
 
+
+    # FIXME: Need to check reference counting -- second version below
+    #        can segfault
     # Get fine grid DM and attach fine grid DM to solver
-    solver.set_dm(dm_collection.get_dm(-1))
+    mydm = dm_collection.get_dm(-1)
+    solver.set_dm(mydm)
+    #solver.set_dm(dm_collection.get_dm(-1))
     solver.set_dm_active(False)
 
     # Solve
