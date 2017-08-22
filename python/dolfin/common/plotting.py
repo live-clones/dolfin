@@ -114,11 +114,7 @@ def mplot_function(ax, f, **kwargs):
         fspace = f.function_space()
         try:
             fspace = fspace.collapse()
-        # Happens for part of MultiMeshFunction; no way detecting elsewhere
-        except RuntimeError:
-            cpp.warning("Probably trying to plot MultiMeshFunction "
-                        "part. Continuing without plotting...")
-            return
+        except RuntimeError()
         fvec = dolfin.interpolate(f, fspace).vector()
 
     if fvec.size() == mesh.num_cells():
@@ -351,8 +347,7 @@ def plot(object, *args, **kwargs):
             <dolfin.functions.function.Function>`, a :py:class:`Expression`
             <dolfin.cpp.Expression>, a :py:class:`DirichletBC`
             <dolfin.cpp.DirichletBC>, a :py:class:`FiniteElement
-            <ufl.FiniteElement>`, or a :py:class:`MultiMesh
-            <dolfin.cpp.MultiMesh>`.
+            <ufl.FiniteElement>`.
 
     *Examples of usage*
         In the simplest case, to plot only e.g. a mesh, simply use

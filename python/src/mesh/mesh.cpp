@@ -34,7 +34,6 @@
 #include <dolfin/mesh/MeshTopology.h>
 #include <dolfin/mesh/MeshGeometry.h>
 #include <dolfin/mesh/MeshEntity.h>
-#include <dolfin/mesh/MultiMesh.h>
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/Edge.h>
 #include <dolfin/mesh/Face.h>
@@ -463,12 +462,6 @@ namespace dolfin_wrappers
       .def("add_cell", (void (dolfin::MeshEditor::*)(std::size_t, const std::vector<std::size_t>&))
            &dolfin::MeshEditor::add_cell)
       .def("close", &dolfin::MeshEditor::close, py::arg("order") = true);
-
-    //--------------------------------------------------------------------------
-    // dolfin::MultiMesh class
-    py::class_<dolfin::MultiMesh, std::shared_ptr<dolfin::MultiMesh>>
-      (m, "MultiMesh", "DOLFIN MultiMesh")
-      .def(py::init<>());
 
     //--------------------------------------------------------------------------
     // dolfin::MeshQuality class

@@ -34,10 +34,6 @@ from dolfin.function.expression import BaseExpression
 def _mesh2domain(mesh):
     "Deprecation mechanism for symbolic geometry."
 
-    # Handle MultiMesh
-#    if isinstance(mesh, cpp.MultiMesh):
-#        mesh = mesh.part(0)
-
     if isinstance(mesh, ufl.cell.AbstractCell):
         raise TypeError("Cannot construct geometry from a Cell. Pass the mesh instead, for example use FacetNormal(mesh) instead of FacetNormal(triangle) or triangle.n")
     return mesh.ufl_domain()

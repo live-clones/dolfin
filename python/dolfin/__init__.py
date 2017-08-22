@@ -79,7 +79,7 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity, MeshColorin
                        Cell, Facet, Face, Edge, Vertex, cells,
                        facets, faces, edges, entities,
                        vertices, SubDomain, BoundaryMesh,
-                       MeshEditor, MultiMesh, MeshQuality,
+                       MeshEditor, MeshQuality,
                        SubMesh, DomainBoundary, PeriodicBoundaryComputation,
                        MeshTransformation, SubsetIterator)
 from .cpp.nls import NonlinearProblem, NewtonSolver, OptimisationProblem
