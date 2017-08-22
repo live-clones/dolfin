@@ -124,10 +124,6 @@ application_parameters.update(parameter_subset)
 parameter_subset = {"foo": 1.5, "solver_parameters": {"max_iterations": 50}}
 application_parameters.update(parameter_subset)
 
-# Print command-line option string
-print("\nCommand-line option string")
-print(application_parameters.option_string())
-
 # Demostrate access to full info of parameters
 def print_data(par, indent=""):
     print("\n" + indent + "Content of:", par.name())
