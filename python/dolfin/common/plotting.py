@@ -114,7 +114,8 @@ def mplot_function(ax, f, **kwargs):
         fspace = f.function_space()
         try:
             fspace = fspace.collapse()
-        except RuntimeError()
+        except RuntimeError:
+            return
         fvec = dolfin.interpolate(f, fspace).vector()
 
     if fvec.size() == mesh.num_cells():
