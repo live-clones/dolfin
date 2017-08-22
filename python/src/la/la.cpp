@@ -24,9 +24,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
 
-#ifdef HAS_PETSC4PY
-#include <petsc4py/petsc4py.h>
-#endif
+#include "../petsc_casters.h"
+
 
 #include <dolfin/common/Array.h>
 #include <dolfin/la/solve.h>
@@ -87,52 +86,8 @@ namespace
   }
 }
 
-#ifdef HAS_PETSC4PY
-namespace pybind11
-{
-  namespace detail
-  {
-    //template <> class type_caster<ompi_communicator_t>
-    template <> class type_caster<_p_KSP>
-    {
-    public:
-      PYBIND11_TYPE_CASTER(KSP, _("ksp"));
-
-      // Pass communicator from Python to C++
-      bool load(handle src, bool)
-      {
-        // FIXME: check reference counting
-        std::cout << "Py to c++" << std::endl;
-        value = PyPetscKSP_Get(src.ptr());
-        /*
-        PyObject* obj = src.ptr();
-        void* v = PyLong_AsVoidPtr(obj);
-        value = reinterpret_cast<MPI_Comm>(v);
-        if (PyErr_Occurred())
-          return false;
-        */
-
-        return true;
-      }
-
-      // Cast from C++ to Python (cast to pointer)
-      static handle cast(KSP src, py::return_value_policy policy, handle parent)
-      {
-        // FIXME: check reference counting
-        std::cout << "C++ to Python" << std::endl;
-        return py::handle(PyPetscKSP_New(src));
-      }
-
-      //operator KSP()
-      //{ return value; }
-    };
-  }
-}
-#endif
-
 namespace dolfin_wrappers
 {
-
   void la(py::module& m)
   {
 #ifdef HAS_PETSC4PY
@@ -913,6 +868,7 @@ namespace dolfin_wrappers
       .def(py::init<std::string>())
       .def(py::init<std::string, std::string>())
       .def(py::init<std::string, std::shared_ptr<dolfin::PETScPreconditioner>>())
+      .def(py::init<KSP>())
       .def("get_options_prefix", &dolfin::PETScKrylovSolver::get_options_prefix)
       .def("set_options_prefix", &dolfin::PETScKrylovSolver::set_options_prefix)
       .def("get_norm_type", (dolfin::PETScKrylovSolver::norm_type (dolfin::PETScKrylovSolver::*)() const)
@@ -927,7 +883,16 @@ namespace dolfin_wrappers
            &dolfin::PETScKrylovSolver::solve)
       .def("set_from_options", &dolfin::PETScKrylovSolver::set_from_options)
       .def("set_reuse_preconditioner", &dolfin::PETScKrylovSolver::set_reuse_preconditioner)
-      .def("ksp", &dolfin::PETScKrylovSolver::ksp);
+      .def("set_dm", &dolfin::PETScKrylovSolver::set_dm)
+      .def("set_dm_active", &dolfin::PETScKrylovSolver::set_dm_active)
+      .def("ksp", [](dolfin::PETScKrylovSolver& self)
+           {
+             #ifdef HAS_PETSC4PY
+             return self.ksp();
+             #else
+             throw std::runtime_error("DOLFIN must be configured with petsc4py to access underlying PETSc objects.");
+             #endif
+           });
       /*
       .def("ksp", [](dolfin::PETScKrylovSolver& self)
            {

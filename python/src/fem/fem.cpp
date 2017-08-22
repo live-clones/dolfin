@@ -53,12 +53,21 @@
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/SparsityPattern.h>
 
+#include "../petsc_casters.h"
+
 namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
   void fem(py::module& m)
   {
+#ifdef HAS_PETSC4PY
+    int ierr = import_petsc4py();
+    if (ierr != 0)
+      throw std::runtime_error("Failed to import petsc4py");
+#endif
+
+
     // Delcare UFC objects
     py::class_<ufc::finite_element, std::shared_ptr<ufc::finite_element>>
       (m, "ufc_finite_element", "UFC finite element object");
@@ -416,13 +425,32 @@ namespace dolfin_wrappers
     // dolfin::PETScDMCollection
     py::class_<dolfin::PETScDMCollection, std::shared_ptr<dolfin::PETScDMCollection>>
       (m, "PETScDMCollection")
+      .def(py::init<std::vector<std::shared_ptr<const dolfin::FunctionSpace>>>())
+      .def(py::init([](py::list V)
+                    {
+                      std::vector<std::shared_ptr<const dolfin::FunctionSpace>> _V;
+                      for (auto space : V)
+                      {
+                        auto _space = space.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
+                        _V.push_back(_space);
+                      }
+                      return dolfin::PETScDMCollection(_V);
+                    }))
       .def_static("create_transfer_matrix", &dolfin::PETScDMCollection::create_transfer_matrix)
       .def_static("create_transfer_matrix", [](py::object V_coarse, py::object V_fine)
                   {
                     auto _V0 = V_coarse.attr("_cpp_object").cast<std::shared_ptr<dolfin::FunctionSpace>>();
                     auto _V1 = V_fine.attr("_cpp_object").cast<std::shared_ptr<dolfin::FunctionSpace>>();
                     return dolfin::PETScDMCollection::create_transfer_matrix(_V0, _V1);
-                  });
+                  })
+      .def("get_dm", [](dolfin::PETScDMCollection& self, int i)
+           {
+             #ifdef HAS_PETSC4PY
+             return self.get_dm(i);
+             #else
+             throw std::runtime_error("DOLFIN must be configured with petsc4py to access underlying PETSc objects.");
+             #endif
+           });
 #endif
 
     // Assemble functions
