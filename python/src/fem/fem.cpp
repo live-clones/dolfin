@@ -443,14 +443,7 @@ namespace dolfin_wrappers
                     auto _V1 = V_fine.attr("_cpp_object").cast<std::shared_ptr<dolfin::FunctionSpace>>();
                     return dolfin::PETScDMCollection::create_transfer_matrix(_V0, _V1);
                   })
-      .def("get_dm", [](dolfin::PETScDMCollection& self, int i)
-           {
-             #ifdef HAS_PETSC4PY
-             return self.get_dm(i);
-             #else
-             throw std::runtime_error("DOLFIN must be configured with petsc4py to access underlying PETSc objects.");
-             #endif
-           });
+      .def("get_dm", &dolfin::PETScDMCollection::get_dm);
 #endif
 
     // Assemble functions

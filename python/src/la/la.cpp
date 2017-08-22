@@ -885,25 +885,7 @@ namespace dolfin_wrappers
       .def("set_reuse_preconditioner", &dolfin::PETScKrylovSolver::set_reuse_preconditioner)
       .def("set_dm", &dolfin::PETScKrylovSolver::set_dm)
       .def("set_dm_active", &dolfin::PETScKrylovSolver::set_dm_active)
-      .def("ksp", [](dolfin::PETScKrylovSolver& self)
-           {
-             #ifdef HAS_PETSC4PY
-             return self.ksp();
-             #else
-             throw std::runtime_error("DOLFIN must be configured with petsc4py to access underlying PETSc objects.");
-             #endif
-           });
-      /*
-      .def("ksp", [](dolfin::PETScKrylovSolver& self)
-           {
-             #ifdef HAS_PETSC4PY
-             // FIXME: Check reference counting
-             return py::handle(PyPetscKSP_New(self.ksp()));
-             #else
-             throw std::runtime_error("DOLFIN has not been configured with petsc4py. PETScKyrlovSolver::ksp requires petsc4py");
-             #endif
-             });
-      */
+      .def("ksp", &dolfin::PETScKrylovSolver::ksp);
 
     py::enum_<dolfin::PETScKrylovSolver::norm_type>(petsc_ks, "norm_type")
       .value("none", dolfin::PETScKrylovSolver::norm_type::none)

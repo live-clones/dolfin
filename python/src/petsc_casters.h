@@ -21,10 +21,13 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#ifdef HAS_PETSC
+#include <petscksp.h>
+#include <petscdm.h>
+
 #ifdef HAS_PETSC4PY
 #include <petsc4py/petsc4py.h>
-
-namespace py = pybind11;
+#endif
 
 namespace pybind11
 {
@@ -40,24 +43,26 @@ namespace pybind11
       {
         // FIXME: check reference counting
         std::cout << "Py to c++" << std::endl;
+        #ifdef HAS_PETSC4PY
         value = PyPetscKSP_Get(src.ptr());
-        /*
-        PyObject* obj = src.ptr();
-        void* v = PyLong_AsVoidPtr(obj);
-        value = reinterpret_cast<MPI_Comm>(v);
-        if (PyErr_Occurred())
-          return false;
-        */
-
         return true;
+        #else
+        throw std::runtime_error("DOLFIN has not been configured with petsc4py. Accessing underlying PETSc object requires petsc4py");
+        return false;
+        #endif
       }
 
       // Cast from C++ to Python (cast to pointer)
-      static handle cast(KSP src, py::return_value_policy policy, handle parent)
+      static handle cast(KSP src, pybind11::return_value_policy policy, handle parent)
       {
         // FIXME: check reference counting
+        #ifdef HAS_PETSC4PY
         std::cout << "C++ to Python" << std::endl;
-        return py::handle(PyPetscKSP_New(src));
+        return pybind11::handle(PyPetscKSP_New(src));
+        #else
+        throw std::runtime_error("DOLFIN has not been configured with petsc4py. Accessing underlying PETSc object requires petsc4py");
+        return handle();
+        #endif
       }
 
       operator KSP()
@@ -73,17 +78,28 @@ namespace pybind11
       bool load(handle src, bool)
       {
         // FIXME: check reference counting
+        #ifdef HAS_PETSC4PY
         std::cout << "Py to C++ (DM)" << std::endl;
         value = PyPetscDM_Get(src.ptr());
         return true;
+        #else
+        throw std::runtime_error("DOLFIN has not been configured with petsc4py. Accessing underlying PETSc object requires petsc4py");
+        return false;
+        #endif
+
       }
 
       // Cast from C++ to Python (cast to pointer)
-      static handle cast(DM src, py::return_value_policy policy, handle parent)
+      static handle cast(DM src, pybind11::return_value_policy policy, handle parent)
       {
         // FIXME: check reference counting
+        #ifdef HAS_PETSC4PY
         std::cout << "C++ to Python (DM)" << std::endl;
-        return py::handle(PyPetscDM_New(src));
+        return pybind11::handle(PyPetscDM_New(src));
+        #else
+        throw std::runtime_error("DOLFIN has not been configured with petsc4py. Accessing underlying PETSc object requires petsc4py");
+        return pybind11::handle();
+        #endif
       }
 
       operator DM()
