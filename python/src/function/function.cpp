@@ -33,7 +33,6 @@
 #include <dolfin/function/FunctionAXPY.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/LagrangeInterpolator.h>
-#include <dolfin/function/MultiMeshFunction.h>
 #include <dolfin/function/SpecialFunctions.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/GenericDofMap.h>
@@ -92,10 +91,6 @@ namespace dolfin_wrappers
              return py::array_t<double>(values.size(), values.data());
            })
       .def("function_space", &dolfin::GenericFunction::function_space);
-
-    // dolfin::MultiMeshFunction
-    py::class_<dolfin::MultiMeshFunction, std::shared_ptr<dolfin::MultiMeshFunction>>
-      (m, "MultiMeshFunction");
 
     //-------------------------------------------------------------------------
 

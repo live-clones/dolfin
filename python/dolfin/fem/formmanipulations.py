@@ -24,7 +24,6 @@ import ufl
 import ufl.algorithms.elementtransformations
 
 import dolfin.cpp as cpp
-#from dolfin.function import FunctionSpace, Function, Argument , MultiMeshFunction
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.function.function import Function
 from dolfin.function.argument import  Argument
@@ -54,11 +53,6 @@ def adjoint(form, reordered_arguments=None):
     v_1 = Argument(arguments[1].function_space(), arguments[0].number(), arguments[0].part())
     v_0 = Argument(arguments[0].function_space(), arguments[1].number(), arguments[1].part())
 
-    # Also copy the extended part of the argument for MultiMesh-functionality
-    #if hasattr(arguments[0], '_V_multi'):
-    #    v_1._V_multi = arguments[1]._V_multi
-    #    v_0._V_multi = arguments[0]._V_multi
-
     # Call ufl.adjoint with swapped arguments as new arguments
     return ufl.adjoint(form, reordered_arguments=(v_1, v_0))
 
@@ -78,7 +72,6 @@ def derivative(form, u, du=None, coefficient_derivatives=None):
                              "parts, please supply one")
         part = None
 
-        #if isinstance(u, (Function, MultiMeshFunction)):
         if isinstance(u, Function):
             V = u.function_space()
             du = Argument(V, number, part)

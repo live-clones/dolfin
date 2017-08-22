@@ -47,6 +47,7 @@
 #include <dolfin/fem/SparsityPatternBuilder.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/GenericFunction.h>
+#include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/GenericMatrix.h>
@@ -467,11 +468,11 @@ namespace dolfin_wrappers
            &dolfin::assemble_local);
 
     // FEM utils functions
-    m.def("create_mesh", &dolfin::create_mesh)
-     .def("create_mesh", [](const py::object u)
+    m.def("create_mesh", dolfin::create_mesh);
+    m.def("create_mesh", [](const py::object u)
           {
             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
-            dolfin::create_mesh(*_u);
+            return dolfin::create_mesh(*_u);
           });
 
 

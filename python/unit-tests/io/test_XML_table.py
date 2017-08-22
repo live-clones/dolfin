@@ -30,7 +30,7 @@ def test_write_and_read_table(cd_tempdir):
 
     if MPI.rank(MPI.comm_world) == 0:
         # Create table for timings
-        t = timings(TimingClear.keep, set((TimingType.wall, TimingType.system)))
+        t = timings(TimingClear.keep, [TimingType.wall, TimingType.system])
         t_str = t.str(True)
 
         # Write table to file

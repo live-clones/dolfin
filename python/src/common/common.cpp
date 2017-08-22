@@ -83,7 +83,11 @@ namespace dolfin_wrappers
       .value("user", dolfin::TimingType::user);
 
     m.def("timing", &dolfin::timing);
-    m.def("timings", &dolfin::timings);
+    m.def("timings", [](dolfin::TimingClear clear, std::vector<dolfin::TimingType> type)
+          {
+            std::set<dolfin::TimingType> _type(type.begin(), type.end());
+            return dolfin::timings(clear, _type);
+          });
     m.def("list_timings", [](dolfin::TimingClear clear, std::vector<dolfin::TimingType> type)
           {
             std::set<dolfin::TimingType> _type(type.begin(), type.end());
