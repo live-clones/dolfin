@@ -16,6 +16,7 @@ jobs:
       - run:
           name: Install pybind11
           command: |
+            cd python
             git clone https://github.com/pybind/pybind11.git
             cd pybind11
             mkdir build-dir
