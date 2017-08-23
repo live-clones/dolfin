@@ -20,6 +20,7 @@
 #define __GEOMETRIC_CONTACT_H
 
 #include <map>
+#include <utility>
 #include <vector>
 
 namespace dolfin
@@ -30,6 +31,14 @@ namespace dolfin
   class Point;
   class Facet;
   class Function;
+
+  struct CellMetaData
+  {
+    CellMetaData(const std::vector<double> dof_coords, const std::vector<std::size_t> cell_dofs) :
+        dof_coords(dof_coords), cell_dofs(cell_dofs) {}
+    const std::vector<double> dof_coords;
+    const std::vector<std::size_t> cell_dofs;
+  };
 
   /// This class implements ...
 
@@ -59,6 +68,13 @@ namespace dolfin
                                          const std::vector<std::size_t>& master_facets,
                                          const std::vector<std::size_t>& slave_facets);
 
+
+    /// Tabulate the mapping of local cells in contact with their shared cells' metadata.
+    void
+    tabulate_contact_shared_cells(Mesh& mesh, Function& u,
+                                  const std::vector<std::size_t>& master_facets,
+                                  const std::vector<std::size_t>& slave_facets);
+
     /// Get master to slave mapping
     const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave() const
     {
@@ -83,8 +99,16 @@ namespace dolfin
       return _local_cell_to_off_proc_contact_dofs;
     };
 
+    const std::map<std::size_t, std::vector<CellMetaData>> master_facet_to_contacted_cells() const
+    {
+      return _master_facet_to_contacted_cells;
+    };
+
 
   private:
+
+
+    std::map<std::size_t, std::vector<CellMetaData>> _master_facet_to_contacted_cells;
 
     // Check whether two sets of triangles collide in 3D
     static bool check_tri_set_collision(const Mesh& mmesh, std::size_t mi,

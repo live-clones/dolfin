@@ -534,3 +534,97 @@ void GeometricContact::tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function
   GeometricContact::tabulate_collided_cell_dofs(mesh, *dofmap, _master_to_slave, _local_cell_to_contact_dofs, _local_cell_to_off_proc_contact_dofs);
   GeometricContact::tabulate_collided_cell_dofs(mesh, *dofmap, _slave_to_master, _local_cell_to_contact_dofs, _local_cell_to_off_proc_contact_dofs);
 }
+//-----------------------------------------------------------------------------
+void
+GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
+                                                const std::vector<std::size_t>& master_facets,
+                                                const std::vector<std::size_t>& slave_facets)
+{
+//  const std::size_t mpi_rank = MPI::rank(mesh.mpi_comm());
+  const std::size_t mpi_size = MPI::size(mesh.mpi_comm());
+
+//  const auto& m2s = master_to_slave();
+  const auto& s2m = slave_to_master();
+
+  const auto V = u.function_space();
+  const auto dofmap = V->dofmap();
+
+  // tabulate global DoFs required for off-process insertion
+  std::vector<std::size_t> local_to_global_dofs;
+  dofmap->tabulate_local_to_global_dofs(local_to_global_dofs);
+
+  const std::size_t tdim = mesh.topology().dim();
+
+  // Send the master cell's dofs to the slave.
+  // [proc: [local_slave, contact master dofs, local slave, contact master dofs, ...]]
+  std::vector<std::vector<std::size_t>> send_master_dofs(mpi_size);
+
+  // Communicate the slave cells' meta data to the master.
+  // First we tabulate the slave cells' information for dispatch
+  std::vector<std::vector<std::size_t>> slave_cell_infos_master_send(mpi_size);
+  std::vector<std::vector<std::size_t>> slave_cell_global_dofs_send(mpi_size);
+  std::vector<std::vector<double>> slave_cell_dof_coords_send(mpi_size);
+
+  std::vector<double> dof_coords;
+  for (const auto& slave : s2m)
+  {
+    const std::size_t slave_idx = slave.first; // slave facet indices
+    const std::vector<std::size_t> master_procs_idxs = slave.second;  // [proc, master facet idx, proc, master facet idx, ...
+
+    const Facet slave_facet(mesh, slave_idx);
+    const Cell slave_cell = Cell(mesh, slave_facet.entities(tdim)[0]);
+
+    // Tabulate dof coords
+    slave_cell.get_coordinate_dofs(dof_coords);
+
+    // Tabulate cell dofs
+    const auto& s_cell_dofs_eigen_map
+        = dofmap->cell_dofs(slave_cell.index());
+    const auto s_cell_dofs = ArrayView<const dolfin::la_index>(
+        s_cell_dofs_eigen_map.size(), s_cell_dofs_eigen_map.data());
+
+    for (std::size_t j=0; j<master_procs_idxs.size(); j+=2)
+    {
+      const std::size_t master_proc = master_procs_idxs[j];
+      const std::size_t master_idx = master_procs_idxs[j+1];
+      slave_cell_infos_master_send[master_proc].push_back(master_idx);
+      slave_cell_dof_coords_send[master_proc].insert(std::end(slave_cell_dof_coords_send[master_proc]),
+                                                     std::begin(dof_coords), std::end(dof_coords));
+      slave_cell_global_dofs_send[master_proc].insert(std::end(slave_cell_global_dofs_send[master_proc]),
+                                                      std::begin(s_cell_dofs), std::end(s_cell_dofs));
+    }
+  }
+
+  // Receive the cell metadata
+  std::vector<std::vector<std::size_t>> slave_cell_infos_master_recv;
+  std::vector<std::vector<std::size_t>> slave_cell_global_dofs_recv;
+  std::vector<std::vector<double>> slave_cell_dof_coords_recv;
+
+  // FIXME: This is too much MP....?
+  MPI::all_to_all(mesh.mpi_comm(), slave_cell_infos_master_send, slave_cell_infos_master_recv);
+  MPI::all_to_all(mesh.mpi_comm(), slave_cell_global_dofs_send, slave_cell_global_dofs_recv);
+  MPI::all_to_all(mesh.mpi_comm(), slave_cell_dof_coords_send, slave_cell_dof_coords_recv);
+
+  const std::size_t num_coords_per_cell = Cell(mesh, 0).num_vertices()*mesh.geometry().dim();
+  const std::size_t num_dofs_per_cell = dofmap->max_element_dofs();
+
+  for (std::size_t proc_source=0; proc_source<mpi_size; ++proc_source)
+  {
+    if (slave_cell_infos_master_recv[proc_source].empty())
+      continue;
+
+    for (std::size_t j=0; j<slave_cell_infos_master_recv[proc_source].size(); ++j)
+    {
+      const std::size_t master_idx = slave_cell_infos_master_recv[proc_source][j];
+      const std::vector<std::size_t> cell_dofs(slave_cell_global_dofs_recv[proc_source].begin() + j*num_dofs_per_cell,
+                                               slave_cell_global_dofs_recv[proc_source].begin() + (j + 1)*num_dofs_per_cell);
+      const std::vector<double> cell_dof_coords(slave_cell_dof_coords_recv[proc_source].begin() + j*num_coords_per_cell,
+                                                slave_cell_dof_coords_recv[proc_source].begin() + (j + 1)*num_coords_per_cell);
+
+      CellMetaData cell_md(cell_dof_coords, cell_dofs);
+      _master_facet_to_contacted_cells[master_idx].push_back(cell_md);
+    }
+  }
+
+}
+//-----------------------------------------------------------------------------
