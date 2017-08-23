@@ -131,38 +131,52 @@ def _check_form(rhs_form):
 
 
 def _time_dependent_expressions(rhs_form, time):
-    """
-    Return a list of expressions which uses the present time as a parameter
+    """Return a list of expressions which uses the present time as a
+    parameter
+
     """
     # FIXME: Add extraction of time dependant expressions from bcs too
     time_dependent_expressions = dict()
 
     for coefficient in rhs_form.coefficients():
-        if hasattr(coefficient, "user_parameters"):
-            for c_name, c in list(coefficient.user_parameters.items()):
-                if isinstance(c, cpp.function.GenericFunction) and time.id() == c.id():
+        #print(coefficient, type(coefficient), hasattr(coefficient, "_user_parameters"))
+        if hasattr(coefficient, "_user_parameters"):
+            for c_name, c in list(coefficient._user_parameters.items()):
+                #print("TT:", c_name, c, type(c), isinstance(c, cpp.function.GenericFunction), time.id(), c.id())
+                if isinstance(c, ufl.Coefficient) and time.id() == c.id():
+                #if isinstance(c, cpp.function.GenericFunction) and time.id() == c.id():
+                    #print ("  Next level")
                     if coefficient not in time_dependent_expressions:
                         time_dependent_expressions[coefficient] = [c_name]
                     else:
                         time_dependent_expressions[coefficient].append(c_name)
 
+    print("XX******:", time_dependent_expressions)
     return time_dependent_expressions
 
 
 def _replace_dict_time_dependent_expression(time_dep_expressions, time, dt, c):
+    print("--Insisde replace dict", time_dep_expressions, c)
     assert(isinstance(c, float))
     replace_dict = {}
     if c == 0.0 or not time_dep_expressions:
+        print("  Return early")
         return replace_dict
     new_time = Expression("time + c*dt", time=time, c=c, dt=dt, degree=0)
+    print("---")
     for expr, c_names in list(time_dep_expressions.items()):
+        print("  ", expr, c_names)
         assert(isinstance(expr, Expression))
         kwargs = dict(name=expr.name(), label=expr.label(),
-                      element=expr.ufl_element(), **expr.user_parameters)
+                      element=expr.ufl_element(), **expr._user_parameters)
+        print(kwargs)
         for c_name in c_names:
             kwargs[c_name] = new_time
-        replace_dict[expr] = Expression(expr.cppcode, **kwargs)
+        print("  xxxxxxxxxxxxxxxxxxxx", expr._cppcode)
+        replace_dict[expr] = Expression(expr._cppcode, **kwargs)
+        print("  xxxxxxxxxxxxxxxxxxxx")
 
+    print("YY******:", replace_dict)
     return replace_dict
 
 
@@ -224,6 +238,7 @@ def _butcher_scheme_generator(a, b, c, time, solution, rhs_form):
                                   for j in range(i+1)], zero_)
         time = time_ + dt*c[i]
 
+        print("Replace dict")
         replace_dict = _replace_dict_time_dependent_expression(time_dep_expressions,
                                                                time_, dt, c[i])
 

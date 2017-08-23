@@ -129,7 +129,8 @@ from .mesh.meshfunction import (MeshFunction, CellFunction,
 from .mesh.meshvaluecollection import MeshValueCollection
 from .mesh.subdomain import CompiledSubDomain
 
-from .multistage.multistagescheme import RK4, CN2, ExplicitMidPoint, ESDIRK3, ESDIRK4, ForwardEuler, BackwardEuler
+from .multistage.multistagescheme import (RK4, CN2, ExplicitMidPoint, ESDIRK3,
+                                          ESDIRK4, ForwardEuler, BackwardEuler)
 from .multistage.multistagesolvers import PointIntegralSolver, RKSolver
 from .multistage.rushlarsenschemes import RL1, RL2, GRL1, GRL2
 

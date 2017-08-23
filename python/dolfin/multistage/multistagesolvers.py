@@ -43,6 +43,7 @@ class PointIntegralSolver(cpp.multistage.PointIntegralSolver):
         "Return the MultiStageScheme"
         return self._scheme
 
+
 class RKSolver(cpp.multistage.RKSolver):
     def __init__(self, scheme):
         """

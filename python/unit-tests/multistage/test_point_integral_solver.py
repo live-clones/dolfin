@@ -34,9 +34,19 @@ scalar_excludes = [RK4, CN2, ExplicitMidPoint, ESDIRK3, ESDIRK4]
 
 # Build test methods using function closure so 1 test is generated per Scheme and
 # test case
-@pytest.fixture(params=["ForwardEuler", "ExplicitMidPoint", "RK4",
-                        "BackwardEuler", "CN2", "ESDIRK3", "ESDIRK4",
-                        "GRL1", "RL1", "GRL2", "RL2"])
+@pytest.fixture(params=[
+                        #"ForwardEuler",
+                        "ExplicitMidPoint",
+                        #"RK4",
+                        #"BackwardEuler",
+                        #"CN2",
+                        #"ESDIRK3",
+                        #"ESDIRK4",
+                        #"GRL1",
+                        #"RL1",
+                        #"GRL2",
+                        #"RL2"
+])
 def Scheme(request):
     return eval(request.param)
 
@@ -51,23 +61,30 @@ def convergence_order(errors, base = 2):
 
     return orders
 
-@pytest.mark.xfail
+#@pytest.mark.xfail
 @pytest.mark.slow
 def test_butcher_schemes_scalar_time(Scheme, optimize):
     mesh = UnitSquareMesh(10, 10)
     V = FunctionSpace(mesh, "CG", 1)
     v = TestFunction(V)
     time = Constant(0.0)
-    u0=10.0
+    u0 = 10.0
     tstop = 1.0
-    weight = Constant(2)
+    weight = Constant(2.0)
+    print("\n 1--------------------------")
     u_true = Expression("u0 + 2*t + pow(t, 2)/2. + weight*pow(t, 3)/3. - "\
-                        "pow(t, 5)/5.", t=tstop, u0=u0, weight=weight, degree=2)
+                        "pow(t, 5)/5.", t=tstop, u0=u0, weight=weight, degree=5)
+    print(" 1--------------------------\n")
+
 
     u = Function(V)
+    #compound_time_expr = Expression("weight*time*time", weight=weight,
+    #                                element=time.ufl_element(), time=time, degree=2)
+    print("\n 2--------------------------")
     compound_time_expr = Expression("weight*time*time", weight=weight,
-                                    element=time.ufl_element(), time=time, degree=2)
-    form = (2+time+compound_time_expr-time**4)*v*dP
+                                    time=time, degree=3)
+    print("\n 2--------------------------")
+    form = (2 + time + compound_time_expr - time**4)*v*dP
 
     scheme = Scheme(form, u, time)
 
@@ -81,7 +98,15 @@ def test_butcher_schemes_scalar_time(Scheme, optimize):
         solver.step_interval(0., tstop, dt)
         u_errors.append(errornorm(u_true, u))
 
-    assert scheme.order()-min(convergence_order(u_errors))<0.1
+    print("****************")
+    print(u_true(0.2, 0.2))
+    print(compound_time_expr(0.51, 0.6))
+    print(scheme.order())
+    print(min(convergence_order(u_errors)))
+    print(u_errors)
+    print("****************")
+
+    assert scheme.order() - min(convergence_order(u_errors)) < 0.1
 
 
 @pytest.mark.xfail

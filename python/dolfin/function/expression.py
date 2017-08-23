@@ -213,7 +213,6 @@ class UserExpression(BaseExpression):
     """
 
     def __init__(self, *args, **kwargs):
-        #self._cpp_object = _InterfaceExpression(self)
 
         # Extract data
         element = kwargs.pop("element", None)
@@ -267,6 +266,9 @@ class Expression(BaseExpression):
         if cpp_code is not None:
             self._cpp_object = jit.compile_expression(cpp_code, self._properties)
 
+        if element and degree:
+            raise RuntimeError("Cannot specify an element and a degree for Expressions.")
+
         # Deduce element type if not provided
         if element is None:
             if degree is None:
@@ -278,12 +280,19 @@ class Expression(BaseExpression):
             element = _select_element(family=None, cell=cell, degree=degree,
                                       value_shape=value_shape)
 
+
+        #print("Attaching kwargs as self.user_parameters")
+        self._user_parameters = kwargs
+        self._cppcode = cpp_code
+        #print("Type check:", kwargs)
+
         BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
                                 name=name, label=label)
 
     # This is added dynamically in the intialiser to allow checking of
     # eval in user classes.
     def __getattr__(self, name):
+        #print("Inside __getattr__", name)
         "Pass attributes through to (JIT compiled) Expression object"
         if name in self._properties.keys():
             if isinstance(self._properties[name], (float, int)):
@@ -294,6 +303,7 @@ class Expression(BaseExpression):
             raise AttributeError
 
     def __setattr__(self, name, value):
+        # FIXME: this messes up setting attributes
         if name.startswith("_"):
             super().__setattr__(name, value)
         elif name in self._properties.keys():
