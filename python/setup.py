@@ -79,8 +79,8 @@ setup(
     cmdclass=dict(build_ext=CMakeBuild),
     install_requires=["numpy",
                       "ffc",
-                      "ufl"
-                      "pkgconfig"
+                      "ufl",
+                      "pkgconfig",
                       "dijitso"],
     zip_safe=False,
 )
