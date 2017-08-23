@@ -77,14 +77,13 @@ def compile_cpp_code(class_data):
 
     params['build']['cxxflags'] += dmacros
 
-    # FIXME: should make this generalised to any library
-#    if cpp.common.has_petsc():
-#        import os
-#        params['build']['cxxflags'] += ('-DHAS_PETSC',)
-#        params['build']['libs'] += ['petsc']
-#        params['build']['lib_dirs'] += [os.environ["PETSC_DIR"] + "/lib"]
+    # This seems to be needed by OSX but not in Linux
+    # FIXME: probably needed for other libraries too
+    if cpp.common.has_petsc():
+        import os
+        params['build']['libs'] += ['petsc']
+        params['build']['lib_dirs'] += [os.environ["PETSC_DIR"] + "/lib"]
 
-#    print(params)
 
     module_hash = hashlib.md5((class_data["cpp_code"] + class_data["pybind11_code"]).encode('utf-8')).hexdigest()
     module_name = "dolfin_cpp_module_" + module_hash
@@ -92,9 +91,4 @@ def compile_cpp_code(class_data):
     module, signature = dijitso.jit(class_data,
                                     module_name, params,
                                     generate=jit_generate)
-
-#    print('pybind11 JIT: ', module)
-
-#    print(dir(module))
-
     return module
