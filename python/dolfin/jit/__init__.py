@@ -19,8 +19,9 @@ def get_pybind_include():
     except:
         pass
 
-    # Look in /usr/include and /usr/local/include
-    for p in (os.path.join("usr", "local", "include"), os.path.join("usr", "include")):
+    # Look in /usr/local/include and /usr/include
+    root = os.path.abspath(os.sep)
+    for p in (os.path.join(root, "usr", "local", "include"), os.path.join(root, "usr", "include")):
         if (_check_pybind_path(p)):
             return [p]
 
