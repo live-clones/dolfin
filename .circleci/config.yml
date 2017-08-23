@@ -27,7 +27,7 @@ jobs:
           command: |
             source /usr/local/share/dolfin/dolfin.conf
             cd python
-            python3 setup.py build
+            pip3 install . --user
       - run:
           name: Run tests (serial)
           command: |
