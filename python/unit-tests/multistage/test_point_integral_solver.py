@@ -35,17 +35,17 @@ scalar_excludes = [RK4, CN2, ExplicitMidPoint, ESDIRK3, ESDIRK4]
 # Build test methods using function closure so 1 test is generated per Scheme and
 # test case
 @pytest.fixture(params=[
-                        #"ForwardEuler",
+                        "ForwardEuler",
                         "ExplicitMidPoint",
-                        #"RK4",
-                        #"BackwardEuler",
-                        #"CN2",
-                        #"ESDIRK3",
-                        #"ESDIRK4",
-                        #"GRL1",
-                        #"RL1",
-                        #"GRL2",
-                        #"RL2"
+                        "RK4",
+                        "BackwardEuler",
+                        "CN2",
+                        "ESDIRK3",
+                        "ESDIRK4",
+                        "GRL1",
+                        "RL1",
+                        "GRL2",
+                        "RL2"
 ])
 def Scheme(request):
     return eval(request.param)
@@ -61,7 +61,6 @@ def convergence_order(errors, base = 2):
 
     return orders
 
-#@pytest.mark.xfail
 @pytest.mark.slow
 def test_butcher_schemes_scalar_time(Scheme, optimize):
     mesh = UnitSquareMesh(10, 10)
@@ -109,7 +108,6 @@ def test_butcher_schemes_scalar_time(Scheme, optimize):
     assert scheme.order() - min(convergence_order(u_errors)) < 0.1
 
 
-@pytest.mark.xfail
 @pytest.mark.slow
 def test_butcher_schemes_scalar(Scheme, optimize):
 
