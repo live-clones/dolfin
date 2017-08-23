@@ -75,8 +75,7 @@ std::map<std::string, std::string> TAOLinearBoundSolver::preconditioners()
   return PETScKrylovSolver::preconditioners();
 }
 //-----------------------------------------------------------------------------
-TAOLinearBoundSolver::TAOLinearBoundSolver(MPI_Comm comm)
-  : _tao(nullptr), _preconditioner_set(false)
+TAOLinearBoundSolver::TAOLinearBoundSolver(MPI_Comm comm) : _tao(nullptr)
 {
   PetscErrorCode ierr;
 
@@ -88,7 +87,7 @@ TAOLinearBoundSolver::TAOLinearBoundSolver(MPI_Comm comm)
 TAOLinearBoundSolver::TAOLinearBoundSolver(const std::string method,
                                            const std::string ksp_type,
                                            const std::string pc_type)
-  : _tao(NULL), _preconditioner_set(false)
+  : _tao(NULL)
 {
   // Set parameter values
   parameters = default_parameters();

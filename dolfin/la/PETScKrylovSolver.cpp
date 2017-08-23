@@ -76,37 +76,34 @@ namespace
       {"bjacobi",          PCBJACOBI},
       {"sor",              PCSOR},
       {"additive_schwarz", PCASM},
-      {"petsc_amg",        PCGAMG},  // Remove
       {"gamg",             PCGAMG},
+      {"petsc_amg",        PCGAMG},  // Remove
+      {"amg",              PCML},    // Remove
 #if PETSC_HAVE_HYPRE
       {"hypre_amg",        PCHYPRE},
       {"hypre_euclid",     PCHYPRE},
-      {"hypre_parasails",  PCHYPRE},
 #endif
 #if PETSC_HAVE_ML
-      {"amg",              PCML},  // Remove
-      {"ml_amg",           PCML},
-#elif PETSC_HAVE_HYPRE
-      {"amg",              PCHYPRE},
+      {"ml_amg",           PCML},  // Remove (ML is no longer maintained)
 #endif
       {"none",             PCNONE} };
 
   // Mapping from preconditioner string to description string
   const std::map<std::string, std::string> _pc_methods_descr
-  = { {"default",          "default preconditioner"},
+  = { {"default",          "default preconditioner (preconditioner determined by backend)"},
       {"ilu",              "Incomplete LU factorization"},
       {"icc",              "Incomplete Cholesky factorization"},
       {"jacobi",           "Jacobi iteration"},
       {"sor",              "Successive over-relaxation"},
-      {"petsc_amg",        "PETSc algebraic multigrid"},
+      {"petsc_amg",        "PETSc smoothed aggregation algebraic multigrid"}, // remove
+      {"amg",              "PETSc smoothed aggregation algebraic multigrid"}, // remove
+      {"gamg",             "PETSc smoothed aggregation algebraic multigrid"},
 #if PETSC_HAVE_HYPRE
-      {"amg",              "Algebraic multigrid"},
       {"hypre_amg",        "Hypre algebraic multigrid (BoomerAMG)"},
       {"hypre_euclid",     "Hypre parallel incomplete LU factorization"},
-      {"hypre_parasails",  "Hypre parallel sparse approximate inverse"},
 #endif
 #if PETSC_HAVE_ML
-      {"ml_amg",           "ML algebraic multigrid"},
+      {"ml_amg",           "ML algebraic multigrid"},  // Remove (ML is no longer maintained)
 #endif
       {"none",             "No preconditioner"} };
 }
@@ -138,12 +135,24 @@ PETScKrylovSolver::PETScKrylovSolver(MPI_Comm comm, std::string method,
                                      std::string preconditioner)
   : _ksp(NULL), pc_dolfin(NULL), preconditioner_set(false)
 {
-   // Check that the requested method is known
-  if (_methods.find(method) == _methods.end())
+   // Check that the requested Krylov method is known
+  auto method_krylov = _methods.find(method);
+  if (method_krylov == _methods.end())
   {
     dolfin_error("PETScKrylovSolver.cpp",
                  "create PETSc Krylov solver",
-                 "Unknown Krylov method \"%s\"", method.c_str());
+                 "Unknown Krylov method \"%s\". Use the PETSc options systems for advanced solver configuration",
+                 method.c_str());
+  }
+
+  // Check that the requested preconditioner is known
+  auto method_pc = _pc_methods.find(preconditioner);
+  if (method_pc == _pc_methods.end())
+  {
+    dolfin_error("PETScKrylovSolver.cpp",
+                 "create PETSc Krylov solver",
+                 "Unknown preconditioner method \"%s\". Use the PETSc options systems for advanced solver configuration",
+                 method.c_str());
   }
 
   // Set parameter values
@@ -158,19 +167,44 @@ PETScKrylovSolver::PETScKrylovSolver(MPI_Comm comm, std::string method,
   // Set Krylov solver type (if specified by user)
   if (method != "default")
   {
-    ierr = KSPSetType(_ksp, _methods.find(method)->second);
+    ierr = KSPSetType(_ksp, method_krylov->second);
     if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetType");
   }
 
   // Set preconditioner type (if specified by user)
   if (preconditioner != "default")
   {
+    // Get preconditoner
     PC pc;
     ierr = KSPGetPC(_ksp, &pc);
     if (ierr != 0) dolfin::PETScObject::petsc_error(ierr, __FILE__, "KSPGetPC");
 
-    ierr = PCSetType(pc, _pc_methods.find(preconditioner)->second);
+    // Set preconditioner
+    ierr = PCSetType(pc, method_pc->second);
     if (ierr != 0) petsc_error(ierr, __FILE__, "PCSetType");
+
+    // Treat Hypre cases
+    if (preconditioner.find("hypre") != std::string::npos)
+    {
+      #if PETSC_HAVE_HYPRE
+      if (preconditioner == "hypre_amg")
+      {
+        ierr = PCHYPRESetType(pc, "boomeramg");
+        if (ierr != 0) petsc_error(ierr, __FILE__, "PCHYPRESetType");
+      }
+      else if (preconditioner == "hypre_euclid")
+      {
+        ierr = PCHYPRESetType(pc, "euclid");
+        if (ierr != 0) petsc_error(ierr, __FILE__, "PCHYPRESetType");
+      }
+      else
+      {
+        // Should never reach this point (error should be raised
+        // earlier)
+        throw std::runtime_error("Hypre preconditioner not supported.");
+      }
+       #endif
+    }
   }
 }
 //-----------------------------------------------------------------------------

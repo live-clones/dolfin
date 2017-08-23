@@ -176,8 +176,6 @@ namespace dolfin
     std::shared_ptr<const PETScMatrix> _matA;
     std::shared_ptr<const PETScVector> _b;
 
-    bool _preconditioner_set;
-
     // Computes the value of the objective function and its gradient.
     static PetscErrorCode
       __TAOFormFunctionGradientQuadraticProblem(Tao tao, Vec X,
