@@ -73,7 +73,7 @@ public:
   Conductivity() : Expression(3) {}
 
   // Function for evaluating expression on each cell
-  void eval(Array<double>& values, const Array<double>& x, const ufc::cell& cell) const
+  void eval(Array<double>& values, const Array<double>& x, const ufc::cell& cell) const override
   {
     const uint D = cell.topological_dimension;
     const uint cell_index = cell.index;
@@ -107,11 +107,17 @@ c00 = MeshFunction("double", mesh, "../unitsquare_32_32_c00.xml.gz")
 c01 = MeshFunction("double", mesh, "../unitsquare_32_32_c01.xml.gz")
 c11 = MeshFunction("double", mesh, "../unitsquare_32_32_c11.xml.gz")
 
-c = compile_cpp_code(conductivity_class_data)
+class UserConductivity(UserExpression):
+    def value_shape(self):
+        return (3,)
 
-c.c00 = c00
-c.c01 = c01
-c.c11 = c11
+c = UserConductivity(degree=0)
+cc = compile_cpp_code(conductivity_class_data)
+cc.c00 = c00
+cc.c01 = c01
+cc.c11 = c11
+c._cpp_object = cc
+
 C = as_matrix(((c[0], c[1]), (c[1], c[2])))
 
 # Define variational problem

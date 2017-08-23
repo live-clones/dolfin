@@ -15,8 +15,7 @@ def jit_generate(class_data, module_name, signature, parameters):
 #include <pybind11/eigen.h>
 namespace py = pybind11;
 
-#include <dolfin/function/Expression.h>
-#include <dolfin/mesh/MeshFunction.h>
+#include <dolfin.h>
 #include <Eigen/Dense>
 
 namespace dolfin
