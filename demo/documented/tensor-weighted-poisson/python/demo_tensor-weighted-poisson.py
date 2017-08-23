@@ -73,7 +73,7 @@ public:
   Conductivity() : Expression(3) {}
 
   // Function for evaluating expression on each cell
-  void eval(Array<double>& values, const Array<double>& x, const ufc::cell& cell) const override
+  void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x, const ufc::cell& cell) const override
   {
     const uint D = cell.topological_dimension;
     const uint cell_index = cell.index;
@@ -100,7 +100,7 @@ conductivity_pybind11 = """
     .def_readwrite("c11", &dolfin::Conductivity::c11);
 """
 
-conductivity_class_data = {'cpp_code': conductivity_code, 'pybind11_code': conductivity_pybind11, 'classname': 'Conductivity'}
+conductivity_class_data = {'cpp_code': conductivity_code, 'pybind11_code': conductivity_pybind11}
 
 # Define conductivity expression and matrix
 c00 = MeshFunction("double", mesh, "../unitsquare_32_32_c00.xml.gz")

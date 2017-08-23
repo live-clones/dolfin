@@ -65,7 +65,7 @@ def test_compile_extension_module():
     m.def("PETSc_exp", &dolfin::PETSc_exp);
     """
 
-    ext_module = compile_cpp_code({"cpp_code":code, "pybind11_code":pybind11, "classname":"PETSc_exp"})
+    ext_module = compile_cpp_code({"cpp_code": code, "pybind11_code": pybind11})
 
     vec = PETScVector(mpi_comm_world(), 10)
     np_vec = vec.array()
