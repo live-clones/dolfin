@@ -39,7 +39,7 @@ def convergence_order(errors, base = 2):
 
     return orders
 
-@pytest.mark.xfail
+
 @pytest.mark.slow
 @skip_64bit_int  # The linear solver can fail wit 64-bit indices
 @skip_in_parallel
@@ -72,7 +72,7 @@ def test_butcher_schemes_scalar():
     set_log_level(LEVEL)
 
 
-@pytest.mark.xfail
+
 @pytest.mark.slow
 @skip_in_parallel
 def test_butcher_schemes_vector():
