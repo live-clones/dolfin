@@ -236,7 +236,6 @@ def test_vector_valued_expression_member_function(mesh):
 
 
 @skip_in_parallel
-@pytest.mark.skip("Attaching MeshFunctions to JIT Expressions - not working")
 def test_meshfunction_expression():
     mesh = UnitSquareMesh(1, 1)
     V = FunctionSpace(mesh, "DG", 0)
@@ -244,19 +243,49 @@ def test_meshfunction_expression():
     c = CellFunction("size_t", mesh)
     c[0] = 2
     c[1] = 3
-    e = Expression("(double)c", c=c, degree=0)
-    e.c = c
+
+    cpp_code = '''
+    class {classname} : public Expression
+    {{
+    public:
+
+      std::shared_ptr<MeshFunction<{t}>> c;
+
+      {classname}() : Expression()
+      {{
+      }}
+
+      void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x,
+                const ufc::cell& cell) const
+      {{
+        values[0] = (*c)[cell.index];
+      }}
+    }};'''
+
+    pybind11_code = '''
+  py::class_<dolfin::{classname}, std::shared_ptr<dolfin::{classname}>, dolfin::Expression>
+    (m, "{classname}")
+    .def(py::init<>())
+    .def_readwrite("c", &dolfin::{classname}::c);
+'''
+
+    e = UserExpression(degree=0)
+    e._cpp_object = compile_cpp_code({'cpp_code':cpp_code.format(t='std::size_t', classname='MeshExpressionInt'),
+                       'pybind11_code':pybind11_code.format(classname='MeshExpressionInt')}).MeshExpressionInt()
+    e._cpp_object.c = c
 
     h = interpolate(e, V)
     v = h.vector()
     assert v[0] == float(c[0])
     assert v[1] == float(c[1])
 
-    a = MeshFunctionDouble(mesh, 2)
+    a = MeshFunction("double", mesh, 2)
     a[0] = 2.0
     a[1] = 4.0
-    e = Expression("a", a=a, degree=0)
-    e.a = a
+    e = UserExpression(degree=0)
+    e._cpp_object = compile_cpp_code({'cpp_code':cpp_code.format(t='double', classname='MeshExpressionDouble'),
+               'pybind11_code':pybind11_code.format(classname='MeshExpressionDouble')}).MeshExpressionDouble()
+    e._cpp_object.c = a
 
     h = interpolate(e, V)
     v = h.vector()
@@ -266,21 +295,94 @@ def test_meshfunction_expression():
     f = Function(V)
     f.vector()[:] = 2.0
     g = Constant(3.0)
-    e = Expression("a*(c == 2 ? f: g)", a=1.0, c=c, f=f, g=g, degree=0)
-    e.a = 5.0
-    e.c = c
-    e.f = f
-    e.g = g
+
+    cpp_code = '''
+    class {classname} : public Expression
+    {{
+    public:
+
+      double a;
+      std::shared_ptr<MeshFunction<std::size_t>> c;
+      std::shared_ptr<GenericFunction> f;
+      std::shared_ptr<GenericFunction> g;
+
+      {classname}() : Expression()
+      {{
+      }}
+
+      void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x,
+                const ufc::cell& cell) const
+      {{
+        auto fn = ((*c)[cell.index] == 2 ? f: g);
+        fn->eval(values, x, cell);
+        values[0] *= a;
+      }}
+    }};'''
+
+    pybind11_code = '''
+  py::class_<dolfin::{classname}, std::shared_ptr<dolfin::{classname}>, dolfin::Expression>
+    (m, "{classname}")
+    .def(py::init<>())
+    .def_readwrite("a", &dolfin::{classname}::a)
+    .def_readwrite("c", &dolfin::{classname}::c)
+    .def_readwrite("f", &dolfin::{classname}::f)
+    .def_readwrite("g", &dolfin::{classname}::g);
+'''
+
+    e = UserExpression(degree=0)
+    e._cpp_object = compile_cpp_code({'cpp_code':cpp_code.format(classname='SwitchExpression'),
+                       'pybind11_code':pybind11_code.format(classname='SwitchExpression')}).SwitchExpression()
+    e._cpp_object.a = 5.0
+    e._cpp_object.c = c
+    e._cpp_object.f = f._cpp_object
+    e._cpp_object.g = g._cpp_object
+
+#    e = Expression("a*(c == 2 ? f: g)", a=1.0, c=c, f=f, g=g, degree=0)
+#    e.a = 5.0
+#    e.c = c
+#    e.f = f
+#    e.g = g
 
     h = interpolate(e, V)
     v = h.vector()
     assert v[0] == 5.0 * 2.0
     assert v[1] == 5.0 * 3.0
 
-    w = Constant((0.0, 1.0, 2.0, 3.0, 4.0, 5.0))
-    e = Expression("w[c]", w=w, c=c, degree=0)
-    e.w = w
-    e.c = c
+    cpp_code = '''
+    class {classname} : public Expression
+    {{
+    public:
+
+      std::shared_ptr<MeshFunction<std::size_t>> c;
+      Eigen::VectorXd w;
+
+      {classname}() : Expression()
+      {{
+      }}
+
+      void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x,
+                const ufc::cell& cell) const
+      {{
+        values[0] = w[(*c)[cell.index]];
+      }}
+    }};'''
+
+    pybind11_code = '''
+  py::class_<dolfin::{classname}, std::shared_ptr<dolfin::{classname}>, dolfin::Expression>
+    (m, "{classname}")
+    .def(py::init<>())
+    .def_readwrite("w", &dolfin::{classname}::w)
+    .def_readwrite("c", &dolfin::{classname}::c);
+'''
+
+
+    w = (0.0, 1.0, 2.0, 3.0, 4.0, 5.0)
+    e = UserExpression(degree=0)
+    e._cpp_object = compile_cpp_code({'cpp_code':cpp_code.format(classname='WExpression'),
+                       'pybind11_code':pybind11_code.format(classname='WExpression')}).WExpression()
+#    e = Expression("w[c]", w=w, c=c, degree=0)
+    e._cpp_object.w = w
+    e._cpp_object.c = c
 
     h = interpolate(e, V)
     v = h.vector()
@@ -489,12 +591,12 @@ def test_expression_self_assignment(mesh, V):
     e2 = Expression("t", t=te, degree=0)
 
     # Test self assignment
+    # FIXME: Is this supposed to be sensible?
     e2.t = e2
     with pytest.raises(RuntimeError):
         e2(0, 0)
 
 
-@pytest.mark.skip("Attaches GenericFunction to Expression - not working")
 def test_generic_function_attributes(mesh, V):
 
     tc = Constant(2.0)
@@ -604,7 +706,6 @@ def test_doc_string_eval():
 
 
 @skip_in_parallel
-@pytest.mark.skip("Compile complete class in JIT - not working")
 def test_doc_string_complex_compiled_expression(mesh):
     """
     This test tests all features documented in the doc string of
@@ -623,7 +724,7 @@ def test_doc_string_complex_compiled_expression(mesh):
       {
       }
 
-      void eval(Array<double>& values, const Array<double>& x,
+      void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x,
                 const ufc::cell& c) const
       {
         assert(cell_data);
@@ -644,6 +745,13 @@ def test_doc_string_complex_compiled_expression(mesh):
         }
       }
     };'''
+
+    pybind11 = '''
+  py::class_<dolfin::MyFunc, std::shared_ptr<dolfin::MyFunc>, dolfin::Expression>
+    (m, "MyFunc")
+    .def(py::init<>())
+    .def_readwrite("cell_data", &dolfin::MyFunc::cell_data);
+'''
 
     cell_data = CellFunction('size_t', mesh)
     cell_data.set_all(3)
@@ -679,8 +787,11 @@ def test_doc_string_complex_compiled_expression(mesh):
     values = zeros(1, dtype=float_)
 
     # Create compiled expression and attach cell data
-    f = Expression(code, degree=2)
-    f.cell_data = cell_data
+    # FIXME: need to make this simpler
+    f = UserExpression(degree=2)
+    f._cpp_object = compile_cpp_code({'cpp_code':code, 'pybind11_code':pybind11}).MyFunc()
+    f._cpp_object.cell_data = cell_data
+    f.eval_cell = f._cpp_object.eval
 
     coords = array([p0.x(), p0.y(), p0.z()], dtype=float_)
     f.eval_cell(values, coords, c0)
@@ -697,7 +808,6 @@ def test_doc_string_complex_compiled_expression(mesh):
 
 @pytest.mark.slow
 @skip_in_parallel
-@pytest.mark.skip("Compile complete Expression class with JIT - not working")
 def test_doc_string_compiled_expression_with_system_headers():
     """
     This test tests all features documented in the doc string of
@@ -705,18 +815,14 @@ def test_doc_string_compiled_expression_with_system_headers():
     need also be updated in the docstring.
     """
 
-    # Add header and it should compile
-    code_compile = '''
-    #include "dolfin/fem/GenericDofMap.h"
-    namespace dolfin
-    {
+    cpp_code = '''
       class Delta : public Expression
       {
       public:
 
         Delta() : Expression() {}
 
-        void eval(Array<double>& values, const Array<double>& data,
+        void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> data,
                   const ufc::cell& cell) const
         { }
 
@@ -739,10 +845,17 @@ def test_doc_string_compiled_expression_with_system_headers():
           }
         }
       };
-    }'''
+    '''
 
-    e = Expression(code_compile, degree=1)
-    assert hasattr(e, "update")
+    pybind11_code = '''
+  py::class_<dolfin::Delta, std::shared_ptr<dolfin::Delta>, dolfin::Expression>
+    (m, "Delta")
+    .def(py::init<>())
+    .def("update", &dolfin::Delta::update);
+'''
+
+    cc = compile_cpp_code({'cpp_code':cpp_code, 'pybind11_code': pybind11_code}).Delta()
+    assert hasattr(cc, "update")
 
     # Test not compile
     code_not_compile = '''
