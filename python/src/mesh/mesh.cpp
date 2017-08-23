@@ -34,7 +34,6 @@
 #include <dolfin/mesh/MeshTopology.h>
 #include <dolfin/mesh/MeshGeometry.h>
 #include <dolfin/mesh/MeshEntity.h>
-#include <dolfin/mesh/MultiMesh.h>
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/Edge.h>
 #include <dolfin/mesh/Face.h>
@@ -175,7 +174,11 @@ namespace dolfin_wrappers
 
     // dolfin::MeshData class
     py::class_<dolfin::MeshData, std::shared_ptr<dolfin::MeshData>>(m, "MeshData", "Mesh data object")
-      .def("array", (std::vector<std::size_t>& (dolfin::MeshData::*)(std::string, std::size_t)) &dolfin::MeshData::array)
+      .def("array", [](dolfin::MeshData& self, std::string key, std::size_t i)
+           {
+             const std::vector<std::size_t>& a = self.array(key, i);
+             return py::array_t<std::size_t>(a.size(), a.data());
+           })
       .def("create_array", &dolfin::MeshData::create_array);
 
 
@@ -183,6 +186,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshDomains, std::shared_ptr<dolfin::MeshDomains>>(m, "MeshDomains", "Mesh domains object")
       .def("set_marker", &dolfin::MeshDomains::set_marker)
       .def("get_marker", &dolfin::MeshDomains::get_marker)
+      .def("init", &dolfin::MeshDomains::init)
       .def("markers", (std::map<std::size_t, std::size_t>& (dolfin::MeshDomains::*)(std::size_t))
            &dolfin::MeshDomains::markers);
 
@@ -254,11 +258,13 @@ namespace dolfin_wrappers
       .def("normal", (double (dolfin::Face::*)(std::size_t) const) &dolfin::Face::normal)
       .def("area", &dolfin::Face::area);
 
+
     //--------------------------------------------------------------------------
     // dolfin::Facet class
     py::class_<dolfin::Facet, std::shared_ptr<dolfin::Facet>, dolfin::MeshEntity>
       (m, "Facet", "DOLFIN Facet object")
-      .def(py::init<const dolfin::Mesh&, std::size_t>());
+      .def(py::init<const dolfin::Mesh&, std::size_t>())
+      .def("exterior", &dolfin::Facet::exterior);
 
     //--------------------------------------------------------------------------
     // dolfin::Cell class
@@ -272,6 +278,7 @@ namespace dolfin_wrappers
       .def("facet_area", &dolfin::Cell::facet_area)
       .def("h", &dolfin::Cell::h)
       .def("inradius", &dolfin::Cell::inradius)
+      .def("normal", (dolfin::Point (dolfin::Cell::*)(std::size_t) const) &dolfin::Cell::normal)
       .def("circumradius", &dolfin::Cell::circumradius)
       .def("radius_ratio", &dolfin::Cell::radius_ratio)
       .def("triangulate_intersection", &dolfin::Cell::triangulate_intersection)
@@ -352,6 +359,7 @@ namespace dolfin_wrappers
            { new (&instance) dolfin::MeshFunction<SCALAR>(mesh, dim, 0); }) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, SCALAR>()) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::string>()) \
+      .def(py::init<std::shared_ptr<const dolfin::Mesh>, std::size_t, const dolfin::MeshDomains&>()) \
       .def(py::init<std::shared_ptr<const dolfin::Mesh>, const dolfin::MeshValueCollection<SCALAR>&>()) \
       .def("__getitem__", (const SCALAR& (dolfin::MeshFunction<SCALAR>::*) \
                            (std::size_t) const) \
@@ -456,12 +464,6 @@ namespace dolfin_wrappers
       .def("close", &dolfin::MeshEditor::close, py::arg("order") = true);
 
     //--------------------------------------------------------------------------
-    // dolfin::MultiMesh class
-    py::class_<dolfin::MultiMesh, std::shared_ptr<dolfin::MultiMesh>>
-      (m, "MultiMesh", "DOLFIN MultiMesh")
-      .def(py::init<>());
-
-    //--------------------------------------------------------------------------
     // dolfin::MeshQuality class
     py::class_<dolfin::MeshQuality>
       (m, "MeshQuality", "DOLFIN MeshQuality class")
@@ -477,6 +479,7 @@ namespace dolfin_wrappers
     // dolfin::SubMesh class
     py::class_<dolfin::SubMesh, std::shared_ptr<dolfin::SubMesh>, dolfin::Mesh>
       (m, "SubMesh", "DOLFIN SubMesh")
+      .def(py::init<const dolfin::Mesh&, std::size_t>())
       .def(py::init<const dolfin::Mesh&, const dolfin::SubDomain&>())
       .def(py::init<const dolfin::Mesh&, const dolfin::MeshFunction<std::size_t>&, std::size_t>());
 
@@ -508,6 +511,10 @@ namespace dolfin_wrappers
       .def("mark_facets", (void (dolfin::SubDomain::*)(dolfin::Mesh&, std::size_t, bool) const)
            &dolfin::SubDomain::mark_facets, py::arg("mesh"), py::arg("sub_domain"), py::arg("check_midpoint")=true)
       .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<std::size_t>&, std::size_t, bool) const)
+           &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true)
+      .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<double>&, double, bool) const)
+           &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true)
+      .def("mark", (void (dolfin::SubDomain::*)(dolfin::MeshFunction<bool>&, bool, bool) const)
            &dolfin::SubDomain::mark, py::arg("meshfunction"), py::arg("marker"), py::arg("check_midpoint")=true);
 
     // dolfin::DomainBoundary

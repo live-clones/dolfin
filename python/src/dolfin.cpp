@@ -17,6 +17,7 @@
 
 
 #include <pybind11/pybind11.h>
+#include <dolfin/log/log.h>
 
 namespace py = pybind11;
 
@@ -71,11 +72,6 @@ PYBIND11_MODULE(cpp, m)
   dolfin_wrappers::function(function);
 
 
-
-  // Create adaptivity submodule [adaptivity]
-  py::module adaptivity = m.def_submodule("adaptivity", "Adaptivity module");
-  dolfin_wrappers::adaptivity(adaptivity);
-
   // Create ale submodule [ale]
   py::module ale = m.def_submodule("ale", "ALE (mesh movement) module");
   dolfin_wrappers::ale(ale);
@@ -129,5 +125,12 @@ PYBIND11_MODULE(cpp, m)
   // Create refinement submodule
   py::module refinement = m.def_submodule("refinement", "Mesh refinement module");
   dolfin_wrappers::refinement(refinement);
+
+  // Create adaptivity submodule [adaptivity]
+  py::module adaptivity = m.def_submodule("adaptivity", "Adaptivity module");
+  dolfin_wrappers::adaptivity(adaptivity);
+
+  // FIXME: these are just for the transition
+  m.def("warning", [](std::string message) { dolfin::warning(message); });
 
 }

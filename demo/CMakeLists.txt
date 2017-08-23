@@ -16,7 +16,6 @@ if (DOLFIN_FOUND)
 
   # Documented demos
   add_subdirectory(documented/auto-adaptive-poisson/cpp)
-  add_subdirectory(documented/bcs/cpp)
   add_subdirectory(documented/biharmonic/cpp)
   add_subdirectory(documented/built-in-meshes/cpp)
   add_subdirectory(documented/cahn-hilliard/cpp)

@@ -64,8 +64,7 @@ Expression::~Expression()
   // Do nothing
 }
 //-----------------------------------------------------------------------------
-void Expression::eval(Array<double>& values,
-                      const Array<double>& x,
+void Expression::eval(Array<double>& values, const Array<double>& x,
                       const ufc::cell& cell) const
 {
   // Redirect to Eigen eval
@@ -117,6 +116,11 @@ std::size_t Expression::value_dimension(std::size_t i) const
   return _value_shape[i];
 }
 //-----------------------------------------------------------------------------
+std::vector<std::size_t> Expression::value_shape() const
+{
+  return _value_shape;
+}
+//-----------------------------------------------------------------------------
 void Expression::set_property(std::string name, double value)
 {
   dolfin_error("Expression.cpp",
@@ -130,6 +134,21 @@ double Expression::get_property(std::string name) const
                "get parameter",
                "This method should be overloaded in the derived class");
   return 0.0;
+}
+//-----------------------------------------------------------------------------
+void Expression::set_generic_function(std::string name, std::shared_ptr<GenericFunction>)
+{
+  dolfin_error("Expression.cpp",
+               "set parameter",
+               "This method should be overloaded in the derived class");
+}
+//-----------------------------------------------------------------------------
+std::shared_ptr<GenericFunction> Expression::get_generic_function(std::string name) const
+{
+  dolfin_error("Expression.cpp",
+               "get parameter",
+               "This method should be overloaded in the derived class");
+  return std::shared_ptr<GenericFunction>();
 }
 //-----------------------------------------------------------------------------
 void Expression::restrict(double* w,

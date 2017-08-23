@@ -212,7 +212,7 @@ class Function(ufl.Coefficient):
                 raise TypeError("expected one or two arguments when "
                                 "instantiating from another Function")
         elif isinstance(args[0], cpp.function.Function):
-            raise RuntimeError("Not implemented yet")
+            raise RuntimeError("Construction from a cpp function not implemented yet")
         elif isinstance(args[0], FunctionSpace):
             V = args[0]
 
@@ -225,6 +225,9 @@ class Function(ufl.Coefficient):
                     self._cpp_object = cpp.function.Function(V._cpp_object, args[1])
                 elif isinstance(args[1], cpp.function.Function):
                     self._cpp_object = args[1]
+                elif isinstance(args[1], string_types):
+                    # Read from xml filename in string
+                    self._cpp_object = cpp.function.Function(V._cpp_object, args[1])
                 else:
                     raise RuntimeError("Don't know what to do with ", type(args[1]))
             else:
@@ -234,7 +237,7 @@ class Function(ufl.Coefficient):
             ufl.Coefficient.__init__(self, V.ufl_function_space(), count=self._cpp_object.id())
 
         else:
-            raise TypeError("expected a FunctionSpace or a Function as argument 1")
+            raise TypeError("Expected a FunctionSpace or a Function as argument 1")
 
         # Set name as given or automatic
         name = kwargs.get("name") or "f_%d" % self.count()
@@ -245,8 +248,14 @@ class Function(ufl.Coefficient):
         return FunctionSpace(self._cpp_object.function_space())
         #return self._cpp_object.function_space()
 
+    def value_rank(self):
+        return self._cpp_object.value_rank()
+
     def value_dimension(self, i):
         return self._cpp_object.value_dimension(i)
+
+    def value_shape(self):
+        return self._cpp_object.value_shape
 
     def __call__(self, *args, **kwargs):
         if len(args)==0:
@@ -317,6 +326,12 @@ class Function(ufl.Coefficient):
     #def _assign(self, u):
     #    if isinstance(u, cpp.function.FunctionAXPY):
     #        self._cpp_object._assign(u)
+
+    def eval_cell(self, u, x, cell):
+        return self._cpp_object.eval(u, x, cell)
+
+    def eval(self, u, x):
+        return self._cpp_object.eval(u, x)
 
     def extrapolate(self, u):
         if isinstance(u, ufl.Coefficient):
@@ -435,6 +450,16 @@ class Function(ufl.Coefficient):
     def __str__(self):
         """Return a pretty print representation of it self."""
         return self.name()
+
+    def root_node(self):
+        u = self._cpp_object.root_node()
+        return Function(FunctionSpace(u.function_space()), u.vector())
+        #return Function(self._cpp_object.root_node())
+
+    def leaf_node(self):
+        u = self._cpp_object.leaf_node()
+        return Function(FunctionSpace(u.function_space()), u.vector())
+        #return Function(self._cpp_object.leaf_node())
 
     def cpp_object(self):
         return self._cpp_object

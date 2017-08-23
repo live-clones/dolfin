@@ -6,7 +6,7 @@ import dolfin.cpp as cpp
 import dijitso
 import ffc
 
-from dolfin.jit.jit import compile_class
+from dolfin.jit.jit import compile_class, _math_header
 
 def jit_generate(class_data, module_name, signature, parameters):
 
@@ -26,6 +26,8 @@ def jit_generate(class_data, module_name, signature, parameters):
 #include <dolfin/math/basic.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <Eigen/Dense>
+
+{math_header}
 
 namespace dolfin
 {{
@@ -80,7 +82,9 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
 
     classname = signature
     code_c = template_code.format(inside=inside_code, classname=classname,
-                                  members=members, constructor="", get_props=get_props, set_props=set_props)
+                                  math_header=_math_header,
+                                  members=members, constructor="",
+                                  get_props=get_props, set_props=set_props)
     code_h = ""
     depends = []
 

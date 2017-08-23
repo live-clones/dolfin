@@ -41,10 +41,20 @@ namespace dolfin_wrappers
       .def(py::init<dolfin::Parameters>())
       // Use boost::variant to simplify
       .def("add", (void (dolfin::Parameters::*)(std::string, std::string)) &dolfin::Parameters::add)
+      .def("add", (void (dolfin::Parameters::*)(std::string, std::string, std::set<std::string>)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, bool)) &dolfin::Parameters::add)
+      .def("add", (void (dolfin::Parameters::*)(std::string, int, int, int)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, int)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, double)) &dolfin::Parameters::add)
+      .def("add", (void (dolfin::Parameters::*)(std::string, double, double, double)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(const dolfin::Parameters&)) &dolfin::Parameters::add)
+      // These set_range function should be remove - they're just duplication
+      .def("set_range", [](dolfin::Parameters& self, std::string name, double min, double max)
+           { self[name].set_range(min, max);} )
+      .def("set_range", [](dolfin::Parameters& self, std::string name, int min, int max)
+           { self[name].set_range(min, max);} )
+      .def("set_range", [](dolfin::Parameters& self, std::string name, std::set<std::string> range)
+           { self[name].set_range(range);} )
       .def("get_range", [](dolfin::Parameters& self, std::string key)
            {
              const auto& p = self.find_parameter(key);
@@ -109,7 +119,6 @@ namespace dolfin_wrappers
            {
              auto param = self.find_parameter(key);
              *param = value;
-           })
            }, py::arg(), py::arg().noconvert())
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
@@ -153,6 +162,9 @@ namespace dolfin_wrappers
     // dolfin::Parameter
     py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>(m, "Parameter")
       .def("value", &dolfin::Parameter::value)
+      .def("set_range", (void (dolfin::Parameter::*)(double, double)) &dolfin::Parameter::set_range)
+      .def("set_range", (void (dolfin::Parameter::*)(int, int)) &dolfin::Parameter::set_range)
+      .def("set_range", (void (dolfin::Parameter::*)(std::set<std::string>)) &dolfin::Parameter::set_range)
       .def("__str__", &dolfin::Parameter::value_str);
 
     py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,

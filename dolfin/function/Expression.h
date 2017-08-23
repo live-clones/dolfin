@@ -101,7 +101,7 @@ namespace dolfin
     ///
     /// @param    values (Eigen::Ref<Eigen::VectorXd>)
     ///         The values at the point.
-    /// @param    x (Eigen::Ref<Eigen::VectorXd>)
+    /// @param    x (Eigen::Ref<const Eigen::VectorXd>)
     ///         The coordinates of the point.
     /// @param    cell (ufc::cell)
     ///         The cell which contains the given point.
@@ -121,7 +121,7 @@ namespace dolfin
     ///
     /// @param values (Eigen::Ref<Eigen::VectorXd>)
     ///         The values at the point.
-    /// @param x (Eigen::Ref<Eigen::VectorXd>)
+    /// @param x (Eigen::Ref<const Eigen::VectorXd>)
     ///         The coordinates of the point.
     virtual void eval(Eigen::Ref<Eigen::VectorXd> values,
                       Eigen::Ref<const Eigen::VectorXd> x) const override;
@@ -141,11 +141,23 @@ namespace dolfin
     ///         The value dimension (for the given axis).
     virtual std::size_t value_dimension(std::size_t i) const override;
 
+    /// Return value shape
+    ///
+    /// @return std::vector<std::size_t>
+    ///         The value shape.
+    virtual std::vector<std::size_t> value_shape() const override;
+
     /// Property setter
     virtual void set_property(std::string name, double value);
 
     /// Parameter getter
     virtual double get_property(std::string name) const;
+
+    /// GenericFunction setter
+    virtual void set_generic_function(std::string name, std::shared_ptr<GenericFunction> f);
+
+    /// GenericFunction getter
+    virtual std::shared_ptr<dolfin::GenericFunction> get_generic_function(std::string name) const;
 
     /// Restrict function to local cell (compute expansion coefficients w).
     ///

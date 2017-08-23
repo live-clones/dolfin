@@ -31,10 +31,10 @@ u = Function(V)
 solve(a == L, u, bc)
 
 # List timings; average across processes in parallel
-list_timings(TimingClear.keep, set([TimingType.wall, TimingType.system]))
+list_timings(TimingClear.keep, [TimingType.wall, TimingType.system])
 
 # Get Table object with timings
-t = timings(TimingClear.keep,set([TimingType.wall, TimingType.user, TimingType.system]))
+t = timings(TimingClear.keep, [TimingType.wall, TimingType.user, TimingType.system])
 
 # Use different MPI reductions
 t_sum = MPI.sum(mpi_comm_world(), t)

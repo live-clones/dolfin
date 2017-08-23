@@ -24,7 +24,7 @@ import platform
 from dolfin import *
 from dolfin_utils.test import skip_if_not_PETSc, skip_in_serial, skip_if_not_petsc4py
 
-@pytest.mark.skip
+
 def test_nasty_jit_caching_bug():
 
     # This may result in something like "matrices are not aligned"
@@ -45,7 +45,7 @@ def test_nasty_jit_caching_bug():
     parameters["form_compiler"]["representation"] = default_parameters
 
 
-@pytest.mark.skip
+@pytest.mark.xfail
 @skip_if_not_PETSc
 def test_compile_extension_module():
 
@@ -78,7 +78,7 @@ def test_compile_extension_module():
         np_vec[:] = exp(np_vec)
         assert (np_vec == vec.array()).all()
 
-@pytest.mark.skip
+@pytest.mark.xfail
 def test_compile_extension_module_kwargs():
     # This test check that instant_kwargs of compile_extension_module
     # are taken into account when computing signature
@@ -86,7 +86,7 @@ def test_compile_extension_module_kwargs():
     m0 = compile_extension_module('', cppargs='')
     assert not m2.__file__ == m0.__file__
 
-@pytest.mark.skip
+
 @skip_if_not_petsc4py
 @skip_in_serial
 def test_mpi_dependent_jiting():

@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
 #include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -24,13 +24,15 @@
 #include <pybind11/operators.h>
 
 #include <dolfin/common/Array.h>
+#include <dolfin/common/Hierarchical.h>
+#include <dolfin/function/assign.h>
 #include <dolfin/function/Constant.h>
 #include <dolfin/function/Expression.h>
 #include <dolfin/function/Function.h>
+#include <dolfin/function/FunctionAssigner.h>
 #include <dolfin/function/FunctionAXPY.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/LagrangeInterpolator.h>
-#include <dolfin/function/MultiMeshFunction.h>
 #include <dolfin/function/SpecialFunctions.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/GenericDofMap.h>
@@ -66,6 +68,17 @@ namespace dolfin_wrappers
       (m, "GenericFunction")
       .def("value_dimension", &dolfin::GenericFunction::value_dimension)
       .def("value_size", &dolfin::GenericFunction::value_size)
+      .def("value_rank", &dolfin::GenericFunction::value_rank)
+      .def_property_readonly("value_shape", &dolfin::GenericFunction::value_shape)
+      // FIXME: Change eval function to return NumPy array
+      // FIXME: Add C++ version that takes a dolfin::Cell
+      .def("eval", [](const dolfin::GenericFunction& self, Eigen::Ref<Eigen::VectorXd> u,
+                      Eigen::Ref<const Eigen::VectorXd> x, const dolfin::Cell& cell)
+           {
+             ufc::cell ufc_cell;
+             cell.get_cell_data(ufc_cell);
+             self.eval(u, x, ufc_cell);
+           }, "Evaluate GenericFunction (cell version)")
       .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>,
                                                       Eigen::Ref<const Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::GenericFunction::eval,
@@ -78,10 +91,6 @@ namespace dolfin_wrappers
              return py::array_t<double>(values.size(), values.data());
            })
       .def("function_space", &dolfin::GenericFunction::function_space);
-
-    // dolfin::MultiMeshFunction
-    py::class_<dolfin::MultiMeshFunction, std::shared_ptr<dolfin::MultiMeshFunction>>
-      (m, "MultiMeshFunction");
 
     //-------------------------------------------------------------------------
 
@@ -127,13 +136,6 @@ namespace dolfin_wrappers
              self.eval(f, x);
              return f;
            })
-      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>,
-                                                 Eigen::Ref<const Eigen::VectorXd>, const ufc::cell&) const)
-           &dolfin::Expression::eval,
-           "Evaluate Expression (cell version)")
-      .def("eval", (void (dolfin::Expression::*)(Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<const Eigen::VectorXd>) const)
-           &dolfin::Expression::eval, py::arg("values"), py::arg("x"), "Evaluate Expression")
-      .def("value_rank", &dolfin::Expression::value_rank)
       .def("value_dimension", &dolfin::Expression::value_dimension)
       .def("get_property", &dolfin::Expression::get_property)
       .def("set_property", &dolfin::Expression::set_property);
@@ -149,10 +151,14 @@ namespace dolfin_wrappers
       .def("values", [](const dolfin::Constant& self)
            { auto v =  self.values(); return py::array_t<double>(v.size(), v.data()); })
       .def("__float__", [](const dolfin::Constant& instance) -> double { return instance; })
+      /*
       .def("_assign", [](dolfin::Constant& self, const dolfin::Constant& other) -> const dolfin::Constant&
-           {self = other; return self; })
+           {self = other;})
       .def("_assign", [](dolfin::Constant& self, double value) -> const dolfin::Constant&
-           {self = value; return self; })
+           {self = value;})
+      */
+      .def("assign", [](dolfin::Constant& self, const dolfin::Constant& other) {self = other;})
+      .def("assign", [](dolfin::Constant& self, double value) {self = value;})
       /*
       .def("_assign", (const dolfin::Constant& (dolfin::Constant::*)(const dolfin::Constant&))
                        &dolfin::Constant::operator=)
@@ -176,10 +182,21 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::Mesh>>());
 
     //-----------------------------------------------------------------------------
+    py::class_<dolfin::Hierarchical<dolfin::Function>, std::shared_ptr<dolfin::Hierarchical<dolfin::Function>>>
+      (m, "HierarchicalFunction", "some description")
+      .def("root_node", [](dolfin::Hierarchical<dolfin::Function>& self)
+           { return self.root_node_shared_ptr(); } )
+      .def("leaf_node", [](dolfin::Hierarchical<dolfin::Function>& self)
+           { return self.leaf_node_shared_ptr(); } );
+      //.def("root_node", &dolfin::Hierarchical<dolfin::Function>::root_node_shared_ptr)
+      //.def("leaf_node", &dolfin::Hierarchical<dolfin::Function>::leaf_node_shared_ptr);
+
     // dolfin::Function
-    py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>, dolfin::GenericFunction>
+    py::class_<dolfin::Function, std::shared_ptr<dolfin::Function>, dolfin::GenericFunction,
+               dolfin::Hierarchical<dolfin::Function>>
       (m, "Function", "A finite element function")
-      .def(py::init<std::shared_ptr<dolfin::FunctionSpace>>(), "Create a function on the given function space")
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>>(), "Create a function on the given function space")
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, std::string>())
       .def(py::init<dolfin::Function&, std::size_t>())
       .def(py::init<std::shared_ptr<dolfin::FunctionSpace>, std::shared_ptr<dolfin::GenericVector>>())
       .def("_assign", (const dolfin::Function& (dolfin::Function::*)(const dolfin::Function&))
@@ -214,7 +231,9 @@ namespace dolfin_wrappers
              instance.interpolate(*_v);
            }, "Interpolate the function u")
       .def("set_allow_extrapolation", &dolfin::Function::set_allow_extrapolation)
-      .def("vector", (std::shared_ptr<dolfin::GenericVector> (dolfin::Function::*)())
+      // FIXME: A lot of error when using non-const version - misused
+      // by Python interface?
+      .def("vector", (std::shared_ptr<const dolfin::GenericVector> (dolfin::Function::*)() const)
            &dolfin::Function::vector, "Return the vector associated with the finite element Function");
 
     // FIXME: why is this floating here?
@@ -276,7 +295,6 @@ namespace dolfin_wrappers
       .def(py::init<const dolfin::FunctionSpace&>())
       .def("__eq__", &dolfin::FunctionSpace::operator==)
       .def("dim", &dolfin::FunctionSpace::dim)
-      .def("set_id", &dolfin::Variable::set_id)
       .def("collapse", [](dolfin::FunctionSpace& self)
            {
              std::unordered_map<std::size_t, std::size_t> dofs;
@@ -323,6 +341,105 @@ namespace dolfin_wrappers
                     else
                       throw py::type_error("Can only interpolate Expression or Function");
                   });
+
+    // dolfin::FunctionAssigner
+    py::class_<dolfin::FunctionAssigner, std::shared_ptr<dolfin::FunctionAssigner>>
+      (m, "FunctionAssigner")
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
+           std::shared_ptr<const dolfin::FunctionSpace>>())
+      .def(py::init<std::vector<std::shared_ptr<const dolfin::FunctionSpace>>,
+           std::shared_ptr<const dolfin::FunctionSpace>>())
+      .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
+           std::vector<std::shared_ptr<const dolfin::FunctionSpace>>>())
+      .def("__init__", [](dolfin::FunctionAssigner& self, py::object V0, py::object V1)
+           {
+             if (py::isinstance<py::list>(V0))
+             {
+               std::vector<std::shared_ptr<const dolfin::FunctionSpace>> _V0;
+               for (auto V : py::cast<py::list>(V0))
+                 _V0.push_back(V.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>());
+               auto _V1 = V1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
+               new (&self) dolfin::FunctionAssigner(_V0, _V1);
+               return;
+             }
+             else if (py::isinstance<py::list>(V1))
+             {
+               std::vector<std::shared_ptr<const dolfin::FunctionSpace>> _V1;
+               for (auto V : py::cast<py::list>(V1))
+                 _V1.push_back(V.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>());
+               auto _V0 = V0.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
+               new (&self) dolfin::FunctionAssigner(_V0, _V1);
+               return;
+             }
+             else
+             {
+               auto _V0 = V0.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
+               auto _V1 = V1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
+               new (&self) dolfin::FunctionAssigner(_V0, _V1);
+               return;
+             }
+           })
+      .def("assign", (void (dolfin::FunctionAssigner::*)(std::shared_ptr<dolfin::Function>,
+                                                         std::shared_ptr<const dolfin::Function>) const)
+           &dolfin::FunctionAssigner::assign)
+      .def("assign", [](const dolfin::FunctionAssigner& self, py::object v0, py::object v1)
+           {
+             if (py::isinstance<py::list>(v0))
+             {
+               std::vector<std::shared_ptr<dolfin::Function>> _v0;
+               for (auto v : py::cast<py::list>(v0))
+                 _v0.push_back(v.attr("_cpp_object").cast<std::shared_ptr<dolfin::Function>>());
+               auto _v1 = v1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>();
+               self.assign(_v0, _v1);
+               return;
+             }
+             else if (py::isinstance<py::list>(v1))
+             {
+               auto _v0 = v0.attr("_cpp_object").cast<std::shared_ptr<dolfin::Function>>();
+               std::vector<std::shared_ptr<const dolfin::Function>> _v1;
+               for (auto v : py::cast<py::list>(v1))
+                 _v1.push_back(v.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>());
+               self.assign(_v0, _v1);
+               return;
+             }
+             else
+             {
+               auto _v0 = v0.attr("_cpp_object").cast<std::shared_ptr<dolfin::Function>>();
+               auto _v1 = v1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>();
+               self.assign(_v0, _v1);
+               return;
+             }
+           });
+
+    // dolfin::assign interface
+    m.def("assign", [](py::object v0, py::object v1)
+           {
+             if (py::isinstance<py::list>(v0))
+             {
+               std::vector<std::shared_ptr<dolfin::Function>> _v0;
+               for (auto v : py::cast<py::list>(v0))
+                 _v0.push_back(v.attr("_cpp_object").cast<std::shared_ptr<dolfin::Function>>());
+               auto _v1 = v1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>();
+               dolfin::assign(_v0, _v1);
+               return;
+             }
+             else if (py::isinstance<py::list>(v1))
+             {
+               auto _v0 = v0.attr("_cpp_object").cast<std::shared_ptr<dolfin::Function>>();
+               std::vector<std::shared_ptr<const dolfin::Function>> _v1;
+               for (auto v : py::cast<py::list>(v1))
+                 _v1.push_back(v.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>());
+               dolfin::assign(_v0, _v1);
+               return;
+             }
+             else
+             {
+               auto _v0 = v0.attr("_cpp_object").cast<std::shared_ptr<dolfin::Function>>();
+               auto _v1 = v1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>();
+               dolfin::assign(_v0, _v1);
+               return;
+             }
+           });
 
 
   }
