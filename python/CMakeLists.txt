@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-PROJECT(dolfin_testYYY)
+PROJECT(dolfin_pybind11)
 
 set(CMAKE_BUILD_TYPE Debug)
 #set(CMAKE_BUILD_TYPE Release)
 
+find_package(pybind11 REQUIRED CONFIG HINTS ${PYBIND11_DIR} ${PYBIND11_ROOT} $ENV{PYBIND11_DIR} $ENV{PYBIND11_ROOT})
+
 find_package(DOLFIN REQUIRED)
 include(${DOLFIN_USE_FILE})
-add_subdirectory(pybind11)
-
 
 # Check for mpi4py
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
@@ -37,10 +37,10 @@ pybind11_add_module(cpp SHARED
   src/refinement/refinement.cpp
   )
 
-if (MPI4PY_FOUND)
-  target_include_directories(cpp PRIVATE ${MPI4PY_INCLUDE_DIR})
-  add_definitions(-DHAS_MPI4PY)
-endif()
+#if (MPI4PY_FOUND)
+#  target_include_directories(cpp PRIVATE ${MPI4PY_INCLUDE_DIR})
+#  add_definitions(-DHAS_MPI4PY)
+#endif()
 
 # Add DOLFIN libraries and other config
 target_link_libraries(cpp PRIVATE pybind11::module dolfin)

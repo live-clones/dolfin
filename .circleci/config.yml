@@ -14,23 +14,23 @@ jobs:
           command: |
             sudo pip3 install pytest six --upgrade
       - run:
-          name: Checkout pybind11
+          name: Install pybind11
           command: |
             cd python
             git clone https://github.com/pybind/pybind11.git
+            cd pybind11
+            mkdir build-dir
+            cd build-dir
+            cmake -DPYBIND11_TEST=off ../
+            sudo make install
       - run:
           name: Build Python interface
           command: |
-            source /usr/local/share/dolfin/dolfin.conf
             cd python
-            python3 setup.py build
+            pip3 -v install . --user
       - run:
           name: Run tests (serial)
-          command: |
-            export PYTHONPATH=/usr/local/lib/python3.5/site-packages:$PWD/python/build/lib.linux-x86_64-3.5
-            python3 -m pytest python/unit-tests
+          command: python3 -m pytest python/unit-tests
       - run:
           name: Run tests (MPI parallel)
-          command: |
-            export PYTHONPATH=/usr/local/lib/python3.5/site-packages:$PWD/python/build/lib.linux-x86_64-3.5
-            mpirun -n 3 python3 -m pytest python/unit-tests
+          command: mpirun -n 3 python3 -m pytest python/unit-tests
