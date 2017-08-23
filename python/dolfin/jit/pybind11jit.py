@@ -65,10 +65,13 @@ def compile_cpp_code(class_data):
     params['build']['cxxflags'] += ('-fno-lto',)
 
     # enable all define macros from DOLFIN
+    # FIXME:
+    # except "HAS_SLEPC", as the include path is not coming from pkgconfig
     dmacros = ()
     for dm in d['define_macros']:
         if len(dm[1]) == 0:
-            dmacros += ('-D'+dm[0],)
+            if dm[0] != 'HAS_SLEPC':
+                dmacros += ('-D'+dm[0],)
         else:
             dmacros += ('-D'+dm[0]+'='+dm[1],)
 
