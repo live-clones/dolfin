@@ -20,7 +20,7 @@ jobs:
             cd pybind11
             mkdir build-dir
             cd build-dir
-            cmake ../
+            cmake -DPYBIND11_TEST=off ../
             sudo make install
       - run:
           name: Build Python interface
