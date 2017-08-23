@@ -14,10 +14,14 @@ jobs:
           command: |
             sudo pip3 install pytest six --upgrade
       - run:
-          name: Checkout pybind11
+          name: Install pybind11
           command: |
-            cd python
             git clone https://github.com/pybind/pybind11.git
+            cd pybind11
+            mkdir build-dir
+            cd build-dir
+            cmake ../
+            sudo make install
       - run:
           name: Build Python interface
           command: |
