@@ -32,14 +32,6 @@ namespace dolfin
   class Facet;
   class Function;
 
-  struct CellMetaData
-  {
-    CellMetaData(const std::vector<double> dof_coords, const std::vector<std::size_t> cell_dofs) :
-        dof_coords(dof_coords), cell_dofs(cell_dofs) {}
-    const std::vector<double> dof_coords;
-    const std::vector<std::size_t> cell_dofs;
-  };
-
   /// This class implements ...
 
   class GeometricContact
@@ -107,6 +99,13 @@ namespace dolfin
 
   private:
 
+    struct CellMetaData
+    {
+      CellMetaData(const std::vector<double> dof_coords, const std::vector<std::size_t> cell_dofs) :
+          dof_coords(dof_coords), cell_dofs(cell_dofs) {}
+      const std::vector<double> dof_coords;
+      const std::vector<std::size_t> cell_dofs;
+    };
 
     std::map<std::size_t, std::vector<CellMetaData>> _master_facet_to_contacted_cells;
 
