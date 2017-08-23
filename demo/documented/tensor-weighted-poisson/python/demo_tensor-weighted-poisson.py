@@ -73,7 +73,7 @@ public:
   Conductivity() : Expression(3) {}
 
   // Function for evaluating expression on each cell
-  void eval(Array<double>& values, const Array<double>& x, const ufc::cell& cell) const
+  void eval(Array<double>& values, const Array<double>& x, const ufc::cell& cell) const override
   {
     const uint D = cell.topological_dimension;
     const uint cell_index = cell.index;
@@ -90,15 +90,34 @@ public:
 };
 """
 
+conductivity_pybind11 = """
+  py::class_<dolfin::Conductivity, std::shared_ptr<dolfin::Conductivity>, dolfin::Expression>
+    (m, "Conductivity", py::dynamic_attr())
+    .def(py::init<>())
+    .def("eval", &dolfin::Conductivity::eval)
+    .def_readwrite("c00", &dolfin::Conductivity::c00)
+    .def_readwrite("c01", &dolfin::Conductivity::c01)
+    .def_readwrite("c11", &dolfin::Conductivity::c11);
+"""
+
+conductivity_class_data = {'cpp_code': conductivity_code, 'pybind11_code': conductivity_pybind11, 'classname': 'Conductivity'}
+
 # Define conductivity expression and matrix
 c00 = MeshFunction("double", mesh, "../unitsquare_32_32_c00.xml.gz")
 c01 = MeshFunction("double", mesh, "../unitsquare_32_32_c01.xml.gz")
 c11 = MeshFunction("double", mesh, "../unitsquare_32_32_c11.xml.gz")
 
-c = Expression(cppcode=conductivity_code, degree=0)
-c.c00 = c00
-c.c01 = c01
-c.c11 = c11
+class UserConductivity(UserExpression):
+    def value_shape(self):
+        return (3,)
+
+c = UserConductivity(degree=0)
+cc = compile_cpp_code(conductivity_class_data)
+cc.c00 = c00
+cc.c01 = c01
+cc.c11 = c11
+c._cpp_object = cc
+
 C = as_matrix(((c[0], c[1]), (c[1], c[2])))
 
 # Define variational problem

@@ -121,7 +121,7 @@ from .function.specialfunctions import (FacetNormal, CellSize, SpatialCoordinate
 from .function.expression import CompiledExpression, Expression, UserExpression
 
 # experimental
-from .jit.pybind11jit import CompiledExpressionPyBind11
+from .jit.pybind11jit import compile_cpp_code
 
 from .la import as_backend_type
 

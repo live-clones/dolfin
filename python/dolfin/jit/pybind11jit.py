@@ -15,84 +15,29 @@ def jit_generate(class_data, module_name, signature, parameters):
 #include <pybind11/eigen.h>
 namespace py = pybind11;
 
-#include <dolfin/function/Expression.h>
-#include <dolfin/mesh/MeshFunction.h>
+#include <dolfin.h>
 #include <Eigen/Dense>
 
 namespace dolfin
 {{
-  class {classname} : public Expression
-  {{
-     public:
-       {members}
-
-       {classname}()
-          {{
-            {constructor}
-          }}
-
-       void eval(Eigen::Ref<Eigen::VectorXd> values, const Eigen::Ref<Eigen::VectorXd> x) const override
-       {{
-{statement}
-       }}
-
-  }};
+   {cpp_code}
 }}
 
-PYBIND11_MODULE({classname}, m)
+PYBIND11_MODULE({signature}, m)
 {{
-  py::class_<dolfin::{classname}, std::shared_ptr<dolfin::{classname}>, dolfin::Expression>
-    (m, "{classname}", py::dynamic_attr())
-    .def(py::init<>())
-    {properties}
-    .def("eval", &dolfin::{classname}::eval);
+   {pybind11_code}
 }}
-
 """
 
-    _property_code = """    .def_property("{a}", [](dolfin::{classname}& self){{return self.py_{a};}},
-                       [](dolfin::{classname}& self, {type} val){{self.py_{a} = val;}})
-"""
-
-    statements = class_data["statements"]
-    statement_code = ""
-
-    property_values = class_data["properties"]
-    for key in property_values:
-        val = property_values[key]
-        if (isinstance(val, float)):
-            statement_code += "         const double {a} = py_{a}.cast<double>();\n".format(a=key)
-            value_type="double"
-        else:
-            print(type(val))
-            statement_code += "         const auto& {a} = *(py_{a}.cast<{value_type}*>());\n".format(a=key,value_type=value_type)
-
-    for i, val in enumerate(statements):
-        statement_code += "          values[" + str(i) + "] = " + val + ";\n"
-
-
-    classname = signature
-    members_code = ""
-    constructor_code = ""
-    properties_code = ""
-
-    for key in property_values:
-        members_code += "py::object py_{a};\n".format(a=key)
-        properties_code += _property_code.format(a=key, type='py::object', classname=classname)
-
-    # Set the value_shape
-    if len(statements) > 1:
-        constructor_code += "_value_shape.push_back(" + str(len(statements)) + ");"
-
-    code_c = template_code.format(statement=statement_code, properties=properties_code,
-                                  members=members_code, constructor=constructor_code,
-                                  classname=classname)
+    code_c = template_code.format(cpp_code=class_data["cpp_code"],
+                                  pybind11_code=class_data["pybind11_code"],
+                                  signature=signature, classname=class_data["classname"])
     code_h = ""
     depends = []
 
     return code_h, code_c, depends
 
-def compile_expression(statements, properties):
+def compile_cpp_code(class_data):
     """Compile a user C(++) string to a Python object with pybind11.
        Note this is still experimental."""
 
@@ -112,25 +57,15 @@ def compile_expression(statements, properties):
     params['cache']['lib_prefix'] = ""
     params['cache']['lib_basename'] = ""
     params['cache']['lib_loader'] = "import"
-    params['build']['include_dirs'] = d["include_dirs"] + [pybind11.get_include(), sysconfig.get_config_var("INCLUDEDIR") + "/" + pyversion]
+    params['build']['include_dirs'] = d["include_dirs"] + [pybind11.get_include(True), sysconfig.get_config_var("INCLUDEDIR") + "/" + pyversion]
     params['build']['libs'] = d["libraries"] + [ pyversion ]
     params['build']['lib_dirs'] = d["library_dirs"] + [sysconfig.get_config_var("LIBDIR")]
     params['build']['cxxflags'] += ('-fno-lto',)
 
     print(params)
 
-    if isinstance(statements, string_types):
-        statements = tuple((statements,))
-
-    if not isinstance(statements, tuple):
-        raise RuntimeError("Expression must be a string, or a tuple of strings")
-
-    keystr = tuple(key for key in properties)
-    #FIXME: include properties (class variable names) in hash
-    module_hash = hashlib.md5("".join(statements + keystr).encode('utf-8')).hexdigest()
-    module_name = "dolfin_py11_expression_" + module_hash
-
-    class_data = {"statements": statements, "properties": properties}
+    module_hash = hashlib.md5((class_data["cpp_code"] + class_data["pybind11_code"]).encode('utf-8')).hexdigest()
+    module_name = "dolfin_cpp_module_" + module_hash
 
     module, signature = dijitso.jit(class_data,
                                     module_name, params,
@@ -138,11 +73,9 @@ def compile_expression(statements, properties):
 
     print('pybind11 JIT: ', module)
 
-    expression = getattr(module, signature)()
+    print(dir(module))
 
-    # Set values
-    for key in properties:
-        setattr(expression, key, properties[key])
+    expression = getattr(module, class_data["classname"])()
 
     return expression
 
@@ -195,5 +128,3 @@ class CompiledExpressionPyBind11(BaseExpression):
             super().__setattr__(name, value)
         elif name in self._properties.keys():
             setattr(self._cpp_object, name, value)
-
-
