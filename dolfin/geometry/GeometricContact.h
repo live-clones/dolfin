@@ -91,11 +91,15 @@ namespace dolfin
       return _local_cell_to_off_proc_contact_dofs;
     };
 
-    const std::map<std::size_t, std::vector<CellMetaData>> master_facet_to_contacted_cells() const
+    const std::vector<std::vector<std::size_t>> slave_cell_dofs(std::size_t master_idx) const
     {
-      return _master_facet_to_contacted_cells;
+      std::vector<std::vector<std::size_t>> contact_cell_dofs;
+      const auto list_of_cells = _master_facet_to_contacted_cells.find(master_idx);
+      dolfin_assert(list_of_cells != _master_facet_to_contacted_cells.end());
+      for (const auto& cell_md : list_of_cells->second)
+        contact_cell_dofs.push_back(cell_md.cell_dofs);
+      return contact_cell_dofs;
     };
-
 
   private:
 
