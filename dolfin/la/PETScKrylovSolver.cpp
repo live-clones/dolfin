@@ -78,7 +78,7 @@ namespace
       {"additive_schwarz", PCASM},
       {"gamg",             PCGAMG},
       {"petsc_amg",        PCGAMG},  // Remove
-      {"amg",              PCML},    // Remove
+      {"amg",              PCGAMG},
 #if PETSC_HAVE_HYPRE
       {"hypre_amg",        PCHYPRE},
       {"hypre_euclid",     PCHYPRE},

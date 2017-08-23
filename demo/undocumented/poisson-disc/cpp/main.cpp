@@ -45,19 +45,23 @@ class Source : public Expression
 class DirichletBoundary : public SubDomain
 {
   bool inside(const Array<double>& x, bool on_boundary) const
-  {
-    return on_boundary;
-  }
+  { return on_boundary; }
 };
 
 int main()
 {
-  // Create mesh and function space
+  // Create disc mesh and function space
   int degree = 2;
   int gdim = 2;
   auto mesh = std::make_shared<Mesh>(UnitDiscMesh::create(MPI_COMM_WORLD, 32, degree, gdim));
 
+  // Read sphere mesh
+  XDMFFile file("m3.xdmf");
+  auto mesh_sphere = std::make_shared<Mesh>(MPI_COMM_WORLD);
+  file.read(*mesh_sphere);
+
   auto V = std::make_shared<PoissonDisc::FunctionSpace>(mesh);
+  auto V3 = std::make_shared<PoissonDisc::FunctionSpace>(mesh);
 
   // Define boundary condition
   auto u0 = std::make_shared<Constant>(0.0);
