@@ -83,9 +83,9 @@ public:
   }
 
   // The data stored in mesh functions
-  std::shared_ptr<MeshFunction<double> > c00;
-  std::shared_ptr<MeshFunction<double> > c01;
-  std::shared_ptr<MeshFunction<double> > c11;
+  std::shared_ptr<MeshFunction<double>> c00;
+  std::shared_ptr<MeshFunction<double>> c01;
+  std::shared_ptr<MeshFunction<double>> c11;
 
 };
 """
@@ -112,7 +112,7 @@ class UserConductivity(UserExpression):
         return (3,)
 
 c = UserConductivity(degree=0)
-cc = compile_cpp_code(conductivity_class_data)
+cc = compile_cpp_code(conductivity_class_data).Conductivity()
 cc.c00 = c00
 cc.c01 = c01
 cc.c11 = c11

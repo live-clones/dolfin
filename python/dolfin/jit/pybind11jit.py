@@ -52,15 +52,19 @@ def compile_cpp_code(class_data):
     # FIXME: need to locate Python libs and pybind11 - this works on my Mac...
     from distutils import sysconfig
     import pybind11
+    import os
     params = dijitso.params.default_params()
     pyversion = "python" + sysconfig.get_config_var("LDVERSION")
     params['cache']['lib_prefix'] = ""
     params['cache']['lib_basename'] = ""
     params['cache']['lib_loader'] = "import"
     params['build']['include_dirs'] = d["include_dirs"] + [pybind11.get_include(True), sysconfig.get_config_var("INCLUDEDIR") + "/" + pyversion]
-    params['build']['libs'] = d["libraries"] + [ pyversion ]
-    params['build']['lib_dirs'] = d["library_dirs"] + [sysconfig.get_config_var("LIBDIR")]
+    params['build']['libs'] = d["libraries"] + [ pyversion ] + [ "petsc" ]
+    params['build']['lib_dirs'] = d["library_dirs"] + [sysconfig.get_config_var("LIBDIR")] + [os.environ["PETSC_DIR"] + "/lib"]
     params['build']['cxxflags'] += ('-fno-lto',)
+
+    if cpp.common.has_petsc():
+        params['build']['cxxflags'] += ('-DHAS_PETSC',)
 
     print(params)
 
@@ -75,9 +79,7 @@ def compile_cpp_code(class_data):
 
     print(dir(module))
 
-    expression = getattr(module, class_data["classname"])()
-
-    return expression
+    return module
 
 class CompiledExpressionPyBind11(BaseExpression):
     """JIT Expressions"""

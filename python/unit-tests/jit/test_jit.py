@@ -45,7 +45,6 @@ def test_nasty_jit_caching_bug():
     parameters["form_compiler"]["representation"] = default_parameters
 
 
-@pytest.mark.xfail
 @skip_if_not_PETSc
 def test_compile_extension_module():
 
@@ -55,28 +54,26 @@ def test_compile_extension_module():
 
     from numpy import arange, exp
     code = """
-    namespace dolfin {
-
       void PETSc_exp(std::shared_ptr<dolfin::PETScVector> vec)
       {
         Vec x = vec->vec();
         assert(x);
         VecExp(x);
       }
-    }
     """
-    for module_name in ["mypetscmodule_" + dolfin.__version__ +
-                        "_py-" + platform.python_version()[:3], ""]:
-        ext_module = compile_extension_module(\
-            code, module_name=module_name,\
-            additional_system_headers=["petscvec.h"])
-        vec = PETScVector(mpi_comm_world(), 10)
-        np_vec = vec.array()
-        np_vec[:] = arange(len(np_vec))
-        vec.set_local(np_vec)
-        ext_module.PETSc_exp(vec)
-        np_vec[:] = exp(np_vec)
-        assert (np_vec == vec.array()).all()
+    pybind11 = """
+    m.def("PETSc_exp", &dolfin::PETSc_exp);
+    """
+
+    ext_module = compile_cpp_code({"cpp_code":code, "pybind11_code":pybind11, "classname":"PETSc_exp"})
+
+    vec = PETScVector(mpi_comm_world(), 10)
+    np_vec = vec.array()
+    np_vec[:] = arange(len(np_vec))
+    vec.set_local(np_vec)
+    ext_module.PETSc_exp(vec)
+    np_vec[:] = exp(np_vec)
+    assert (np_vec == vec.array()).all()
 
 @pytest.mark.xfail
 def test_compile_extension_module_kwargs():
