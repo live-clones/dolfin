@@ -218,7 +218,6 @@ def test_wrong_eval():
             f(zeros(4), values=zeros(3))
 
 
-@pytest.mark.skip("Attaching GenericFunctions to JIT Expressions - not working")
 def test_vector_valued_expression_member_function(mesh):
     V = FunctionSpace(mesh,'CG',1)
     W = VectorFunctionSpace(mesh,'CG',1, dim=3)

@@ -12,7 +12,7 @@ import types
 
 import dijitso
 
-# Import UFL and SWIG-generated extension module (DOLFIN C++)
+# Import UFL and extension module (DOLFIN C++)
 import ufl
 from ufl import product
 from ufl.utils.indexflattening import flatten_multiindex, shape_to_strides
@@ -263,8 +263,6 @@ class Expression(BaseExpression):
         for k in self._properties:
             if not isinstance(k, string_types):
                 raise KeyError("Invalid key:", k)
-            if not isinstance(self._properties[k], float):
-                raise ValueError("Invalid value:", self._properties[k])
 
         if cpp_code is not None:
             self._cpp_object = jit.compile_expression(cpp_code, self._properties)
@@ -288,9 +286,12 @@ class Expression(BaseExpression):
     def __getattr__(self, name):
         "Pass attributes through to (JIT compiled) Expression object"
         if name in self._properties.keys():
-            return self._cpp_object.get_property(name)
+            if isinstance(self._properties[name], (float, int)):
+                return self._cpp_object.get_property(name)
+            else:
+                return self._cpp_object.get_generic_function(name)
         else:
-            raise(AttributeError)
+            raise AttributeError
 
     def __setattr__(self, name, value):
         if name.startswith("_"):

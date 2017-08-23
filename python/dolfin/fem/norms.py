@@ -28,6 +28,9 @@ from math import sqrt
 
 import dolfin.cpp as cpp
 from dolfin.fem.assembling import assemble
+from dolfin.fem.interpolation import interpolate
+from dolfin.function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
+from dolfin.function.function import Function
 
 #from dolfin.cpp import GenericVector, GenericFunction, Function, Mesh, error, Vector
 #from dolfin.fem.assembling import assemble
@@ -213,24 +216,29 @@ def errornorm(u, uh, norm_type="l2", degree_rise=3, mesh=None):
     """
 
     # Check argument
-    if not isinstance(u, cpp.GenericFunction):
-        cpp.dolfin_error("norms.py",
-                         "compute error norm",
-                         "Expecting a Function or Expression for u")
-    if not isinstance(uh, cpp.Function):
-        cpp.dolfin_error("norms.py",
-                         "compute error norm",
-                         "Expecting a Function for uh")
+    # if not isinstance(u, cpp.function.GenericFunction):
+    #     cpp.dolfin_error("norms.py",
+    #                      "compute error norm",
+    #                      "Expecting a Function or Expression for u")
+    # if not isinstance(uh, cpp.function.Function):
+    #     cpp.dolfin_error("norms.py",
+    #                      "compute error norm",
+    #                      "Expecting a Function for uh")
 
     # Get mesh
-    if isinstance(u, Function) and mesh is None:
+    if isinstance(u, cpp.function.Function) and mesh is None:
         mesh = u.function_space().mesh()
-    if isinstance(uh, Function) and mesh is None:
+    if isinstance(uh, cpp.function.Function) and mesh is None:
         mesh = uh.function_space().mesh()
+    if hasattr(uh, "_cpp_object") and mesh is None:
+        mesh = uh._cpp_object.function_space().mesh()
+    if hasattr(u, "_cpp_object") and mesh is None:
+        mesh = u._cpp_object.function_space().mesh()
     if mesh is None:
         cpp.dolfin_error("norms.py",
                          "compute error norm",
                          "Missing mesh")
+
 
     # Get rank
     if not u.ufl_shape == uh.ufl_shape:

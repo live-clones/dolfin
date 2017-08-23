@@ -77,4 +77,5 @@ def compile_class(cpp_data):
     for k in properties:
         python_object.set_property(k, properties[k])
 
+
     return python_object

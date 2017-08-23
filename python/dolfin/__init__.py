@@ -83,6 +83,7 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity, MeshColorin
                        MeshEditor, MeshQuality,
                        SubMesh, DomainBoundary, PeriodicBoundaryComputation,
                        MeshTransformation, SubsetIterator)
+
 from .cpp.nls import NonlinearProblem, NewtonSolver, OptimisationProblem
 from .cpp.refinement import refine
 
@@ -104,7 +105,7 @@ from .common.plotting import plot
 
 from .fem.assembling import assemble, assemble_system, SystemAssembler, assemble_local
 from .fem.form import Form
-from .fem.norms import norm
+from .fem.norms import norm, errornorm
 from .fem.dirichletbc import DirichletBC, AutoSubDomain
 from .fem.interpolation import interpolate
 from .fem.projection import project
@@ -132,6 +133,7 @@ from .mesh.meshvaluecollection import MeshValueCollection
 from .mesh.subdomain import CompiledSubDomain
 
 from .multistage.multistagescheme import RK4, CN2, ExplicitMidPoint, ESDIRK3, ESDIRK4, ForwardEuler, BackwardEuler
+from .multistage.multistagesolvers import PointIntegralSolver, RKSolver
 from .multistage.rushlarsenschemes import RL1, RL2, GRL1, GRL2
 
 # ufl

@@ -49,15 +49,21 @@ namespace dolfin_wrappers
            unsigned int,
            const std::string,
            const std::string,
-           std::vector<std::shared_ptr<const dolfin::DirichletBC>>>());
+           std::vector<std::shared_ptr<const dolfin::DirichletBC>>>())
+      .def("order", &dolfin::MultiStageScheme::order);
 
     py::class_<dolfin::RKSolver, std::shared_ptr<dolfin::RKSolver>>
       (m, "RKSolver")
-      .def(py::init<std::shared_ptr<dolfin::MultiStageScheme>>());
+      .def(py::init<std::shared_ptr<dolfin::MultiStageScheme>>())
+      .def("step_interval", &dolfin::RKSolver::step_interval);
 
     py::class_<dolfin::PointIntegralSolver, std::shared_ptr<dolfin::PointIntegralSolver>>
       (m, "PointIntegralSolver")
-      .def(py::init<std::shared_ptr<dolfin::MultiStageScheme>>());
+      .def(py::init<std::shared_ptr<dolfin::MultiStageScheme>>())
+      .def("reset_newton_solver", &dolfin::PointIntegralSolver::reset_newton_solver)
+      .def("reset_stage_solutions", &dolfin::PointIntegralSolver::reset_stage_solutions)
+      .def("step", &dolfin::PointIntegralSolver::step)
+      .def("step_interval", &dolfin::PointIntegralSolver::step_interval);
   }
 
 }
