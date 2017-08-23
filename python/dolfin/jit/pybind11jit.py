@@ -52,7 +52,7 @@ def compile_cpp_code(class_data):
     d = pkgconfig.parse('dolfin')
 
     # Set compiler/build options
-    # FIXME: need to locate Python libs and pybind11 - this works on my Mac...
+    # FIXME: need to locate Python libs and pybind11
     from distutils import sysconfig
     params = dijitso.params.default_params()
     pyversion = "python" + sysconfig.get_config_var("LDVERSION")
@@ -64,14 +64,24 @@ def compile_cpp_code(class_data):
     params['build']['lib_dirs'] = d["library_dirs"] + [sysconfig.get_config_var("LIBDIR")]
     params['build']['cxxflags'] += ('-fno-lto',)
 
-    # FIXME: should make this generalised to any library
-    if cpp.common.has_petsc():
-        import os
-        params['build']['cxxflags'] += ('-DHAS_PETSC',)
-        params['build']['libs'] += ['petsc']
-        params['build']['lib_dirs'] += [os.environ["PETSC_DIR"] + "/lib"]
+    # enable all define macros from DOLFIN
+    dmacros = ()
+    for dm in d['define_macros']:
+        if len(dm[1]) == 0:
+            dmacros += ('-D'+dm[0],)
+        else:
+            dmacros += ('-D'+dm[0]+'='+dm[1],)
 
-    print(params)
+    params['build']['cxxflags'] += dmacros
+
+    # FIXME: should make this generalised to any library
+#    if cpp.common.has_petsc():
+#        import os
+#        params['build']['cxxflags'] += ('-DHAS_PETSC',)
+#        params['build']['libs'] += ['petsc']
+#        params['build']['lib_dirs'] += [os.environ["PETSC_DIR"] + "/lib"]
+
+#    print(params)
 
     module_hash = hashlib.md5((class_data["cpp_code"] + class_data["pybind11_code"]).encode('utf-8')).hexdigest()
     module_name = "dolfin_cpp_module_" + module_hash
@@ -80,58 +90,8 @@ def compile_cpp_code(class_data):
                                     module_name, params,
                                     generate=jit_generate)
 
-    print('pybind11 JIT: ', module)
+#    print('pybind11 JIT: ', module)
 
-    print(dir(module))
+#    print(dir(module))
 
     return module
-
-class CompiledExpressionPyBind11(BaseExpression):
-    """JIT Expressions"""
-
-    def __init__(self, cpp_code=None, *args, **kwargs):
-
-        # Remove arguments that are used in Expression creation
-        element = kwargs.pop("element", None)
-        degree = kwargs.pop("degree", None)
-        cell = kwargs.pop("cell", None)
-        domain = kwargs.pop("domain", None)
-        name = kwargs.pop("name", None)
-        label = kwargs.pop("label", None)
-        mpi_comm = kwargs.pop("mpi_comm", None)
-
-        # Save properties for checking later
-        self._properties = kwargs
-        for k in self._properties:
-            if not isinstance(k, string_types):
-                raise KeyError("Invalid key")
-
-        if cpp_code is not None:
-            self._cpp_object = compile_expression(cpp_code, self._properties)
-
-        # Deduce element type if not provided
-        if element is None:
-            if degree is None:
-                raise KeyError("Must supply element or degree")
-            value_shape = tuple(self.value_dimension(i)
-                                for i in range(self.value_rank()))
-            element = _select_element(family=None, cell=None, degree=degree,
-                                      value_shape=value_shape)
-
-        BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
-                                name=name, label=label)
-
-    # This is added dynamically in the intialiser to allow checking of
-    # eval in user classes.
-    def __getattr__(self, name):
-        "Pass attributes through to (JIT compiled) Expression object"
-        if name in self._properties.keys():
-            return getattr(self._cpp_object, name)
-        else:
-            raise(AttributeError)
-
-    def __setattr__(self, name, value):
-        if name.startswith("_"):
-            super().__setattr__(name, value)
-        elif name in self._properties.keys():
-            setattr(self._cpp_object, name, value)
