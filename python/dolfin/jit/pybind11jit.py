@@ -31,7 +31,7 @@ namespace dolfin
             {constructor}
           }}
 
-       void eval(Eigen::Ref<Eigen::VectorXd> values, const Eigen::Ref<Eigen::VectorXd> x) const override
+       void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x) const override
        {{
 {statement}
        }}
@@ -195,5 +195,3 @@ class CompiledExpressionPyBind11(BaseExpression):
             super().__setattr__(name, value)
         elif name in self._properties.keys():
             setattr(self._cpp_object, name, value)
-
-
