@@ -28,6 +28,9 @@ def update(self, params):
     else:
         raise ValueError("Parameters or dict")
 
+
+
+
 # Extend the cpp.parameter.Parameters class and clean-up
 cpp.parameter.Parameters.__getitem__ = __getitem__
 cpp.parameter.Parameters.update = update
@@ -37,6 +40,7 @@ del __getitem__,  update
 # Import global form compiler parameters from FFC
 from ffc import default_jit_parameters
 from dolfin.cpp.parameter import parameters, Parameters
+
 
 def ffc_default_parameters():
     """Get default parameters of FFC"""

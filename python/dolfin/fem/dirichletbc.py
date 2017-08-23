@@ -110,9 +110,12 @@ class DirichletBC(cpp.fem.DirichletBC):
             raise RuntimeError("Invalid argument")
 
         # Add kwargs
-        method = kwargs.pop("method", "topological")
+        if isinstance(args[-1], string_types):
+            method = args[-1]
+        else:
+            method = kwargs.pop("method", "topological")
+            args += (method,)
         check_midpoint = kwargs.pop("check_midpoint", None)
-        args += (method,)
         if check_midpoint is not None:
             args += (check_midpoint,)
 

@@ -77,8 +77,8 @@ for n in range(num_steps):
     # Mark mesh function
     f.set_all(0)
     for i in entities_AB:
-        f.set_value(i, 1)
+        f[i] = 1
     for i in entities_AC:
-        f.set_value(i, 2)
+        f[i] = 2
     for i in entities_BC:
-        f.set_value(i, 3)
+        f[i] = 3

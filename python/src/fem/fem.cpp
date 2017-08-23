@@ -47,11 +47,14 @@
 #include <dolfin/fem/SparsityPatternBuilder.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/GenericFunction.h>
+#include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/SparsityPattern.h>
+
+#include "../petsc_casters.h"
 
 namespace py = pybind11;
 
@@ -59,6 +62,13 @@ namespace dolfin_wrappers
 {
   void fem(py::module& m)
   {
+#ifdef HAS_PETSC4PY
+    int ierr = import_petsc4py();
+    if (ierr != 0)
+      throw std::runtime_error("Failed to import petsc4py");
+#endif
+
+
     // Delcare UFC objects
     py::class_<ufc::finite_element, std::shared_ptr<ufc::finite_element>>
       (m, "ufc_finite_element", "UFC finite element object");
@@ -202,7 +212,8 @@ namespace dolfin_wrappers
              instance.tabulate_local_to_global_dofs(dofs);
              return py::array_t<std::size_t>(dofs.size(), dofs.data());
            })
-      .def("set", &dolfin::GenericDofMap::set);
+      .def("set", &dolfin::GenericDofMap::set)
+      .def_readonly("constrained_domain", &dolfin::GenericDofMap::constrained_domain);
 
     // dolfin::DofMap class
     py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>
@@ -341,7 +352,8 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::Form>,
            std::shared_ptr<const dolfin::Form>,
            std::shared_ptr<dolfin::Function>,
-           std::vector<std::shared_ptr<const dolfin::DirichletBC>>>());
+           std::vector<std::shared_ptr<const dolfin::DirichletBC>>>())
+      .def("bcs", &dolfin::LinearVariationalProblem::bcs);
 
     // dolfin::LinearVariationalSolver class
     py::class_<dolfin::LinearVariationalSolver,
@@ -414,13 +426,26 @@ namespace dolfin_wrappers
     // dolfin::PETScDMCollection
     py::class_<dolfin::PETScDMCollection, std::shared_ptr<dolfin::PETScDMCollection>>
       (m, "PETScDMCollection")
+      .def(py::init<std::vector<std::shared_ptr<const dolfin::FunctionSpace>>>())
+      .def(py::init([](py::list V)
+                    {
+                      std::vector<std::shared_ptr<const dolfin::FunctionSpace>> _V;
+                      for (auto space : V)
+                      {
+                        auto _space = space.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
+                        _V.push_back(_space);
+                      }
+                      return dolfin::PETScDMCollection(_V);
+                    }))
       .def_static("create_transfer_matrix", &dolfin::PETScDMCollection::create_transfer_matrix)
       .def_static("create_transfer_matrix", [](py::object V_coarse, py::object V_fine)
                   {
-                    auto _V0 = V_coarse.attr("_cpp_object").cast<std::shared_ptr<dolfin::FunctionSpace>>();
-                    auto _V1 = V_fine.attr("_cpp_object").cast<std::shared_ptr<dolfin::FunctionSpace>>();
-                    return dolfin::PETScDMCollection::create_transfer_matrix(_V0, _V1);
-                  });
+                    auto _V0 = V_coarse.attr("_cpp_object").cast<dolfin::FunctionSpace*>();
+                    auto _V1 = V_fine.attr("_cpp_object").cast<dolfin::FunctionSpace*>();
+                    return dolfin::PETScDMCollection::create_transfer_matrix(*_V0, *_V1);
+                  })
+      .def("check_ref_count", &dolfin::PETScDMCollection::check_ref_count)
+      .def("get_dm", &dolfin::PETScDMCollection::get_dm);
 #endif
 
     // Assemble functions
@@ -443,11 +468,11 @@ namespace dolfin_wrappers
            &dolfin::assemble_local);
 
     // FEM utils functions
-    m.def("create_mesh", &dolfin::create_mesh)
-     .def("create_mesh", [](const py::object u)
+    m.def("create_mesh", dolfin::create_mesh);
+    m.def("create_mesh", [](const py::object u)
           {
             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
-            dolfin::create_mesh(*_u);
+            return dolfin::create_mesh(*_u);
           });
 
 

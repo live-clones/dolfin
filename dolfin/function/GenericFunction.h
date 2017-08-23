@@ -41,7 +41,8 @@ namespace dolfin
   /// This is a common base class for functions. Functions can be
   /// evaluated at a given point and they can be restricted to a given
   /// cell in a finite element mesh. This functionality is implemented
-  /// by sub-classes that implement the eval() and restrict() functions.
+  /// by sub-classes that implement the eval() and restrict()
+  /// functions.
   ///
   /// DOLFIN provides two implementations of the GenericFunction
   /// interface in the form of the classes Function and Expression.
@@ -66,6 +67,9 @@ namespace dolfin
 
     /// Return value dimension for given axis
     virtual std::size_t value_dimension(std::size_t i) const = 0;
+
+    /// Return value shape
+    virtual std::vector<std::size_t> value_shape() const = 0;
 
     /// Evaluate at given point in given cell (deprecated)
     virtual void eval(Array<double>& values, const Array<double>& x,

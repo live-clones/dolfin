@@ -96,7 +96,7 @@ def mplot_expression(ax, f, mesh, **kwargs):
     # TODO: Can probably avoid creating the function space here by
     # restructuring mplot_function a bit so it can handle Expression
     # natively
-    V = create_cg1_function_space(mesh, f.ufl_shape)
+    V = create_cg1_function_space(mesh, f.value_shape)
     g = dolfin.interpolate(f, V)
     return mplot_function(ax, g, **kwargs)
 
@@ -114,10 +114,7 @@ def mplot_function(ax, f, **kwargs):
         fspace = f.function_space()
         try:
             fspace = fspace.collapse()
-        # Happens for part of MultiMeshFunction; no way detecting elsewhere
         except RuntimeError:
-            cpp.warning("Probably trying to plot MultiMeshFunction "
-                        "part. Continuing without plotting...")
             return
         fvec = dolfin.interpolate(f, fspace).vector()
 
@@ -351,8 +348,7 @@ def plot(object, *args, **kwargs):
             <dolfin.functions.function.Function>`, a :py:class:`Expression`
             <dolfin.cpp.Expression>, a :py:class:`DirichletBC`
             <dolfin.cpp.DirichletBC>, a :py:class:`FiniteElement
-            <ufl.FiniteElement>`, or a :py:class:`MultiMesh
-            <dolfin.cpp.MultiMesh>`.
+            <ufl.FiniteElement>`.
 
     *Examples of usage*
         In the simplest case, to plot only e.g. a mesh, simply use
@@ -409,6 +405,10 @@ def plot(object, *args, **kwargs):
     if isinstance(object, ufl.FiniteElementBase):
         import ffc
         return ffc.plot(object, *args, **kwargs)
+
+    # For dolfin.function.Function, extract cpp_object
+    if hasattr(object, "cpp_object"):
+        object = object.cpp_object()
 
     # Get mesh from explicit mesh kwarg, only positional arg, or via
     # object

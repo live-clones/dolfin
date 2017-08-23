@@ -65,10 +65,7 @@ namespace dolfin
     /// *Returns*
     ///     _std::size_t_
     ///         The unique integer identifier associated with the object.
-    std::size_t id() const { return _unique_id; }
-
-    // Set object id. Intedned for internal library use.
-    void set_id(std::size_t id) { _unique_id = id; }
+    std::size_t id() const { return unique_id; }
 
     /// Return informal string representation (pretty-print)
     virtual std::string str(bool verbose) const;
@@ -85,7 +82,7 @@ namespace dolfin
     std::string _label;
 
     // Unique identifier
-    std::size_t _unique_id;
+    const std::size_t unique_id;
 
   };
 

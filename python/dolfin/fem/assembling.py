@@ -42,10 +42,8 @@ import dolfin.cpp as cpp
 
 # Local imports
 from dolfin.fem.form import Form
-# from dolfin.functions.multimeshfunction import *
 
-__all__ = ["assemble", "assemble_local", "assemble_system", "assemble_multimesh",
-           "SystemAssembler"]
+__all__ = ["assemble", "assemble_local", "assemble_system", "SystemAssembler"]
 
 
 def _create_dolfin_form(form, form_compiler_parameters=None,

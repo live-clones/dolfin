@@ -22,9 +22,11 @@
 
 #include <dolfin/fem/DirichletBC.h>
 #include <dolfin/fem/Form.h>
+#include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/function/Constant.h>
 #include <dolfin/function/Function.h>
 #include <dolfin/multistage/MultiStageScheme.h>
+#include <dolfin/multistage/PointIntegralSolver.h>
 #include <dolfin/multistage/RKSolver.h>
 
 namespace py = pybind11;
@@ -51,6 +53,10 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::RKSolver, std::shared_ptr<dolfin::RKSolver>>
       (m, "RKSolver")
+      .def(py::init<std::shared_ptr<dolfin::MultiStageScheme>>());
+
+    py::class_<dolfin::PointIntegralSolver, std::shared_ptr<dolfin::PointIntegralSolver>>
+      (m, "PointIntegralSolver")
       .def(py::init<std::shared_ptr<dolfin::MultiStageScheme>>());
   }
 

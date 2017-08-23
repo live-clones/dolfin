@@ -16,7 +16,9 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -27,6 +29,7 @@
 #include <dolfin/common/Timer.h>
 #include <dolfin/common/Variable.h>
 #include <dolfin/common/timing.h>
+#include <dolfin/log/Table.h>
 
 #include "../mpi_interface.h"
 
@@ -70,10 +73,6 @@ namespace dolfin_wrappers
       .def("resume", &dolfin::Timer::resume)
       .def("elapsed", &dolfin::Timer::elapsed);
 
-    m.def("timing", &dolfin::timing);
-    m.def("timings", &dolfin::timings);
-    m.def("list_timings", &dolfin::list_timings);
-
     py::enum_<dolfin::TimingClear>(m, "TimingClear")
       .value("clear", dolfin::TimingClear::clear)
       .value("keep", dolfin::TimingClear::keep);
@@ -82,6 +81,19 @@ namespace dolfin_wrappers
       .value("wall", dolfin::TimingType::wall)
       .value("system", dolfin::TimingType::system)
       .value("user", dolfin::TimingType::user);
+
+    m.def("timing", &dolfin::timing);
+    m.def("timings", [](dolfin::TimingClear clear, std::vector<dolfin::TimingType> type)
+          {
+            std::set<dolfin::TimingType> _type(type.begin(), type.end());
+            return dolfin::timings(clear, _type);
+          });
+    m.def("list_timings", [](dolfin::TimingClear clear, std::vector<dolfin::TimingType> type)
+          {
+            std::set<dolfin::TimingType> _type(type.begin(), type.end());
+            dolfin::list_timings(clear, _type);
+          });
+    m.def("dump_timings_to_xml", &dolfin::dump_timings_to_xml);
 
   }
 
@@ -116,6 +128,10 @@ namespace dolfin_wrappers
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)
+      .def_static("min", &dolfin::MPI::min<dolfin::Table>)
+      .def_static("max", &dolfin::MPI::max<dolfin::Table>)
+      .def_static("sum", &dolfin::MPI::sum<dolfin::Table>)
+      .def_static("avg", &dolfin::MPI::avg<dolfin::Table>)
       /*
 #ifdef HAS_MPI4PY
       .def("to_mpi4py_comm", [](py::object obj){

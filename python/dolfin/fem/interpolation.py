@@ -60,6 +60,9 @@ def interpolate(v, V):
     # Compute interpolation
     Pv = Function(V)
 
-    Pv.interpolate(v._cpp_object)
+    if hasattr(v, "_cpp_object"):
+        Pv.interpolate(v._cpp_object)
+    else:
+        Pv.interpolate(v)
 
     return Pv

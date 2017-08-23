@@ -34,7 +34,6 @@ from dolfin.function.argument import TestFunction, TrialFunction
 from dolfin.function.function import Function
 from dolfin.fem.assembling import assemble_system
 
-#from dolfin.functions.multimeshfunction import *
 #from dolfin.functions.expression import *
 from dolfin.function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
 #from dolfin.fem.assembling import *
@@ -89,7 +88,6 @@ def project(v, V=None, bcs=None, mesh=None,
         # Create function space based on Expression element if trying
         # to project an Expression
         if isinstance(v, dolfin.function.expression.Expression):
-            # FIXME: Add handling of cpp.MultiMesh
             if mesh is not None and isinstance(mesh, cpp.mesh.Mesh):
                 V = FunctionSpace(mesh, v.ufl_element())
             #else:
@@ -101,11 +99,6 @@ def project(v, V=None, bcs=None, mesh=None,
             V = _extract_function_space(v, mesh)
 
     # Check arguments
-    #if not isinstance(V, (FunctionSpace, cpp.MultiMeshFunctionSpace)):
-    #    cpp.dolfin_error("projection.py",
-    #                     "compute projection",
-    #                     "Illegal function space for projection, not a FunctionSpace or MultiMeshFunctionSpace: " +
-    #                     str(v))
 
     # Ensure we have a mesh and attach to measure
     if mesh is None:

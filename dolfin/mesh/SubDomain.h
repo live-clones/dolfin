@@ -66,7 +66,7 @@ namespace dolfin
 
     /// Return true for points inside the subdomain
     ///
-    /// @param    x (Eigen::Ref<Eigen::VectorXd<double>>)
+    /// @param    x (Eigen::Ref<const Eigen::VectorXd>)
     ///         The coordinates of the point.
     /// @param   on_boundary (bool)
     ///         True for points on the boundary.
@@ -87,7 +87,7 @@ namespace dolfin
     /// Map coordinate x in domain H to coordinate y in domain G (used for
     /// periodic boundary conditions)
     ///
-    /// @param   x (Eigen::Ref<Eigen::VectorXd>)
+    /// @param   x (Eigen::Ref<const Eigen::VectorXd>)
     ///         The coordinates in domain H.
     /// @param    y (Eigen::Ref<Eigen::VectorXd>)
     ///         The coordinates in domain G.

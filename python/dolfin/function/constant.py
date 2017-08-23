@@ -93,6 +93,9 @@ class Constant(ufl.Coefficient):
         name = name or "f_%d" % self.count()
         self.rename(name, "a Constant")
 
+    def assign(self, x):
+        return self._cpp_object.assign(x)
+
     def cell(self):
         return self.ufl_element().cell()
 

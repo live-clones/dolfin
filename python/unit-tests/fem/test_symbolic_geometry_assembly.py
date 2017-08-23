@@ -1,4 +1,3 @@
-#!/usr/bin/env py.test
 from dolfin import *
 import ufl
 import numpy
@@ -332,6 +331,7 @@ def test_manifold_line_geometry(mesh, uflacs_representation_only):
             assert round(assemble((up[0]**2 + up[1]**2)*dx(1)), 7) == 0.0
             assert round(assemble(up[2]*dx(1)), 7) > 0.0
         mf[i] = 0  # unmark this cell
+
 
 
 @skip_in_parallel

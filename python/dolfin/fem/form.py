@@ -33,12 +33,8 @@ class Form(cpp.fem.Form):
             self.coefficients.append(original_coefficients[j].cpp_object())
 
         # Type checking coefficients
-        if not all(isinstance(c, (cpp.function.GenericFunction, cpp.function.MultiMeshFunction))
+        if not all(isinstance(c, (cpp.function.GenericFunction))
                    for c in self.coefficients):
-            # Developer note:
-            # The form accepts a MultiMeshFunction but does not set the
-            # correct coefficients. This is done in assemble_multimesh
-            # at the moment
             coefficient_error = "Error while extracting coefficients. "
             raise TypeError(coefficient_error +
                             "Either provide a dict of cpp.function.GenericFunctions, " +
