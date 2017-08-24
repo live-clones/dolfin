@@ -27,13 +27,13 @@ import matplotlib.pyplot as plt
 from dolfin import *
 
 # Test for PETSc or Tpetra
-if not has_linear_algebra_backend("PETSc") and not has_linear_algebra_backend("Tpetra"):
+if not has_linear_algebra_backend("PETSc"):
     info("DOLFIN has not been configured with Trilinos or PETSc. Exiting.")
     exit()
 
-if not has_krylov_solver_preconditioner("amg"):
-    info("Sorry, this demo is only available when DOLFIN is compiled with AMG "
-	 "preconditioner, Hypre or ML.")
+if not has_krylov_solver_preconditioner("hypre_amg"):
+    info("This demo is only available when DOLFIN is compiled with PETSc "
+	 "and Hypre.")
     exit()
 
 if has_krylov_solver_method("minres"):
@@ -88,7 +88,7 @@ A, bb = assemble_system(a, L, bcs)
 P, btmp = assemble_system(b, L, bcs)
 
 # Create Krylov solver and AMG preconditioner
-solver = KrylovSolver(krylov_method, "amg")
+solver = KrylovSolver(krylov_method, "hypre_amg")
 
 # Associate operator (A) and preconditioner matrix (P)
 solver.set_operators(A, P)

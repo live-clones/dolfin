@@ -79,10 +79,10 @@ int main()
   };
 
   // Check for available preconditioners
-  if (!has_krylov_solver_preconditioner("amg"))
+  if (!has_krylov_solver_preconditioner("hypre_amg"))
   {
-    info("Sorry, this demo is only available when DOLFIN is compiled with AMG "
-	 "preconditioner, Hypre or ML.");
+    info("This demo is only available when DOLFIN is compiled with PETSc "
+	 " and Hypre.");
     return 0;
   }
 
