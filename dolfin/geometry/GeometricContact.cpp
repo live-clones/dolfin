@@ -564,8 +564,14 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
   std::vector<std::vector<std::size_t>> slave_cell_infos_master_send(mpi_size);
   std::vector<std::vector<std::size_t>> slave_cell_global_dofs_send(mpi_size);
   std::vector<std::vector<double>> slave_cell_dof_coords_send(mpi_size);
+  std::vector<std::vector<double>> slave_cell_dof_coeffs_send(mpi_size);
 
   std::vector<double> dof_coords;
+
+  const FiniteElement element = *V->element();
+  std::vector<double> dof_coeffs(element.space_dimension());
+  ufc::cell ufc_cell;
+
   for (const auto& slave : s2m)
   {
     const std::size_t slave_idx = slave.first; // slave facet indices
@@ -583,15 +589,24 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
     const auto s_cell_dofs = ArrayView<const dolfin::la_index>(
         s_cell_dofs_eigen_map.size(), s_cell_dofs_eigen_map.data());
 
+    // Tabulate cell dof coefficients (local finite element vector on the slave element)
+
+    // Update to current cell
+    slave_cell.get_cell_data(ufc_cell);
+    u.restrict(dof_coeffs.data(), element, slave_cell, dof_coords.data(),
+             ufc_cell);
+
     for (std::size_t j=0; j<master_procs_idxs.size(); j+=2)
     {
       const std::size_t master_proc = master_procs_idxs[j];
       const std::size_t master_idx = master_procs_idxs[j+1];
       slave_cell_infos_master_send[master_proc].push_back(master_idx);
-      slave_cell_dof_coords_send[master_proc].insert(std::end(slave_cell_dof_coords_send[master_proc]),
-                                                     std::begin(dof_coords), std::end(dof_coords));
       slave_cell_global_dofs_send[master_proc].insert(std::end(slave_cell_global_dofs_send[master_proc]),
                                                       std::begin(s_cell_dofs), std::end(s_cell_dofs));
+      slave_cell_dof_coords_send[master_proc].insert(std::end(slave_cell_dof_coords_send[master_proc]),
+                                                     std::begin(dof_coords), std::end(dof_coords));
+      slave_cell_dof_coeffs_send[master_proc].insert(std::end(slave_cell_dof_coeffs_send[master_proc]),
+                                                      std::begin(dof_coeffs), std::end(dof_coeffs));
     }
   }
 
@@ -599,11 +614,13 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
   std::vector<std::vector<std::size_t>> slave_cell_infos_master_recv;
   std::vector<std::vector<std::size_t>> slave_cell_global_dofs_recv;
   std::vector<std::vector<double>> slave_cell_dof_coords_recv;
+  std::vector<std::vector<double>> slave_cell_dof_coeffs_recv;
 
   // FIXME: This is too much MP....?
   MPI::all_to_all(mesh.mpi_comm(), slave_cell_infos_master_send, slave_cell_infos_master_recv);
   MPI::all_to_all(mesh.mpi_comm(), slave_cell_global_dofs_send, slave_cell_global_dofs_recv);
   MPI::all_to_all(mesh.mpi_comm(), slave_cell_dof_coords_send, slave_cell_dof_coords_recv);
+  MPI::all_to_all(mesh.mpi_comm(), slave_cell_dof_coeffs_send, slave_cell_dof_coeffs_recv);
 
   const std::size_t num_coords_per_cell = Cell(mesh, 0).num_vertices()*mesh.geometry().dim();
   const std::size_t num_dofs_per_cell = dofmap->max_element_dofs();
@@ -621,7 +638,11 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
       const std::vector<double> cell_dof_coords(slave_cell_dof_coords_recv[proc_source].begin() + j*num_coords_per_cell,
                                                 slave_cell_dof_coords_recv[proc_source].begin() + (j + 1)*num_coords_per_cell);
 
-      CellMetaData cell_md(cell_dof_coords, cell_dofs);
+      // FIXME: Contact on manifolds will not have the same number of coeffs as coords
+      const std::vector<double> cell_dof_coeffs(slave_cell_dof_coeffs_recv[proc_source].begin() + j*num_coords_per_cell,
+                                                slave_cell_dof_coeffs_recv[proc_source].begin() + (j + 1)*num_coords_per_cell);
+
+      CellMetaData cell_md(cell_dof_coords, cell_dofs, cell_dof_coeffs);
       _master_facet_to_contacted_cells[master_idx].push_back(cell_md);
     }
   }

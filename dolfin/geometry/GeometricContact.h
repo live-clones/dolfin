@@ -101,52 +101,71 @@ namespace dolfin
 //      return contact_cell_dofs;
 //    };
 
-  const std::map<std::size_t, std::vector<double>>& master_to_candidate_slave_coords()
-  {
-    auto& data = _master_facet_to_contacted_cells_coords;
-    for (const auto& entry : _master_facet_to_contacted_cells)
+    const std::map<std::size_t, std::vector<double>>& master_to_candidate_slave_coords()
     {
-      const std::size_t master_idx = entry.first;
-      for (const auto& slave_cell_metadata : entry.second)
+      auto& data = _master_facet_to_contacted_cells_coords;
+      for (const auto& entry : _master_facet_to_contacted_cells)
       {
-        data[master_idx].insert(std::end(data[master_idx]),
-                                std::begin(slave_cell_metadata.dof_coords),
-                                std::end(slave_cell_metadata.dof_coords));
+        const std::size_t master_idx = entry.first;
+        for (const auto& slave_cell_metadata : entry.second)
+        {
+          data[master_idx].insert(std::end(data[master_idx]),
+                                  std::begin(slave_cell_metadata.dof_coords),
+                                  std::end(slave_cell_metadata.dof_coords));
+        }
       }
-    }
-    return data;
-  };
+      return data;
+    };
 
-
-  const std::map<std::size_t, std::vector<std::size_t>>& master_to_candidate_slave_dofs()
-  {
-    auto& data = _master_facet_to_contacted_cells_dofs;
-    for (const auto& entry : _master_facet_to_contacted_cells)
+    const std::map<std::size_t, std::vector<std::size_t>>& master_to_candidate_slave_dofs()
     {
-      const std::size_t master_idx = entry.first;
-      for (const auto& slave_cell_metadata : entry.second)
+      auto& data = _master_facet_to_contacted_cells_dofs;
+      for (const auto& entry : _master_facet_to_contacted_cells)
       {
-        data[master_idx].insert(std::end(data[master_idx]),
-                                std::begin(slave_cell_metadata.cell_dofs),
-                                std::end(slave_cell_metadata.cell_dofs));
+        const std::size_t master_idx = entry.first;
+        for (const auto& slave_cell_metadata : entry.second)
+        {
+          data[master_idx].insert(std::end(data[master_idx]),
+                                  std::begin(slave_cell_metadata.cell_dofs),
+                                  std::end(slave_cell_metadata.cell_dofs));
+        }
       }
-    }
-    return data;
-  };
+      return data;
+    };
+
+    const std::map<std::size_t, std::vector<double>>& master_to_candidate_slave_coeffs()
+    {
+      auto& data = _master_facet_to_contacted_cells_coeffs;
+      for (const auto& entry : _master_facet_to_contacted_cells)
+      {
+        const std::size_t master_idx = entry.first;
+        for (const auto& slave_cell_metadata : entry.second)
+        {
+          data[master_idx].insert(std::end(data[master_idx]),
+                                  std::begin(slave_cell_metadata.dof_coeffs),
+                                  std::end(slave_cell_metadata.dof_coeffs));
+        }
+      }
+      return data;
+    };
 
   private:
 
     struct CellMetaData
     {
-      CellMetaData(const std::vector<double> dof_coords, const std::vector<std::size_t> cell_dofs) :
-          dof_coords(dof_coords), cell_dofs(cell_dofs) {}
+      CellMetaData(const std::vector<double> dof_coords,
+                   const std::vector<std::size_t> cell_dofs,
+                   const std::vector<double> dof_coeffs) :
+          dof_coords(dof_coords), cell_dofs(cell_dofs), dof_coeffs(dof_coeffs) {}
       const std::vector<double> dof_coords;
       const std::vector<std::size_t> cell_dofs;
+      const std::vector<double> dof_coeffs;
     };
 
     std::map<std::size_t, std::vector<CellMetaData>> _master_facet_to_contacted_cells;
     std::map<std::size_t, std::vector<double>> _master_facet_to_contacted_cells_coords;
     std::map<std::size_t, std::vector<std::size_t>> _master_facet_to_contacted_cells_dofs;
+    std::map<std::size_t, std::vector<double>> _master_facet_to_contacted_cells_coeffs;
 
     // Check whether two sets of triangles collide in 3D
     static bool check_tri_set_collision(const Mesh& mmesh, std::size_t mi,
