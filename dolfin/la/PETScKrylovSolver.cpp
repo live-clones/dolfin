@@ -32,7 +32,6 @@
 #include "KrylovSolver.h"
 #include "PETScBaseMatrix.h"
 #include "PETScMatrix.h"
-#include "PETScUserPreconditioner.h"
 #include "PETScVector.h"
 #include "VectorSpaceBasis.h"
 #include "PETScKrylovSolver.h"
@@ -132,8 +131,7 @@ Parameters PETScKrylovSolver::default_parameters()
 }
 //-----------------------------------------------------------------------------
 PETScKrylovSolver::PETScKrylovSolver(MPI_Comm comm, std::string method,
-                                     std::string preconditioner)
-  : _ksp(NULL), pc_dolfin(NULL), preconditioner_set(false)
+                                     std::string preconditioner) : _ksp(NULL)
 {
    // Check that the requested Krylov method is known
   auto method_krylov = _methods.find(method);
@@ -215,36 +213,7 @@ PETScKrylovSolver::PETScKrylovSolver(std::string method,
   // Do nothing
 }
 //-----------------------------------------------------------------------------
-PETScKrylovSolver::PETScKrylovSolver(MPI_Comm comm,
-                                     std::string method,
-                                     std::shared_ptr<PETScUserPreconditioner> preconditioner)
-  : _ksp(NULL), pc_dolfin(preconditioner.get()), preconditioner_set(false)
-{
-  // Set parameter values
-  this->parameters = default_parameters();
-
-  PetscErrorCode ierr;
-
-  // Create PETSc KSP object
-  ierr = KSPCreate(comm, &_ksp);
-  if (ierr != 0) petsc_error(ierr, __FILE__, "KSPCreate");
-
-  // Set Krylov solver type
-  if (method != "default")
-  {
-    ierr = KSPSetType(_ksp, _methods.find(method)->second);
-    if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetType");
-  }
-}
-//-----------------------------------------------------------------------------
-PETScKrylovSolver::PETScKrylovSolver(std::string method,
-                                     std::shared_ptr<PETScUserPreconditioner> preconditioner)
-  : PETScKrylovSolver(MPI_COMM_WORLD, method, preconditioner)
-{
-  // Do nothing
-}
-//-----------------------------------------------------------------------------
-PETScKrylovSolver::PETScKrylovSolver(KSP ksp) : _ksp(ksp), pc_dolfin(0),
+PETScKrylovSolver::PETScKrylovSolver(KSP ksp) : _ksp(ksp),
                                                 preconditioner_set(true)
 {
   // Set parameter values
@@ -383,16 +352,6 @@ std::size_t PETScKrylovSolver::solve(PETScVector& x, const PETScVector& b,
     const double dtol = parameters["divergence_limit"].is_set() ? (double)parameters["divergence_limit"] : PETSC_DEFAULT;
     const int max_it  = parameters["maximum_iterations"].is_set() ? (int)parameters["maximum_iterations"] : PETSC_DEFAULT;
     set_tolerances(rtol, atol, dtol, max_it);
-  }
-
-  // FIXME: Solve using matrix-free matrices fails if no user provided
-  //        Prec is provided
-  // Set preconditioner if necessary
-  if (pc_dolfin && !preconditioner_set)
-  {
-    // User defined preconditioner
-    PETScUserPreconditioner::setup(_ksp, *pc_dolfin);
-    preconditioner_set = true;
   }
 
   // Set convergence norm type
