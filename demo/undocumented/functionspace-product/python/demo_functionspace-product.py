@@ -49,15 +49,8 @@ L2 = f*v2*dx
 sol2 = Function(V.sub_space(1))
 solve(a2 == L2, sol2, bc2)
 
-# Save solution in XDMF format if available
-out_sub1 = XDMFFile(mesh.mpi_comm(), "functionspace-product-subdomain1.xdmf")
-out_sub2 = XDMFFile(mesh.mpi_comm(), "functionspace-product-subdomain2.xdmf")
-if has_hdf5():
-    out_sub1.write(sol1)
-    out_sub2.write(sol2)
-else:
-    # Save solution in vtk format
-    out_sub1 = File("functionspace-product-subdomain1.pvd")
-    out_sub1 << sol1
-    out_sub2 = File("functionspace-product-subdomain2.pvd")
-    out_sub2 << sol2
+# Save solution in vtk format
+out_sub1 = File("functionspace-product-subdomain1.pvd")
+out_sub1 << sol1
+out_sub2 = File("functionspace-product-subdomain2.pvd")
+out_sub2 << sol2

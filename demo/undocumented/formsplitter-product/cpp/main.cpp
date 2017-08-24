@@ -1,6 +1,5 @@
 #include <dolfin.h>
-#include "FormsplitterProduct_sub1.h"
-#include "FormsplitterProduct_sub2.h"
+#include "FormsplitterProduct.h"
 
 using namespace dolfin;
 
@@ -44,7 +43,7 @@ class Source : public Expression
 int main()
 {
   // Create mesh
-  auto mesh = std::make_shared<UnitSquareMesh>(10, 10);
+  auto mesh = std::make_shared<UnitSquareMesh>(32, 32);
 
   // Try to create two mesh views from this 2D mesh
   CellFunction<std::size_t> marker(mesh, 0);
@@ -60,14 +59,14 @@ int main()
   auto submesh2 = std::make_shared<Mesh>(mapping->create_from_marker(marker, 0));
 
   // Function spaces associated with each of the function spaces
-  auto V1=std::make_shared<FormsplitterProduct_sub1::FunctionSpace>( submesh1 );
-  auto V2=std::make_shared<FormsplitterProduct_sub2::FunctionSpace>( submesh2 );
+  auto V1=std::make_shared<FormsplitterProduct::Form_a00::TestSpace>( submesh1 );
+  auto V2=std::make_shared<FormsplitterProduct::Form_a11::TestSpace>( submesh2 );
 
   // Bilinear and linear forms (defined in the ufl file)
-  FormsplitterProduct_sub1::BilinearForm a1(V1, V1);
-  FormsplitterProduct_sub2::BilinearForm a2(V2, V2);
-  FormsplitterProduct_sub1::LinearForm L1(V1);
-  FormsplitterProduct_sub2::LinearForm L2(V2);
+  FormsplitterProduct::Form_a00 a1(V1, V1);
+  FormsplitterProduct::Form_a11 a2(V2, V2);
+  FormsplitterProduct::Form_L0 L1(V1);
+  FormsplitterProduct::Form_L1 L2(V2);
 
   // Define boundary conditions
   auto zero = std::make_shared<Constant>(0.0);
@@ -96,5 +95,4 @@ int main()
   out_sub1 << u1;
   File out_sub2("formsplitter-product-subdomain2.pvd");
   out_sub2 << u2;
-
 }
