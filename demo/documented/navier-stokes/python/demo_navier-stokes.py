@@ -92,7 +92,7 @@ A2 = assemble(a2)
 A3 = assemble(a3)
 
 # Use amg preconditioner if available
-prec = "amg" if has_krylov_solver_preconditioner("amg") else "default"
+prec = "hypre_amg" if has_krylov_solver_preconditioner("hypre_amg") else "default"
 
 # Use nonzero guesses - essential for CG with non-symmetric BC
 parameters['krylov_solver']['nonzero_initial_guess'] = True
