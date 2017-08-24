@@ -123,16 +123,7 @@ std::shared_ptr<const Mesh> Form::mesh() const
   // a functional) the (generated) subclass must set the mesh directly
   // by calling set_mesh().
 
-  // Extract meshes from function spaces
   std::vector<std::shared_ptr<const Mesh>> meshes;
-  for (std::size_t i = 0; i < _function_spaces.size(); i++)
-  {
-    if (_function_spaces[i])
-    {
-      dolfin_assert(_function_spaces[i]->mesh());
-      meshes.push_back(_function_spaces[i]->mesh());
-    }
-  }
 
   // Add common mesh if any
   if (_mesh)
@@ -148,8 +139,23 @@ std::shared_ptr<const Mesh> Form::mesh() const
   if (dP)
     meshes.push_back(dP->mesh());
 
+  // Extract meshes from function spaces associated with form arguments.
+  // Note that this is only done when we don't already have a mesh since
+  // it may otherwise conflict with existing meshes.
+  if (meshes.empty())
+  {
+    for (std::size_t i = 0; i < _function_spaces.size(); i++)
+    {
+      if (_function_spaces[i])
+      {
+	dolfin_assert(_function_spaces[i]->mesh());
+	meshes.push_back(_function_spaces[i]->mesh());
+      }
+    }
+  }
+
   // Extract meshes from coefficients. Note that this is only done
-  // when we don't already have a mesh sine it may otherwise conflict
+  // when we don't already have a mesh since it may otherwise conflict
   // with existing meshes (if coefficient is defined on another mesh).
   if (meshes.empty())
   {
