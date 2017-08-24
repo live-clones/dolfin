@@ -464,8 +464,13 @@ namespace dolfin_wrappers
                                        const dolfin::GenericVector&))
           &dolfin::assemble_system);
 
-    m.def("assemble_local", (Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(*)(const dolfin::Form&, const dolfin::Cell&))
-           &dolfin::assemble_local);
+    m.def("assemble_local", [](const dolfin::Form& form, const dolfin::Cell& cell)
+          {
+            Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> m;
+            dolfin::assemble_local(m, form, cell);
+            return m;
+          });
+
 
     // FEM utils functions
     m.def("create_mesh", dolfin::create_mesh);
