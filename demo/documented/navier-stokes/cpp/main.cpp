@@ -137,7 +137,7 @@ int main()
   Vector b1, b2, b3;
 
   // Use amg preconditioner if available
-  const std::string prec(has_krylov_solver_preconditioner("amg") ? "amg" : "default");
+  const std::string prec(has_krylov_solver_preconditioner("hypre_amg") ? "hypre_amg" : "default");
 
   // Create files for storing solution
   File ufile("results/velocity.pvd");
