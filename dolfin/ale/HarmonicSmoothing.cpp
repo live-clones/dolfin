@@ -14,9 +14,6 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-//
-// First added:  2008-08-11
-// Last changed: 2013-12-02
 
 #include <dolfin/common/Array.h>
 #include <dolfin/parameter/GlobalParameters.h>
@@ -68,16 +65,16 @@ HarmonicSmoothing::move(std::shared_ptr<Mesh> mesh,
   switch (D)
   {
   case 1:
-    V.reset(new Poisson1D::FunctionSpace(mesh));
-    form.reset(new Poisson1D::BilinearForm(V, V));
+    V = std::make_shared<Poisson1D::FunctionSpace>(mesh);
+    form = std::make_shared<Poisson1D::BilinearForm>(V, V);
     break;
   case 2:
-    V.reset(new Poisson2D::FunctionSpace(mesh));
-    form.reset(new Poisson2D::BilinearForm(V, V));
+    V = std::make_shared<Poisson2D::FunctionSpace>(mesh);
+    form = std::make_shared<Poisson2D::BilinearForm>(V, V);
     break;
   case 3:
-    V.reset(new Poisson3D::FunctionSpace(mesh));
-    form.reset(new Poisson3D::BilinearForm(V, V));
+    V = std::make_shared<Poisson3D::FunctionSpace>(mesh);
+    form = std::make_shared<Poisson3D::BilinearForm>(V, V);
     break;
   default:
     dolfin_error("HarmonicSmoothing.cpp",
@@ -145,27 +142,25 @@ HarmonicSmoothing::move(std::shared_ptr<Mesh> mesh,
   std::vector<double> displacement;
   displacement.reserve(d*num_vertices);
 
-  // Pick amg as preconditioner if available
-  const std::string
-    prec(has_krylov_solver_preconditioner("amg") ? "amg" : "default");
-
   // Displacement solution wrapped in Expression subclass
   // MeshDisplacement
-  std::shared_ptr<MeshDisplacement> u(new MeshDisplacement(mesh));
+  auto u = std::make_shared<MeshDisplacement>(mesh);
 
   // RHS vector
   Vector b(*(*u)[0].vector());
 
   // Prepare solver
-  KrylovSolver solver(mesh->mpi_comm(), "bicgstab", prec);
+  KrylovSolver solver(mesh->mpi_comm(), "bicgstab");
   solver.parameters["nonzero_initial_guess"] = true;
+  solver.parameters["error_on_nonconvergence"] = false;
+  solver.parameters["maximum_iterations"] = 100;
   solver.set_operator(A);
 
   // Solve system for each dimension
   for (std::size_t dim = 0; dim < d; dim++)
   {
     // Get solution vector
-    std::shared_ptr<GenericVector> x = (*u)[dim].vector();
+    auto x = (*u)[dim].vector();
 
     if (dim > 0)
       b.zero();
