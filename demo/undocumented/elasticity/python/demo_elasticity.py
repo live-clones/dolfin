@@ -148,13 +148,12 @@ if MPI.size(mesh.mpi_comm()) > 1:
 
 # Project and write stress field to post-processing file
 W = TensorFunctionSpace(mesh, "Discontinuous Lagrange", 0)
-stress_trial, stress_test = TrialFunction(W), TestFunction(W)
-stress_a = inner(stress_trial, stress_test)*dx
-stress_L = inner(sigma(u), stress_test)*dx
+stress, w = TrialFunction(W), TestFunction(W)
+a_s = inner(stress, w)*dx
+a_L = inner(sigma(u), w)*dx
 
 # Use a LocalSolver to compute the projection locally on each cell
-local_solver = LocalSolver(stress_a, stress_L,
-    LocalSolver.SolverType_Cholesky)
+local_solver = LocalSolver(a_s, a_L, LocalSolver.SolverType_Cholesky)
 stress = Function(W)
 local_solver.solve_local_rhs(stress);
 
