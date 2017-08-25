@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """This module defines different MultiStageScheme classes which can be
-passed to a RKSolver or PointIntegralSolver"""
+passed to a RKSolver or PointIntegralSolver
+
+"""
 
 # Copyright (C) 2013-2015 Johan Hake
 #
@@ -139,50 +141,36 @@ def _time_dependent_expressions(rhs_form, time):
     time_dependent_expressions = dict()
 
     for coefficient in rhs_form.coefficients():
-        #print(coefficient, type(coefficient), hasattr(coefficient, "_user_parameters"))
         if hasattr(coefficient, "_user_parameters"):
             for c_name, c in list(coefficient._user_parameters.items()):
-                #print("TT:", c_name, c, type(c), isinstance(c, cpp.function.GenericFunction), time.id(), c.id())
                 if isinstance(c, ufl.Coefficient) and time.id() == c.id():
-                #if isinstance(c, cpp.function.GenericFunction) and time.id() == c.id():
-                    #print ("  Next level")
                     if coefficient not in time_dependent_expressions:
                         time_dependent_expressions[coefficient] = [c_name]
                     else:
                         time_dependent_expressions[coefficient].append(c_name)
 
-    print("XX******:", time_dependent_expressions)
     return time_dependent_expressions
 
 
 def _replace_dict_time_dependent_expression(time_dep_expressions, time, dt, c):
-    print("--Insisde replace dict", time_dep_expressions, c)
     assert(isinstance(c, float))
     replace_dict = {}
     if c == 0.0 or not time_dep_expressions:
-        print("  Return early")
         return replace_dict
     new_time = Expression("time + c*dt", time=time, c=c, dt=dt, degree=0)
-    print("---")
     for expr, c_names in list(time_dep_expressions.items()):
-        print("  ", expr, c_names)
         assert(isinstance(expr, Expression))
         kwargs = dict(name=expr.name(), label=expr.label(),
                       element=expr.ufl_element(), **expr._user_parameters)
-        print(kwargs)
         for c_name in c_names:
             kwargs[c_name] = new_time
-        print("  xxxxxxxxxxxxxxxxxxxx", expr._cppcode)
         replace_dict[expr] = Expression(expr._cppcode, **kwargs)
-        print("  xxxxxxxxxxxxxxxxxxxx")
 
-    print("YY******:", replace_dict)
     return replace_dict
 
 
 def _butcher_scheme_generator(a, b, c, time, solution, rhs_form):
-    """
-    Generates a list of forms and solutions for a given Butcher tableau
+    """Generates a list of forms and solutions for a given Butcher tableau
 
     *Arguments*
         a (2 dimensional numpy array)
@@ -199,6 +187,7 @@ def _butcher_scheme_generator(a, b, c, time, solution, rhs_form):
             The prognostic variable
         rhs_form (ufl.Form)
             A UFL form representing the rhs for a time differentiated equation
+
     """
 
     a = _check_abc(a, b, c)
@@ -238,7 +227,6 @@ def _butcher_scheme_generator(a, b, c, time, solution, rhs_form):
                                   for j in range(i+1)], zero_)
         time = time_ + dt*c[i]
 
-        print("Replace dict")
         replace_dict = _replace_dict_time_dependent_expression(time_dep_expressions,
                                                                time_, dt, c[i])
 
@@ -302,8 +290,7 @@ def _butcher_scheme_generator(a, b, c, time, solution, rhs_form):
 
 
 def _butcher_scheme_generator_tlm(a, b, c, time, solution, rhs_form, perturbation):
-    """
-    Generates a list of forms and solutions for a given Butcher tableau
+    """Generates a list of forms and solutions for a given Butcher tableau
 
     *Arguments*
         a (2 dimensional numpy array)
@@ -322,6 +309,7 @@ def _butcher_scheme_generator_tlm(a, b, c, time, solution, rhs_form, perturbatio
             A UFL form representing the rhs for a time differentiated equation
         perturbation (_Function_)
             The perturbation in the initial condition of the solution
+
     """
 
     a = _check_abc(a, b, c)
@@ -455,8 +443,7 @@ def _butcher_scheme_generator_tlm(a, b, c, time, solution, rhs_form, perturbatio
 
 
 def _butcher_scheme_generator_adm(a, b, c, time, solution, rhs_form, adj):
-    """
-    Generates a list of forms and solutions for a given Butcher tableau
+    """Generates a list of forms and solutions for a given Butcher tableau
 
     *Arguments*
         a (2 dimensional numpy array)
@@ -475,6 +462,7 @@ def _butcher_scheme_generator_adm(a, b, c, time, solution, rhs_form, adj):
             A UFL form representing the rhs for a time differentiated equation
         adj (_Function_)
             The derivative of the functional with respect to y_n+1
+
     """
 
     a = _check_abc(a, b, c)
@@ -577,9 +565,10 @@ def _butcher_scheme_generator_adm(a, b, c, time, solution, rhs_form, adj):
     return ufl_stage_forms, dolfin_stage_forms, jacobian_indices, last_stage,\
            stage_solutions, dt, human_form, adj
 
+
 class MultiStageScheme(cpp.multistage.MultiStageScheme):
-    """
-    Base class for all MultiStageSchemes
+    """Base class for all MultiStageSchemes
+
     """
     def __init__(self, rhs_form, ufl_stage_forms,
                  dolfin_stage_forms, last_stage, stage_solutions,
@@ -604,10 +593,11 @@ class MultiStageScheme(cpp.multistage.MultiStageScheme):
         stage_solutions = [s.cpp_object() for s in stage_solutions]
 
         cpp.multistage.MultiStageScheme.__init__(self, dolfin_stage_forms, last_stage,
-                                      stage_solutions, solution.cpp_object(), time.cpp_object(), dt.cpp_object(),
-                                      dt_stage_offsets, jacobian_indices, order,
-                                      self.__class__.__name__,
-                                      human_form, bcs)
+                                                 stage_solutions, solution.cpp_object(),
+                                                 time.cpp_object(), dt.cpp_object(),
+                                                 dt_stage_offsets, jacobian_indices, order,
+                                                 self.__class__.__name__,
+                                                 human_form, bcs)
 
     def rhs_form(self):
         "Return the original rhs form"
@@ -672,13 +662,13 @@ class ButcherMultiStageScheme(MultiStageScheme):
                                   bcs, contraction)
 
     def to_tlm(self, perturbation):
-        r"""
-        Return another MultiStageScheme that implements the tangent
+        r"""Return another MultiStageScheme that implements the tangent
         linearisation of the ODE solver.
 
         This takes \dot{y_n} (the derivative of y_n with respect to a
         parameter) and computes \dot{y_n+1} (the derivative of y_n+1
         with respect to that parameter).
+
         """
 
         generator = functools.partial(_butcher_scheme_generator_tlm,
@@ -690,13 +680,13 @@ class ButcherMultiStageScheme(MultiStageScheme):
                                        generator=generator)
 
     def to_adm(self, adj):
-        r"""
-        Return another MultiStageScheme that implements the adjoint
+        r"""Return another MultiStageScheme that implements the adjoint
         linearisation of the ODE solver.
 
         This takes \bar{y_n+1} (the derivative of a functional J with
         respect to y_n+1) and computes \bar{y_n} (the derivative of J
         with respect to y_n).
+
         """
 
         generator = functools.partial(_butcher_scheme_generator_adm, adj=adj)
@@ -708,9 +698,7 @@ class ButcherMultiStageScheme(MultiStageScheme):
 
 
 class ERK1(ButcherMultiStageScheme):
-    """
-    Explicit first order Scheme
-    """
+    """Explicit first order Scheme"""
     def __init__(self, rhs_form, solution, t=None, bcs=None):
         a = np.array([0.])
         b = np.array([1.])
@@ -719,9 +707,7 @@ class ERK1(ButcherMultiStageScheme):
 
 
 class BDF1(ButcherMultiStageScheme):
-    """
-    Implicit first order scheme
-    """
+    """Implicit first order scheme"""
     def __init__(self, rhs_form, solution, t=None, bcs=None):
         a = np.array([1.])
         b = np.array([1.])
@@ -730,9 +716,7 @@ class BDF1(ButcherMultiStageScheme):
 
 
 class ExplicitMidPoint(ButcherMultiStageScheme):
-    """
-    Explicit 2nd order scheme
-    """
+    """Explicit 2nd order scheme"""
     def __init__(self, rhs_form, solution, t=None, bcs=None):
 
         a = np.array([[0, 0],[0.5, 0.0]])
@@ -742,9 +726,7 @@ class ExplicitMidPoint(ButcherMultiStageScheme):
 
 
 class CN2(ButcherMultiStageScheme):
-    """
-    Semi-implicit 2nd order scheme
-    """
+    """Semi-implicit 2nd order scheme"""
     def __init__(self, rhs_form, solution, t=None, bcs=None):
         a = np.array([[0, 0],[0.5, 0.5]])
         b = np.array([0.5, 0.5])
@@ -754,9 +736,7 @@ class CN2(ButcherMultiStageScheme):
 
 
 class ERK4(ButcherMultiStageScheme):
-    """
-    Explicit 4th order scheme
-    """
+    """Explicit 4th order scheme"""
     def __init__(self, rhs_form, solution, t=None, bcs=None):
         a = np.array([[0, 0, 0, 0],
                       [0.5, 0, 0, 0],
@@ -786,8 +766,7 @@ class ESDIRK3(ButcherMultiStageScheme):
 
 
 class ESDIRK4(ButcherMultiStageScheme):
-    """
-    Explicit implicit 4rd order scheme
+    """Explicit implicit 4rd order scheme
 
     See also "Singly diagonally implicit Runge–Kutta methods with an
     explicit first stage" by A Kværnø - BIT Numerical Mathematics,

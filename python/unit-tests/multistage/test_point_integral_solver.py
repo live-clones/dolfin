@@ -19,8 +19,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 import pytest
 from dolfin import *
 import numpy as np
@@ -70,19 +68,12 @@ def test_butcher_schemes_scalar_time(Scheme, optimize):
     u0 = 10.0
     tstop = 1.0
     weight = Constant(2.0)
-    print("\n 1--------------------------")
     u_true = Expression("u0 + 2*t + pow(t, 2)/2. + weight*pow(t, 3)/3. - "\
-                        "pow(t, 5)/5.", t=tstop, u0=u0, weight=weight, degree=5)
-    print(" 1--------------------------\n")
-
+                        "pow(t, 5)/5.", t=tstop, u0=u0, weight=weight, degree=2)
 
     u = Function(V)
-    #compound_time_expr = Expression("weight*time*time", weight=weight,
-    #                                element=time.ufl_element(), time=time, degree=2)
-    print("\n 2--------------------------")
     compound_time_expr = Expression("weight*time*time", weight=weight,
-                                    time=time, degree=3)
-    print("\n 2--------------------------")
+                                    element=time.ufl_element(), time=time)
     form = (2 + time + compound_time_expr - time**4)*v*dP
 
     scheme = Scheme(form, u, time)
@@ -96,14 +87,6 @@ def test_butcher_schemes_scalar_time(Scheme, optimize):
         u.interpolate(Constant(u0))
         solver.step_interval(0., tstop, dt)
         u_errors.append(errornorm(u_true, u))
-
-    print("****************")
-    print(u_true(0.2, 0.2))
-    print(compound_time_expr(0.51, 0.6))
-    print(scheme.order())
-    print(min(convergence_order(u_errors)))
-    print(u_errors)
-    print("****************")
 
     assert scheme.order() - min(convergence_order(u_errors)) < 0.1
 

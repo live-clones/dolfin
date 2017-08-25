@@ -65,9 +65,7 @@ PointIntegralSolver::PointIntegralSolver(std::shared_ptr<MultiStageScheme> schem
   _ufcs(), _coefficient_index(), _recompute_jacobian(),
   _jacobians(), _eta(1.0), _num_jacobian_computations(0)
 {
-  std::cout << "** scheme: " << scheme->str(true) << std::endl;
-
-// Set parameters
+  // Set parameters
   parameters = default_parameters();
 
   _check_forms();
