@@ -84,6 +84,7 @@ namespace dolfin
     ///         The coordinates in domain G.
     virtual void map(const Array<double>& x, Array<double>& y) const;
 
+
     /// Map coordinate x in domain H to coordinate y in domain G (used for
     /// periodic boundary conditions)
     ///
@@ -92,6 +93,7 @@ namespace dolfin
     /// @param    y (Eigen::Ref<Eigen::VectorXd>)
     ///         The coordinates in domain G.
     virtual void map(Eigen::Ref<const Eigen::VectorXd> x, Eigen::Ref<Eigen::VectorXd> y) const;
+
 
     /// Snap coordinate to boundary of subdomain
     ///
