@@ -49,6 +49,49 @@ namespace dolfin
     const std::vector<double> get_dof_coeffs() { return _dof_coeffs; };
     const std::vector<std::size_t> get_cell_dofs() { return _cell_dofs; };
 
+    const std::vector<Point> get_cell_vertices(const Mesh& mesh)
+    {
+      const std::size_t gdim = mesh.geometry().dim();
+
+      // FIXME: is there a better way of getting this?
+      const std::size_t num_cell_verts = Cell(mesh, 0).num_entities(0);
+      std::vector<Point> deformed_position(num_cell_verts);
+
+      for (std::size_t j=0; j<num_cell_verts; ++j)
+        deformed_position[j] = Point(_dof_coords[j*gdim],
+                                     _dof_coords[j*gdim+1],
+                                     (gdim == 3) ? _dof_coords[j*gdim+2] : 0.0);
+
+      return deformed_position;
+    }
+
+    const std::vector<Point> get_displacement_at_vertices(const Mesh& mesh)
+    {
+      const std::size_t gdim = mesh.geometry().dim();
+
+      // FIXME: is there a better way of getting this?
+      const std::size_t num_cell_verts = Cell(mesh, 0).num_entities(0);
+      std::vector<Point> displacement(num_cell_verts);
+
+      for (std::size_t j=0; j<num_cell_verts; ++j)
+        displacement[j] = Point(_dof_coeffs[0*num_cell_verts+j],
+                                _dof_coeffs[1*num_cell_verts+j],
+                                (gdim == 3) ? _dof_coeffs[2*num_cell_verts+j] : 0.0);
+
+      return displacement;
+    }
+
+    const std::vector<Point> create_deformed_facet_position(const Mesh& mesh)
+    {
+      const auto v = get_cell_vertices(mesh);
+      const auto u = get_displacement_at_vertices(mesh);
+      std::vector<Point> deformed(v.size());
+      for (std::size_t j=0; j<v.size(); ++j)
+        deformed[j] = v[j] + u[j];
+
+      return deformed;
+    }
+
   private:
     const std::vector<double> _dof_coords;
     const std::vector<std::size_t> _cell_dofs;
