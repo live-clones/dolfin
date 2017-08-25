@@ -139,7 +139,7 @@ int main()
   assemble_system(*A, b, a, L, {inflow, noslip});
 
   // Create Krylov solver with specified method and preconditioner
-  KrylovSolver solver(krylov_method, "amg");
+  KrylovSolver solver(krylov_method, "hypre_amg");
 
   // Set operator (A) and precondtioner matrix (P)
   solver.set_operators(A, P);
