@@ -561,7 +561,7 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
 
   // Communicate the slave cells' meta data to the master.
   // First we tabulate the slave cells' information for dispatch
-  std::vector<std::vector<std::size_t>> slave_cell_infos_master_send(mpi_size);
+  std::vector<std::vector<std::size_t>> slave_facet_infos_send(mpi_size);
   std::vector<std::vector<std::size_t>> slave_cell_global_dofs_send(mpi_size);
   std::vector<std::vector<double>> slave_cell_dof_coords_send(mpi_size);
   std::vector<std::vector<double>> slave_cell_dof_coeffs_send(mpi_size);
@@ -579,6 +579,7 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
 
     const Facet slave_facet(mesh, slave_idx);
     const Cell slave_cell = Cell(mesh, slave_facet.entities(tdim)[0]);
+    const std::size_t slave_facet_local_idx = slave_cell.index(slave_facet);
 
     // Tabulate dof coords
     slave_cell.get_coordinate_dofs(dof_coords);
@@ -599,25 +600,32 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
     for (std::size_t j=0; j<master_procs_idxs.size(); j+=2)
     {
       const std::size_t master_proc = master_procs_idxs[j];
-      const std::size_t master_idx = master_procs_idxs[j+1];
-      slave_cell_infos_master_send[master_proc].push_back(master_idx);
+      const std::size_t master_facet_idx = master_procs_idxs[j+1];
+
+      // [slave_facet_idx, slave_facet_local_idx, master_facet_idx]
+      slave_facet_infos_send[master_proc].push_back(slave_facet.index());
+      slave_facet_infos_send[master_proc].push_back(slave_facet_local_idx);
+      slave_facet_infos_send[master_proc].push_back(master_facet_idx);
+
       slave_cell_global_dofs_send[master_proc].insert(std::end(slave_cell_global_dofs_send[master_proc]),
                                                       std::begin(s_cell_dofs), std::end(s_cell_dofs));
+
       slave_cell_dof_coords_send[master_proc].insert(std::end(slave_cell_dof_coords_send[master_proc]),
                                                      std::begin(dof_coords), std::end(dof_coords));
+
       slave_cell_dof_coeffs_send[master_proc].insert(std::end(slave_cell_dof_coeffs_send[master_proc]),
                                                       std::begin(dof_coeffs), std::end(dof_coeffs));
     }
   }
 
   // Receive the cell metadata
-  std::vector<std::vector<std::size_t>> slave_cell_infos_master_recv;
+  std::vector<std::vector<std::size_t>> slave_facet_infos_recv;
   std::vector<std::vector<std::size_t>> slave_cell_global_dofs_recv;
   std::vector<std::vector<double>> slave_cell_dof_coords_recv;
   std::vector<std::vector<double>> slave_cell_dof_coeffs_recv;
 
   // FIXME: This is too much MP....?
-  MPI::all_to_all(mesh.mpi_comm(), slave_cell_infos_master_send, slave_cell_infos_master_recv);
+  MPI::all_to_all(mesh.mpi_comm(), slave_facet_infos_send, slave_facet_infos_recv);
   MPI::all_to_all(mesh.mpi_comm(), slave_cell_global_dofs_send, slave_cell_global_dofs_recv);
   MPI::all_to_all(mesh.mpi_comm(), slave_cell_dof_coords_send, slave_cell_dof_coords_recv);
   MPI::all_to_all(mesh.mpi_comm(), slave_cell_dof_coeffs_send, slave_cell_dof_coeffs_recv);
@@ -627,12 +635,16 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
 
   for (std::size_t proc_source=0; proc_source<mpi_size; ++proc_source)
   {
-    if (slave_cell_infos_master_recv[proc_source].empty())
+    if (slave_facet_infos_recv[proc_source].empty())
       continue;
 
-    for (std::size_t j=0; j<slave_cell_infos_master_recv[proc_source].size(); ++j)
+    for (std::size_t j=0; j<slave_facet_infos_recv[proc_source].size()/3; ++j)
     {
-      const std::size_t master_idx = slave_cell_infos_master_recv[proc_source][j];
+      // [slave_facet_idx, slave_facet_local_idx, master_facet_idx]
+      const std::size_t slave_facet_idx = slave_facet_infos_recv[proc_source][3*j];
+      const std::size_t slave_facet_local_idx = slave_facet_infos_recv[proc_source][3*j + 1];
+      const std::size_t master_idx = slave_facet_infos_recv[proc_source][3*j + 2];
+
       const std::vector<std::size_t> cell_dofs(slave_cell_global_dofs_recv[proc_source].begin() + j*num_dofs_per_cell,
                                                slave_cell_global_dofs_recv[proc_source].begin() + (j + 1)*num_dofs_per_cell);
       const std::vector<double> cell_dof_coords(slave_cell_dof_coords_recv[proc_source].begin() + j*num_coords_per_cell,
@@ -642,7 +654,8 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
       const std::vector<double> cell_dof_coeffs(slave_cell_dof_coeffs_recv[proc_source].begin() + j*num_coords_per_cell,
                                                 slave_cell_dof_coeffs_recv[proc_source].begin() + (j + 1)*num_coords_per_cell);
 
-      CellMetaData cell_md(cell_dof_coords, cell_dofs, cell_dof_coeffs);
+      auto cell_md = std::make_shared<CellMetaData>(slave_facet_idx, slave_facet_local_idx,
+                           cell_dof_coords, cell_dofs, cell_dof_coeffs);
       _master_facet_to_contacted_cells[master_idx].push_back(cell_md);
     }
   }
