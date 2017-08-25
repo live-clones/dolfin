@@ -121,6 +121,9 @@ from .function.specialfunctions import (FacetNormal, CellSize, SpatialCoordinate
                                         CellVolume, Circumradius, FacetArea, MeshCoordinates)
 from .function.expression import CompiledExpression, Expression, UserExpression
 
+# experimental
+from .jit.pybind11jit import compile_cpp_code
+
 from .la import as_backend_type
 
 from .mesh.ale import (compute_vertex_map, compute_edge_map, init_parent_edge_indices)
