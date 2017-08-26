@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 
 __all__ = ["CompiledExpression", "UserExpression"]
 
@@ -154,7 +153,6 @@ class BaseExpression(ufl.Coefficient):
         try:
             x = numpy.fromiter(x, 'd')
         except (TypeError, ValueError, AssertionError) as e:
-            print(e)
             raise TypeError("expected scalar arguments for the coordinates")
 
         if len(x) == 0:
@@ -213,7 +211,6 @@ class UserExpression(BaseExpression):
     """
 
     def __init__(self, *args, **kwargs):
-        #self._cpp_object = _InterfaceExpression(self)
 
         # Extract data
         element = kwargs.pop("element", None)
@@ -249,6 +246,10 @@ class Expression(BaseExpression):
 
     def __init__(self, cpp_code=None, *args, **kwargs):
 
+        # Developer note: class attributes must be prefixed by "_",
+        # otherwise problems occur due to __setattr__, which is used
+        # to pass parameters through to JIT complied expression.
+
         # Remove arguments that are used in Expression creation
         element = kwargs.pop("element", None)
         degree = kwargs.pop("degree", None)
@@ -267,6 +268,9 @@ class Expression(BaseExpression):
         if cpp_code is not None:
             self._cpp_object = jit.compile_expression(cpp_code, self._properties)
 
+        if element and degree:
+            raise RuntimeError("Cannot specify an element and a degree for Expressions.")
+
         # Deduce element type if not provided
         if element is None:
             if degree is None:
@@ -278,9 +282,17 @@ class Expression(BaseExpression):
             element = _select_element(family=None, cell=cell, degree=degree,
                                       value_shape=value_shape)
 
+        # FIXME: The below is invasive and fragile. Fix multistage so
+        #        the below is note required.
+        # Store C++ code and user parameters because they are used by
+        # the the multistage module.
+        self._user_parameters = kwargs
+        self._cppcode = cpp_code
+
         BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
                                 name=name, label=label)
 
+    # FIXME: below comment seems obsolete?
     # This is added dynamically in the intialiser to allow checking of
     # eval in user classes.
     def __getattr__(self, name):
@@ -294,10 +306,12 @@ class Expression(BaseExpression):
             raise AttributeError
 
     def __setattr__(self, name, value):
+        # FIXME: this messes up setting attributes
         if name.startswith("_"):
             super().__setattr__(name, value)
         elif name in self._properties.keys():
             self._cpp_object.set_property(name, value)
+
 
 # Temporary alias for CompiledExpression name
 class CompiledExpression(Expression):
