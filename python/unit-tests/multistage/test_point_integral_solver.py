@@ -134,7 +134,6 @@ def test_butcher_schemes_scalar(Scheme, optimize):
     assert scheme.order()-min(convergence_order(u_errors))<0.1
 
 
-@pytest.mark.xfail
 @pytest.mark.slow
 def test_butcher_schemes_vector(Scheme, optimize):
 
