@@ -37,7 +37,7 @@ class FunctionSpace(ufl.FunctionSpace):
         ufc_element, ufc_dofmap = ffc.jit(element, parameters=None)
         ufc_element = cpp.fem.make_ufc_finite_element(ufc_element)
 
-        # Create DOLFIN element and dofpa
+        # Create DOLFIN element and dofmap
         dolfin_element = cpp.fem.FiniteElement(ufc_element)
         ufc_dofmap = cpp.fem.make_ufc_dofmap(ufc_dofmap)
         if constrained_domain is None:

@@ -9,8 +9,6 @@ from six import add_metaclass, string_types
 from six.moves import xrange as range
 import types
 
-import dijitso
-
 # Import UFL and extension module (DOLFIN C++)
 import ufl
 from ufl import product

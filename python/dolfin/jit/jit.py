@@ -34,7 +34,7 @@ def compile_class(cpp_data):
     if not pkgconfig.exists('dolfin'):
         raise RuntimeError("Could not find DOLFIN pkg-config file. Please make sure appropriate paths are set.")
 
-    # Get pkg-config data
+    # Get DOLFIN pkg-config data
     d = pkgconfig.parse('dolfin')
 
     # Set compiler/build options

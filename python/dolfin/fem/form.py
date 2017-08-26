@@ -19,6 +19,18 @@ class Form(cpp.fem.Form):
             raise RuntimeError("Expecting to find a Mesh in the form.")
 
         form_compiler_parameters = kwargs.pop("form_compiler_parameters", None)
+
+        # Add DOLFIN include paths (just the Boost path for special
+        # math functions is really required)
+        # FIXME: move getting include paths to elsewhere
+        import pkgconfig
+        d = pkgconfig.parse('dolfin')
+        if form_compiler_parameters is None:
+            form_compiler_parameters = {"external_include_dirs" : d["include_dirs"]}
+        else:
+            # FIXME: add paths if dict entry already exists
+            form_compiler_parameters["external_include_dirs"] = d["include_dirs"]
+
         ufc_form = ffc.jit(form, form_compiler_parameters)
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 

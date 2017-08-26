@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import hashlib
 from six import string_types
-import dijitso
 import dolfin.cpp as cpp
 
 from dolfin.jit.jit import compile_class, _math_header
