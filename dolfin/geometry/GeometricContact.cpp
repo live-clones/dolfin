@@ -557,7 +557,7 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
 
   // Send the master cell's dofs to the slave.
   // [proc: [local_slave, contact master dofs, local slave, contact master dofs, ...]]
-  std::vector<std::vector<std::size_t>> send_master_dofs(mpi_size);
+//  std::vector<std::vector<std::size_t>> send_master_dofs(mpi_size);
 
   // Communicate the slave cells' meta data to the master.
   // First we tabulate the slave cells' information for dispatch
@@ -589,6 +589,11 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
         = dofmap->cell_dofs(slave_cell.index());
     const auto s_cell_dofs = ArrayView<const dolfin::la_index>(
         s_cell_dofs_eigen_map.size(), s_cell_dofs_eigen_map.data());
+    // Convert to global dofs
+    std::vector<std::size_t> global_s_cell_dofs(std::begin(s_cell_dofs),
+                                                std::end(s_cell_dofs));
+    for (auto& dof : global_s_cell_dofs)
+      dof = local_to_global_dofs[dof];
 
     // Tabulate cell dof coefficients (local finite element vector on the slave element)
 
@@ -608,7 +613,7 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
       slave_facet_infos_send[master_proc].push_back(master_facet_idx);
 
       slave_cell_global_dofs_send[master_proc].insert(std::end(slave_cell_global_dofs_send[master_proc]),
-                                                      std::begin(s_cell_dofs), std::end(s_cell_dofs));
+                                                      std::begin(global_s_cell_dofs), std::end(global_s_cell_dofs));
 
       slave_cell_dof_coords_send[master_proc].insert(std::end(slave_cell_dof_coords_send[master_proc]),
                                                      std::begin(dof_coords), std::end(dof_coords));
