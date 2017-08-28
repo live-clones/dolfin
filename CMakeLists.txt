@@ -152,13 +152,6 @@ endforeach()
 option(DOLFIN_USE_PYTHON3 "Use Python 3." ON)
 
 #------------------------------------------------------------------------------
-# General compiler defintions
-
-if (DOLFIN_DEPRECATION_ERROR)
-  list(APPEND DOLFIN_CXX_DEFINITIONS "-DDOLFIN_DEPRECATION_ERROR")
-endif()
-
-#------------------------------------------------------------------------------
 # Package-specific options
 
 # None at the moment
@@ -200,15 +193,6 @@ endif()
 set(CMAKE_CXX_FLAGS_DEVELOPER "${DOLFIN_CXX_DEVELOPER_FLAGS}" CACHE STRING
   "Flags used by the compiler during development." FORCE)
 
-# FIXME: Do we want to add -DDEBUG to RelWithDebInfo?
-
-# Set debug definitions
-if (CMAKE_BUILD_TYPE STREQUAL "Developer" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
-  list(APPEND DOLFIN_CXX_DEFINITIONS "-DDEBUG")
-else()
-  list(APPEND DOLFIN_CXX_DEFINITIONS "-DNDEBUG")
-endif()
-
 # Add flags for generating code coverage reports
 if (DOLFIN_ENABLE_CODE_COVERAGE AND CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
@@ -241,17 +225,6 @@ if (APPLE)
   set(CMAKE_CXX_FLAGS_DEVELOPER "${CMAKE_CXX_FLAGS_DEVELOPER} -Wno-long-long")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-long-long")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Wno-long-long")
-endif()
-
-#------------------------------------------------------------------------------
-# Check type sizes
-
-include(CheckTypeSize)
-
-# Check size of size_t
-check_type_size("size_t" size_t_size)
-if (size_t_size)
-  list(APPEND DOLFIN_CXX_DEFINITIONS "-DDOLFIN_SIZE_T=${size_t_size}")
 endif()
 
 #------------------------------------------------------------------------------
@@ -604,15 +577,6 @@ if (DOLFIN_ENABLE_DOCS AND PYTHON_FOUND)
     DESCRIPTION "Python documentation generator"
     URL "http://www.sphinx-doc.org"
     PURPOSE "Needed to build documentation")
-endif()
-
-#------------------------------------------------------------------------------
-# Set size of dolfin::la_index
-
-if (PETSC_FOUND)
-  list(APPEND DOLFIN_CXX_DEFINITIONS "-DDOLFIN_LA_INDEX_SIZE=${PETSC_INT_SIZE}")
-else()
-  list(APPEND DOLFIN_CXX_DEFINITIONS "-DDOLFIN_LA_INDEX_SIZE=4")
 endif()
 
 #------------------------------------------------------------------------------
