@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import dolfin.cpp as cpp
+import hashlib
+import dijitso
+import pkgconfig
+
+mport dolfin.cpp as cpp
 from . import get_pybind_include
 from dolfin.function.expression import BaseExpression, _select_element
 
-from six import string_types
-import hashlib
-import dijitso
 
 def jit_generate(class_data, module_name, signature, parameters):
 
-#FIXME: decide what needs to be in boilerplate code, if anything.
+    # FIXME: decide what needs to be in boilerplate code, if anything.
 
     template_code = """
 
@@ -35,14 +36,15 @@ PYBIND11_MODULE({signature}, m)
     return code_h, code_c, depends
 
 def compile_cpp_code(class_data):
-    """Compile a user C(++) string to a Python object with pybind11.
-       Note this is still experimental."""
+    """Compile a user C(++) string to a Python object with pybind11.  Note
+       this is still experimental.
 
-    import pkgconfig
+    """
+
     if not pkgconfig.exists('dolfin'):
         raise RuntimeError("Could not find DOLFIN pkg-config file. Please make sure appropriate paths are set.")
 
-    # Get pkg-config data
+    # Get pkg-config data for DOLFIN
     d = pkgconfig.parse('dolfin')
 
     # Set compiler/build options
@@ -82,8 +84,7 @@ def compile_cpp_code(class_data):
     module_hash = hashlib.md5((class_data["cpp_code"] + class_data["pybind11_code"]).encode('utf-8')).hexdigest()
     module_name = "dolfin_cpp_module_" + module_hash
 
-    module, signature = dijitso.jit(class_data,
-                                    module_name, params,
+    module, signature = dijitso.jit(class_data, module_name, params,
                                     generate=jit_generate)
-    print(signature, module_name)
+
     return module
