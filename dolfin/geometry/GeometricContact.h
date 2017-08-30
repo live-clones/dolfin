@@ -119,15 +119,16 @@ namespace dolfin
                                           const std::vector<std::size_t>& master_facets,
                                           const std::vector<std::size_t>& slave_facets);
 
-    /// For each of the local cells on this process. Compute the DoFs of the cells on the
-    /// contact process.
+    /// For each of the master facets on this process, compute the DoFs of the cells belonging
+    /// to the facets in contact on the contact process(es).
     void
     tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function& u,
                                          const std::vector<std::size_t>& master_facets,
                                          const std::vector<std::size_t>& slave_facets);
 
 
-    /// Tabulate the mapping of local cells in contact with their shared cells' metadata.
+    /// Tabulate the mapping from local master facet, which are in possible contact with their
+    /// shared cells' metadata.
     void
     tabulate_contact_shared_cells(Mesh& mesh, Function& u,
                                   const std::vector<std::size_t>& master_facets,
@@ -194,6 +195,8 @@ namespace dolfin
                                                const std::vector<double>& coord,
                                                std::size_t local_facet_idx);
 
+    static void tabulate_on_process_bbox_collisions();
+
     // Tabulate pairings between collided displacement volume meshes.
     static void tabulate_off_process_displacement_volume_mesh_pairs(const Mesh& mesh,
                                                                     const Mesh& slave_mesh,
@@ -203,7 +206,7 @@ namespace dolfin
                                                                     std::map<std::size_t, std::vector<std::size_t>>& contact_facet_map);
 
     // Tabulate pairings between facet index and collided cell DoFs
-    static void tabulate_collided_cell_dofs(const Mesh& mesh, const GenericDofMap& dofmap,
+    void tabulate_collided_cell_dofs(const Mesh& mesh, const GenericDofMap& dofmap,
                                             const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave,
                                             std::map<std::size_t, std::vector<std::size_t>>& facet_to_contacted_dofs,
                                             std::map<std::size_t, std::vector<std::size_t>>& facet_to_off_proc_contacted_dofs);
