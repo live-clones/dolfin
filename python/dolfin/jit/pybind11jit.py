@@ -18,9 +18,6 @@ def jit_generate(class_data, module_name, signature, parameters):
 #include <pybind11/eigen.h>
 namespace py = pybind11;
 
-#include <dolfin.h>
-#include <Eigen/Dense>
-
 {cpp_code}
 
 PYBIND11_MODULE({signature}, m)

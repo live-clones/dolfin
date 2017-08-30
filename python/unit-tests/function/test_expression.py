@@ -245,6 +245,11 @@ def test_meshfunction_expression():
     c[1] = 3
 
     cpp_code = '''
+    #include <memory>
+    #include <Eigen/Dense>
+    #include <dolfin/function/Expression.h>
+    #include <dolfin/mesh/MeshFunction.h>
+
     class {classname} : public dolfin::Expression
     {{
     public:
@@ -297,6 +302,13 @@ def test_meshfunction_expression():
     g = Constant(3.0)
 
     cpp_code = '''
+    #include <memory>
+    #include <ufc.h>
+    #include <Eigen/Dense>
+    #include <dolfin/function/GenericFunction.h>
+    #include <dolfin/function/Expression.h>
+    #include <dolfin/mesh/MeshFunction.h>
+
     class {classname} : public dolfin::Expression
     {{
     public:
@@ -349,6 +361,13 @@ def test_meshfunction_expression():
     assert v[1] == 5.0 * 3.0
 
     cpp_code = '''
+    #include <memory>
+    #include <ufc.h>
+    #include <Eigen/Dense>
+    #include <dolfin/function/GenericFunction.h>
+    #include <dolfin/function/Expression.h>
+    #include <dolfin/mesh/MeshFunction.h>
+
     class {classname} : public dolfin::Expression
     {{
     public:
@@ -713,6 +732,14 @@ def test_doc_string_complex_compiled_expression(mesh):
     """
 
     code = '''
+    #include <memory>
+    #include <ufc.h>
+    #include <Eigen/Dense>
+    #include <dolfin/function/Expression.h>
+    #include <dolfin/mesh/Cell.h>
+    #include <dolfin/mesh/Mesh.h>
+    #include <dolfin/mesh/MeshFunction.h>
+
     class MyFunc : public dolfin::Expression
     {
     public:
@@ -815,6 +842,16 @@ def test_doc_string_compiled_expression_with_system_headers():
     """
 
     cpp_code = '''
+     #include <memory>
+     #include <ufc.h>
+     #include <Eigen/Dense>
+     #include <dolfin/fem/GenericDofMap.h>
+     #include <dolfin/function/Expression.h>
+     #include <dolfin/function/FunctionSpace.h>
+     #include <dolfin/mesh/Cell.h>
+     #include <dolfin/mesh/Mesh.h>
+     #include <dolfin/mesh/MeshFunction.h>
+
       class Delta : public dolfin::Expression
       {
       public:
@@ -858,6 +895,17 @@ def test_doc_string_compiled_expression_with_system_headers():
 
     # Test not compile
     code_not_compile = '''
+
+     #include <memory>
+     #include <ufc.h>
+     #include <Eigen/Dense>
+     #include <dolfin/fem/GenericDofMap.h>
+     #include <dolfin/function/Expression.h>
+     #include <dolfin/function/FunctionSpace.h>
+     #include <dolfin/mesh/Cell.h>
+     #include <dolfin/mesh/Mesh.h>
+     #include <dolfin/mesh/MeshFunction.h>
+
     namespace dolfin
     {
       class Delta : public Expression

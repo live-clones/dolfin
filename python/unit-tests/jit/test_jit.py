@@ -52,6 +52,9 @@ def test_compile_extension_module():
 
     from numpy import arange, exp
     code = """
+      #include <petscvec.h>
+      #include <dolfin/la/Vector.h>
+
       void PETSc_exp(std::shared_ptr<dolfin::PETScVector> vec)
       {
         Vec x = vec->vec();
