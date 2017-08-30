@@ -4,7 +4,7 @@ import hashlib
 import dijitso
 import pkgconfig
 
-mport dolfin.cpp as cpp
+import dolfin.cpp as cpp
 from . import get_pybind_include
 from dolfin.function.expression import BaseExpression, _select_element
 

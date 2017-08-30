@@ -123,19 +123,17 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::PETScTAOSolver, std::shared_ptr<dolfin::PETScTAOSolver>, dolfin::PETScObject>(m, "PETScTAOSolver")
       .def(py::init<>())
-      .def("__init__",
-           [](dolfin::PETScTAOSolver &instance,
-              MPI_Comm comm, std::string tao_type,
-              std::string ksp_type, std::string pc_type)
-           { new (&instance) dolfin::PETScTAOSolver(comm, tao_type, ksp_type, pc_type); },
+      .def(py::init([](MPI_Comm comm, std::string tao_type,
+                       std::string ksp_type, std::string pc_type)
+                    { return dolfin::PETScTAOSolver(comm, tao_type, ksp_type, pc_type); }),
            py::arg("comm"), py::arg("tao_type")="default",
            py::arg("ksp_type")="default", py::arg("pc_type")="default")
       .def_readwrite("parameters", &dolfin::PETScTAOSolver::parameters)
-        .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScTAOSolver::*)(dolfin::OptimisationProblem&, dolfin::GenericVector&))
-             &dolfin::PETScTAOSolver::solve)
-        .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScTAOSolver::*)(dolfin::OptimisationProblem&, dolfin::GenericVector&,
-                                                                                const dolfin::GenericVector&, const dolfin::GenericVector&))
-             &dolfin::PETScTAOSolver::solve);
+      .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScTAOSolver::*)(dolfin::OptimisationProblem&, dolfin::GenericVector&))
+           &dolfin::PETScTAOSolver::solve)
+      .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScTAOSolver::*)(dolfin::OptimisationProblem&, dolfin::GenericVector&,
+                                                                              const dolfin::GenericVector&, const dolfin::GenericVector&))
+           &dolfin::PETScTAOSolver::solve);
 #endif
 
     // dolfin::NonlinearProblem 'trampoline'

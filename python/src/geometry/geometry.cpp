@@ -68,14 +68,13 @@ namespace dolfin_wrappers
       .def(py::init<double, double, double>())
       .def(py::init<double, double>())
       .def(py::init<double>())
-      .def("__init__",
-           [](dolfin::Point& instance, py::array_t<double> x)
-           {
-             auto b = x.request();
-             assert(b.shape.size() == 1);
-             assert(b.shape[0] <= 3);
-             new (&instance) dolfin::Point(b.shape[0], x.data());
-           })
+      .def(py::init([](py::array_t<double> x)
+                    {
+                      auto b = x.request();
+                      assert(b.shape.size() == 1);
+                      assert(b.shape[0] <= 3);
+                      return dolfin::Point(b.shape[0], x.data());
+                    }))
       .def("__getitem__", [](dolfin::Point& self, std::size_t index)
            {
              if (index > 2)

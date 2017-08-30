@@ -270,18 +270,18 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::Function>, std::shared_ptr<const dolfin::Function>,
            dolfin::FunctionAXPY::Direction>())
       .def(py::init<std::vector<std::pair<double, std::shared_ptr<const dolfin::Function>>>>())
-      .def("__init__", [](dolfin::FunctionAXPY& instance, std::vector<std::pair<double, py::object>> fun)
+      .def(py::init([](std::vector<std::pair<double, py::object>> fun)
            {
              std::vector<std::pair<double, std::shared_ptr<const dolfin::Function>>> a;
              for (auto p : fun)
                a.push_back({p.first, p.second.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>()});
-             new (&instance) dolfin::FunctionAXPY(a);
-           })
-      .def("__init__", [](dolfin::FunctionAXPY& instance, py::object f1, double a)
+             return dolfin::FunctionAXPY(a);
+           }))
+      .def(py::init([](py::object f1, double a)
            {
              auto _f1 = f1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::Function>>();
-             new (&instance) dolfin::FunctionAXPY(_f1, a);
-           })
+             return dolfin::FunctionAXPY(_f1, a);
+           }))
       .def(py::self + py::self)
       .def(py::self + std::shared_ptr<const dolfin::Function>())
       .def("__add__", [](dolfin::FunctionAXPY& self, py::object f1)
@@ -369,7 +369,7 @@ namespace dolfin_wrappers
            std::shared_ptr<const dolfin::FunctionSpace>>())
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>,
            std::vector<std::shared_ptr<const dolfin::FunctionSpace>>>())
-      .def("__init__", [](dolfin::FunctionAssigner& self, py::object V0, py::object V1)
+      .def(py::init([](py::object V0, py::object V1)
            {
              if (py::isinstance<py::list>(V0))
              {
@@ -377,8 +377,7 @@ namespace dolfin_wrappers
                for (auto V : py::cast<py::list>(V0))
                  _V0.push_back(V.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>());
                auto _V1 = V1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
-               new (&self) dolfin::FunctionAssigner(_V0, _V1);
-               return;
+               return dolfin::FunctionAssigner(_V0, _V1);
              }
              else if (py::isinstance<py::list>(V1))
              {
@@ -386,17 +385,15 @@ namespace dolfin_wrappers
                for (auto V : py::cast<py::list>(V1))
                  _V1.push_back(V.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>());
                auto _V0 = V0.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
-               new (&self) dolfin::FunctionAssigner(_V0, _V1);
-               return;
+               return dolfin::FunctionAssigner(_V0, _V1);
              }
              else
              {
                auto _V0 = V0.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
                auto _V1 = V1.attr("_cpp_object").cast<std::shared_ptr<const dolfin::FunctionSpace>>();
-               new (&self) dolfin::FunctionAssigner(_V0, _V1);
-               return;
+               return dolfin::FunctionAssigner(_V0, _V1);
              }
-           })
+           }))
       .def("assign", (void (dolfin::FunctionAssigner::*)(std::shared_ptr<dolfin::Function>,
                                                          std::shared_ptr<const dolfin::Function>) const)
            &dolfin::FunctionAssigner::assign)
