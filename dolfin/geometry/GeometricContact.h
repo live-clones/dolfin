@@ -189,11 +189,19 @@ namespace dolfin
                                                 const std::vector<std::size_t> contact_facets,
                                                 const Function& u);
 
+    // Make a mesh of a communicated facets mesh
+    static void create_communicated_prism_mesh(Mesh& prism_mesh,
+                                               const Mesh& mesh,
+                                               const std::vector<std::size_t>& recv_facets,
+                                               const std::vector<double>& coord);
+
     // Make a mesh of a communicated facet
     static void create_communicated_prism_mesh(Mesh& prism_mesh,
                                                const Mesh& mesh,
                                                const std::vector<double>& coord,
                                                std::size_t local_facet_idx);
+
+    static void create_on_process_sub_mesh(Mesh& sub_mesh, const Mesh& mesh);
 
     // Tabulate pairings between collided displacement volume meshes on this process only.
     static void tabulate_on_process_bbox_collisions(const Mesh& master_mesh,

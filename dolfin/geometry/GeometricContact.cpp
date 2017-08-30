@@ -185,6 +185,60 @@ void GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
 //-----------------------------------------------------------------------------
 void GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
                                                       const Mesh& mesh,
+                                                      const std::vector<std::size_t>& recv_facets,
+                                                      const std::vector<double>& coord)
+{
+  // Precalculate triangles making the surface of a prism
+  const std::size_t triangles[8][3] = {{0, 1, 2},
+                                       {0, 1, 3},
+                                       {1, 4, 3},
+                                       {1, 2, 4},
+                                       {2, 5, 4},
+                                       {2, 0, 5},
+                                       {0, 3, 5},
+                                       {3, 4, 5}};
+
+  // Edges of surface of prism in 2D
+  const std::size_t edges[4][2] = {{0, 1},
+                                   {1, 2},
+                                   {2, 3},
+                                   {3, 0}};
+
+  const std::size_t tdim = mesh.topology().dim();
+  const std::size_t gdim = mesh.geometry().dim();
+
+  // Find number of cells/vertices in projected prism in 2D or 3D
+  const std::size_t c_per_f = GeometricContact::cells_per_facet(tdim);
+  const std::size_t v_per_f = GeometricContact::vertices_per_facet(tdim);
+
+  MeshEditor m_ed;
+  m_ed.open(prism_mesh, tdim - 1, gdim);
+  m_ed.init_cells(c_per_f*recv_facets.size());
+
+  if (tdim == 3)
+  {
+    const std::size_t mod_phi = 6;
+    for (std::size_t j = 0; j < recv_facets.size(); ++j)
+      for (std::size_t i = 0; i < c_per_f; ++i)
+        m_ed.add_cell(j*c_per_f + i, triangles[i][0] + mod_phi,
+                      triangles[i][1] + mod_phi, triangles[i][2] + mod_phi);
+  }
+  else
+  {
+    const std::size_t mod_phi = 4;
+    for (std::size_t j = 0; j < recv_facets.size(); ++j)
+      for (std::size_t i = 0; i < c_per_f; ++i)
+        m_ed.add_cell(j*c_per_f + i, edges[i][0] + mod_phi, edges[i][1] + mod_phi);
+  }
+
+  m_ed.init_vertices(coord.size()/gdim);
+  for (std::size_t vert = 0; vert < coord.size()/gdim; ++vert)
+    m_ed.add_vertex(vert, Point(gdim, coord.data() + vert*v_per_f*gdim));
+  m_ed.close();
+}
+//-----------------------------------------------------------------------------
+void GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
+                                                      const Mesh& mesh,
                                                       const std::vector<double>& coord,
                                                       std::size_t local_facet_idx)
 {
@@ -319,9 +373,12 @@ void GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(const
   Timer t6("YYYY GC:: Unpack everything");
   for (std::size_t proc = 0; proc != mpi_size; ++proc)
   {
-    auto& rfacet = recv_facets[proc];
-    auto& coord = recv_coordinates[proc];
+    const auto& rfacet = recv_facets[proc];
+    const auto& coord = recv_coordinates[proc];
     dolfin_assert(coord.size() == gdim*v_per_f*rfacet.size());
+
+//    Mesh prism_mesh(MPI_COMM_SELF);
+//    GeometricContact::create_communicated_prism_mesh(prism_mesh, mesh, rfacet, coord);
 
     for (std::size_t j = 0; j < rfacet.size(); ++j)
     {
@@ -403,13 +460,19 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   // Map is stored as local_master_facet -> [mpi_rank, local_index, mpi_rank, local_index ...]
   // First check locally
   Timer t1("XXXX GC:: collision detec");
-  GeometricContact::tabulate_on_process_bbox_collisions(master_mesh, master_facets,
-                                                        slave_mesh, slave_facets,
-                                                        _master_to_slave);
-  GeometricContact::tabulate_on_process_bbox_collisions(slave_mesh, slave_facets,
-                                                        master_mesh, master_facets,
-                                                        _slave_to_master);
-
+  if (master_mesh.num_vertices() != 0 and slave_mesh.num_vertices() != 0)
+  {
+    Mesh master_mesh_on_proc(MPI_COMM_SELF);
+    GeometricContact::create_on_process_sub_mesh(master_mesh_on_proc, master_mesh);
+    Mesh slave_mesh_on_proc(MPI_COMM_SELF);
+    GeometricContact::create_on_process_sub_mesh(slave_mesh_on_proc, slave_mesh);
+    GeometricContact::tabulate_on_process_bbox_collisions(master_mesh_on_proc, master_facets,
+                                                          slave_mesh_on_proc, slave_facets,
+                                                          _master_to_slave);
+    GeometricContact::tabulate_on_process_bbox_collisions(slave_mesh_on_proc, slave_facets,
+                                                          master_mesh_on_proc, master_facets,
+                                                          _slave_to_master);
+  }
 //  for (std::size_t i = 0; i < master_facets.size(); ++i)
 //    for (std::size_t j = 0; j < slave_facets.size(); ++j)
 //    {
@@ -729,5 +792,27 @@ void GeometricContact::tabulate_on_process_bbox_collisions(const Mesh& master_me
       master_to_slave[mf].push_back(sf);
     }
   }
+}
+//-----------------------------------------------------------------------------
+void GeometricContact::create_on_process_sub_mesh(Mesh& sub_mesh, const Mesh& mesh)
+{
+
+  MeshEditor me;
+  me.open(sub_mesh, mesh.topology().dim(), mesh.geometry().dim());
+
+  me.init_cells(mesh.num_cells());
+  me.init_vertices(mesh.num_vertices());
+
+  const std::size_t v_per_c = mesh.topology().dim() + 1;
+
+  for (CellIterator c(mesh); !c.end(); ++c)
+  {
+    const auto v_idxs_ptr = c->entities(0);
+    std::vector<std::size_t> v_idxs(v_idxs_ptr, v_idxs_ptr + v_per_c);
+    me.add_cell(c->index(), v_idxs);
+  }
+  for (VertexIterator v(mesh); !v.end(); ++v)
+    me.add_vertex(v->index(), v->point());
+  me.close();
 }
 //-----------------------------------------------------------------------------
