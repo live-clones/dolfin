@@ -195,7 +195,12 @@ namespace dolfin
                                                const std::vector<double>& coord,
                                                std::size_t local_facet_idx);
 
-    static void tabulate_on_process_bbox_collisions();
+    // Tabulate pairings between collided displacement volume meshes on this process only.
+    static void tabulate_on_process_bbox_collisions(const Mesh& master_mesh,
+                                                    const std::vector<std::size_t>& master_facets,
+                                                    const Mesh& slave_mesh,
+                                                    const std::vector<std::size_t>& slave_facets,
+                                                    std::map<std::size_t, std::vector<std::size_t>>& master_to_slave);
 
     // Tabulate pairings between collided displacement volume meshes.
     static void tabulate_off_process_displacement_volume_mesh_pairs(const Mesh& mesh,

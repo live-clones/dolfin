@@ -403,37 +403,12 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
   // Map is stored as local_master_facet -> [mpi_rank, local_index, mpi_rank, local_index ...]
   // First check locally
   Timer t1("XXXX GC:: collision detec");
-
-  BoundingBoxTree bbox_master;
-  bbox_master.build(master_mesh);
-
-  BoundingBoxTree bbox_slave;
-  bbox_slave.build(slave_mesh);
-
-  const auto master_slave_bbox_coll =
-      bbox_master.compute_entity_collisions(bbox_slave);
-  const auto& master_idxs = master_slave_bbox_coll.first;
-  const auto& slave_idxs = master_slave_bbox_coll.second;
-
-  std::map<std::size_t, std::set<std::size_t>> m2s_set;
-  for (std::size_t j=0; j<master_idxs.size(); ++j)
-  {
-    const std::size_t mf = master_facets[master_idxs[j]/c_per_f];
-    const std::size_t sf = slave_facets[slave_idxs[j]/c_per_f];
-    m2s_set[mf].insert(sf);
-  }
-
-  for(const auto& m2s_pair : m2s_set)
-  {
-    const std::size_t mf = m2s_pair.first;
-    const std::set<std::size_t>& sfs = m2s_pair.second;
-    for (const auto& sf : sfs)
-    {
-      _master_to_slave[mf].push_back(mpi_rank);
-      _master_to_slave[mf].push_back(sf);
-    }
-  }
-
+  GeometricContact::tabulate_on_process_bbox_collisions(master_mesh, master_facets,
+                                                        slave_mesh, slave_facets,
+                                                        _master_to_slave);
+  GeometricContact::tabulate_on_process_bbox_collisions(slave_mesh, slave_facets,
+                                                        master_mesh, master_facets,
+                                                        _slave_to_master);
 
 //  for (std::size_t i = 0; i < master_facets.size(); ++i)
 //    for (std::size_t j = 0; j < slave_facets.size(); ++j)
@@ -455,14 +430,12 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
 //        _slave_to_master[sf].push_back(mf);
 //      }
 //    }
-//  t1.stop();
+
+  t1.stop();
 
   // Find which [master global/slave entity] BBs overlap in parallel
   if (mpi_size > 1)
   {
-    std::vector<std::vector<std::size_t>> send_facets;
-    std::vector<std::vector<double>> send_coordinates;
-
     Timer t("XXXX GC:: tabulate_off_process_displacement_volume_mesh_pairs");
     GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(mesh, slave_mesh, master_mesh, slave_facets,
                                                                           master_facets, _master_to_slave);
@@ -470,7 +443,6 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
     GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(mesh, master_mesh, slave_mesh, master_facets,
                                                                           slave_facets, _slave_to_master);
     t.stop();
-
   }
 }
 //-----------------------------------------------------------------------------
@@ -716,8 +688,46 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
 
 }
 //-----------------------------------------------------------------------------
-void GeometricContact::tabulate_on_process_bbox_collisions()
+void GeometricContact::tabulate_on_process_bbox_collisions(const Mesh& master_mesh,
+                                                           const std::vector<std::size_t>& master_facets,
+                                                           const Mesh& slave_mesh,
+                                                           const std::vector<std::size_t>& slave_facets,
+                                                           std::map<std::size_t, std::vector<std::size_t>>& master_to_slave)
 {
+  const std::size_t mpi_rank = MPI::rank(master_mesh.mpi_comm());
 
+  // Master and slave meshes are tdim = D-1 manifolds in gdim = D.
+  const std::size_t c_per_f = GeometricContact::cells_per_facet(master_mesh.topology().dim() + 1);
+
+  BoundingBoxTree bbox_master;
+  bbox_master.build(master_mesh);
+
+  BoundingBoxTree bbox_slave;
+  bbox_slave.build(slave_mesh);
+
+  const auto master_slave_bbox_coll =
+      bbox_master.compute_entity_collisions(bbox_slave);
+
+  const auto& master_idxs = master_slave_bbox_coll.first;
+  const auto& slave_idxs = master_slave_bbox_coll.second;
+
+  std::map<std::size_t, std::set<std::size_t>> m2s_set;
+  for (std::size_t j=0; j<master_idxs.size(); ++j)
+  {
+    const std::size_t mf = master_facets[master_idxs[j]/c_per_f];
+    const std::size_t sf = slave_facets[slave_idxs[j]/c_per_f];
+    m2s_set[mf].insert(sf);
+  }
+
+  for(const auto& m2s_pair : m2s_set)
+  {
+    const std::size_t mf = m2s_pair.first;
+    const std::set<std::size_t>& sfs = m2s_pair.second;
+    for (const auto& sf : sfs)
+    {
+      master_to_slave[mf].push_back(mpi_rank);
+      master_to_slave[mf].push_back(sf);
+    }
+  }
 }
 //-----------------------------------------------------------------------------
