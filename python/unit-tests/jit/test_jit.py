@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 """Unit tests for the JIT compiler"""
 
 # Copyright (C) 2011 Anders Logg
@@ -62,10 +60,10 @@ def test_compile_extension_module():
       }
     """
     pybind11 = """
-    m.def("PETSc_exp", &dolfin::PETSc_exp);
+    m.def("PETSc_exp", &PETSc_exp);
     """
 
-    ext_module = compile_cpp_code({"cpp_code": code, "pybind11_code": pybind11})
+    ext_module = compile_cpp_code({"cpp_code" : code, "pybind11_code" : pybind11})
 
     vec = PETScVector(mpi_comm_world(), 10)
     np_vec = vec.array()
@@ -74,6 +72,7 @@ def test_compile_extension_module():
     ext_module.PETSc_exp(vec)
     np_vec[:] = exp(np_vec)
     assert (np_vec == vec.array()).all()
+
 
 @pytest.mark.xfail
 def test_compile_extension_module_kwargs():
@@ -88,8 +87,9 @@ def test_compile_extension_module_kwargs():
 @skip_in_serial
 def test_mpi_dependent_jiting():
     # FIXME: Not a proper unit test...
-    from dolfin import Expression, UnitSquareMesh, Function, TestFunction, \
-         Form, FunctionSpace, dx, CompiledSubDomain, SubSystemsManager
+    from dolfin import (Expression, UnitSquareMesh, Function, TestFunction,
+                        Form, FunctionSpace, dx, CompiledSubDomain,
+                        SubSystemsManager)
 
     # Init petsc (needed to initalize petsc and slepc collectively on
     # all processes)

@@ -245,13 +245,13 @@ def test_meshfunction_expression():
     c[1] = 3
 
     cpp_code = '''
-    class {classname} : public Expression
+    class {classname} : public dolfin::Expression
     {{
     public:
 
-      std::shared_ptr<MeshFunction<{t}>> c;
+      std::shared_ptr<dolfin::MeshFunction<{t}>> c;
 
-      {classname}() : Expression()
+      {classname}() : dolfin::Expression()
       {{
       }}
 
@@ -263,15 +263,15 @@ def test_meshfunction_expression():
     }};'''
 
     pybind11_code = '''
-  py::class_<dolfin::{classname}, std::shared_ptr<dolfin::{classname}>, dolfin::Expression>
+  py::class_<{classname}, std::shared_ptr<{classname}>, dolfin::Expression>
     (m, "{classname}")
     .def(py::init<>())
-    .def_readwrite("c", &dolfin::{classname}::c);
+    .def_readwrite("c", &{classname}::c);
 '''
 
     e = UserExpression(degree=0)
-    e._cpp_object = compile_cpp_code({'cpp_code':cpp_code.format(t='std::size_t', classname='MeshExpressionInt'),
-                       'pybind11_code':pybind11_code.format(classname='MeshExpressionInt')}).MeshExpressionInt()
+    e._cpp_object = compile_cpp_code({'cpp_code' : cpp_code.format(t='std::size_t', classname='MeshExpressionInt'),
+                                      'pybind11_code' : pybind11_code.format(classname='MeshExpressionInt')}).MeshExpressionInt()
     e._cpp_object.c = c
 
     h = interpolate(e, V)
@@ -283,8 +283,8 @@ def test_meshfunction_expression():
     a[0] = 2.0
     a[1] = 4.0
     e = UserExpression(degree=0)
-    e._cpp_object = compile_cpp_code({'cpp_code':cpp_code.format(t='double', classname='MeshExpressionDouble'),
-               'pybind11_code':pybind11_code.format(classname='MeshExpressionDouble')}).MeshExpressionDouble()
+    e._cpp_object = compile_cpp_code({'cpp_code' : cpp_code.format(t='double', classname='MeshExpressionDouble'),
+                                      'pybind11_code' : pybind11_code.format(classname='MeshExpressionDouble')}).MeshExpressionDouble()
     e._cpp_object.c = a
 
     h = interpolate(e, V)
@@ -297,16 +297,16 @@ def test_meshfunction_expression():
     g = Constant(3.0)
 
     cpp_code = '''
-    class {classname} : public Expression
+    class {classname} : public dolfin::Expression
     {{
     public:
 
       double a;
-      std::shared_ptr<MeshFunction<std::size_t>> c;
-      std::shared_ptr<GenericFunction> f;
-      std::shared_ptr<GenericFunction> g;
+      std::shared_ptr<dolfin::MeshFunction<std::size_t>> c;
+      std::shared_ptr<dolfin::GenericFunction> f;
+      std::shared_ptr<dolfin::GenericFunction> g;
 
-      {classname}() : Expression()
+      {classname}() : dolfin::Expression()
       {{
       }}
 
@@ -320,18 +320,18 @@ def test_meshfunction_expression():
     }};'''
 
     pybind11_code = '''
-  py::class_<dolfin::{classname}, std::shared_ptr<dolfin::{classname}>, dolfin::Expression>
+  py::class_<{classname}, std::shared_ptr<{classname}>, dolfin::Expression>
     (m, "{classname}")
     .def(py::init<>())
-    .def_readwrite("a", &dolfin::{classname}::a)
-    .def_readwrite("c", &dolfin::{classname}::c)
-    .def_readwrite("f", &dolfin::{classname}::f)
-    .def_readwrite("g", &dolfin::{classname}::g);
+    .def_readwrite("a", &{classname}::a)
+    .def_readwrite("c", &{classname}::c)
+    .def_readwrite("f", &{classname}::f)
+    .def_readwrite("g", &{classname}::g);
 '''
 
     e = UserExpression(degree=0)
-    e._cpp_object = compile_cpp_code({'cpp_code':cpp_code.format(classname='SwitchExpression'),
-                       'pybind11_code':pybind11_code.format(classname='SwitchExpression')}).SwitchExpression()
+    e._cpp_object = compile_cpp_code({'cpp_code' : cpp_code.format(classname='SwitchExpression'),
+                                      'pybind11_code' : pybind11_code.format(classname='SwitchExpression')}).SwitchExpression()
     e._cpp_object.a = 5.0
     e._cpp_object.c = c
     e._cpp_object.f = f._cpp_object
@@ -349,14 +349,14 @@ def test_meshfunction_expression():
     assert v[1] == 5.0 * 3.0
 
     cpp_code = '''
-    class {classname} : public Expression
+    class {classname} : public dolfin::Expression
     {{
     public:
 
-      std::shared_ptr<MeshFunction<std::size_t>> c;
+      std::shared_ptr<dolfin::MeshFunction<std::size_t>> c;
       Eigen::VectorXd w;
 
-      {classname}() : Expression()
+      {classname}() : dolfin::Expression()
       {{
       }}
 
@@ -368,19 +368,19 @@ def test_meshfunction_expression():
     }};'''
 
     pybind11_code = '''
-  py::class_<dolfin::{classname}, std::shared_ptr<dolfin::{classname}>, dolfin::Expression>
+  py::class_<{classname}, std::shared_ptr<{classname}>, dolfin::Expression>
     (m, "{classname}")
     .def(py::init<>())
-    .def_readwrite("w", &dolfin::{classname}::w)
-    .def_readwrite("c", &dolfin::{classname}::c);
+    .def_readwrite("w", &{classname}::w)
+    .def_readwrite("c", &{classname}::c);
 '''
 
 
     w = (0.0, 1.0, 2.0, 3.0, 4.0, 5.0)
     e = UserExpression(degree=0)
-    e._cpp_object = compile_cpp_code({'cpp_code':cpp_code.format(classname='WExpression'),
-                       'pybind11_code':pybind11_code.format(classname='WExpression')}).WExpression()
-#    e = Expression("w[c]", w=w, c=c, degree=0)
+    e._cpp_object = compile_cpp_code({'cpp_code' : cpp_code.format(classname='WExpression'),
+                       'pybind11_code' : pybind11_code.format(classname='WExpression')}).WExpression()
+    # e = Expression("w[c]", w=w, c=c, degree=0)
     e._cpp_object.w = w
     e._cpp_object.c = c
 
@@ -713,13 +713,13 @@ def test_doc_string_complex_compiled_expression(mesh):
     """
 
     code = '''
-    class MyFunc : public Expression
+    class MyFunc : public dolfin::Expression
     {
     public:
 
-      std::shared_ptr<MeshFunction<std::size_t> > cell_data;
+      std::shared_ptr<dolfin::MeshFunction<std::size_t> > cell_data;
 
-      MyFunc() : Expression()
+      MyFunc() : dolfin::Expression()
       {
       }
 
@@ -727,7 +727,7 @@ def test_doc_string_complex_compiled_expression(mesh):
                 const ufc::cell& c) const
       {
         assert(cell_data);
-        const Cell cell(*cell_data->mesh(), c.index);
+        const dolfin::Cell cell(*cell_data->mesh(), c.index);
         switch ((*cell_data)[cell.index()])
         {
         case 0:
@@ -746,10 +746,10 @@ def test_doc_string_complex_compiled_expression(mesh):
     };'''
 
     pybind11 = '''
-  py::class_<dolfin::MyFunc, std::shared_ptr<dolfin::MyFunc>, dolfin::Expression>
+  py::class_<MyFunc, std::shared_ptr<MyFunc>, dolfin::Expression>
     (m, "MyFunc")
     .def(py::init<>())
-    .def_readwrite("cell_data", &dolfin::MyFunc::cell_data);
+    .def_readwrite("cell_data", &MyFunc::cell_data);
 '''
 
     cell_data = CellFunction('size_t', mesh)
@@ -788,7 +788,7 @@ def test_doc_string_complex_compiled_expression(mesh):
     # Create compiled expression and attach cell data
     # FIXME: need to make this simpler
     f = UserExpression(degree=2)
-    f._cpp_object = compile_cpp_code({'cpp_code':code, 'pybind11_code':pybind11}).MyFunc()
+    f._cpp_object = compile_cpp_code({'cpp_code' : code, 'pybind11_code' : pybind11}).MyFunc()
     f._cpp_object.cell_data = cell_data
     f.eval_cell = f._cpp_object.eval
 
@@ -815,27 +815,27 @@ def test_doc_string_compiled_expression_with_system_headers():
     """
 
     cpp_code = '''
-      class Delta : public Expression
+      class Delta : public dolfin::Expression
       {
       public:
 
-        Delta() : Expression() {}
+        Delta() : dolfin::Expression() {}
 
         void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> data,
                   const ufc::cell& cell) const
         { }
 
-        void update(const std::shared_ptr<const Function> u,
+        void update(const std::shared_ptr<const dolfin::Function> u,
                     double nu, double dt, double C1,
                     double U_infty, double chord)
         {
-          const std::shared_ptr<const Mesh> mesh = u->function_space()->mesh();
-          const std::shared_ptr<const GenericDofMap> dofmap = u->function_space()->dofmap();
+          const std::shared_ptr<const dolfin::Mesh> mesh = u->function_space()->mesh();
+          const std::shared_ptr<const dolfin::GenericDofMap> dofmap = u->function_space()->dofmap();
           const std::size_t ncells = mesh->num_cells();
           std::size_t ndofs_per_cell;
           if (ncells > 0)
           {
-            CellIterator cell(*mesh);
+            dolfin::CellIterator cell(*mesh);
             ndofs_per_cell = dofmap->num_element_dofs(cell->index());
           }
           else
@@ -847,13 +847,13 @@ def test_doc_string_compiled_expression_with_system_headers():
     '''
 
     pybind11_code = '''
-  py::class_<dolfin::Delta, std::shared_ptr<dolfin::Delta>, dolfin::Expression>
+  py::class_<Delta, std::shared_ptr<Delta>, dolfin::Expression>
     (m, "Delta")
     .def(py::init<>())
-    .def("update", &dolfin::Delta::update);
+    .def("update", &Delta::update);
 '''
 
-    cc = compile_cpp_code({'cpp_code':cpp_code, 'pybind11_code': pybind11_code}).Delta()
+    cc = compile_cpp_code({'cpp_code' : cpp_code, 'pybind11_code': pybind11_code}).Delta()
     assert hasattr(cc, "update")
 
     # Test not compile

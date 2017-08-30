@@ -21,10 +21,7 @@ namespace py = pybind11;
 #include <dolfin.h>
 #include <Eigen/Dense>
 
-namespace dolfin
-{{
-   {cpp_code}
-}}
+{cpp_code}
 
 PYBIND11_MODULE({signature}, m)
 {{
@@ -91,4 +88,5 @@ def compile_cpp_code(class_data):
     module, signature = dijitso.jit(class_data,
                                     module_name, params,
                                     generate=jit_generate)
+    print(signature, module_name)
     return module
