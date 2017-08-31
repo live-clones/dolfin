@@ -49,9 +49,14 @@ namespace dolfin
     const std::size_t slave_facet_idx;
     const std::size_t slave_facet_local_idx;
 
-    const std::vector<double> get_dof_coords() { return _dof_coords; };
-    const std::vector<double> get_dof_coeffs() { return _dof_coeffs; };
-    const std::vector<std::size_t> get_cell_dofs() { return _cell_dofs; };
+    const std::vector<double> get_dof_coords()
+    { return _dof_coords; };
+
+    const std::vector<double> get_dof_coeffs()
+    { return _dof_coeffs; };
+
+    const std::vector<std::size_t> get_cell_dofs()
+    { return _cell_dofs; };
 
     const std::vector<Point> get_cell_vertices(const Mesh& mesh)
     {
@@ -119,24 +124,27 @@ namespace dolfin
 
     /// Calculate map from master facets to possible colliding slave facets
     void
-      contact_surface_map_volume_sweep(Mesh& mesh, Function& u,
-                                          const std::vector<std::size_t>& master_facets,
-                                          const std::vector<std::size_t>& slave_facets);
+      contact_surface_map_volume_sweep(
+          Mesh& mesh, Function& u,
+          const std::vector<std::size_t>& master_facets,
+          const std::vector<std::size_t>& slave_facets);
 
     /// For each of the master facets on this process, compute the DoFs of the cells belonging
     /// to the facets in contact on the contact process(es).
     void
-    tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function& u,
-                                         const std::vector<std::size_t>& master_facets,
-                                         const std::vector<std::size_t>& slave_facets);
+    tabulate_contact_cell_to_shared_dofs(
+        Mesh& mesh, Function& u,
+        const std::vector<std::size_t>& master_facets,
+        const std::vector<std::size_t>& slave_facets);
 
 
     /// Tabulate the mapping from local master facet, which are in possible contact with their
     /// shared cells' metadata.
     void
-    tabulate_contact_shared_cells(Mesh& mesh, Function& u,
-                                  const std::vector<std::size_t>& master_facets,
-                                  const std::vector<std::size_t>& slave_facets);
+    tabulate_contact_shared_cells(
+        Mesh& mesh, Function& u,
+        const std::vector<std::size_t>& master_facets,
+        const std::vector<std::size_t>& slave_facets);
 
     /// Get master to slave mapping
     const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave() const
@@ -174,46 +182,53 @@ namespace dolfin
     std::map<std::size_t, std::vector<std::shared_ptr<CellMetaData>>> _master_facet_to_contacted_cells;
 
     // Project surface forward from a facet using 'u', creating a prismoidal volume in 2D or 3D
-    static std::vector<Point> create_deformed_segment_volume(const Mesh& mesh,
-                                                             std::size_t facet_index,
-                                                             const Function& u,
-                                                             std::size_t gdim);
+    static std::vector<Point> create_deformed_segment_volume(
+        const Mesh& mesh,
+        std::size_t facet_index,
+        const Function& u,
+        std::size_t gdim);
 
     // Make a mesh of the displacement volume
-    static void create_displacement_volume_mesh(Mesh& displacement_mesh,
-                                                const Mesh& mesh,
-                                                const std::vector<std::size_t> contact_facets,
-                                                const Function& u);
+    static void create_displacement_volume_mesh(
+        Mesh& displacement_mesh,
+        const Mesh& mesh,
+        const std::vector<std::size_t> contact_facets,
+        const Function& u);
 
     // Make a mesh of a communicated facets mesh
-    static void create_communicated_prism_mesh(Mesh& prism_mesh,
-                                               const Mesh& mesh,
-                                               const std::vector<std::size_t>& recv_facets,
-                                               const std::vector<double>& coord);
+    static void create_communicated_prism_mesh(
+        Mesh& prism_mesh,
+        const Mesh& mesh,
+        const std::vector<std::size_t>& recv_facets,
+        const std::vector<double>& coord);
 
     static void create_on_process_sub_mesh(Mesh& sub_mesh, const Mesh& mesh);
 
     // Tabulate pairings between collided displacement volume meshes on this process only.
-    static void tabulate_on_process_bbox_collisions(const std::size_t mpi_rank,
-                                                    const Mesh& master_mesh,
-                                                    const std::vector<std::size_t>& master_facets,
-                                                    const Mesh& slave_mesh,
-                                                    const std::vector<std::size_t>& slave_facets,
-                                                    std::map<std::size_t, std::vector<std::size_t>>& master_to_slave);
+    static void tabulate_on_process_bbox_collisions(
+        const std::size_t mpi_rank,
+        const Mesh& master_mesh,
+        const std::vector<std::size_t>& master_facets,
+        const Mesh& slave_mesh,
+        const std::vector<std::size_t>& slave_facets,
+        std::map<std::size_t, std::vector<std::size_t>>& master_to_slave);
 
     // Tabulate pairings between collided displacement volume meshes.
-    static void tabulate_off_process_displacement_volume_mesh_pairs(const Mesh& mesh,
-                                                                    const Mesh& slave_mesh,
-                                                                    const Mesh& master_mesh,
-                                                                    const std::vector<std::size_t>& slave_facets,
-                                                                    const std::vector<std::size_t>& master_facets,
-                                                                    std::map<std::size_t, std::vector<std::size_t>>& contact_facet_map);
+    static void tabulate_off_process_displacement_volume_mesh_pairs(
+        const Mesh& mesh,
+        const Mesh& slave_mesh,
+        const Mesh& master_mesh,
+        const std::vector<std::size_t>& slave_facets,
+        const std::vector<std::size_t>& master_facets,
+        std::map<std::size_t, std::vector<std::size_t>>& contact_facet_map);
 
     // Tabulate pairings between facet index and collided cell DoFs
-    void tabulate_collided_cell_dofs(const Mesh& mesh, const GenericDofMap& dofmap,
-                                            const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave,
-                                            std::map<std::size_t, std::vector<std::size_t>>& facet_to_contacted_dofs,
-                                            std::map<std::size_t, std::vector<std::size_t>>& facet_to_off_proc_contacted_dofs);
+    void tabulate_collided_cell_dofs(
+        const Mesh& mesh,
+        const GenericDofMap& dofmap,
+        const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave,
+        std::map<std::size_t, std::vector<std::size_t>>& facet_to_contacted_dofs,
+        std::map<std::size_t, std::vector<std::size_t>>& facet_to_off_proc_contacted_dofs);
 
     // Find number of cells in projected prism in 2D or 3D
     static std::size_t cells_per_facet(std::size_t tdim) { return (tdim - 1)*4; };
