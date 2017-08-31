@@ -204,7 +204,8 @@ namespace dolfin
     static void create_on_process_sub_mesh(Mesh& sub_mesh, const Mesh& mesh);
 
     // Tabulate pairings between collided displacement volume meshes on this process only.
-    static void tabulate_on_process_bbox_collisions(const Mesh& master_mesh,
+    static void tabulate_on_process_bbox_collisions(const std::size_t mpi_rank,
+                                                    const Mesh& master_mesh,
                                                     const std::vector<std::size_t>& master_facets,
                                                     const Mesh& slave_mesh,
                                                     const std::vector<std::size_t>& slave_facets,

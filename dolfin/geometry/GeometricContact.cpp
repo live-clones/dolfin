@@ -25,6 +25,7 @@
 #include <dolfin/mesh/Facet.h>
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/common/Timer.h>
+#include <dolfin/io/XDMFFile.h>
 
 #include "BoundingBoxTree.h"
 #include "CollisionDetection.h"
@@ -207,6 +208,14 @@ void GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
   const std::size_t tdim = mesh.topology().dim();
   const std::size_t gdim = mesh.geometry().dim();
 
+  std::string msg = "rfacets: ";
+  for (const auto& rf : recv_facets)
+    msg += std::to_string(rf) + ", ";
+  msg += "\ncoord: ";
+  for (const auto& co : coord)
+    msg += std::to_string(co) + ", ";
+  info(msg);
+
   // Find number of cells/vertices in projected prism in 2D or 3D
   const std::size_t c_per_f = GeometricContact::cells_per_facet(tdim);
   const std::size_t v_per_f = GeometricContact::vertices_per_facet(tdim);
@@ -217,23 +226,21 @@ void GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
 
   if (tdim == 3)
   {
-    const std::size_t mod_phi = 6;
     for (std::size_t j = 0; j < recv_facets.size(); ++j)
       for (std::size_t i = 0; i < c_per_f; ++i)
-        m_ed.add_cell(j*c_per_f + i, triangles[i][0] + mod_phi,
-                      triangles[i][1] + mod_phi, triangles[i][2] + mod_phi);
+        m_ed.add_cell(j*c_per_f + i, j*c_per_f + triangles[i][0],
+                      j*c_per_f + triangles[i][1], j*c_per_f + triangles[i][2]);
   }
   else
   {
-    const std::size_t mod_phi = 4;
     for (std::size_t j = 0; j < recv_facets.size(); ++j)
       for (std::size_t i = 0; i < c_per_f; ++i)
-        m_ed.add_cell(j*c_per_f + i, edges[i][0] + mod_phi, edges[i][1] + mod_phi);
+        m_ed.add_cell(j*c_per_f + i, j*c_per_f + edges[i][0], j*c_per_f + edges[i][1]);
   }
 
   m_ed.init_vertices(coord.size()/gdim);
   for (std::size_t vert = 0; vert < coord.size()/gdim; ++vert)
-    m_ed.add_vertex(vert, Point(gdim, coord.data() + vert*v_per_f*gdim));
+    m_ed.add_vertex(vert, Point(gdim, coord.data() + vert*gdim));
   m_ed.close();
 }
 //-----------------------------------------------------------------------------
@@ -285,13 +292,13 @@ void GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
   m_ed.close();
 }
 //-----------------------------------------------------------------------------
-void GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(const Mesh& mesh,
-                                                                           const Mesh& slave_mesh,
-                                                                           const Mesh& master_mesh,
-                                                                           const std::vector<std::size_t>& slave_facets,
-                                                                           const std::vector<std::size_t>& master_facets,
-                                                                           std::map<std::size_t, std::vector<std::size_t>>& contact_facet_map)
+void GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(
+    const Mesh& mesh, const Mesh& slave_mesh, const Mesh& master_mesh,
+    const std::vector<std::size_t>& slave_facets,
+    const std::vector<std::size_t>& master_facets,
+    std::map<std::size_t, std::vector<std::size_t>>& contact_facet_map)
 {
+  info("In here with master mesh size: " + std::to_string(master_mesh.num_vertices()));
   MPI::barrier(mesh.mpi_comm());
   Timer ta("YYYY GC:: total inner func");
   std::vector<std::vector<std::size_t>> send_facets;
@@ -370,6 +377,13 @@ void GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(const
   t5.stop();
   MPI::barrier(mesh.mpi_comm());
 
+  if (master_mesh.num_vertices() == 0)
+    return;
+
+  Mesh master_mesh_on_proc(MPI_COMM_SELF);
+  GeometricContact::create_on_process_sub_mesh(master_mesh_on_proc, master_mesh);
+//  XDMFFile(MPI_COMM_SELF, "other_mesh" + std::to_string(MPI::rank(mesh.mpi_comm())) + ".xdmf").write(mesh_on_proc);
+
   Timer t6("YYYY GC:: Unpack everything");
   for (std::size_t proc = 0; proc != mpi_size; ++proc)
   {
@@ -377,36 +391,49 @@ void GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(const
     const auto& coord = recv_coordinates[proc];
     dolfin_assert(coord.size() == gdim*v_per_f*rfacet.size());
 
-//    Mesh prism_mesh(MPI_COMM_SELF);
-//    GeometricContact::create_communicated_prism_mesh(prism_mesh, mesh, rfacet, coord);
 
-    for (std::size_t j = 0; j < rfacet.size(); ++j)
-    {
-      // FIXME: inefficient? but difficult to use BBT with primitives
-      // so create a small Mesh for each received prism
-      Mesh prism_mesh(MPI_COMM_SELF);
-      GeometricContact::create_communicated_prism_mesh(prism_mesh, mesh, coord, j);
+    // Received facets is empty, so there can be no collisions on this process
+    if (rfacet.empty())
+      continue;
 
-      // Check all local master facets against received slave data
-      for (std::size_t i = 0; i < master_facets.size(); ++i)
-      {
-        bool collision;
-        if (tdim == 3)
-          collision = check_tri_set_collision(master_mesh, i*c_per_f, prism_mesh, 0);
-        else
-          collision = check_edge_set_collision(master_mesh, i*c_per_f, prism_mesh, 0);
+    info("mesh size: " + std::to_string(mesh.num_vertices()));
+    info("master_mesh_on_proc size: " + std::to_string(master_mesh_on_proc.num_vertices()));
 
-        if (collision)
-        {
-          const std::size_t mf = master_facets[i];
-          contact_facet_map[mf].push_back(proc);
-          contact_facet_map[mf].push_back(rfacet[j]);
-        }
-      }
-    }
+    Mesh prism_mesh2(MPI_COMM_SELF);
+    GeometricContact::create_communicated_prism_mesh(prism_mesh2, mesh, rfacet, coord);
+    info("prism_mesh2 size: " + std::to_string(prism_mesh2.num_vertices()));
+
+    GeometricContact::tabulate_on_process_bbox_collisions(proc, master_mesh_on_proc, master_facets,
+                                                          prism_mesh2, rfacet, contact_facet_map);
+
+//    for (std::size_t j = 0; j < rfacet.size(); ++j)
+//    {
+//      // FIXME: inefficient? but difficult to use BBT with primitives
+//      // so create a small Mesh for each received prism
+//      Mesh prism_mesh(MPI_COMM_SELF);
+//      GeometricContact::create_communicated_prism_mesh(prism_mesh, mesh, coord, j);
+//      XDMFFile(MPI_COMM_SELF, "prism_mesh" + std::to_string(MPI::rank(mesh.mpi_comm())) + "_" + std::to_string(j) + ".xdmf").write(prism_mesh);
+//
+//      // Check all local master facets against received slave data
+//      for (std::size_t i = 0; i < master_facets.size(); ++i)
+//      {
+//        bool collision;
+//        if (tdim == 3)
+//          collision = check_tri_set_collision(master_mesh, i*c_per_f, prism_mesh, 0);
+//        else
+//          collision = check_edge_set_collision(master_mesh, i*c_per_f, prism_mesh, 0);
+//
+//        if (collision)
+//        {
+//          const std::size_t mf = master_facets[i];
+//          contact_facet_map[mf].push_back(proc);
+//          contact_facet_map[mf].push_back(rfacet[j]);
+//        }
+//      }
+//    }
   }
-  t6.stop();
-  MPI::barrier(mesh.mpi_comm());
+//  t6.stop();
+//  MPI::barrier(mesh.mpi_comm());
   ta.stop();
 }
 //-----------------------------------------------------------------------------
@@ -466,10 +493,12 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
     GeometricContact::create_on_process_sub_mesh(master_mesh_on_proc, master_mesh);
     Mesh slave_mesh_on_proc(MPI_COMM_SELF);
     GeometricContact::create_on_process_sub_mesh(slave_mesh_on_proc, slave_mesh);
-    GeometricContact::tabulate_on_process_bbox_collisions(master_mesh_on_proc, master_facets,
+    GeometricContact::tabulate_on_process_bbox_collisions(mpi_rank,
+                                                          master_mesh_on_proc, master_facets,
                                                           slave_mesh_on_proc, slave_facets,
                                                           _master_to_slave);
-    GeometricContact::tabulate_on_process_bbox_collisions(slave_mesh_on_proc, slave_facets,
+    GeometricContact::tabulate_on_process_bbox_collisions(mpi_rank,
+                                                          slave_mesh_on_proc, slave_facets,
                                                           master_mesh_on_proc, master_facets,
                                                           _slave_to_master);
   }
@@ -751,13 +780,14 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
 
 }
 //-----------------------------------------------------------------------------
-void GeometricContact::tabulate_on_process_bbox_collisions(const Mesh& master_mesh,
+void GeometricContact::tabulate_on_process_bbox_collisions(const std::size_t mpi_rank,
+                                                           const Mesh& master_mesh,
                                                            const std::vector<std::size_t>& master_facets,
                                                            const Mesh& slave_mesh,
                                                            const std::vector<std::size_t>& slave_facets,
                                                            std::map<std::size_t, std::vector<std::size_t>>& master_to_slave)
 {
-  const std::size_t mpi_rank = MPI::rank(master_mesh.mpi_comm());
+//  const std::size_t mpi_rank = MPI::rank(master_mesh.mpi_comm());
 
   // Master and slave meshes are tdim = D-1 manifolds in gdim = D.
   const std::size_t c_per_f = GeometricContact::cells_per_facet(master_mesh.topology().dim() + 1);
@@ -808,6 +838,8 @@ void GeometricContact::create_on_process_sub_mesh(Mesh& sub_mesh, const Mesh& me
   for (CellIterator c(mesh); !c.end(); ++c)
   {
     const auto v_idxs_ptr = c->entities(0);
+    // FIXME: The interface to me.add_cell is frustrating for variable length arguments
+    // Need to fix this so we don't instantiate a std::vector each iteration.
     std::vector<std::size_t> v_idxs(v_idxs_ptr, v_idxs_ptr + v_per_c);
     me.add_cell(c->index(), v_idxs);
   }
