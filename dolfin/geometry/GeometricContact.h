@@ -75,6 +75,7 @@ namespace dolfin
       const std::size_t num_cell_verts = Cell(mesh, 0).num_entities(0);
       std::vector<Point> displacement(num_cell_verts);
 
+      // The coeffs are in the order [coeffs(V1), coeffs(V2), coeffs(V3), ...]
       for (std::size_t j=0; j<num_cell_verts; ++j)
         displacement[j] = Point(_dof_coeffs[0*num_cell_verts+j],
                                 _dof_coeffs[1*num_cell_verts+j],
@@ -85,13 +86,14 @@ namespace dolfin
 
     const std::vector<Point> create_deformed_facet_position(const Mesh& mesh)
     {
-      const auto v = get_cell_vertices(mesh);
+      const auto X = get_cell_vertices(mesh);
       const auto u = get_displacement_at_vertices(mesh);
-      std::vector<Point> deformed(v.size());
-      for (std::size_t j=0; j<v.size(); ++j)
-        deformed[j] = v[j] + u[j];
 
-      return deformed;
+      std::vector<Point> x(X.size());
+      for (std::size_t j=0; j<X.size(); ++j)
+        x[j] = X[j] + u[j];
+
+      return x;
     }
 
   private:
