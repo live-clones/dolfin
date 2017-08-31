@@ -29,8 +29,6 @@ def update(self, params):
         raise ValueError("Parameters or dict")
 
 
-
-
 # Extend the cpp.parameter.Parameters class and clean-up
 cpp.parameter.Parameters.__getitem__ = __getitem__
 cpp.parameter.Parameters.update = update

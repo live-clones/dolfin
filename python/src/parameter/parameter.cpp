@@ -54,10 +54,7 @@ namespace dolfin_wrappers
                           else if (py::isinstance<py::int_>(value))
                             p.add(key, value.cast<int>());
                           else if (py::isinstance<py::float_>(value))
-                          {
-                            std::cout << "Setting float: " << key << std::endl;
                             p.add(key, value.cast<double>());
-                          }
                           else if (py::isinstance<dolfin::Parameters>(value))
                             p.add(value.cast<dolfin::Parameters>());
                           else if (py::isinstance<py::tuple>(value))
