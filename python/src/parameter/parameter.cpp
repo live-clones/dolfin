@@ -48,6 +48,12 @@ namespace dolfin_wrappers
       .def("add", (void (dolfin::Parameters::*)(std::string, double)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, double, double, double)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(const dolfin::Parameters&)) &dolfin::Parameters::add)
+      // Support iterators
+      .def("__len__", &dolfin::Parameters::size)
+      .def("__iter__", [](const dolfin::Parameters& p) { return py::make_key_iterator(p.begin(), p.end()); },
+           py::keep_alive<0, 1>())
+      .def("items", [](const dolfin::Parameters& p) { return py::make_iterator(p.begin(), p.end()); },
+           py::keep_alive<0, 1>());
       // These set_range function should be remove - they're just duplication
       .def("set_range", [](dolfin::Parameters& self, std::string name, double min, double max)
            { self[name].set_range(min, max);} )
@@ -157,7 +163,7 @@ namespace dolfin_wrappers
              self.parse(argc, const_cast<char**>(aptr.data()));
            }, py::arg("argv")=py::list())
       .def("copy", [](dolfin::Parameters& self) { return dolfin::Parameters(self); })
-      .def("assign", [](dolfin::Parameters& self, dolfin::Parameters& other) { self = other;});
+      .def("assign", [](dolfin::Parameters& self, dolfin::Parameters& other) { self = other; });
 
     // dolfin::Parameter
     py::class_<dolfin::Parameter, std::shared_ptr<dolfin::Parameter>>(m, "Parameter")
