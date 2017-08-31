@@ -18,6 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
 #include <dolfin/parameter/GlobalParameters.h>
@@ -39,6 +40,49 @@ namespace dolfin_wrappers
       .def(py::init<>())
       .def(py::init<std::string>())
       .def(py::init<dolfin::Parameters>())
+      .def(py::init([](std::string name, py::kwargs kwargs)
+                    {
+                      dolfin::Parameters p(name);
+                      if (kwargs)
+                      {
+                        for (auto item : kwargs)
+                        {
+                          std::string key = std::string(py::str(item.first));
+                          auto value = item.second;
+                          if (py::isinstance<py::str>(value))
+                            p.add(key, value.cast<std::string>());
+                          else if (py::isinstance<py::int_>(value))
+                            p.add(key, value.cast<int>());
+                          else if (py::isinstance<py::float_>(value))
+                          {
+                            std::cout << "Setting float: " << key << std::endl;
+                            p.add(key, value.cast<double>());
+                          }
+                          else if (py::isinstance<dolfin::Parameters>(value))
+                            p.add(value.cast<dolfin::Parameters>());
+                          else if (py::isinstance<py::tuple>(value))
+                          {
+                            auto t = value.cast<py::tuple>();
+                            if (t.size() == 2)
+                              p.add(key, t[0].cast<std::string>(), t[1].cast<std::set<std::string>>());
+                            if (t.size() == 3)
+                            {
+                              if (py::isinstance<py::float_>(t[0]))
+                                p.add(key, t[0].cast<double>(), t[1].cast<double>(), t[2].cast<double>());
+                              else if (py::isinstance<py::int_>(t[0]))
+                                p.add(key, t[0].cast<int>(), t[1].cast<int>(), t[2].cast<int>());
+                              else
+                                throw std::runtime_error("Unknown parameter type with range - expecting int or float");
+                            }
+                          }
+                          else
+                            throw std::runtime_error("Unknown parameter type.");
+                        }
+                      }
+
+                      return p;
+                    }
+             ))
       // Use boost::variant to simplify
       .def("add", (void (dolfin::Parameters::*)(std::string, std::string)) &dolfin::Parameters::add)
       .def("add", (void (dolfin::Parameters::*)(std::string, std::string, std::set<std::string>)) &dolfin::Parameters::add)
@@ -53,7 +97,7 @@ namespace dolfin_wrappers
       .def("__iter__", [](const dolfin::Parameters& p) { return py::make_key_iterator(p.begin(), p.end()); },
            py::keep_alive<0, 1>())
       .def("items", [](const dolfin::Parameters& p) { return py::make_iterator(p.begin(), p.end()); },
-           py::keep_alive<0, 1>());
+           py::keep_alive<0, 1>())
       // These set_range function should be remove - they're just duplication
       .def("set_range", [](dolfin::Parameters& self, std::string name, double min, double max)
            { self[name].set_range(min, max);} )
