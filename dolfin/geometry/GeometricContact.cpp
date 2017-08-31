@@ -82,42 +82,6 @@ std::vector<Point> GeometricContact::create_deformed_segment_volume(const Mesh& 
   return {X1, X2, X3, x1, x2, x3};
 }
 //-----------------------------------------------------------------------------
-bool GeometricContact::check_tri_set_collision(const Mesh& master_mesh, std::size_t mindex,
-                                               const Mesh& slave_mesh, std::size_t sindex)
-{
-
-  for (std::size_t i = mindex; i < mindex + 8; ++i)
-    for (std::size_t j = sindex; j < sindex + 8; ++j)
-    {
-      if (CollisionDetection::collides_triangle_triangle(Cell(master_mesh, i),
-                                                         Cell(slave_mesh, j)))
-        return true;
-    }
-
-  return false;
-}
-//-----------------------------------------------------------------------------
-bool GeometricContact::check_edge_set_collision(const Mesh& master_mesh, std::size_t mindex,
-                                               const Mesh& slave_mesh, std::size_t sindex)
-{
-  const auto mconn = master_mesh.topology()(1, 0);
-  const auto sconn = slave_mesh.topology()(1, 0);
-
-  for (std::size_t i = mindex; i < mindex + 4; ++i)
-    for (std::size_t j = sindex; j < sindex + 4; ++j)
-    {
-      const Point p0 = Vertex(master_mesh, mconn(i)[0]).point();
-      const Point p1 = Vertex(master_mesh, mconn(i)[1]).point();
-      const Point p2 = Vertex(slave_mesh, sconn(j)[0]).point();
-      const Point p3 = Vertex(slave_mesh, sconn(j)[1]).point();
-
-      if (CollisionDetection::collides_edge_edge(p0, p1, p2, p3))
-        return true;
-    }
-
-  return false;
-}
-//-----------------------------------------------------------------------------
 void GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
                                                        const Mesh& mesh,
                                                        const std::vector<std::size_t> contact_facets,
@@ -240,54 +204,6 @@ void GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
   m_ed.close();
 }
 //-----------------------------------------------------------------------------
-void GeometricContact::create_communicated_prism_mesh(Mesh& prism_mesh,
-                                                      const Mesh& mesh,
-                                                      const std::vector<double>& coord,
-                                                      std::size_t local_facet_idx)
-{
-  // Precalculate triangles making the surface of a prism
-  const std::size_t triangles[8][3] = {{0, 1, 2},
-                                       {0, 1, 3},
-                                       {1, 4, 3},
-                                       {1, 2, 4},
-                                       {2, 5, 4},
-                                       {2, 0, 5},
-                                       {0, 3, 5},
-                                       {3, 4, 5}};
-
-  // Edges of surface of prism in 2D
-  const std::size_t edges[4][2] = {{0, 1},
-                                       {1, 2},
-                                       {2, 3},
-                                       {3, 0}};
-
-  const std::size_t tdim = mesh.topology().dim();
-  const std::size_t gdim = mesh.geometry().dim();
-
-  // Find number of cells/vertices in projected prism in 2D or 3D
-  const std::size_t c_per_f = GeometricContact::cells_per_facet(tdim);
-  const std::size_t v_per_f = GeometricContact::vertices_per_facet(tdim);
-
-  MeshEditor m_ed;
-  m_ed.open(prism_mesh, tdim - 1, gdim);
-  m_ed.init_cells(c_per_f);
-  if (tdim == 3)
-  {
-    for (std::size_t i = 0; i < c_per_f; ++i)
-      m_ed.add_cell(i, triangles[i][0], triangles[i][1], triangles[i][2]);
-  }
-  else
-  {
-    for (std::size_t i = 0; i < c_per_f; ++i)
-      m_ed.add_cell(i, edges[i][0], edges[i][1]);
-  }
-
-  m_ed.init_vertices(v_per_f);
-  for (std::size_t vert = 0; vert < v_per_f; ++vert)
-    m_ed.add_vertex(vert, Point(gdim, coord.data() + (local_facet_idx*v_per_f + vert)*gdim));
-  m_ed.close();
-}
-//-----------------------------------------------------------------------------
 void GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(
     const Mesh& mesh, const Mesh& slave_mesh, const Mesh& master_mesh,
     const std::vector<std::size_t>& slave_facets,
@@ -381,15 +297,15 @@ void GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(
     const auto& rfacet = recv_facets[proc];
     const auto& coord = recv_coordinates[proc];
     dolfin_assert(coord.size() == gdim*v_per_f*rfacet.size());
-    
+
     // Received facets is empty, so there can be no collisions on this process
     if (rfacet.empty())
       continue;
 
-    Mesh prism_mesh2(MPI_COMM_SELF);
-    GeometricContact::create_communicated_prism_mesh(prism_mesh2, mesh, rfacet, coord);
+    Mesh prism_mesh(MPI_COMM_SELF);
+    GeometricContact::create_communicated_prism_mesh(prism_mesh, mesh, rfacet, coord);
     GeometricContact::tabulate_on_process_bbox_collisions(proc, master_mesh_on_proc, master_facets,
-                                                          prism_mesh2, rfacet, contact_facet_map);
+                                                          prism_mesh, rfacet, contact_facet_map);
   }
   t6.stop();
   ta.stop();
@@ -460,27 +376,6 @@ const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& s
                                                           master_mesh_on_proc, master_facets,
                                                           _slave_to_master);
   }
-//  for (std::size_t i = 0; i < master_facets.size(); ++i)
-//    for (std::size_t j = 0; j < slave_facets.size(); ++j)
-//    {
-//      // FIXME: for efficiency, use BBT here
-//      bool collision;
-//      if (tdim == 3)
-//        collision = check_tri_set_collision(master_mesh, i*c_per_f, slave_mesh, j*c_per_f);
-//      else
-//        collision = check_edge_set_collision(master_mesh, i*c_per_f, slave_mesh, j*c_per_f);
-//
-//      if (collision)
-//      {
-//        const std::size_t mf = master_facets[i];
-//        const std::size_t sf = slave_facets[j];
-//        _master_to_slave[mf].push_back(mpi_rank);
-//        _master_to_slave[mf].push_back(sf);
-//        _slave_to_master[sf].push_back(mpi_rank);
-//        _slave_to_master[sf].push_back(mf);
-//      }
-//    }
-
   t1.stop();
 
   // Find which [master global/slave entity] BBs overlap in parallel

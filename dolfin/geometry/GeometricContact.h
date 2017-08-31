@@ -37,11 +37,15 @@ namespace dolfin
   public:
     CellMetaData(const std::size_t slave_facet_idx,
                  const std::size_t slave_facet_local_idx,
-                 const std::vector<double> dof_coords,
-                 const std::vector<std::size_t> cell_dofs,
-                 const std::vector<double> dof_coeffs) :
-        slave_facet_idx(slave_facet_idx), slave_facet_local_idx(slave_facet_local_idx),
-        _dof_coords(dof_coords), _cell_dofs(cell_dofs), _dof_coeffs(dof_coeffs) {}
+                 std::vector<double> dof_coords,
+                 std::vector<std::size_t> cell_dofs,
+                 std::vector<double> dof_coeffs) :
+        slave_facet_idx(slave_facet_idx),
+        slave_facet_local_idx(slave_facet_local_idx),
+        _dof_coords(std::move(dof_coords)),
+        _cell_dofs(std::move(cell_dofs)),
+        _dof_coeffs(std::move(dof_coeffs)) {}
+
     const std::size_t slave_facet_idx;
     const std::size_t slave_facet_local_idx;
 
@@ -55,14 +59,12 @@ namespace dolfin
 
       // FIXME: is there a better way of getting this?
       const std::size_t num_cell_verts = Cell(mesh, 0).num_entities(0);
-      std::vector<Point> deformed_position(num_cell_verts);
+      std::vector<Point> cell_verts(num_cell_verts);
 
       for (std::size_t j=0; j<num_cell_verts; ++j)
-        deformed_position[j] = Point(_dof_coords[j*gdim],
-                                     _dof_coords[j*gdim+1],
-                                     (gdim == 3) ? _dof_coords[j*gdim+2] : 0.0);
+        cell_verts[j] = Point(gdim, _dof_coeffs.data() + j*gdim);
 
-      return deformed_position;
+      return cell_verts;
     }
 
     const std::vector<Point> get_displacement_at_vertices(const Mesh& mesh)
@@ -169,14 +171,6 @@ namespace dolfin
 
     std::map<std::size_t, std::vector<std::shared_ptr<CellMetaData>>> _master_facet_to_contacted_cells;
 
-    // Check whether two sets of triangles collide in 3D
-    static bool check_tri_set_collision(const Mesh& mmesh, std::size_t mi,
-                                        const Mesh& smesh, std::size_t si);
-
-    // Check whether two sets of edges collide in 2D
-    static bool check_edge_set_collision(const Mesh& mmesh, std::size_t mi,
-                                         const Mesh& smesh, std::size_t si);
-
     // Project surface forward from a facet using 'u', creating a prismoidal volume in 2D or 3D
     static std::vector<Point> create_deformed_segment_volume(const Mesh& mesh,
                                                              std::size_t facet_index,
@@ -194,12 +188,6 @@ namespace dolfin
                                                const Mesh& mesh,
                                                const std::vector<std::size_t>& recv_facets,
                                                const std::vector<double>& coord);
-
-    // Make a mesh of a communicated facet
-    static void create_communicated_prism_mesh(Mesh& prism_mesh,
-                                               const Mesh& mesh,
-                                               const std::vector<double>& coord,
-                                               std::size_t local_facet_idx);
 
     static void create_on_process_sub_mesh(Mesh& sub_mesh, const Mesh& mesh);
 
