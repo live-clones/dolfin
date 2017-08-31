@@ -25,7 +25,6 @@
 #include <dolfin/mesh/Facet.h>
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/common/Timer.h>
-#include <dolfin/io/XDMFFile.h>
 
 #include "BoundingBoxTree.h"
 #include "CollisionDetection.h"
