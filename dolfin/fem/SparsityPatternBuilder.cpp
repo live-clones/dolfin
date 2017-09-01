@@ -447,7 +447,43 @@ SparsityPatternBuilder::build_contact_sparsity_pattern(
     sparsity_pattern.insert_local(dofs);
   }
 
+  // tabulate global DoFs required for off-process insertion
+  std::vector<std::size_t> local_to_global_dofs;
+  dofmaps[0]->tabulate_local_to_global_dofs(local_to_global_dofs);
+
+  for (const auto& pair : gc.local_facet_to_off_proc_contact_dofs())
+  {
+    const std::size_t master = pair.first;
+    const std::vector<std::size_t> shared_dofs = pair.second; // These are GLOBAL dof indices
+
+    // Master facet's cell
+    Facet facet0(mesh, master);
+    dolfin_assert(facet0.exterior());
+    Cell cell0(mesh, facet0.entities(mesh.topology().dim())[0]);
+
+    // Tabulate dofs for each dimension on non-conforming boundary
+    const auto cell_dofs0
+        = dofmaps[0]->cell_dofs(cell0.index());
+
+    // Create space in macro dof vector
+    macro_dofs[0].resize(cell_dofs0.size());
+    macro_dofs[1].resize(shared_dofs.size());
+
+    // Copy cell dofs into macro dof vector
+    std::copy(cell_dofs0.data(), cell_dofs0.data() + cell_dofs0.size(),
+                macro_dofs[0].begin());
+
+    std::copy(shared_dofs.data(), shared_dofs.data() + shared_dofs.size(),
+              macro_dofs[1].begin());
+
+    // Store pointer to macro dofs
+    for (int i=0; i<2; ++i)
+      dofs[i].set(macro_dofs[i]);
+
+    // Insert dofs
+    sparsity_pattern.insert_local_row_global_column(dofs);
+  }
+
   if (finalize)
     sparsity_pattern.apply();
-
 }
