@@ -232,6 +232,7 @@ namespace dolfin_wrappers
       .def("midpoint", &dolfin::MeshEntity::midpoint, "Midpoint of Entity")
       .def("sharing_processes", &dolfin::MeshEntity::sharing_processes)
       .def("is_shared", &dolfin::MeshEntity::is_shared)
+      .def("is_ghost", &dolfin::MeshEntity::is_ghost)
       .def("__str__", [](dolfin::MeshEntity& self){return self.str(false);});
 
     //--------------------------------------------------------------------------
@@ -336,8 +337,9 @@ namespace dolfin_wrappers
           return *self; \
         }); \
  \
-    m.def(#NAME, [](dolfin::Mesh& mesh) \
-          { return dolfin::MeshEntityIteratorBase<dolfin::TYPE>(mesh); }); \
+    m.def(#NAME, [](dolfin::Mesh& mesh, std::string opt)                          \
+          { return dolfin::MeshEntityIteratorBase<dolfin::TYPE>(mesh, opt); }, \
+          py::arg("mesh"), py::arg("type")="regular");                  \
     m.def(#NAME, [](dolfin::MeshEntity& meshentity)\
           { return dolfin::MeshEntityIteratorBase<dolfin::TYPE>(meshentity); })
 
