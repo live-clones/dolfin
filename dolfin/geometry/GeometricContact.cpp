@@ -475,7 +475,7 @@ void GeometricContact::tabulate_collided_cell_dofs(const Mesh& mesh, const Gener
   const std::size_t num_dofs_per_cell = dofmap.max_element_dofs();
 
   // Tabulate the communicated dofs belonging to the master cells. This requires
-  // saving the global DoFs of the master cells to _local_cell_to_off_proc_contact_dofs
+  // saving the global DoFs of the master cells to _local_facet_to_off_proc_contact_dofs
   // at the index of the local on process slave cell index.
   Timer t3("VVVVV GC: get dofs out");
   for (std::size_t j = 0; j < recv_master_dofs.size(); j += num_dofs_per_cell + 1)
@@ -486,10 +486,10 @@ void GeometricContact::tabulate_collided_cell_dofs(const Mesh& mesh, const Gener
     for (std::size_t i = 0; i < num_dofs_per_cell; ++i)
       dof_list.push_back(recv_master_dofs[j + i + 1]);
   }
-t3.stop();
+  t3.stop();
 }
 //-----------------------------------------------------------------------------
-void GeometricContact::tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function& u,
+void GeometricContact::tabulate_contact_cell_to_shared_dofs(const Mesh& mesh, const Function& u,
                                                             const std::vector<std::size_t>& master_facets,
                                                             const std::vector<std::size_t>& slave_facets)
 {
@@ -497,11 +497,15 @@ void GeometricContact::tabulate_contact_cell_to_shared_dofs(Mesh& mesh, Function
   const auto dofmap = V->dofmap();
 
   // Start from fresh
-  _local_cell_to_contact_dofs.clear();
-  _local_cell_to_off_proc_contact_dofs.clear();
+  _local_facet_to_contact_dofs.clear();
+  _local_facet_to_off_proc_contact_dofs.clear();
 
-  GeometricContact::tabulate_collided_cell_dofs(mesh, *dofmap, _master_to_slave, _local_cell_to_contact_dofs, _local_cell_to_off_proc_contact_dofs);
-  GeometricContact::tabulate_collided_cell_dofs(mesh, *dofmap, _slave_to_master, _local_cell_to_contact_dofs, _local_cell_to_off_proc_contact_dofs);
+  GeometricContact::tabulate_collided_cell_dofs(mesh, *dofmap, _master_to_slave,
+                                                _local_facet_to_contact_dofs,
+                                                _local_facet_to_off_proc_contact_dofs);
+  GeometricContact::tabulate_collided_cell_dofs(mesh, *dofmap, _slave_to_master,
+                                                _local_facet_to_contact_dofs,
+                                                _local_facet_to_off_proc_contact_dofs);
 }
 //-----------------------------------------------------------------------------
 void

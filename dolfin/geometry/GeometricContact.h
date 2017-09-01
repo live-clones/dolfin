@@ -133,7 +133,7 @@ namespace dolfin
     /// to the facets in contact on the contact process(es).
     void
     tabulate_contact_cell_to_shared_dofs(
-        Mesh& mesh, Function& u,
+        const Mesh& mesh, const Function& u,
         const std::vector<std::size_t>& master_facets,
         const std::vector<std::size_t>& slave_facets);
 
@@ -159,15 +159,15 @@ namespace dolfin
     }
 
     /// Get dof matchup
-    const std::map<std::size_t, std::vector<std::size_t>>& local_cells_to_contact_dofs() const
+    const std::map<std::size_t, std::vector<std::size_t>>& local_facet_to_contact_dofs() const
     {
-      return _local_cell_to_contact_dofs;
+      return _local_facet_to_contact_dofs;
     };
 
     /// Get dof matchup
-    const std::map<std::size_t, std::vector<std::size_t>>& local_cell_to_off_proc_contact_dofs() const
+    const std::map<std::size_t, std::vector<std::size_t>>& local_facet_to_off_proc_contact_dofs() const
     {
-      return _local_cell_to_off_proc_contact_dofs;
+      return _local_facet_to_off_proc_contact_dofs;
     };
 
 
@@ -238,8 +238,8 @@ namespace dolfin
 
     std::map<std::size_t, std::vector<std::size_t>> _master_to_slave;
     std::map<std::size_t, std::vector<std::size_t>> _slave_to_master;
-    std::map<std::size_t, std::vector<std::size_t>> _local_cell_to_contact_dofs;
-    std::map<std::size_t, std::vector<std::size_t>> _local_cell_to_off_proc_contact_dofs;
+    std::map<std::size_t, std::vector<std::size_t>> _local_facet_to_contact_dofs;
+    std::map<std::size_t, std::vector<std::size_t>> _local_facet_to_off_proc_contact_dofs;
 
   };
 

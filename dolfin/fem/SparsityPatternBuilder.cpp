@@ -412,7 +412,7 @@ SparsityPatternBuilder::build_contact_sparsity_pattern(
   // Vector to store macro-dofs, if required (for interior facets)
   std::vector<std::vector<dolfin::la_index>> macro_dofs(rank);
 
-  for (const auto& pair : gc.local_cells_to_contact_dofs())
+  for (const auto& pair : gc.local_facet_to_contact_dofs())
   {
     const std::size_t master = pair.first;
     const std::vector<std::size_t> shared_dofs = pair.second;
