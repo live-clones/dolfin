@@ -87,6 +87,8 @@ namespace dolfin_wrappers
            &dolfin::MeshTopology::operator())
       .def("size", &dolfin::MeshTopology::size)
       .def("hash", &dolfin::MeshTopology::hash)
+      .def("ghost_offset", &dolfin::MeshTopology::ghost_offset)
+      .def("cell_owner", (const std::vector<unsigned int>& (dolfin::MeshTopology::*)() const) &dolfin::MeshTopology::cell_owner)
       .def("global_indices", [](const dolfin::MeshTopology& self, int dim)
            { auto& indices = self.global_indices(dim); return py::array_t<std::int64_t>(indices.size(), indices.data()); })
       .def("have_shared_entities", &dolfin::MeshTopology::have_shared_entities)
@@ -105,13 +107,11 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm>())
       .def(py::init<MPI_Comm, std::string>())  // Put MPI constructors last to avoid casting problems
       .def("bounding_box_tree", &dolfin::Mesh::bounding_box_tree)
-      .def("cells",
-           [](const dolfin::Mesh& self)
+      .def("cells", [](const dolfin::Mesh& self)
            {
              const unsigned int tdim = self.topology().dim();
-             return py::array({self.topology().size(tdim),
-                   self.type().num_vertices(tdim)},
-               self.topology()(tdim, 0)().data());
+             return py::array({self.topology().size(tdim), self.type().num_vertices(tdim)},
+                              self.topology()(tdim, 0)().data());
            })
       .def("cell_orientations", &dolfin::Mesh::cell_orientations)
       .def("color", (const std::vector<std::size_t>& (dolfin::Mesh::*)(std::string) const)
