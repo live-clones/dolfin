@@ -907,10 +907,7 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>>())
       .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>, std::shared_ptr<const dolfin::PETScMatrix>>())
       .def("get_number_converged", &dolfin::SLEPcEigenSolver::get_number_converged)
-      .def("set_deflation_space", (void (dolfin::SLEPcEigenSolver::*)(const dolfin::VectorSpaceBasis&))
-           &dolfin::SLEPcEigenSolver::set_deflation_space)
-      .def("set_deflation_space", (void (dolfin::SLEPcEigenSolver::*)(const dolfin::PETScVector&))
-           &dolfin::SLEPcEigenSolver::set_deflation_space)
+      .def("set_deflation_space", &dolfin::SLEPcEigenSolver::set_deflation_space)
       .def("solve", (void (dolfin::SLEPcEigenSolver::*)())
            &dolfin::SLEPcEigenSolver::solve)
       .def("solve", (void (dolfin::SLEPcEigenSolver::*)(std::size_t))
@@ -920,14 +917,14 @@ namespace dolfin_wrappers
              double lr, lc;
              self.get_eigenvalue(lr, lc, i);
              return py::make_tuple(lr, lc);
-           }, py::arg("i")=0)
+           })
       .def("get_eigenpair", [](dolfin::SLEPcEigenSolver& self, std::size_t i)
            {
              double lr, lc;
              dolfin::PETScVector r, c;
              self.get_eigenpair(lr, lc, r, c, i);
              return py::make_tuple(lr, lc, r, c);
-           }, py::arg("i")=0);
+           });
 
     #endif
 
