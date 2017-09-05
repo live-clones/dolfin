@@ -64,6 +64,10 @@ bc = DirichletBC(V, u0, boundary)
 
 # Code for C++ evaluation of conductivity
 conductivity_code = """
+#include <dolfin.h>
+
+namespace dolfin
+{
 
 class Conductivity : public Expression
 {
@@ -88,6 +92,8 @@ public:
   std::shared_ptr<MeshFunction<double>> c11;
 
 };
+
+}
 """
 
 conductivity_pybind11 = """
