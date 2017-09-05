@@ -123,6 +123,7 @@ int CVode::Jacobian(std::shared_ptr<GenericVector> v,
   dolfin_error("CVode.cpp",
 	       "Jacobian function",
 	       "This function should be overloaded");
+  return 0;
 }
 
 //-----------------------------------------------------------------------------
