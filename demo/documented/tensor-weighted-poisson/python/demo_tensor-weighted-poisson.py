@@ -64,12 +64,10 @@ bc = DirichletBC(V, u0, boundary)
 
 # Code for C++ evaluation of conductivity
 conductivity_code = """
-#include <dolfin.h>
+#include <dolfin/function/Expression.h>
+#include <dolfin/mesh/MeshFunction.h>
 
-namespace dolfin
-{
-
-class Conductivity : public Expression
+class Conductivity : public dolfin::Expression
 {
 public:
 
@@ -79,7 +77,6 @@ public:
   // Function for evaluating expression on each cell
   void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x, const ufc::cell& cell) const override
   {
-    const uint D = cell.topological_dimension;
     const uint cell_index = cell.index;
     values[0] = (*c00)[cell_index];
     values[1] = (*c01)[cell_index];
@@ -87,23 +84,21 @@ public:
   }
 
   // The data stored in mesh functions
-  std::shared_ptr<MeshFunction<double>> c00;
-  std::shared_ptr<MeshFunction<double>> c01;
-  std::shared_ptr<MeshFunction<double>> c11;
+  std::shared_ptr<dolfin::MeshFunction<double>> c00;
+  std::shared_ptr<dolfin::MeshFunction<double>> c01;
+  std::shared_ptr<dolfin::MeshFunction<double>> c11;
 
 };
-
-}
 """
 
 conductivity_pybind11 = """
-  py::class_<dolfin::Conductivity, std::shared_ptr<dolfin::Conductivity>, dolfin::Expression>
+  py::class_<Conductivity, std::shared_ptr<Conductivity>, dolfin::Expression>
     (m, "Conductivity", py::dynamic_attr())
     .def(py::init<>())
-    .def("eval", &dolfin::Conductivity::eval)
-    .def_readwrite("c00", &dolfin::Conductivity::c00)
-    .def_readwrite("c01", &dolfin::Conductivity::c01)
-    .def_readwrite("c11", &dolfin::Conductivity::c11);
+    .def("eval", &Conductivity::eval)
+    .def_readwrite("c00", &Conductivity::c00)
+    .def_readwrite("c01", &Conductivity::c01)
+    .def_readwrite("c11", &Conductivity::c11);
 """
 
 conductivity_class_data = {'cpp_code': conductivity_code, 'pybind11_code': conductivity_pybind11}
