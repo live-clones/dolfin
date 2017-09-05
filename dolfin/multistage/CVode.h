@@ -22,12 +22,12 @@
 
 #include <dolfin/la/SUNDIALSNVector.h>
 
+#include <sundials/sundials_types.h>
+#include <sundials/sundials_dense.h>
+#include <sundials/sundials_iterative.h>
 #include <cvode/cvode.h>
 #include <cvode/cvode_impl.h>
 #include <cvode/cvode_spgmr.h>
-#include <sundials/sundials_dense.h>
-#include <sundials/sundials_types.h>
-#include <sundials/sundials_iterative.h>
 
 namespace dolfin
 {

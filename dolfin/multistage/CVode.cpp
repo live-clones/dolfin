@@ -29,12 +29,6 @@
 #include <map>
 #include <string>
 
-#include <cvode/cvode.h>
-#include <cvode/cvode_impl.h>
-#include <cvode/cvode_spgmr.h>
-#include <sundials/sundials_dense.h>
-#include <sundials/sundials_types.h>
-#include <sundials/sundials_iterative.h>
 
 #include "CVode.h"
 
@@ -45,7 +39,6 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol)
 {
   dolfin_assert(cvode_mem);
 
-  long int N, mu, ml;
   auto fu = std::shared_ptr<GenericVector>();
 
   // Make a sundials n_vector sharing data with u0
@@ -72,13 +65,13 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol)
 //-----------------------------------------------------------------------------
 double CVode::step(double dt)
 {
-  //  std::cout << "t_in = " << t;
 
   double tout = t + dt;
+  std::cout << "t_in = " << t << ", dt = " << dt << " " << ((CVodeMem) cvode_mem)->cv_h << std::endl;
   int flag = ::CVode(cvode_mem, tout, _u->nvector(), &t, CV_NORMAL);
-  dolfin_assert(flag == CV_SUCCESS);
-
-  //  std::cout << "t_out = " << t;
+  dolfin_assert((flag == CV_SUCCESS) || (flag == CV_TSTOP_RETURN) || (flag == CV_ROOT_RETURN));
+  
+  std::cout << "t_out = " << t;
 
   return t;
 }
