@@ -68,7 +68,19 @@ namespace dolfin_wrappers
 
     //-------------------------------------------------------------------------
     // dolfin::CellType
-    py::class_<dolfin::CellType> (m, "CellType")
+    py::class_<dolfin::CellType> celltype(m, "CellType");
+
+    py::enum_<dolfin::CellType::Type>(celltype, "Type")
+      .value("point", dolfin::CellType::Type::point)
+      .value("interval", dolfin::CellType::Type::interval)
+      .value("triangle", dolfin::CellType::Type::triangle)
+      .value("quadrilateral", dolfin::CellType::Type::quadrilateral)
+      .value("tetrahedron", dolfin::CellType::Type::tetrahedron)
+      .value("hexahedron", dolfin::CellType::Type::hexahedron);
+
+    celltype
+      .def("type2string", &dolfin::CellType::type2string)
+      .def("cell_type", &dolfin::CellType::cell_type)
       .def("description", &dolfin::CellType::description);
 
     //--------------------------------------------------------------------------
@@ -87,6 +99,7 @@ namespace dolfin_wrappers
            &dolfin::MeshTopology::operator())
       .def("size", &dolfin::MeshTopology::size)
       .def("hash", &dolfin::MeshTopology::hash)
+      .def("have_global_indices", &dolfin::MeshTopology::have_global_indices)
       .def("ghost_offset", &dolfin::MeshTopology::ghost_offset)
       .def("cell_owner", (const std::vector<unsigned int>& (dolfin::MeshTopology::*)() const) &dolfin::MeshTopology::cell_owner)
       .def("global_indices", [](const dolfin::MeshTopology& self, int dim)
@@ -151,6 +164,7 @@ namespace dolfin_wrappers
       .def("num_faces", &dolfin::Mesh::num_faces, "Number of faces")
       .def("num_facets", &dolfin::Mesh::num_facets, "Number of facets")
       .def("num_cells", &dolfin::Mesh::num_cells, "Number of cells")
+      .def("ordered", &dolfin::Mesh::ordered)
       .def("size", &dolfin::Mesh::size)
       .def("rmax", &dolfin::Mesh::rmax)
       .def("rmin", &dolfin::Mesh::rmin)
