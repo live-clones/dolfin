@@ -51,7 +51,8 @@ from .cpp.fem import (FiniteElement, DofMap, Assembler, get_coordinates,
 from .cpp.geometry import BoundingBoxTree, Point, MeshPointIntersection, intersect
 from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh, UnitDiscMesh,
                              UnitQuadMesh, UnitHexMesh, UnitTriangleMesh,
-                             UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh)
+                             UnitCubeMesh, UnitSquareMesh, UnitIntervalMesh,
+                             SphericalShellMesh)
 from .cpp.graph import GraphBuilder
 from .cpp.io import File, XDMFFile, VTKFile
 from .cpp.la import (has_linear_algebra_backend,
