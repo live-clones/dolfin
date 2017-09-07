@@ -151,9 +151,9 @@ from ufl.formoperators import action
 def has_petsc4py():
     return False
 
-# Global variable to show whether we are running under pybind11 or SWIG
 # FIXME: remove after transition
-pybind11 = True
+def has_pybind11():
+    return True
 
 def mpi_comm_self():
     return MPI.comm_self
