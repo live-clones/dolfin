@@ -317,32 +317,32 @@ def test_compute_vertex_values(mesh):
 def test_wrong_sub_classing():
 
     def noAttributes():
-        class NoAttributes(Expression):
+        class NoAttributes(UserExpression):
             pass
 
     def wrongEvalAttribute():
-        class WrongEvalAttribute(Expression):
+        class WrongEvalAttribute(UserExpression):
             def eval(values, x):
                 pass
 
     def wrongEvalDataAttribute():
-        class WrongEvalDataAttribute(Expression):
+        class WrongEvalDataAttribute(UserExpression):
             def eval_cell(values, data):
                 pass
 
     def noEvalAttribute():
-        class NoEvalAttribute(Expression):
+        class NoEvalAttribute(UserExpression):
             def evaluate(self, values, data):
                 pass
 
     def wrongArgs():
-        class WrongArgs(Expression):
+        class WrongArgs(UserExpression):
             def eval(self, values, x):
                 pass
         e = WrongArgs(V)
 
     def deprecationWarning():
-        class Deprecated(Expression):
+        class Deprecated(UserExpression):
             def eval(self, values, x):
                 pass
 
