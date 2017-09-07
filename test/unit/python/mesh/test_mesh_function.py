@@ -106,7 +106,6 @@ def test_setvalues(tp, funcs, name):
 
 def test_Create(cube):
     """Create MeshFunctions."""
-    v = MeshFunction("size_t", cube)
 
     v = MeshFunction("size_t", cube, 0)
     assert v.size() == cube.num_vertices()
