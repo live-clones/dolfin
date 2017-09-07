@@ -27,8 +27,10 @@ from math import sin, cos, exp, tan
 from numpy import array, zeros, float_
 import numpy as np
 
-from dolfin_utils.test import fixture, skip_in_parallel
+from dolfin_utils.test import fixture, skip_in_parallel, skip_if_pybind11
 
+if not has_pybind11():
+    UserExpression = Expression
 
 @fixture
 def mesh():
@@ -46,7 +48,7 @@ def W(mesh):
 
 
 def test_arbitrary_eval(mesh):
-    class F0(Expression):
+    class F0(UserExpression):
         def eval(self, values, x):
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
 
@@ -118,11 +120,11 @@ def test_arbitrary_eval(mesh):
 
 
 def test_ufl_eval():
-    class F0(Expression):
+    class F0(UserExpression):
         def eval(self, values, x):
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
 
-    class V0(Expression):
+    class V0(UserExpression):
         def eval(self, values, x):
             values[0] = x[0]**2
             values[1] = x[1]**2
@@ -158,12 +160,13 @@ def test_ufl_eval():
 
 
 def test_overload_and_call_back(V, mesh):
-    class F0(Expression):
+    class F0(UserExpression):
         def eval(self, values, x):
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
 
-    class F1(Expression):
+    class F1(UserExpression):
         def __init__(self, mesh, *arg, **kwargs):
+            super().__init__(*arg, **kwargs)
             self.mesh = mesh
 
         def eval_cell(self, values, x, cell):
@@ -190,7 +193,7 @@ def test_overload_and_call_back(V, mesh):
 
 def test_wrong_eval():
     # Test wrong evaluation
-    class F0(Expression):
+    class F0(UserExpression):
         def eval(self, values, x):
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
 
@@ -285,7 +288,7 @@ def test_meshfunction_expression():
 
 
 def test_no_write_to_const_array():
-    class F1(Expression):
+    class F1(UserExpression):
         def eval(self, values, x):
             x[0] = 1.0
             values[0] = sin(3.0*x[0])*sin(3.0*x[1])*sin(3.0*x[2])
@@ -396,11 +399,11 @@ def test_fail_expression_compilation():
 
 
 def test_element_instantiation():
-    class F0(Expression):
+    class F0(UserExpression):
         def eval(self, values, x):
             values[0] = 1.0
 
-    class F1(Expression):
+    class F1(UserExpression):
         def eval(self, values, x):
             values[0] = 1.0
             values[1] = 1.0
@@ -408,7 +411,7 @@ def test_element_instantiation():
         def value_shape(self):
             return (2,)
 
-    class F2(Expression):
+    class F2(UserExpression):
         def eval(self, values, x):
             values[0] = 1.0
             values[1] = 1.0
@@ -477,6 +480,7 @@ def test_name_space_usage(mesh):
     assert round(assemble(e0*dx(mesh)) - assemble(e1*dx(mesh)), 7) == 0
 
 
+@skip_if_pybind11("What is this for?")
 def test_expression_self_assignment(mesh, V):
     tc = Constant(2.0)
     te = Expression("value", value=tc, degree=0)
@@ -779,7 +783,7 @@ def test_doc_string_python_expressions(mesh):
 
     square = UnitSquareMesh(4, 4)
 
-    class MyExpression0(Expression):
+    class MyExpression0(UserExpression):
         def eval(self, value, x):
             dx = x[0] - 0.5
             dy = x[1] - 0.5
@@ -800,7 +804,7 @@ def test_doc_string_python_expressions(mesh):
     ufc_cell_attrs = ["cell_shape", "index", "topological_dimension",
                       "geometric_dimension", "local_facet", "mesh_identifier"]
 
-    class MyExpression1(Expression):
+    class MyExpression1(UserExpression):
         def eval_cell(self_expr, value, x, ufc_cell):
             # Check attributes in ufc cell
             for attr in ufc_cell_attrs:
@@ -814,8 +818,9 @@ def test_doc_string_python_expressions(mesh):
     f1 = MyExpression1(degree=0)
     assemble(f1*ds(square))
 
-    class MyExpression2(Expression):
+    class MyExpression2(UserExpression):
         def __init__(self, mesh, domain, *arg, **kwargs):
+            super().__init__(*arg, **kwargs)
             self._mesh = mesh
             self._domain = domain
 
