@@ -71,7 +71,7 @@ def test_local_assembler_on_facet_integrals(ghost_mode):
     n = FacetNormal(mesh)
 
     # Initialize DG function "w" in discontinuous pattern
-    w = CompiledExpression('(1.0 + pow(x[0], 2.2) + 1/(0.1 + pow(x[1], 3)))*300.0',
+    w = Expression('(1.0 + pow(x[0], 2.2) + 1/(0.1 + pow(x[1], 3)))*300.0',
                            element=Vdg.ufl_element())
 
     # Define form that tests that the correct + and - values are used
