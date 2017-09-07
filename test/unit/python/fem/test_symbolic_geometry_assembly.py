@@ -51,12 +51,12 @@ tuples, build and return a mesh.
     # Add vertices to mesh
     me.init_vertices(len(vertices))
     for i, v in enumerate(vertices):
-        me.add_vertex(i, *v)
+        me.add_vertex(i, numpy.array(v, dtype='float'))
 
     # Add cells to mesh
     me.init_cells(len(cells))
     for i, c in enumerate(cells):
-        me.add_cell(i, *c)
+        me.add_cell(i, numpy.array(c, dtype='uint'))
 
     me.close()
 

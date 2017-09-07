@@ -168,6 +168,7 @@ namespace dolfin_wrappers
              return values;
            })
       .def("space_dimension", &dolfin::FiniteElement::space_dimension)
+      .def("geometric_dimension", &dolfin::FiniteElement::geometric_dimension)
       .def("value_dimension", &dolfin::FiniteElement::value_dimension)
       .def("signature", &dolfin::FiniteElement::signature);
 
