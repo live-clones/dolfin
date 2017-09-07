@@ -29,9 +29,6 @@ import numpy as np
 
 from dolfin_utils.test import fixture, skip_in_parallel, skip_if_pybind11
 
-if not has_pybind11():
-    UserExpression = Expression
-
 @fixture
 def mesh():
     return UnitCubeMesh(8, 8, 8)

@@ -33,8 +33,6 @@ import os
 import numpy
 from dolfin_utils.test import *
 
-if not has_pybind11():
-    UserExpression = Expression
 
 # Subdomain to extract bottom boundary.
 class BottomEdge(SubDomain):

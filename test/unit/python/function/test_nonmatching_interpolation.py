@@ -27,8 +27,6 @@ import numpy
 from dolfin import *
 from dolfin_utils.test import skip_in_parallel
 
-if not has_pybind11():
-    UserExpression = Expression
 
 class Quadratic2D(UserExpression):
     def eval(self, values, x):

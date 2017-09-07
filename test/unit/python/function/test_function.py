@@ -25,9 +25,6 @@ import ufl
 
 from dolfin_utils.test import skip_in_parallel, pushpop_parameters, fixture
 
-if not has_pybind11():
-    UserExpression = Expression
-
 @fixture
 def mesh():
     return UnitCubeMesh(8, 8, 8)

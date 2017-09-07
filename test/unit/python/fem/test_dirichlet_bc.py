@@ -32,8 +32,6 @@ import six
 from dolfin import *
 from dolfin_utils.test import skip_in_parallel, datadir, skip_if_pybind11
 
-if not has_pybind11():
-    UserExpression = Expression
 
 def test_instantiation():
     """ A rudimentary test for instantiation"""
