@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__all__ = ["CompiledExpression", "UserExpression"]
+__all__ = ["UserExpression"]
 
 # Python imports
 import hashlib
@@ -309,9 +309,3 @@ class Expression(BaseExpression):
             super().__setattr__(name, value)
         elif name in self._properties.keys():
             self._cpp_object.set_property(name, value)
-
-
-# Temporary alias for CompiledExpression name
-class CompiledExpression(Expression):
-    def __init__(self, *args, **kwargs):
-        super(CompiledExpression, self).__init__(*args, **kwargs)

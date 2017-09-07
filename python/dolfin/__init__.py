@@ -120,7 +120,7 @@ from .function.argument import TestFunction, TrialFunction, TestFunctions, Trial
 from .function.constant import Constant
 from .function.specialfunctions import (FacetNormal, CellSize, SpatialCoordinate,
                                         CellVolume, Circumradius, FacetArea, MeshCoordinates)
-from .function.expression import CompiledExpression, Expression, UserExpression
+from .function.expression import Expression, UserExpression
 
 # experimental
 from .jit.pybind11jit import compile_cpp_code

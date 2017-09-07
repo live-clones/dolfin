@@ -38,7 +38,7 @@ def test_solve_global_rhs():
     W = FunctionSpace(mesh, "Lagrange", 2)
 
     u, v = TrialFunction(V), TestFunction(V)
-    f = CompiledExpression("x[0]*x[0] + x[0]*x[1] + x[1]*x[1]", element=W.ufl_element())
+    f = Expression("x[0]*x[0] + x[0]*x[1] + x[1]*x[1]", element=W.ufl_element())
 
     # Forms for projection
     a, L = inner(v, u)*dx, inner(v, f)*dx
@@ -139,7 +139,7 @@ def test_local_solver_dg(ghost_mode):
     U = FunctionSpace(mesh, "DG", 2)
 
     # Set initial values
-    u0 = interpolate(CompiledExpression("cos(pi*x[0])", degree=2), U)
+    u0 = interpolate(Expression("cos(pi*x[0])", degree=2), U)
 
     # Define test and trial functions
     v, u = TestFunction(U), TrialFunction(U)
@@ -177,7 +177,7 @@ def test_solve_local(ghost_mode):
     U = FunctionSpace(mesh, "DG", 2)
 
     # Set initial values
-    u0 = interpolate(CompiledExpression("cos(DOLFIN_PI*x[0])", degree=2), U)
+    u0 = interpolate(Expression("cos(DOLFIN_PI*x[0])", degree=2), U)
 
     # Define test and trial functions
     v, u = TestFunction(U), TrialFunction(U)
