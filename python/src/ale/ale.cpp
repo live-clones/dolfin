@@ -46,7 +46,12 @@ namespace dolfin_wrappers
       .def_static("move", [](std::shared_ptr<dolfin::Mesh> mesh0, const dolfin::Mesh& mesh1)
                   { return dolfin::ALE::move(mesh0, mesh1); })
       .def_static("move", [](dolfin::Mesh& mesh, const dolfin::GenericFunction& disp)
-                  { dolfin::ALE::move(mesh, disp); });
+                  { dolfin::ALE::move(mesh, disp); })
+      .def_static("move", [](dolfin::Mesh& mesh, const py::object disp)
+                  {
+                    auto _disp = disp.attr("_cpp_object").cast<const dolfin::GenericFunction*>();
+                    dolfin::ALE::move(mesh, *_disp);
+                  });
 
   }
 

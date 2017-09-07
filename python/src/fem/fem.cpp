@@ -495,17 +495,24 @@ namespace dolfin_wrappers
             return dolfin::get_coordinates(*_u, geometry);
           });
 
-    m.def("vertex_to_dof_map", &dolfin::vertex_to_dof_map);
+    m.def("vertex_to_dof_map", [](const dolfin::FunctionSpace& V)
+          {
+            const auto _v2d = dolfin::vertex_to_dof_map(V);
+            return py::array_t<dolfin::la_index>(_v2d.size(), _v2d.data());
+          });
+
     m.def("vertex_to_dof_map", [](py::object V)
           {
             auto _V = V.attr("_cpp_object").cast<dolfin::FunctionSpace*>();
-            return dolfin::vertex_to_dof_map(*_V);
+            const auto _v2d = dolfin::vertex_to_dof_map(*_V);
+            return py::array_t<dolfin::la_index>(_v2d.size(), _v2d.data());
           });
     m.def("dof_to_vertex_map", &dolfin::dof_to_vertex_map);
     m.def("dof_to_vertex_map", [](py::object V)
           {
             auto _V = V.attr("_cpp_object").cast<dolfin::FunctionSpace*>();
-            return dolfin::dof_to_vertex_map(*_V);
+            const auto _d2v = dolfin::dof_to_vertex_map(*_V);
+            return py::array_t<std::size_t>(_d2v.size(), _d2v.data());
           });
 
   }
