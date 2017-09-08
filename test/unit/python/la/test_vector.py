@@ -386,20 +386,26 @@ class TestVectorForAnyBackend:
         v = Vector(mpi_comm_world(), 301)
         v = as_backend_type(v)
         array = v.array()
-        data = v.data()
-        assert (data == array).all()
+        if has_pybind11():
+            assert array.flags.owndata == False
+            with pytest.raises(Exception):
+                array.resize([10])
+        else:
+            data = v.data()
+            assert (data == array).all()
 
-        # Test none writeable of a shallow copy of the data
-        data = v.data(False)
-        def write_data(data):
-            data[0] = 1
-        with pytest.raises(Exception):
-            write_data(data)
 
-        # Test for as_backend_typeed Vector
-        v = as_backend_type(v)
-        data = v.data()
-        assert (data==array).all()
+            # Test none writeable of a shallow copy of the data
+            data = v.data(False)
+            def write_data(data):
+                data[0] = 1
+            with pytest.raises(Exception):
+                write_data(data)
+
+            # Test for as_backend_typeed Vector
+            v = as_backend_type(v)
+            data = v.data()
+            assert (data==array).all()
 
 
     # xfail on TypeError
