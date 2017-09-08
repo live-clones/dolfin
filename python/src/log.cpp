@@ -33,12 +33,12 @@ namespace dolfin_wrappers
 {
   void log(py::module& m)
   {
+    // dolfin::Table
     py::class_<dolfin::Table, std::shared_ptr<dolfin::Table>>(m, "Table")
       .def(py::init<std::string>())
       .def("str", &dolfin::Table::str);
 
-    //m.def("info", (void (*)(const dolfin::Variable&, bool)) &dolfin::info,
-    //      py::arg("variable"), py::arg("verbose")=false);
+    // dolfin/log free functions
     m.def("info", [](const dolfin::Variable& v){ dolfin::info(v); });
     m.def("info", [](const dolfin::Variable& v, bool verbose){ dolfin::info(v, verbose); });
     m.def("info", [](std::string s){ dolfin::info(s); });
@@ -50,6 +50,7 @@ namespace dolfin_wrappers
     m.def("set_log_level", &dolfin::set_log_level);
     m.def("get_log_level", &dolfin::get_log_level);
 
+    // dolfin::LogLevel enums
     py::enum_<dolfin::LogLevel>(m, "LogLevel")
       .value("DEBUG", dolfin::LogLevel::DBG)
       .value("TRACE", dolfin::LogLevel::TRACE)
@@ -58,7 +59,5 @@ namespace dolfin_wrappers
       .value("WARNING", dolfin::LogLevel::WARNING)
       .value("ERROR", dolfin::LogLevel::ERROR)
       .value("CRITICAL", dolfin::LogLevel::CRITICAL);
-
   }
-
 }

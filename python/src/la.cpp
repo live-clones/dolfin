@@ -15,9 +15,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
 #include <memory>
-
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/eigen.h>
@@ -25,7 +23,6 @@
 #include <pybind11/operators.h>
 
 #include "casters.h"
-
 
 #include <dolfin/common/Array.h>
 #include <dolfin/la/solve.h>
@@ -151,20 +148,20 @@ namespace dolfin_wrappers
                dolfin::Variable>(m, "LinearAlgebraObject")
     .def("mpi_comm", &dolfin::GenericLinearOperator::mpi_comm);
 
-    // dolfin::GenericLinearOperator class
+    // dolfin::GenericLinearOperator
     py::class_<dolfin::GenericLinearOperator, std::shared_ptr<dolfin::GenericLinearOperator>,
                dolfin::LinearAlgebraObject>
       (m, "GenericLinearOperator", "DOLFIN GenericLinearOperator object")
       .def("mult", &dolfin::GenericLinearOperator::mult);
 
-    // dolfin::GenericTensor class
+    // dolfin::GenericTensor
     py::class_<dolfin::GenericTensor, std::shared_ptr<dolfin::GenericTensor>,
                dolfin::LinearAlgebraObject>
       (m, "GenericTensor", "DOLFIN GenericTensor object")
       .def("init", &dolfin::GenericTensor::init)
       .def("zero", &dolfin::GenericTensor::zero);
 
-    // dolfin::GenericMatrix class
+    // dolfin::GenericMatrix
     py::class_<dolfin::GenericMatrix, std::shared_ptr<dolfin::GenericMatrix>,
                dolfin::GenericTensor, dolfin::GenericLinearOperator>
       (m, "GenericMatrix", "DOLFIN GenericMatrix object")
@@ -268,7 +265,7 @@ namespace dolfin_wrappers
              return A;
            });
 
-    // dolfin::GenericVector class
+    // dolfin::GenericVector
     py::class_<dolfin::GenericVector, std::shared_ptr<dolfin::GenericVector>,
                dolfin::GenericTensor>
       (m, "GenericVector", "DOLFIN GenericVector object")
@@ -509,7 +506,7 @@ namespace dolfin_wrappers
 
 
 
-    // dolfin::Matrix class
+    // dolfin::Matrix
     py::class_<dolfin::Matrix, std::shared_ptr<dolfin::Matrix>, dolfin::GenericMatrix>
       (m, "Matrix", "DOLFIN Matrix object")
       .def(py::init<>())
@@ -534,7 +531,7 @@ namespace dolfin_wrappers
       .def("instance", (std::shared_ptr<dolfin::LinearAlgebraObject>(dolfin::Matrix::*)())
            &dolfin::Matrix::shared_instance);
 
-    // dolfin::Vector class
+    // dolfin::Vector
     py::class_<dolfin::Vector, std::shared_ptr<dolfin::Vector>, dolfin::GenericVector>
       (m, "Vector", "DOLFIN Vector object")
       .def(py::init<>())
@@ -587,7 +584,6 @@ namespace dolfin_wrappers
                              std::shared_ptr<dolfin::GenericVector> v)
            { self.set_block(index, v); });
 
-    //--------------------------------------------------------------------------
     // dolfin::Scalar
     py::class_<dolfin::Scalar, std::shared_ptr<dolfin::Scalar>, dolfin::GenericTensor>
       (m, "Scalar")
@@ -600,6 +596,8 @@ namespace dolfin_wrappers
 
     class PyLinearOperator : public dolfin::LinearOperator
     {
+      // dolfin::LinearOperator trampoline class
+
       using dolfin::LinearOperator::LinearOperator;
 
       // pybdind11 has some issues when passing by reference (due to
@@ -625,13 +623,11 @@ namespace dolfin_wrappers
       //.def(py::init<>())
       .def(py::init<const dolfin::GenericVector&, const dolfin::GenericVector&>());
 
-    //----------------------------------------------------------------------------
-    // dolfin::GenericLinearAlgebraFactory class
+    // dolfin::GenericLinearAlgebraFactory
     py::class_<dolfin::GenericLinearAlgebraFactory, std::shared_ptr<dolfin::GenericLinearAlgebraFactory>>
       (m, "GenericLinearAlgebraFactory", "DOLFIN GenericLinearAlgebraFactory object");
 
-    //----------------------------------------------------------------------------
-    // dolfin::DefaultFactory class
+    // dolfin::DefaultFactory
     py::class_<dolfin::DefaultFactory, std::shared_ptr<dolfin::DefaultFactory>>
       (m, "DefaultFactory", "DOLFIN DefaultFactory object")
       .def(py::init<>())
@@ -639,8 +635,7 @@ namespace dolfin_wrappers
       .def("create_matrix", &dolfin::DefaultFactory::create_matrix)
       .def("create_vector", &dolfin::DefaultFactory::create_vector);
 
-    //----------------------------------------------------------------------------
-    // dolfin::EigenFactory class
+    // dolfin::EigenFactory
     py::class_<dolfin::EigenFactory, std::shared_ptr<dolfin::EigenFactory>,
       dolfin::GenericLinearAlgebraFactory>
       (m, "EigenFactory", "DOLFIN EigenFactory object")
@@ -648,8 +643,7 @@ namespace dolfin_wrappers
       .def("create_matrix", &dolfin::EigenFactory::create_matrix)
       .def("create_vector", &dolfin::EigenFactory::create_vector);
 
-    //----------------------------------------------------------------------------
-    // dolfin::EigenVector class
+    // dolfin::EigenVector
     py::class_<dolfin::EigenVector, std::shared_ptr<dolfin::EigenVector>,
                dolfin::GenericVector>
       (m, "EigenVector", "DOLFIN EigenVector object")
@@ -659,8 +653,7 @@ namespace dolfin_wrappers
       //.def("array", (std::shared_ptr<Eigen::VectorXd> (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec);
       .def("array", [](dolfin::EigenVector& self) -> Eigen::Ref<Eigen::VectorXd> { return *self.vec(); } );
 
-    //----------------------------------------------------------------------------
-    // dolfin::EigenMatrix class
+    // dolfin::EigenMatrix
     py::class_<dolfin::EigenMatrix, std::shared_ptr<dolfin::EigenMatrix>,
                dolfin::GenericMatrix>
       (m, "EigenMatrix", "DOLFIN EigenMatrix object")
@@ -693,7 +686,7 @@ namespace dolfin_wrappers
            },
            py::return_value_policy::copy, "Return copy of CSR matrix data as NumPy arrays");
 
-    // dolfin::GenericLinearSolver class
+    // dolfin::GenericLinearSolver
     py::class_<dolfin::GenericLinearSolver, std::shared_ptr<dolfin::GenericLinearSolver>,
                dolfin::Variable>
       (m, "GenericLinearSolver", "DOLFIN GenericLinearSolver object");
@@ -710,7 +703,7 @@ namespace dolfin_wrappers
 
     py::class_<dolfin::PETScObject, std::shared_ptr<dolfin::PETScObject>>(m, "PETScObject");
 
-    // dolfin::PETScFactory class
+    // dolfin::PETScFactory
     py::class_<dolfin::PETScFactory, std::shared_ptr<dolfin::PETScFactory>,
       dolfin::GenericLinearAlgebraFactory>
       (m, "PETScFactory", "DOLFIN PETScFactory object")
@@ -718,8 +711,7 @@ namespace dolfin_wrappers
       .def("create_matrix", &dolfin::PETScFactory::create_matrix)
       .def("create_vector", &dolfin::PETScFactory::create_vector);
 
-    //----------------------------------------------------------------------------
-    // dolfin::PETScVector class
+    // dolfin::PETScVector
     py::class_<dolfin::PETScVector, std::shared_ptr<dolfin::PETScVector>,
                dolfin::GenericVector, dolfin::PETScObject>
       (m, "PETScVector", "DOLFIN PETScVector object")
@@ -730,11 +722,11 @@ namespace dolfin_wrappers
       .def("set_options_prefix", &dolfin::PETScVector::set_options_prefix)
       .def("update_ghost_values", &dolfin::PETScVector::update_ghost_values);
 
-    // dolfin::PETScBaseMatrix class
+    // dolfin::PETScBaseMatrix
     py::class_<dolfin::PETScBaseMatrix, std::shared_ptr<dolfin::PETScBaseMatrix>,
                dolfin::PETScObject, dolfin::Variable>(m, "PETScBaseMatrix");
 
-    // dolfin::PETScMatrix class
+    // dolfin::PETScMatrix
     py::class_<dolfin::PETScMatrix, std::shared_ptr<dolfin::PETScMatrix>,
                dolfin::GenericMatrix, dolfin::PETScBaseMatrix>
       (m, "PETScMatrix", "DOLFIN PETScMatrix object")
@@ -754,7 +746,7 @@ namespace dolfin_wrappers
 
     #ifdef HAS_TRILINOS
 
-    // dolfin::TpetraFactory class
+    // dolfin::TpetraFactory
     py::class_<dolfin::TpetraFactory, std::shared_ptr<dolfin::TpetraFactory>,
       dolfin::GenericLinearAlgebraFactory>
       (m, "TpetraFactory", "DOLFIN TpetraFactory object")
@@ -762,21 +754,18 @@ namespace dolfin_wrappers
       .def("create_matrix", &dolfin::TpetraFactory::create_matrix)
       .def("create_vector", &dolfin::TpetraFactory::create_vector);
 
-    //----------------------------------------------------------------------------
-    // dolfin::TpetraVector class
+    // dolfin::TpetraVector
     py::class_<dolfin::TpetraVector, std::shared_ptr<dolfin::TpetraVector>,
                dolfin::GenericVector>
       (m, "TpetraVector", "DOLFIN TpetraVector object")
       .def(py::init<MPI_Comm>(), py::arg("comm")=MPI_COMM_WORLD)
       .def(py::init<MPI_Comm, std::size_t>());
 
-
-    // dolfin::TpetraMatrix class
+    // dolfin::TpetraMatrix
     py::class_<dolfin::TpetraMatrix, std::shared_ptr<dolfin::TpetraMatrix>,
                dolfin::GenericMatrix>
       (m, "TpetraMatrix", "DOLFIN TpetraMatrix object")
       .def(py::init<>());
-
 
     // dolfin::TrilinosPreconditioner
     py::class_<dolfin::TrilinosPreconditioner, std::shared_ptr<dolfin::TrilinosPreconditioner>>
@@ -804,10 +793,7 @@ namespace dolfin_wrappers
            &dolfin::BelosKrylovSolver::solve);
     #endif
 
-
-    //-----------------------------------------------------------------------------
-
-    // dolfin::LUSolver class
+    // dolfin::LUSolver
     py::class_<dolfin::LUSolver, std::shared_ptr<dolfin::LUSolver>,
       dolfin::GenericLinearSolver>
     (m, "LUSolver", "DOLFIN LUSolver object")
@@ -827,6 +813,7 @@ namespace dolfin_wrappers
            &dolfin::LUSolver::solve);
 
     #ifdef HAS_PETSC
+    // dolfin::PETScLUSolver
     py::class_<dolfin::PETScLUSolver, std::shared_ptr<dolfin::PETScLUSolver>,
       dolfin::GenericLinearSolver>
       (m, "PETScLUSolver", "DOLFIN PETScLUSolver object")
@@ -842,8 +829,7 @@ namespace dolfin_wrappers
            &dolfin::PETScLUSolver::solve);
     #endif
 
-    //-----------------------------------------------------------------------------
-    // dolfin::KrylovSolver class
+    // dolfin::KrylovSolver
     py::class_<dolfin::KrylovSolver, std::shared_ptr<dolfin::KrylovSolver>,
                dolfin::GenericLinearSolver>
       (m, "KrylovSolver", "DOLFIN KrylovSolver object")
@@ -862,7 +848,7 @@ namespace dolfin_wrappers
            &dolfin::KrylovSolver::solve);
 
     #ifdef HAS_PETSC
-    // dolfin::PETScKrylovSolver class
+    // dolfin::PETScKrylovSolver
     py::class_<dolfin::PETScKrylovSolver, std::shared_ptr<dolfin::PETScKrylovSolver>,
                dolfin::GenericLinearSolver>
       petsc_ks(m, "PETScKrylovSolver", "DOLFIN PETScKrylovSolver object");
@@ -896,11 +882,10 @@ namespace dolfin_wrappers
       .value("preconditioned", dolfin::PETScKrylovSolver::norm_type::preconditioned)
       .value("unpreconditioned", dolfin::PETScKrylovSolver::norm_type::unpreconditioned)
       .value("natural", dolfin::PETScKrylovSolver::norm_type::natural);
-
-
     #endif
 
     #ifdef HAS_SLEPC
+    // dolfin::SLEPcEigenSolver
     py::class_<dolfin::SLEPcEigenSolver, std::shared_ptr<dolfin::SLEPcEigenSolver>, dolfin::Variable>(m, "SLEPcEigenSolver")
       .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>>())
       .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>, std::shared_ptr<const dolfin::PETScMatrix>>())
@@ -923,7 +908,6 @@ namespace dolfin_wrappers
              self.get_eigenpair(lr, lc, r, c, i);
              return py::make_tuple(lr, lc, r, c);
            });
-
     #endif
 
     // dolfin::VectorSpaceBasis
@@ -939,20 +923,17 @@ namespace dolfin_wrappers
     // test_nullspace.h
     m.def("in_nullspace", &dolfin::in_nullspace, py::arg("A"), py::arg("x"), py::arg("type")="right");
 
-    // solve.h
-
+    // la free functions
     m.def("has_linear_algebra_backend", &dolfin::has_linear_algebra_backend);
     m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
     m.def("has_krylov_solver_method", &dolfin::has_krylov_solver_method);
     m.def("has_krylov_solver_preconditioner", &dolfin::has_krylov_solver_preconditioner);
+    m.def("normalize", &dolfin::normalize, py::arg("x"), py::arg("normalization_type")="average");
 
-    // solve
+    // la/solve free functions
     m.def("solve", (std::size_t (*)(const dolfin::GenericLinearOperator&, dolfin::GenericVector&,
                                     const dolfin::GenericVector&, std::string, std::string)) &dolfin::solve,
           py::arg("A"), py::arg("x"), py::arg("b"), py::arg("method")="lu",
           py::arg("preconditioner")="none");
-
-    m.def("normalize", &dolfin::normalize, py::arg("x"), py::arg("normalization_type")="average");
-
   }
 }

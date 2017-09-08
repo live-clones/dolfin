@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Garth N. Wells
+// Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //

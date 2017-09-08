@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Garth N. Wells
+// Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -40,10 +40,11 @@ namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
+  // Interface for dolfin/adaptivity
   void adaptivity(py::module& m)
   {
 #ifdef HAS_HDF5
-    // Wrap TimesSeries
+    // dolfin::TimesSeries
     py::class_<dolfin::TimeSeries, std::shared_ptr<dolfin::TimeSeries>>(m, "TimeSeries")
       .def(py::init<std::string>())
       .def(py::init<MPI_Comm, std::string>())
@@ -56,7 +57,7 @@ namespace dolfin_wrappers
       .def("mesh_times", &dolfin::TimeSeries::mesh_times);
 #endif
 
-    // dolfin::ErrotControl
+    // dolfin::ErrorControl
     py::class_<dolfin::ErrorControl, std::shared_ptr<dolfin::ErrorControl>,
                dolfin::Variable>
       (m, "ErrorControl", "Error control")
@@ -82,13 +83,16 @@ namespace dolfin_wrappers
                dolfin::Form>
       (m, "GoalFunctional", "Goal functional", py::multiple_inheritance());
 
-    py::class_<dolfin::GenericAdaptiveVariationalSolver, std::shared_ptr<dolfin::GenericAdaptiveVariationalSolver>,
+    py::class_<dolfin::GenericAdaptiveVariationalSolver,
+               std::shared_ptr<dolfin::GenericAdaptiveVariationalSolver>,
                dolfin::Variable>
       (m, "GenericAdaptiveVariationalSolver", "Generic adaptive variational solver")
       .def("solve", &dolfin::GenericAdaptiveVariationalSolver::solve)
       .def("summary", &dolfin::GenericAdaptiveVariationalSolver::summary);
 
-    py::class_<dolfin::AdaptiveLinearVariationalSolver, std::shared_ptr<dolfin::AdaptiveLinearVariationalSolver>,
+    // dolfin::AdaptiveLinearVariationalSolver
+    py::class_<dolfin::AdaptiveLinearVariationalSolver,
+               std::shared_ptr<dolfin::AdaptiveLinearVariationalSolver>,
                dolfin::GenericAdaptiveVariationalSolver>
       (m, "AdaptiveLinearVariationalSolver", "Adaptive linear variational solver")
       .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>,
@@ -97,7 +101,9 @@ namespace dolfin_wrappers
            std::shared_ptr<dolfin::Form>,
            std::shared_ptr<dolfin::ErrorControl>>());
 
-    py::class_<dolfin::AdaptiveNonlinearVariationalSolver, std::shared_ptr<dolfin::AdaptiveNonlinearVariationalSolver>,
+    // dolfin::AdaptiveNonlinearVariationalSolver
+    py::class_<dolfin::AdaptiveNonlinearVariationalSolver,
+               std::shared_ptr<dolfin::AdaptiveNonlinearVariationalSolver>,
                dolfin::GenericAdaptiveVariationalSolver>
       (m, "AdaptiveNonlinearVariationalSolver", "Adaptive nonlinear variational solver")
       .def(py::init<std::shared_ptr<dolfin::NonlinearVariationalProblem>,

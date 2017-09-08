@@ -1,4 +1,4 @@
-/// Copyright (C) 2017 Garth N. Wells
+/// Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -83,7 +83,8 @@ namespace dolfin_wrappers
                                                       Eigen::Ref<const Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::GenericFunction::eval,
            "Evaluate GenericFunction (cell version)")
-      .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>, Eigen::Ref<const Eigen::VectorXd>) const)
+      .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>,
+                                                      Eigen::Ref<const Eigen::VectorXd>) const)
            &dolfin::GenericFunction::eval, py::arg("values"), py::arg("x"), "Evaluate GenericFunction")
       .def("compute_vertex_values", [](dolfin::GenericFunction& self, const dolfin::Mesh& mesh)
            { std::vector<double> values;
@@ -92,16 +93,16 @@ namespace dolfin_wrappers
            })
       .def("function_space", &dolfin::GenericFunction::function_space);
 
-    //-------------------------------------------------------------------------
-
+    // Create dolfin::Expression from a JIT pointer
     m.def("make_dolfin_expression",
           [](std::uintptr_t e)
           {
             dolfin::Expression *p = reinterpret_cast<dolfin::Expression *>(e);
             return std::shared_ptr<const dolfin::Expression>(p);
-          });
+          }, "Create a dolfin::Expression object from a pointer integer, typically returned by a just-in-time compiler");
 
-    // dolfin::Expression
+    // dolfin::Expression trampoline (used for overloading virtual
+    // function from Python)
     class PyExpression : public dolfin::Expression
     {
       using dolfin::Expression::Expression;
@@ -117,6 +118,7 @@ namespace dolfin_wrappers
 
     };
 
+    // dolfin:Expression
     py::class_<dolfin::Expression, PyExpression, std::shared_ptr<dolfin::Expression>,
                dolfin::GenericFunction>(m, "Expression", "An Expression is a function (field) that can appear as a coefficient in a form")
       .def(py::init<>())
@@ -158,8 +160,6 @@ namespace dolfin_wrappers
            })
       .def("get_generic_function", &dolfin::Expression::get_generic_function);
 
-
-    //-----------------------------------------------------------------------------
     // dolfin::Constant
     py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>, dolfin::Expression>
       (m, "Constant")
@@ -185,21 +185,20 @@ namespace dolfin_wrappers
       */
       .def("str", &dolfin::Constant::str);
 
-    //-----------------------------------------------------------------------------
     // dolfin::FacetArea
     py::class_<dolfin::FacetArea, std::shared_ptr<dolfin::FacetArea>,
                dolfin::Expression, dolfin::GenericFunction>
       (m, "FacetArea")
       .def(py::init<std::shared_ptr<const dolfin::Mesh>>());
 
-    //-----------------------------------------------------------------------------
     // dolfin::MeshCoordinates
     py::class_<dolfin::MeshCoordinates, std::shared_ptr<dolfin::MeshCoordinates>,
                dolfin::Expression, dolfin::GenericFunction>
       (m, "MeshCoordinates")
       .def(py::init<std::shared_ptr<const dolfin::Mesh>>());
 
-    //-----------------------------------------------------------------------------
+
+    // Hierarchical dolfin::Function
     py::class_<dolfin::Hierarchical<dolfin::Function>, std::shared_ptr<dolfin::Hierarchical<dolfin::Function>>>
       (m, "HierarchicalFunction", "some description")
       .def("root_node", [](dolfin::Hierarchical<dolfin::Function>& self)
@@ -304,7 +303,6 @@ namespace dolfin_wrappers
       .value("ADD_SUB", dolfin::FunctionAXPY::Direction::ADD_SUB)
       .value("SUB_SUB", dolfin::FunctionAXPY::Direction::SUB_SUB);
 
-    //-----------------------------------------------------------------------------
     // dolfin::FunctionSpace
     py::class_<dolfin::FunctionSpace, std::shared_ptr<dolfin::FunctionSpace>, dolfin::Variable>
       (m, "FunctionSpace", py::dynamic_attr())
@@ -455,8 +453,5 @@ namespace dolfin_wrappers
                return;
              }
            });
-
-
   }
-
 }

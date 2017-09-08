@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Chris Richardson
+// Copyright (C) 2017 Chris Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -39,10 +38,10 @@ namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
-
   void nls(py::module& m)
   {
-    // dolfin::NewtonSolver 'trampoline'
+    // dolfin::NewtonSolver 'trampoline' for overloading virtual
+    // functions from Python
     class PyNewtonSolver : public dolfin::NewtonSolver
     {
       using dolfin::NewtonSolver::NewtonSolver;
@@ -92,6 +91,7 @@ namespace dolfin_wrappers
       using NewtonSolver::update_solution;
     };
 
+    // dolfin::NewtonSolver
     py::class_<dolfin::NewtonSolver, std::shared_ptr<dolfin::NewtonSolver>, PyNewtonSolver,
                dolfin::Variable>(m, "NewtonSolver")
       .def(py::init<>())
@@ -102,6 +102,7 @@ namespace dolfin_wrappers
       .def("update_solution", &PyPublicNewtonSolver::update_solution);
 
 #ifdef HAS_PETSC
+    // dolfin::PETScSNESSolver
     py::class_<dolfin::PETScSNESSolver, std::shared_ptr<dolfin::PETScSNESSolver>,
                dolfin::PETScObject>(m, "PETScSNESSolver")
       .def(py::init<std::string>(), py::arg("nls_type")="default")
@@ -111,6 +112,7 @@ namespace dolfin_wrappers
                                                                                dolfin::GenericVector&))
            &dolfin::PETScSNESSolver::solve);
 
+    // dolfin::TAOLinearBoundSolver
     py::class_<dolfin::TAOLinearBoundSolver>(m, "TAOLinearBoundSolver")
       .def(py::init<MPI_Comm>())
       .def(py::init<std::string, std::string, std::string>(), py::arg("method")="default",
@@ -121,6 +123,7 @@ namespace dolfin_wrappers
                       const dolfin::GenericVector&))
            &dolfin::TAOLinearBoundSolver::solve);
 
+    // dolfin::PETScTAOSolver
     py::class_<dolfin::PETScTAOSolver, std::shared_ptr<dolfin::PETScTAOSolver>, dolfin::PETScObject>(m, "PETScTAOSolver")
       .def(py::init<>())
       .def(py::init([](MPI_Comm comm, std::string tao_type,
@@ -136,7 +139,8 @@ namespace dolfin_wrappers
            &dolfin::PETScTAOSolver::solve);
 #endif
 
-    // dolfin::NonlinearProblem 'trampoline'
+    // dolfin::NonlinearProblem 'trampoline' for overloading from
+    // Python
     class PyNonlinearProblem : public dolfin::NonlinearProblem
     {
       using dolfin::NonlinearProblem::NonlinearProblem;
@@ -175,8 +179,8 @@ namespace dolfin_wrappers
                                                        dolfin::GenericVector&, const dolfin::GenericVector&))
                     &dolfin::NonlinearProblem::form);
 
-
-    // dolfin::OptimizationProblem 'trampoline'
+    // dolfin::OptimizationProblem 'trampoline' for overloading from
+    // Python
     class PyOptimisationProblem : public dolfin::OptimisationProblem
     {
       using dolfin::OptimisationProblem::OptimisationProblem;
@@ -212,5 +216,4 @@ namespace dolfin_wrappers
       .def("F", &dolfin::OptimisationProblem::F)
       .def("J", &dolfin::OptimisationProblem::J);
   }
-
 }

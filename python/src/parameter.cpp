@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -214,13 +213,12 @@ namespace dolfin_wrappers
       .def("set_range", (void (dolfin::Parameter::*)(std::set<std::string>)) &dolfin::Parameter::set_range)
       .def("__str__", &dolfin::Parameter::value_str);
 
+    // dolfin::GlobalParameters
     py::class_<dolfin::GlobalParameters, std::shared_ptr<dolfin::GlobalParameters>,
       dolfin::Parameters> (m, "GlobalParameters");
 
     // The global parameters (return a reference because there should
     // be only one instance)
     m.attr("parameters") = &dolfin::parameters;
-
   }
-
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Garth N. Wells
+// Copyright (C) 2017 Chris N. Richardson Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -109,7 +109,7 @@ namespace dolfin_wrappers
            { instance.write(mesh); });
 
 #ifdef HAS_HDF5
-    // HDF5
+    // dolfin::HDF5Attribute
     py::class_<dolfin::HDF5Attribute, std::shared_ptr<dolfin::HDF5Attribute>>(m, "HDF5Attribute")
       //.def("__getitem__", [](const dolfin::HDF5Attribute& instance, std::string name){ return instance[name]; })
       .def("__setitem__", [](dolfin::HDF5Attribute& instance, std::string name, std::string value){ instance.set(name, value); })
@@ -263,7 +263,7 @@ namespace dolfin_wrappers
       .def("__enter__", [](dolfin::XDMFFile& self){ return &self; })
       .def("__exit__", [](dolfin::XDMFFile& self, py::args args, py::kwargs kwargs){ self.close(); });
 
-    // dolfin::XDMFFile::Encoding (enum)
+    // dolfin::XDMFFile::Encoding enums
     py::enum_<dolfin::XDMFFile::Encoding>(xdmf_file, "Encoding")
       .value("HDF5", dolfin::XDMFFile::Encoding::HDF5)
       .value("ASCII", dolfin::XDMFFile::Encoding::ASCII);
@@ -398,7 +398,5 @@ namespace dolfin_wrappers
       .def_static("html", (std::string (*)(const dolfin::Function&, dolfin::X3DOMParameters)) &dolfin::X3DOM::html,
                   py::arg("u"), py::arg("parameters")=dolfin::X3DOMParameters());
 
-
   }
-
 }

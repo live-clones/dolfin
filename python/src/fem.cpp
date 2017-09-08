@@ -68,8 +68,7 @@ namespace dolfin_wrappers
       throw std::runtime_error("Failed to import petsc4py");
 #endif
 
-
-    // Delcare UFC objects
+    // UFC objects
     py::class_<ufc::finite_element, std::shared_ptr<ufc::finite_element>>
       (m, "ufc_finite_element", "UFC finite element object");
     py::class_<ufc::dofmap, std::shared_ptr<ufc::dofmap>>
@@ -99,7 +98,7 @@ namespace dolfin_wrappers
             return std::shared_ptr<const ufc::form>(p);
           });
 
-    // dolfin::FiniteElement class
+    // dolfin::FiniteElement
     py::class_<dolfin::FiniteElement, std::shared_ptr<dolfin::FiniteElement>>
       (m, "FiniteElement", "DOLFIN FiniteElement object")
       .def(py::init<std::shared_ptr<const ufc::finite_element>>())
@@ -172,7 +171,7 @@ namespace dolfin_wrappers
       .def("value_dimension", &dolfin::FiniteElement::value_dimension)
       .def("signature", &dolfin::FiniteElement::signature);
 
-    // dolfin::GenericDofMap class
+    // dolfin::GenericDofMap
     py::class_<dolfin::GenericDofMap, std::shared_ptr<dolfin::GenericDofMap>>
       (m, "GenericDofMap", "DOLFIN DofMap object")
       .def("index_map", &dolfin::GenericDofMap::index_map)
@@ -216,7 +215,7 @@ namespace dolfin_wrappers
       .def("set", &dolfin::GenericDofMap::set)
       .def_readonly("constrained_domain", &dolfin::GenericDofMap::constrained_domain);
 
-    // dolfin::DofMap class
+    // dolfin::DofMap
     py::class_<dolfin::DofMap, std::shared_ptr<dolfin::DofMap>, dolfin::GenericDofMap>
       (m, "DofMap", "DOLFIN DofMap object")
       .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&>())
@@ -233,7 +232,7 @@ namespace dolfin_wrappers
                   py::arg("vertices"), py::arg("diagonal"),
                   py::arg("init")=true, py::arg("finalize")=true);
 
-    // dolfin::DirichletBC class
+    // dolfin::DirichletBC
     py::class_<dolfin::DirichletBC, std::shared_ptr<dolfin::DirichletBC>>
       (m, "DirichletBC", "DOLFIN DirichletBC object")
       .def(py::init<const dolfin::DirichletBC&>())
@@ -274,20 +273,20 @@ namespace dolfin_wrappers
              self.set_value(_u);
            });
 
-    // dolfin::AssemblerBase class
+    // dolfin::AssemblerBase
     py::class_<dolfin::AssemblerBase, std::shared_ptr<dolfin::AssemblerBase>>
       (m, "AssemblerBase")
       .def_readwrite("add_values", &dolfin::Assembler::add_values)
       .def_readwrite("keep_diagonal", &dolfin::Assembler::keep_diagonal)
       .def_readwrite("finalize_tensor", &dolfin::Assembler::finalize_tensor);
 
-    // dolfin::Assembler class
+    // dolfin::Assembler
     py::class_<dolfin::Assembler, std::shared_ptr<dolfin::Assembler>, dolfin::AssemblerBase>
       (m, "Assembler", "DOLFIN Assembler object")
       .def(py::init<>())
       .def("assemble", &dolfin::Assembler::assemble);
 
-    // dolfin::SystemAssembler class
+    // dolfin::SystemAssembler
     py::class_<dolfin::SystemAssembler, std::shared_ptr<dolfin::SystemAssembler>, dolfin::AssemblerBase>
       (m, "SystemAssembler", "DOLFIN SystemAssembler object")
       .def(py::init<std::shared_ptr<const dolfin::Form>, std::shared_ptr<const dolfin::Form>,
@@ -312,9 +311,7 @@ namespace dolfin_wrappers
                     return dolfin::DiscreteOperators::build_gradient(*_V0, *_V1);
                   });
 
-
-
-    // dolfin::Form class
+    // dolfin::Form
     py::class_<dolfin::Form, std::shared_ptr<dolfin::Form>>
       (m, "Form", "DOLFIN Form object")
       .def(py::init<std::shared_ptr<const ufc::form>,
@@ -333,7 +330,7 @@ namespace dolfin_wrappers
       .def("rank", &dolfin::Form::rank)
       .def("mesh", &dolfin::Form::mesh);
 
-    // dolfin::PointSource class
+    // dolfin::PointSource
     py::class_<dolfin::PointSource, std::shared_ptr<dolfin::PointSource>>
       (m, "PointSource")
       .def(py::init<std::shared_ptr<const dolfin::FunctionSpace>, const dolfin::Point&, double>(),
@@ -346,7 +343,7 @@ namespace dolfin_wrappers
       .def("apply", (void (dolfin::PointSource::*)(dolfin::GenericVector&)) &dolfin::PointSource::apply)
       .def("apply", (void (dolfin::PointSource::*)(dolfin::GenericMatrix&)) &dolfin::PointSource::apply);
 
-    // dolfin::LinearVariationalProblem class
+    // dolfin::LinearVariationalProblem
     py::class_<dolfin::LinearVariationalProblem,
                std::shared_ptr<dolfin::LinearVariationalProblem>>
       (m, "LinearVariationalProblem")
@@ -356,14 +353,14 @@ namespace dolfin_wrappers
            std::vector<std::shared_ptr<const dolfin::DirichletBC>>>())
       .def("bcs", &dolfin::LinearVariationalProblem::bcs);
 
-    // dolfin::LinearVariationalSolver class
+    // dolfin::LinearVariationalSolver
     py::class_<dolfin::LinearVariationalSolver,
                std::shared_ptr<dolfin::LinearVariationalSolver>,
                dolfin::Variable>(m, "LinearVariationalSolver")
       .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>())
       .def("solve", &dolfin::LinearVariationalSolver::solve);
 
-    // dolfin::NonlinearVariationalProblem class
+    // dolfin::NonlinearVariationalProblem
     py::class_<dolfin::NonlinearVariationalProblem,
                std::shared_ptr<dolfin::NonlinearVariationalProblem>>
       (m, "NonlinearVariationalProblem")
@@ -385,7 +382,7 @@ namespace dolfin_wrappers
            });
 
 
-    // dolfin::NonlinearVariationalSolver class
+    // dolfin::NonlinearVariationalSolver
     py::class_<dolfin::NonlinearVariationalSolver,
                std::shared_ptr<dolfin::NonlinearVariationalSolver>,
                dolfin::Variable>
@@ -393,10 +390,11 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<dolfin::NonlinearVariationalProblem>>())
       .def("solve", &dolfin::NonlinearVariationalSolver::solve);
 
-    // dolfin::LocalSolver class
+    // dolfin::LocalSolver
     py::class_<dolfin::LocalSolver, std::shared_ptr<dolfin::LocalSolver>>
       local_solver(m, "LocalSolver");
 
+    // dolfin::LocalSolver enums
     py::enum_<dolfin::LocalSolver::SolverType>(local_solver, "SolverType")
       .value("LU", dolfin::LocalSolver::SolverType::LU)
       .value("Cholesky", dolfin::LocalSolver::SolverType::Cholesky);
@@ -421,7 +419,6 @@ namespace dolfin_wrappers
              auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
              self.solve_global_rhs(*_u);
            });
-
 
 #ifdef HAS_PETSC
     // dolfin::PETScDMCollection
@@ -449,8 +446,7 @@ namespace dolfin_wrappers
       .def("get_dm", &dolfin::PETScDMCollection::get_dm);
 #endif
 
-    // Assemble functions
-
+    // Assemble free functions
     m.def("assemble", (void (*)(dolfin::GenericTensor&, const dolfin::Form&)) &dolfin::assemble);
     m.def("assemble", (double (*)(const dolfin::Form&)) &dolfin::assemble);
 
@@ -472,15 +468,13 @@ namespace dolfin_wrappers
             return m;
           });
 
-
-    // FEM utils functions
+    // FEM utils free functions
     m.def("create_mesh", dolfin::create_mesh);
     m.def("create_mesh", [](const py::object u)
           {
             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
             return dolfin::create_mesh(*_u);
           });
-
 
     m.def("set_coordinates", &dolfin::set_coordinates);
     m.def("set_coordinates", [](dolfin::MeshGeometry& geometry, const py::object u)
@@ -515,7 +509,5 @@ namespace dolfin_wrappers
             const auto _d2v = dolfin::dof_to_vertex_map(*_V);
             return py::array_t<std::size_t>(_d2v.size(), _d2v.data());
           });
-
   }
-
 }

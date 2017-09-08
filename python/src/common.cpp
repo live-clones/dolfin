@@ -37,9 +37,10 @@ namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
+  // Interface for dolfin/common
   void common(py::module& m)
   {
-    // Variable
+    // dolfin::Variable
     py::class_<dolfin::Variable, std::shared_ptr<dolfin::Variable>>
       (m, "Variable", "Variable base class")
       .def("id", &dolfin::Variable::id)
@@ -63,7 +64,7 @@ namespace dolfin_wrappers
     m.attr("DOLFIN_EPS") = DOLFIN_EPS;
     m.attr("DOLFIN_PI") = DOLFIN_PI;
 
-    // Timer
+    // dolfin::Timer
     py::class_<dolfin::Timer, std::shared_ptr<dolfin::Timer>>
       (m, "Timer", "Timer class")
       .def(py::init<>())
@@ -73,15 +74,16 @@ namespace dolfin_wrappers
       .def("resume", &dolfin::Timer::resume)
       .def("elapsed", &dolfin::Timer::elapsed);
 
+    // dolfin::Timer enums
     py::enum_<dolfin::TimingClear>(m, "TimingClear")
       .value("clear", dolfin::TimingClear::clear)
       .value("keep", dolfin::TimingClear::keep);
-
     py::enum_<dolfin::TimingType>(m, "TimingType")
       .value("wall", dolfin::TimingType::wall)
       .value("system", dolfin::TimingType::system)
       .value("user", dolfin::TimingType::user);
 
+    // dolfin/common free functions
     m.def("timing", &dolfin::timing);
     m.def("timings", [](dolfin::TimingClear clear, std::vector<dolfin::TimingType> type)
           {
@@ -97,6 +99,7 @@ namespace dolfin_wrappers
 
   }
 
+  // Interface for MPI
   void mpi(py::module& m)
   {
     /*
@@ -106,6 +109,7 @@ namespace dolfin_wrappers
     #endif
     */
 
+    // dolfin::MPI
     py::class_<dolfin::MPI>(m, "MPI", "MPI utilities")
 #ifdef OPEN_MPI
       .def_property_readonly_static("comm_world", [](py::object)

@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Garth N. Wells
+// Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
@@ -60,7 +59,6 @@ namespace dolfin_wrappers
       .def("compute_first_collision", &dolfin::BoundingBoxTree::compute_first_collision)
       .def("compute_first_entity_collision", &dolfin::BoundingBoxTree::compute_first_entity_collision)
       .def("compute_closest_entity", &dolfin::BoundingBoxTree::compute_closest_entity);
-
 
     // dolfin::Point
     py::class_<dolfin::Point>(m, "Point")
@@ -129,10 +127,12 @@ namespace dolfin_wrappers
       .def("distance", &dolfin::Point::distance);
 
     // dolfin::MeshPointIntersection
-    py::class_<dolfin::MeshPointIntersection, std::shared_ptr<dolfin::MeshPointIntersection>>
+    py::class_<dolfin::MeshPointIntersection,
+               std::shared_ptr<dolfin::MeshPointIntersection>>
       (m, "MeshPointIntersection")
       .def("intersected_cells", &dolfin::MeshPointIntersection::intersected_cells);
 
+    // dolfin/geometry free functions
     m.def("intersect", &dolfin::intersect);
 
   }

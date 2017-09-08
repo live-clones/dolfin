@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Chris Richardson
+// Copyright (C) 2017 Chris Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -26,14 +26,14 @@
 #include <dolfin/mesh/BoundaryMesh.h>
 #include <dolfin/mesh/Mesh.h>
 
-
 namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
+  // Interface for dolfin/ale
   void ale(py::module& m)
   {
-     // Wrap MeshDisplacement
+    // dolfin::MeshDisplacement
     py::class_<dolfin::MeshDisplacement, std::shared_ptr<dolfin::MeshDisplacement>,
                dolfin::Expression>(m, "MeshDisplacement")
       .def(py::init<std::shared_ptr<const dolfin::Mesh>>());

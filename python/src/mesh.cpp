@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Garth N. Wells
+// Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
@@ -59,6 +58,7 @@ namespace dolfin_wrappers
 
   void mesh(py::module& m)
   {
+    // Make dolfin::SubDomain from pointer
     m.def("make_dolfin_subdomain",
           [](std::uintptr_t e)
           {
@@ -66,10 +66,10 @@ namespace dolfin_wrappers
             return std::shared_ptr<const dolfin::SubDomain>(p);
           });
 
-    //-------------------------------------------------------------------------
     // dolfin::CellType
     py::class_<dolfin::CellType> celltype(m, "CellType");
 
+    // dolfin::CellType enums
     py::enum_<dolfin::CellType::Type>(celltype, "Type")
       .value("point", dolfin::CellType::Type::point)
       .value("interval", dolfin::CellType::Type::interval)
@@ -83,14 +83,12 @@ namespace dolfin_wrappers
       .def("cell_type", &dolfin::CellType::cell_type)
       .def("description", &dolfin::CellType::description);
 
-    //--------------------------------------------------------------------------
     // dolfin::MeshGeometry class
     py::class_<dolfin::MeshGeometry, std::shared_ptr<dolfin::MeshGeometry>>
       (m, "MeshGeometry", "DOLFIN MeshGeometry object")
       .def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension")
       .def("degree", &dolfin::MeshGeometry::degree, "Degree");
 
-    //-------------------------------------------------------------------------
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
       (m, "MeshTopology", "DOLFIN MeshTopology object")
@@ -109,8 +107,7 @@ namespace dolfin_wrappers
            (const std::map<std::int32_t, std::set<unsigned int> >&(dolfin::MeshTopology::*)(unsigned int) const)
            &dolfin::MeshTopology::shared_entities);
 
-    //-------------------------------------------------------------------------
-    // dolfin::Mesh class
+    // dolfin::Mesh
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>>(m, "Mesh",
                                                             py::dynamic_attr(),
                                                             "DOLFIN Mesh object")
@@ -183,10 +180,9 @@ namespace dolfin_wrappers
            py::return_value_policy::reference)
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
-           { return dolfin::CellType::type2string(self.type().cell_type()); }
-        );
+           { return dolfin::CellType::type2string(self.type().cell_type()); });
 
-    // dolfin::MeshData class
+    // dolfin::MeshData
     py::class_<dolfin::MeshData, std::shared_ptr<dolfin::MeshData>>(m, "MeshData", "Mesh data object")
       .def("array", [](dolfin::MeshData& self, std::string key, std::size_t i)
            {
@@ -194,7 +190,6 @@ namespace dolfin_wrappers
              return py::array_t<std::size_t>(a.size(), a.data());
            })
       .def("create_array", &dolfin::MeshData::create_array);
-
 
     // dolfin::MeshDomain
     py::class_<dolfin::MeshDomains, std::shared_ptr<dolfin::MeshDomains>>(m, "MeshDomains", "Mesh domains object")
@@ -204,14 +199,12 @@ namespace dolfin_wrappers
       .def("markers", (std::map<std::size_t, std::size_t>& (dolfin::MeshDomains::*)(std::size_t))
            &dolfin::MeshDomains::markers);
 
-    //-------------------------------------------------------------------------
-    // dolfin::BoundaryMesh class
+    // dolfin::BoundaryMesh
     py::class_<dolfin::BoundaryMesh, std::shared_ptr<dolfin::BoundaryMesh>, dolfin::Mesh>
       (m, "BoundaryMesh", "DOLFIN BoundaryMesh object")
       .def(py::init<const dolfin::Mesh&, std::string, bool>(),
            py::arg("mesh"), py::arg("type"), py::arg("order")=true);
 
-    //-------------------------------------------------------------------------
     // dolfin::MeshConnectivity class
     py::class_<dolfin::MeshConnectivity, std::shared_ptr<dolfin::MeshConnectivity>>
       (m, "MeshConnectivity", "DOLFIN MeshConnectivity object")
@@ -223,8 +216,6 @@ namespace dolfin_wrappers
       .def("size", (std::size_t (dolfin::MeshConnectivity::*)(std::size_t) const)
            &dolfin::MeshConnectivity::size);
 
-
-    //-------------------------------------------------------------------------
     // dolfin::MeshEntity class
     py::class_<dolfin::MeshEntity, std::shared_ptr<dolfin::MeshEntity>>
       (m, "MeshEntity", "DOLFIN MeshEntity object")
@@ -249,23 +240,20 @@ namespace dolfin_wrappers
       .def("is_ghost", &dolfin::MeshEntity::is_ghost)
       .def("__str__", [](dolfin::MeshEntity& self){return self.str(false);});
 
-    //--------------------------------------------------------------------------
-    // dolfin::Vertex class
+    // dolfin::Vertex
     py::class_<dolfin::Vertex, std::shared_ptr<dolfin::Vertex>, dolfin::MeshEntity>
       (m, "Vertex", "DOLFIN Vertex object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
       .def("point", &dolfin::Vertex::point);
 
-    //--------------------------------------------------------------------------
-    // dolfin::Edge class
+    // dolfin::Edge
     py::class_<dolfin::Edge, std::shared_ptr<dolfin::Edge>, dolfin::MeshEntity>
       (m, "Edge", "DOLFIN Edge object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
       .def("dot", &dolfin::Edge::dot)
       .def("length", &dolfin::Edge::length);
 
-    //--------------------------------------------------------------------------
-    // dolfin::Face class
+    // dolfin::Face
     py::class_<dolfin::Face, std::shared_ptr<dolfin::Face>, dolfin::MeshEntity>
       (m, "Face", "DOLFIN Face object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
@@ -273,16 +261,13 @@ namespace dolfin_wrappers
       .def("normal", (double (dolfin::Face::*)(std::size_t) const) &dolfin::Face::normal)
       .def("area", &dolfin::Face::area);
 
-
-    //--------------------------------------------------------------------------
-    // dolfin::Facet class
+    // dolfin::Facet
     py::class_<dolfin::Facet, std::shared_ptr<dolfin::Facet>, dolfin::MeshEntity>
       (m, "Facet", "DOLFIN Facet object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
       .def("exterior", &dolfin::Facet::exterior);
 
-    //--------------------------------------------------------------------------
-    // dolfin::Cell class
+    // dolfin::Cell
     py::class_<dolfin::Cell, std::shared_ptr<dolfin::Cell>, dolfin::MeshEntity>
       (m, "Cell", "DOLFIN Cell object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
@@ -305,8 +290,7 @@ namespace dolfin_wrappers
       .def("orientation", (std::size_t (dolfin::Cell::*)() const) &dolfin::Cell::orientation)
       .def("orientation", (std::size_t (dolfin::Cell::*)(const dolfin::Point&) const) &dolfin::Cell::orientation);
 
-    //--------------------------------------------------------------------------
-    // dolfin::MeshEntityIterator class
+    // dolfin::MeshEntityIterator
     py::class_<dolfin::MeshEntityIterator, std::shared_ptr<dolfin::MeshEntityIterator>>
       (m, "MeshEntityIterator", "DOLFIN MeshEntityIterator object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
@@ -364,9 +348,7 @@ namespace dolfin_wrappers
     MESHITERATOR_MACRO(Vertex, vertices);
 #undef MESHITERATOR_MACRO
 
-    //--------------------------------------------------------------------------
-    // dolfin::MeshFunction class
-
+    // dolfin::MeshFunction
 #define MESHFUNCTION_MACRO(SCALAR, SCALAR_NAME) \
     py::class_<dolfin::MeshFunction<SCALAR>, \
         std::shared_ptr<dolfin::MeshFunction<SCALAR>>, dolfin::Variable>  \
@@ -432,8 +414,7 @@ namespace dolfin_wrappers
     MESH_ENTITY_FUNCTION_MACRO(CellFunction, std::size_t, Sizet);
 #undef MESH_ENTITY_FUNCTION_MACRO
 
-    //--------------------------------------------------------------------------
-    // dolfin::MeshValueCollection class
+    // dolfin::MeshValueCollection
 #define MESHVALUECOLLECTION_MACRO(SCALAR, SCALAR_NAME) \
     py::class_<dolfin::MeshValueCollection<SCALAR>, \
       std::shared_ptr<dolfin::MeshValueCollection<SCALAR>>, dolfin::Variable>   \
@@ -460,8 +441,7 @@ namespace dolfin_wrappers
     MESHVALUECOLLECTION_MACRO(std::size_t, sizet);
 #undef MESHVALUECOLLECTION_MACRO
 
-    //--------------------------------------------------------------------------
-    // dolfin::MeshEditor class
+    // dolfin::MeshEditor
     py::class_<dolfin::MeshEditor, std::shared_ptr<dolfin::MeshEditor>>
       (m, "MeshEditor", "DOLFIN MeshEditor object")
       .def(py::init<>())
@@ -480,8 +460,7 @@ namespace dolfin_wrappers
            &dolfin::MeshEditor::add_cell)
       .def("close", &dolfin::MeshEditor::close, py::arg("order") = true);
 
-    //--------------------------------------------------------------------------
-    // dolfin::MeshQuality class
+    // dolfin::MeshQuality
     py::class_<dolfin::MeshQuality>
       (m, "MeshQuality", "DOLFIN MeshQuality class")
       .def_static("radius_ratios", &dolfin::MeshQuality::radius_ratios)
@@ -492,17 +471,15 @@ namespace dolfin_wrappers
       .def_static("dihedral_angles_min_max", &dolfin::MeshQuality::dihedral_angles_min_max)
       .def_static("dihedral_angles_matplotlib_histogram", &dolfin::MeshQuality::dihedral_angles_matplotlib_histogram);
 
-    //--------------------------------------------------------------------------
-    // dolfin::SubMesh class
+    // dolfin::SubMesh
     py::class_<dolfin::SubMesh, std::shared_ptr<dolfin::SubMesh>, dolfin::Mesh>
       (m, "SubMesh", "DOLFIN SubMesh")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
       .def(py::init<const dolfin::Mesh&, const dolfin::SubDomain&>())
       .def(py::init<const dolfin::Mesh&, const dolfin::MeshFunction<std::size_t>&, std::size_t>());
 
-    //--------------------------------------------------------------------------
-    // dolfin::SubDomain class
-
+    // dolfin::SubDomain trampoline class for user overloading from
+    // Python
     class PySubDomain : public dolfin::SubDomain
     {
       using dolfin::SubDomain::SubDomain;
@@ -514,6 +491,7 @@ namespace dolfin_wrappers
       { PYBIND11_OVERLOAD(void, dolfin::SubDomain, map, x, y); }
     };
 
+    // dolfin::SubDomian
     py::class_<dolfin::SubDomain, std::shared_ptr<dolfin::SubDomain>, PySubDomain>
       (m, "SubDomain", "DOLFIN SubDomain object")
       .def(py::init<double>(), py::arg("map_tol")=DOLFIN_EPS)
@@ -558,8 +536,5 @@ namespace dolfin_wrappers
       .def_static("rotate", (void (*)(dolfin::Mesh&, double, std::size_t)) &dolfin::MeshTransformation::rotate)
       .def_static("rotate", (void (*)(dolfin::Mesh&, double, std::size_t, const dolfin::Point&))
                   &dolfin::MeshTransformation::rotate);
-
-
   }
-
 }

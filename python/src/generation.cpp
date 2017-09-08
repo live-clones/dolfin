@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Garth N. Wells
+// Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -53,7 +53,6 @@ namespace dolfin_wrappers
       .def(py::init<MPI_Comm, std::size_t>())
       .def_static("create", [](std::size_t n){ return dolfin::UnitIntervalMesh::create(n); });
 
-
     // dolfin::RectangleMesh
     py::class_<dolfin::RectangleMesh, std::shared_ptr<dolfin::RectangleMesh>, dolfin::Mesh>(m, "RectangleMesh")
       .def(py::init<dolfin::Point, dolfin::Point, std::size_t, std::size_t, std::string>(),
@@ -88,8 +87,10 @@ namespace dolfin_wrappers
 
     // dolfin::UnitQuadMesh
     py::class_<dolfin::UnitQuadMesh>(m, "UnitQuadMesh")
-      .def_static("create", [](std::size_t nx, std::size_t ny){ return dolfin::UnitQuadMesh::create(nx, ny); })
-      .def_static("create", [](MPI_Comm comm, std::size_t nx, std::size_t ny){ return dolfin::UnitQuadMesh::create(comm, nx, ny); });
+      .def_static("create", [](std::size_t nx, std::size_t ny)
+                  { return dolfin::UnitQuadMesh::create(nx, ny); })
+      .def_static("create", [](MPI_Comm comm, std::size_t nx, std::size_t ny)
+                  { return dolfin::UnitQuadMesh::create(comm, nx, ny); });
 
     // dolfin::UnitHexMesh
     py::class_<dolfin::UnitHexMesh>(m, "UnitHexMesh")
@@ -102,7 +103,5 @@ namespace dolfin_wrappers
     py::class_<dolfin::BoxMesh, std::shared_ptr<dolfin::BoxMesh>, dolfin::Mesh>(m, "BoxMesh")
       .def(py::init<const dolfin::Point&, const dolfin::Point&, std::size_t, std::size_t, std::size_t>())
       .def(py::init<MPI_Comm, const dolfin::Point&, const dolfin::Point&, std::size_t, std::size_t, std::size_t>());
-
   }
-
 }
