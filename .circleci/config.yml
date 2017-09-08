@@ -34,3 +34,6 @@ jobs:
       - run:
           name: Run tests (MPI parallel)
           command: mpirun -n 3 python3 -m pytest python/unit-tests
+      - run:
+          name: Run tests (reference)
+          command: python3 -m pytest test/unit/python/
