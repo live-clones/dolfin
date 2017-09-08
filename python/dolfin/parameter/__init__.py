@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""FIXME: document"""
+
+# Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
+#
+# Distributed under the terms of the GNU Lesser Public License (LGPL),
+# either version 3 of the License, or (at your option) any later
+# version.
+
 import dolfin.cpp as cpp
 
 
@@ -15,7 +24,9 @@ def __getitem__(self, key):
     else:
         raise RuntimeError("Invalid parameter: {}".format(key))
 
-# FIXME: This is probably better handled on the C++ side using py::dict
+
+# FIXME: This is probably better handled on the C++ side using
+# py::dict
 def update(self, params):
     if isinstance(params, cpp.parameter.Parameters):
         self._update(params)
@@ -55,15 +66,15 @@ def ffc_default_parameters():
                "precision": 0}
 
     # Add the rest
-    print("****", type(d))
-    for i, k in enumerate(d):
-        if d[k] is None:
-            p.add(k, typemap[k])
-            p[k] = None
+    for key, value in d.items():
+        if value is None:
+            p.add(key, typemap[key])
+            p[key] = None
         else:
-            p.add(k, d[k])
+            p.add(key, value)
 
     return p
+
 
 # Add form compiler parameters to global parameter set
 if not parameters.has_parameter_set("form_compiler"):
