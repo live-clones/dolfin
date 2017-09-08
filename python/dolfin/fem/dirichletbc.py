@@ -7,7 +7,6 @@
 # version.
 
 import types
-from six import string_types
 import ufl
 import dolfin.cpp as cpp
 from dolfin.mesh.subdomain import CompiledSubDomain
@@ -109,7 +108,7 @@ class DirichletBC(cpp.fem.DirichletBC):
         if isinstance(args[2], cpp.mesh.SubDomain):
             self.sub_domain = args[2]
             args = args[:2] + (self.sub_domain,) + args[3:]
-        elif isinstance(args[2], string_types):
+        elif isinstance(args[2], str):
             self.sub_domain = CompiledSubDomain(args[2])
             args = args[:2] + (self.sub_domain,) + args[3:]
         elif isinstance(args[2], cpp.mesh.MeshFunctionSizet):
@@ -118,7 +117,7 @@ class DirichletBC(cpp.fem.DirichletBC):
             raise RuntimeError("Invalid argument")
 
         # Add kwargs
-        if isinstance(args[-1], string_types):
+        if isinstance(args[-1], str):
             method = args[-1]
         else:
             method = kwargs.pop("method", "topological")

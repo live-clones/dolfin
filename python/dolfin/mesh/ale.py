@@ -23,7 +23,6 @@ __all__ = ["compute_vertex_map", "compute_edge_map", "init_parent_edge_indices"]
 
 from dolfin.cpp.mesh import Vertex
 from dolfin import cpp
-import six
 
 def compute_vertex_map(mesh0, mesh1):
     """
@@ -124,7 +123,7 @@ def compute_edge_map(mesh0, mesh1):
         parent_to_local_mesh1[tuple(v)] = edge.index()
 
     # Get common edges
-    common_edges = set(six.iterkeys(parent_to_local_mesh0)).intersection(set(six.iterkeys(parent_to_local_mesh1)))
+    common_edges = set(parent_to_local_mesh0.keys()).intersection(set(parent_to_local_mesh1.keys()))
 
     # Compute map
     edge_map = {}

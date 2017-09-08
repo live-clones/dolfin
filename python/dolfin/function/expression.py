@@ -12,8 +12,6 @@ __all__ = ["UserExpression"]
 
 import hashlib
 from functools import reduce
-from six import add_metaclass, string_types
-from six.moves import xrange as range
 import types
 import numpy
 import ufl
@@ -110,7 +108,7 @@ class BaseExpression(ufl.Coefficient):
             raise TypeError("expected at least 1 argument")
 
         # Test for ufl restriction
-        if len(args) == 1 and isinstance(args[0], string_types):
+        if len(args) == 1 and isinstance(args[0], str):
             if args[0] in ('+', '-'):
                 return ufl.Coefficient.__call__(self, *args)
 
@@ -265,7 +263,7 @@ class Expression(BaseExpression):
         # Save properties for checking later
         self._properties = kwargs
         for k in self._properties:
-            if not isinstance(k, string_types):
+            if not isinstance(k, str):
                 raise KeyError("Invalid key:", k)
 
         if cpp_code is not None:

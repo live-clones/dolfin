@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-"This module provides a simple SVG renderer of 2D and 1D meshes for use in ipython notebook."
-from six.moves import xrange as range
+"""This module provides a simple SVG renderer of 2D and 1D meshes for
+use in ipython notebook.
+
+"""
 
 # Copyright (C) 2013-2014 Martin Sandve Alnæs
 #
@@ -18,6 +20,7 @@ from six.moves import xrange as range
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
+
 
 def mesh2svg(mesh, display_width=800.0):
     "Ipython notebook svg rendering function for 1D and 2D meshes."

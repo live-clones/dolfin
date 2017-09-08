@@ -8,7 +8,6 @@
 # version.
 
 import hashlib
-from six import string_types
 import dolfin.cpp as cpp
 from dolfin.jit.jit import compile_class, _math_header
 
@@ -89,7 +88,7 @@ extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
 
     statements = class_data["statements"]
     statement = ""
-    if isinstance(statements, string_types):
+    if isinstance(statements, str):
         statement += "          values[0] = " + statements + ";\n"
     else:
         for i, val in enumerate(statements):

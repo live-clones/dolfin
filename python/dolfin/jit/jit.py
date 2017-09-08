@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import string_types
+
 import numpy
 import hashlib
 import dijitso
@@ -49,7 +49,7 @@ def compile_class(cpp_data):
     statements = cpp_data['statements']
     properties = cpp_data['properties']
 
-    if not isinstance(statements, (string_types, tuple, list)):
+    if not isinstance(statements, (str, tuple, list)):
         raise RuntimeError("Expression must be a string, or a list or tuple of strings")
 
     # Flatten tuple of tuples (2D array) and get value_shape

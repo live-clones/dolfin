@@ -19,7 +19,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-from six import string_types
 import types
 import numpy as np
 import ufl
@@ -219,7 +218,7 @@ class Function(ufl.Coefficient):
                     self._cpp_object = cpp.function.Function(V._cpp_object, args[1])
                 elif isinstance(args[1], cpp.function.Function):
                     self._cpp_object = args[1]
-                elif isinstance(args[1], string_types):
+                elif isinstance(args[1], str):
                     # Read from xml filename in string
                     self._cpp_object = cpp.function.Function(V._cpp_object, args[1])
                 else:
@@ -256,7 +255,7 @@ class Function(ufl.Coefficient):
             raise TypeError("expected at least 1 argument")
 
         # Test for ufl restriction
-        if len(args) == 1 and isinstance(args[0], string_types):
+        if len(args) == 1 and isinstance(args[0], str):
             if args[0] in ('+', '-'):
                 return ufl.Coefficient.__call__(self, *args)
 

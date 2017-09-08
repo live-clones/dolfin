@@ -21,7 +21,6 @@ VariationalProblem/Solver classes as well as the solve function.
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-import six
 import ufl
 import dolfin.cpp as cpp
 from dolfin.function.function import Function
@@ -390,7 +389,7 @@ def _extract_args(*args, **kwargs):
     # Check for use of valid kwargs
     valid_kwargs = ["bcs", "J", "tol", "M",
                     "form_compiler_parameters", "solver_parameters"]
-    for kwarg in six.iterkeys(kwargs):
+    for kwarg in kwargs.keys():
         if kwarg not in valid_kwargs:
             raise RuntimeError("Illegal keyword argument")
             #cpp.dolfin_error("solving.py",

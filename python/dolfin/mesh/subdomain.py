@@ -1,5 +1,4 @@
 import types
-from six import string_types
 import hashlib
 
 import dolfin.cpp as cpp
