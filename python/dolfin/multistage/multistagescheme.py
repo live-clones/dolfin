@@ -648,7 +648,7 @@ class ButcherMultiStageScheme(MultiStageScheme):
                  generator=_butcher_scheme_generator):
         bcs = bcs or []
         time = time or Constant(0.0)
-        ufl_stage_forms, dolfin_stage_forms, jacobian_indices, last_stage,
+        ufl_stage_forms, dolfin_stage_forms, jacobian_indices, last_stage, \
                          stage_solutions, dt, human_form, contraction = \
                          generator(a, b, c, time, solution, rhs_form)
 

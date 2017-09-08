@@ -1,8 +1,8 @@
 import hashlib
 import types
 import dijitso
-import ff
-cimport dolfin.cpp as cpp
+import ffc
+import dolfin.cpp as cpp
 from dolfin.jit.jit import compile_class, _math_header
 
 

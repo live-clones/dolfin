@@ -1,5 +1,5 @@
 import numpy as np
-    from numpy import intc, int64
+from numpy import intc, int64
 import dolfin.cpp as cpp
 
 

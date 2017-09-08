@@ -51,11 +51,11 @@ def ffc_default_parameters():
     d = default_jit_parameters()
     p = Parameters("form_compiler")
 
-    typemap = {"quadrature_rule": "",
-               "quadrature_degree": 0,
+    typemap = {"quadrature_rule": "", "quadrature_degree": 0,
                "precision": 0}
 
     # Add the rest
+    print("****", type(d))
     for i, k in enumerate(d):
         if d[k] is None:
             p.add(k, typemap[k])

@@ -232,7 +232,7 @@ def _rush_larsen_scheme_generator(rhs_form, solution, time, order, generalized):
     human_form = "%srush larsen %s" % ("generalized " if generalized else "",
                                        str(order))
 
-    return rhs_form, linear_terms, ufl_stage_forms, dolfin_stage_forms, last_stage,
+    return rhs_form, linear_terms, ufl_stage_forms, dolfin_stage_forms, last_stage, \
            stage_solutions, dt, dt_stage_offsets, human_form, None
 
 
@@ -360,7 +360,7 @@ def _rush_larsen_scheme_generator_tlm(rhs_form, solution, time, order,
     human_form = "%srush larsen %s" % ("generalized " if generalized else "",
                                        str(order))
 
-    return rhs_form, linear_terms, ufl_stage_forms, dolfin_stage_forms, last_stage,
+    return rhs_form, linear_terms, ufl_stage_forms, dolfin_stage_forms, last_stage, \
            stage_solutions, dt, dt_stage_offsets, human_form, perturbation
 
 
@@ -492,7 +492,7 @@ def _rush_larsen_scheme_generator_adm(rhs_form, solution, time, order,
     human_form = "%srush larsen %s" % ("generalized " if generalized else "",
                                        str(order))
 
-    return rhs_form, linear_terms, ufl_stage_forms, dolfin_stage_forms, last_stage,
+    return rhs_form, linear_terms, ufl_stage_forms, dolfin_stage_forms, last_stage, \
            stage_solutions, dt, dt_stage_offsets, human_form, perturbation
 
 
@@ -512,7 +512,7 @@ class RushLarsenScheme(MultiStageScheme):
         if order not in [1,2]:
             raise ValueError("Expected order to be either 1 or 2")
 
-        rhs_form, ufl_stage_forms, linear_terms, dofin_stage_forms, last_stage,
+        rhs_form, ufl_stage_forms, linear_terms, dofin_stage_forms, last_stage, \
                   stage_solutions, dt, dt_stage_offsets, human_form, contraction = \
                   generator(rhs_form, solution, time, order, generalized)
 
