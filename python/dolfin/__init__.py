@@ -6,6 +6,7 @@ import sys
 # Store dl open flags to restore them after import
 stored_dlopen_flags = sys.getdlopenflags()
 
+# Developer note: below is related to OpenMPI
 # Fix dlopen flags (may need reorganising)
 import sys
 if "linux" in sys.platform:
@@ -139,14 +140,16 @@ from .multistage.multistagesolvers import PointIntegralSolver, RKSolver
 from .multistage.rushlarsenschemes import RL1, RL2, GRL1, GRL2
 
 # ufl
-from ufl import (FiniteElement, TensorElement, VectorElement, MixedElement, rhs, lhs,
-                 conditional, le, lt, ge, gt, split,
-                 cross, inner, dot, grad, curl, dx, div, Measure, det, pi, sin, cos, tan,
-                 acos, asin, atan, ln, exp, sqrt, bessel_I, bessel_J, bessel_K, bessel_Y,
-                 Dx, ds, dS, dP,
-                 interval, triangle, tetrahedron, quadrilateral, hexahedron,
-                 avg, jump, sym, tr, Identity,
-                 variable, diff, as_vector, as_tensor, as_matrix)
+from ufl import (FiniteElement, TensorElement, VectorElement,
+                 MixedElement, rhs, lhs, conditional, le, lt, ge, gt,
+                 split, cross, inner, dot, grad, curl, dx, div,
+                 Measure, det, pi, sin, cos, tan, acos, asin, atan,
+                 ln, exp, sqrt, bessel_I, bessel_J, bessel_K,
+                 bessel_Y, Dx, ds, dS, dP, interval, triangle,
+                 tetrahedron, quadrilateral, hexahedron, avg, jump,
+                 sym, tr, Identity, variable, diff, as_vector,
+                 as_tensor, as_matrix, system, outer, dev, skew,
+                 elem_mult, elem_div, elem_pow, elem_op, erf)
 from ufl.formoperators import action
 
 # FIXME
