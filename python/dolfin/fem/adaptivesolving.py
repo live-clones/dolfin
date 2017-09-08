@@ -30,7 +30,6 @@ from dolfin.fem.form import Form
 from dolfin.fem.solving import LinearVariationalProblem
 from dolfin.fem.solving import NonlinearVariationalProblem
 from dolfin.fem.errorcontrolgenerator import DOLFINErrorControlGenerator
-from dolfin.log.log import log
 
 class AdaptiveLinearVariationalSolver(cpp.adaptivity.AdaptiveLinearVariationalSolver):
 
@@ -58,7 +57,8 @@ class AdaptiveLinearVariationalSolver(cpp.adaptivity.AdaptiveLinearVariationalSo
         M = Form(goal, form_compiler_parameters=p)
 
         # Initialize C++ base class
-        cpp.adaptivity.AdaptiveLinearVariationalSolver.__init__(self, problem, M, ec)
+        cpp.adaptivity.AdaptiveLinearVariationalSolver.__init__(self, problem,
+                                                                M, ec)
 
     def solve(self, tol):
         """
