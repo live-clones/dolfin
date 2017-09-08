@@ -54,7 +54,7 @@
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/SparsityPattern.h>
 
-#include "../petsc_casters.h"
+#include "casters.h"
 
 namespace py = pybind11;
 

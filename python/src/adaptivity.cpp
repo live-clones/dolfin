@@ -34,7 +34,7 @@
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/mesh/Mesh.h>
 
-#include "../casters.h"
+#include "casters.h"
 
 namespace py = pybind11;
 

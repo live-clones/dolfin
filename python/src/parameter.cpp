@@ -24,7 +24,7 @@
 #include <dolfin/parameter/GlobalParameters.h>
 #include <dolfin/parameter/Parameter.h>
 #include <dolfin/parameter/Parameters.h>
-#include "../casters.h"
+#include "casters.h"
 
 namespace py = pybind11;
 

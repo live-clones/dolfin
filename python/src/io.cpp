@@ -34,7 +34,7 @@
 #include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/MeshValueCollection.h>
 
-#include "../casters.h"
+#include "casters.h"
 
 namespace py = pybind11;
 

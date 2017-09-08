@@ -24,7 +24,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
 
-#include "../petsc_casters.h"
+#include "casters.h"
 
 
 #include <dolfin/common/Array.h>
@@ -67,8 +67,6 @@
 #include <dolfin/la/solve.h>
 #include <dolfin/la/VectorSpaceBasis.h>
 #include <dolfin/la/test_nullspace.h>
-
-#include "../casters.h"
 
 namespace py = pybind11;
 

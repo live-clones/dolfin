@@ -25,7 +25,7 @@
 #include <dolfin/log/Table.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/multistage/MultiStageScheme.h>
-#include "../casters.h"
+#include "casters.h"
 
 namespace py = pybind11;
 

@@ -50,7 +50,7 @@
 #include <dolfin/mesh/PeriodicBoundaryComputation.h>
 #include <dolfin/mesh/MeshTransformation.h>
 
-#include "../casters.h"
+#include "casters.h"
 
 namespace py = pybind11;
 

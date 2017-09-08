@@ -18,23 +18,23 @@ include(${DOLFIN_USE_FILE})
 # Create the binding library
 pybind11_add_module(cpp SHARED
   src/dolfin.cpp
-  src/parameter/parameter.cpp
-  src/adaptivity/adaptivity.cpp
-  src/ale/ale.cpp
-  src/common/common.cpp
-  src/fem/fem.cpp
-  src/function/function.cpp
-  src/generation/generation.cpp
-  src/geometry/geometry.cpp
-  src/graph/graph.cpp
-  src/log/log.cpp
-  src/math/math.cpp
-  src/mesh/mesh.cpp
-  src/multistage/multistage.cpp
-  src/io/io.cpp
-  src/la/la.cpp
-  src/nls/nls.cpp
-  src/refinement/refinement.cpp
+  src/parameter.cpp
+  src/adaptivity.cpp
+  src/ale.cpp
+  src/common.cpp
+  src/fem.cpp
+  src/function.cpp
+  src/generation.cpp
+  src/geometry.cpp
+  src/graph.cpp
+  src/log.cpp
+  src/math.cpp
+  src/mesh.cpp
+  src/multistage.cpp
+  src/io.cpp
+  src/la.cpp
+  src/nls.cpp
+  src/refinement.cpp
   )
 
 #if (MPI4PY_FOUND)
