@@ -31,7 +31,7 @@
 #include <dolfin/common/timing.h>
 #include <dolfin/log/Table.h>
 
-#include "../mpi_interface.h"
+#include "../casters.h"
 
 namespace py = pybind11;
 

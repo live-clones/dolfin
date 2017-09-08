@@ -32,7 +32,7 @@
 #include <dolfin/generation/UnitHexMesh.h>
 #include <dolfin/generation/IntervalMesh.h>
 
-#include "../mpi_interface.h"
+#include "../casters.h"
 
 namespace py = pybind11;
 

@@ -68,7 +68,7 @@
 #include <dolfin/la/VectorSpaceBasis.h>
 #include <dolfin/la/test_nullspace.h>
 
-#include "../mpi_interface.h"
+#include "../casters.h"
 
 namespace py = pybind11;
 

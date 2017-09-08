@@ -29,10 +29,13 @@
 #include <petsc4py/petsc4py.h>
 #endif
 
+
+// pybind11 casters for PETSc/petsc4py objects
+
 namespace pybind11
 {
   namespace detail
-    {
+  {
     template <> class type_caster<_p_KSP>
     {
     public:
@@ -42,7 +45,7 @@ namespace pybind11
       bool load(handle src, bool)
       {
         // FIXME: check reference counting
-        std::cout << "Py to c++" << std::endl;
+        //std::cout << "Py to c++" << std::endl;
         #ifdef HAS_PETSC4PY
         value = PyPetscKSP_Get(src.ptr());
         return true;
@@ -57,7 +60,7 @@ namespace pybind11
       {
         // FIXME: check reference counting
         #ifdef HAS_PETSC4PY
-        std::cout << "C++ to Python" << std::endl;
+        //std::cout << "C++ to Python" << std::endl;
         return pybind11::handle(PyPetscKSP_New(src));
         #else
         throw std::runtime_error("DOLFIN has not been configured with petsc4py. Accessing underlying PETSc object requires petsc4py");
@@ -79,9 +82,9 @@ namespace pybind11
       {
         // FIXME: check reference counting
         #ifdef HAS_PETSC4PY
-        std::cout << "Py to C++ (DM)" << std::endl;
+        //std::cout << "Py to C++ (DM)" << std::endl;
         value = PyPetscDM_Get(src.ptr());
-        std::cout << "Returning" << std::endl;
+        //std::cout << "Returning" << std::endl;
         return true;
         #else
         throw std::runtime_error("DOLFIN has not been configured with petsc4py. Accessing underlying PETSc object requires petsc4py");
@@ -95,7 +98,7 @@ namespace pybind11
       {
         // FIXME: check reference counting
         #ifdef HAS_PETSC4PY
-        std::cout << "C++ to Python (DM)" << std::endl;
+        //std::cout << "C++ to Python (DM)" << std::endl;
         return pybind11::handle(PyPetscDM_New(src));
         #else
         throw std::runtime_error("DOLFIN has not been configured with petsc4py. Accessing underlying PETSc object requires petsc4py");

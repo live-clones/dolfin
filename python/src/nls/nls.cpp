@@ -33,7 +33,7 @@
 #include <dolfin/nls/NonlinearProblem.h>
 #include <dolfin/nls/OptimisationProblem.h>
 
-#include "../mpi_interface.h"
+#include "../casters.h"
 
 namespace py = pybind11;
 
