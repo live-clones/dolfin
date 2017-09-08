@@ -29,7 +29,8 @@ def compile_class(cpp_data):
       "properties": a dict of float properties
       "jit_generate": callable (generates cpp code with this dict as input)
 
-"""
+    """
+
     import pkgconfig
     if not pkgconfig.exists('dolfin'):
         raise RuntimeError("Could not find DOLFIN pkg-config file. Please make sure appropriate paths are set.")

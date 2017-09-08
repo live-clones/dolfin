@@ -11,7 +11,7 @@ def ufl_cell(self):
 
 def ufl_coordinate_element(self):
     """Return the finite element of the coordinate vector field of this
-            domain.
+    domain.
 
     """
     cell = self.ufl_cell()
@@ -28,9 +28,11 @@ def ufl_domain(self):
                                     cargo=self)
     return self._ufl_domain
 
+
 def geometric_dimension(self):
     """Returns geometric dimension for ufl interface"""
     return self.geometry().dim()
+
 
 def _repr_html_(self):
     return cpp.io.X3DOM.html(self)

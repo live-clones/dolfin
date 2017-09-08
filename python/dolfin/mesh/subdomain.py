@@ -1,11 +1,10 @@
-import types
 import hashlib
-
-import dolfin.cpp as cpp
+import types
 import dijitso
-import ffc
-
+import ff
+cimport dolfin.cpp as cpp
 from dolfin.jit.jit import compile_class, _math_header
+
 
 def jit_generate(class_data, module_name, signature, parameters):
 
@@ -80,10 +79,12 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
         set_props += _set_prop.format(name = k)
 
     classname = signature
-    code_c = template_code.format(inside=inside_code, classname=classname,
+    code_c = template_code.format(inside=inside_code,
+                                  classname=classname,
                                   math_header=_math_header,
                                   members=members, constructor="",
-                                  get_props=get_props, set_props=set_props)
+                                  get_props=get_props,
+                                  set_props=set_props)
     code_h = ""
     depends = []
 
@@ -92,13 +93,12 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
 
 def compile_subdomain(inside_code, properties):
 
-    cpp_data = {'statements': inside_code,
-                'properties': properties,
-                'name': 'subdomain',
-                'jit_generate': jit_generate}
+    cpp_data = {'statements': inside_code, 'properties': properties,
+                'name': 'subdomain', 'jit_generate': jit_generate}
 
     subdomain = compile_class(cpp_data)
     return subdomain
+
 
 class CompiledSubDomain(cpp.mesh.SubDomain):
     def __new__(cls, inside_code, **kwargs):

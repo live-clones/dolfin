@@ -26,14 +26,9 @@ passed to a RKSolver or PointIntegralSolver
 
 import numpy as np
 import functools
-
-# Import SWIG-generated extension module (DOLFIN C++)
-import dolfin.cpp as cpp
-
-# Import ufl
 import ufl
 
-# Import classes from dolfin python layer
+import dolfin.cpp as cpp
 from dolfin.function.constant import Constant
 from dolfin.function.expression import Expression
 from dolfin.function.function import Function
@@ -152,7 +147,8 @@ def _time_dependent_expressions(rhs_form, time):
     return time_dependent_expressions
 
 
-def _replace_dict_time_dependent_expression(time_dep_expressions, time, dt, c):
+def _replace_dict_time_dependent_expression(time_dep_expressions, time,
+                                            dt, c):
     assert(isinstance(c, float))
     replace_dict = {}
     if c == 0.0 or not time_dep_expressions:
@@ -251,8 +247,8 @@ def _butcher_scheme_generator(a, b, c, time, solution, rhs_form):
         last_stage = Form(ufl.inner(y_+sum([dt*float(bi)*ki for bi, ki in \
                                             zip(b, k)], zero_), v)*DX)
     else:
-        # FIXME: Add support for adaptivity in RKSolver and MultiStageScheme
-
+        # FIXME: Add support for adaptivity in RKSolver and
+        # MultiStageScheme
         last_stage = [Form(ufl.inner(y_+sum([dt*float(bi)*ki for bi, ki in \
                                              zip(b[0,:], k)], zero_), v)*DX),
                       Form(ufl.inner(y_+sum([dt*float(bi)*ki for bi, ki in \
@@ -289,7 +285,8 @@ def _butcher_scheme_generator(a, b, c, time, solution, rhs_form):
            k, dt, human_form, None
 
 
-def _butcher_scheme_generator_tlm(a, b, c, time, solution, rhs_form, perturbation):
+def _butcher_scheme_generator_tlm(a, b, c, time, solution, rhs_form,
+                                  perturbation):
     """Generates a list of forms and solutions for a given Butcher tableau
 
     *Arguments*
@@ -592,10 +589,16 @@ class MultiStageScheme(cpp.multistage.MultiStageScheme):
         # Pass args to C++ constructor
         stage_solutions = [s.cpp_object() for s in stage_solutions]
 
-        cpp.multistage.MultiStageScheme.__init__(self, dolfin_stage_forms, last_stage,
-                                                 stage_solutions, solution.cpp_object(),
-                                                 time.cpp_object(), dt.cpp_object(),
-                                                 dt_stage_offsets, jacobian_indices, order,
+        cpp.multistage.MultiStageScheme.__init__(self,
+                                                 dolfin_stage_forms,
+                                                 last_stage,
+                                                 stage_solutions,
+                                                 solution.cpp_object(),
+                                                 time.cpp_object(),
+                                                 dt.cpp_object(),
+                                                 dt_stage_offsets,
+                                                 jacobian_indices,
+                                                 order,
                                                  self.__class__.__name__,
                                                  human_form, bcs)
 
@@ -638,14 +641,14 @@ class MultiStageScheme(cpp.multistage.MultiStageScheme):
 
 
 class ButcherMultiStageScheme(MultiStageScheme):
-    """
-    Base class for all MultiStageSchemes
+    """Base class for all MultiStageSchemes
+
     """
     def __init__(self, rhs_form, solution, time, bcs, a, b, c, order,
                  generator=_butcher_scheme_generator):
         bcs = bcs or []
         time = time or Constant(0.0)
-        ufl_stage_forms, dolfin_stage_forms, jacobian_indices, last_stage, \
+        ufl_stage_forms, dolfin_stage_forms, jacobian_indices, last_stage,
                          stage_solutions, dt, human_form, contraction = \
                          generator(a, b, c, time, solution, rhs_form)
 
@@ -657,7 +660,7 @@ class ButcherMultiStageScheme(MultiStageScheme):
         MultiStageScheme.__init__(self, rhs_form, ufl_stage_forms,
                                   dolfin_stage_forms, last_stage,
                                   stage_solutions, solution, time, dt,
-                                  c, jacobian_indices, order,\
+                                  c, jacobian_indices, order,
                                   self.__class__.__name__, human_form,
                                   bcs, contraction)
 
@@ -675,8 +678,9 @@ class ButcherMultiStageScheme(MultiStageScheme):
                                       perturbation=perturbation)
         new_solution = self._solution.copy()
         new_form = ufl.replace(self._rhs_form, {self._solution: new_solution})
-        return ButcherMultiStageScheme(new_form, new_solution, self._t, self._bcs,
-                                       self.a, self.b, self.c, self._order,
+        return ButcherMultiStageScheme(new_form, new_solution,
+                                       self._t, self._bcs, self.a,
+                                       self.b, self.c, self._order,
                                        generator=generator)
 
     def to_adm(self, adj):
@@ -703,7 +707,8 @@ class ERK1(ButcherMultiStageScheme):
         a = np.array([0.])
         b = np.array([1.])
         c = np.array([0.])
-        ButcherMultiStageScheme.__init__(self, rhs_form, solution, t, bcs, a, b, c, 1)
+        ButcherMultiStageScheme.__init__(self, rhs_form, solution, t, bcs,
+                                         a, b, c, 1)
 
 
 class BDF1(ButcherMultiStageScheme):
@@ -712,7 +717,8 @@ class BDF1(ButcherMultiStageScheme):
         a = np.array([1.])
         b = np.array([1.])
         c = np.array([1.])
-        ButcherMultiStageScheme.__init__(self, rhs_form, solution, t, bcs, a, b, c, 1)
+        ButcherMultiStageScheme.__init__(self, rhs_form, solution, t, bcs,
+                                         a, b, c, 1)
 
 
 class ExplicitMidPoint(ButcherMultiStageScheme):
@@ -722,7 +728,8 @@ class ExplicitMidPoint(ButcherMultiStageScheme):
         a = np.array([[0, 0],[0.5, 0.0]])
         b = np.array([0., 1])
         c = np.array([0, 0.5])
-        ButcherMultiStageScheme.__init__(self, rhs_form, solution, t, bcs, a, b, c, 2)
+        ButcherMultiStageScheme.__init__(self, rhs_form, solution, t, bcs,
+                                         a, b, c, 2)
 
 
 class CN2(ButcherMultiStageScheme):
@@ -732,7 +739,8 @@ class CN2(ButcherMultiStageScheme):
         b = np.array([0.5, 0.5])
         c = np.array([0, 1.0])
 
-        ButcherMultiStageScheme.__init__(self, rhs_form, solution, t, bcs, a, b, c, 2)
+        ButcherMultiStageScheme.__init__(self, rhs_form, solution, t, bcs,
+                                         a, b, c, 2)
 
 
 class ERK4(ButcherMultiStageScheme):
@@ -744,7 +752,8 @@ class ERK4(ButcherMultiStageScheme):
                       [0, 0, 1, 0]])
         b = np.array([1./6, 1./3, 1./3, 1./6])
         c = np.array([0, 0.5, 0.5, 1])
-        ButcherMultiStageScheme.__init__(self, rhs_form, solution, t, bcs, a, b, c, 4)
+        ButcherMultiStageScheme.__init__(self, rhs_form, solution, t, bcs,
+                                         a, b, c, 4)
 
 
 class ESDIRK3(ButcherMultiStageScheme):

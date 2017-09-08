@@ -6,6 +6,7 @@ _meshfunction_types = {"bool": cpp.mesh.MeshFunctionBool,
                        "int": cpp.mesh.MeshFunctionInt,
                        "double": cpp.mesh.MeshFunctionDouble}
 
+
 class MeshFunction(object):
     def __new__(cls, value_type, mesh, dim, value=None):
         if value_type not in _meshfunction_types.keys():
@@ -15,6 +16,7 @@ class MeshFunction(object):
             return fn(mesh, dim, value)
         else:
             return fn(mesh, dim)
+
 
 class VertexFunction(object):
     def __new__(cls, value_type, mesh, value=None):
@@ -26,6 +28,7 @@ class VertexFunction(object):
         else:
             return fn(mesh, 0)
 
+
 class EdgeFunction(object):
     def __new__(cls, value_type, mesh, value=None):
         if value_type not in _meshfunction_types.keys():
@@ -36,6 +39,7 @@ class EdgeFunction(object):
         else:
             return fn(mesh, 1)
 
+
 class FaceFunction(object):
     def __new__(cls, value_type, mesh, value=None):
         if value_type not in _meshfunction_types.keys():
@@ -45,6 +49,7 @@ class FaceFunction(object):
             return fn(mesh, 2, value)
         else:
             return fn(mesh, 2)
+
 
 class FacetFunction(object):
     def __new__(cls, value_type, mesh, value=None):
@@ -57,6 +62,7 @@ class FacetFunction(object):
         else:
             return fn(mesh, tdim)
 
+
 class CellFunction(object):
     def __new__(cls, value_type, mesh, value=None):
         if value_type not in _meshfunction_types.keys():
@@ -67,5 +73,3 @@ class CellFunction(object):
             return fn(mesh, tdim, value)
         else:
             return fn(mesh, tdim)
-
-

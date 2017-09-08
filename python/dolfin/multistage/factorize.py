@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-""" Module to extract scalar expression factors for each test function component."""
+"""Module to extract scalar expression factors for each test function
+component.
+
+"""
+
 # Copyright (C) 2014 Martin Sandve Alnæs
 #
 # This file is part of DOLFIN.
@@ -85,13 +89,16 @@ class ScalarFactorizer(MultiFunction):
                 av = a.get(k)
                 bv = b.get(k)
                 if av is None:
-                    # Case: Only b contains a term with test function component k
+                    # Case: Only b contains a term with test function
+                    # component k
                     c[k] = bv
                 elif bv is None:
-                    # Case: Only a contains a term with test function component k
+                    # Case: Only a contains a term with test function
+                    # component k
                     c[k] = av
                 else:
-                    # Case: Both a and b contains a term with test function component k
+                    # Case: Both a and b contains a term with test
+                    # function component k
                     c[k] = av + bv
             return c
         elif n_a or n_b:
@@ -128,10 +135,12 @@ class ScalarFactorizer(MultiFunction):
         else:
             return e
 
+
 def extract_tested_expressions(expr):
     """Extract scalar expression factors for each test function component.
 
     This is for internal usage and has several undocumented limitations.
+
     """
     func = ScalarFactorizer()
     e = map_expr_dag(func, expr, compress=False)

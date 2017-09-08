@@ -22,6 +22,7 @@
 import types
 import numpy as np
 import ufl
+from ufl.classes import ComponentTensor, Sum, Product, Division
 import dolfin.cpp as cpp
 import dolfin.la as la
 from dolfin.function.functionspace import FunctionSpace
@@ -31,10 +32,6 @@ from dolfin.function.constant import Constant
 
 def _assign_error():
     raise RuntimeError("Expected only linear combinations of Functions in the same FunctionSpaces")
-    #cpp.dolfin_error("function.py",
-    #                 "assign function",
-    #                 "Expects only linear combinations of Functions in "\
-    #                 "the same FunctionSpaces")
 
 def _check_mul_and_division(e, linear_comb, scalar_weight=1.0, multi_index=None):
     """
@@ -200,7 +197,8 @@ class Function(ufl.Coefficient):
                     raise RuntimeError("Can only extract subfunctions "
                                         "with i = 0..%d"% num_sub_spaces)
                 self._cpp_object = cpp.function.Function(other._cpp_object, i)
-                ufl.Coefficient.__init__(self, self.function_space().ufl_function_space(), count=self._cpp_object.id())
+                ufl.Coefficient.__init__(self, self.function_space().ufl_function_space(),
+                                         count=self._cpp_object.id())
             else:
                 raise TypeError("expected one or two arguments when "
                                 "instantiating from another Function")
@@ -239,7 +237,6 @@ class Function(ufl.Coefficient):
     def function_space(self):
         "Return the FunctionSpace"
         return FunctionSpace(self._cpp_object.function_space())
-        #return self._cpp_object.function_space()
 
     def value_rank(self):
         return self._cpp_object.value_rank()
@@ -367,10 +364,6 @@ class Function(ufl.Coefficient):
                 FunctionSpaces.
         """
 
-        print("TTT:", type(self._cpp_object), type(rhs))
-
-        from ufl.classes import ComponentTensor, Sum, Product, Division
-
         if isinstance(rhs, (cpp.function.Function, cpp.function.Expression, cpp.function.FunctionAXPY)):
             # Avoid self assignment
             if self == rhs:
@@ -447,12 +440,10 @@ class Function(ufl.Coefficient):
     def root_node(self):
         u = self._cpp_object.root_node()
         return Function(FunctionSpace(u.function_space()), u.vector())
-        #return Function(self._cpp_object.root_node())
 
     def leaf_node(self):
         u = self._cpp_object.leaf_node()
         return Function(FunctionSpace(u.function_space()), u.vector())
-        #return Function(self._cpp_object.leaf_node())
 
     def cpp_object(self):
         return self._cpp_object
@@ -488,8 +479,7 @@ class Function(ufl.Coefficient):
 
 
     def split(self, deepcopy=False):
-        """
-        Extract any sub functions.
+        """Extract any sub functions.
 
         A sub function can be extracted from a discrete function that
         is in a mixed, vector, or tensor FunctionSpace. The sub

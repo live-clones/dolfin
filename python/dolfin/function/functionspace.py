@@ -51,10 +51,12 @@ class FunctionSpace(ufl.FunctionSpace):
         if constrained_domain is None:
             dolfin_dofmap = cpp.fem.DofMap(ufc_dofmap, mesh)
         else:
-            dolfin_dofmap = cpp.fem.DofMap(ufc_dofmap, mesh, constrained_domain)
+            dolfin_dofmap = cpp.fem.DofMap(ufc_dofmap, mesh,
+                                           constrained_domain)
 
         # Initialize the cpp.FunctionSpace
-        self._cpp_object = cpp.function.FunctionSpace(mesh, dolfin_element,
+        self._cpp_object = cpp.function.FunctionSpace(mesh,
+                                                      dolfin_element,
                                                       dolfin_dofmap)
 
     def _init_from_cpp(self, cppV, **kwargs):
@@ -77,22 +79,17 @@ class FunctionSpace(ufl.FunctionSpace):
                              "Illegal arguments, did not expect C++ "
                              "function space and **kwargs: " + str(kwargs))
         """
-        # Assign all the members (including 'this' pointer to SWIG wraper)
-        # NOTE: This in fact performs assignment of C++ context
-        #self.__dict__ = cppV.__dict__
 
         # Reconstruct UFL element from signature
-        #ufl_element = eval(self.element().signature(), ufl.__dict__)
         ufl_element = eval(cppV.element().signature(), ufl.__dict__)
 
         # Get mesh
         ufl_domain = cppV.mesh().ufl_domain()
 
         # Initialize the ufl.FunctionSpace (not calling cpp.Function.__init__)
-        #cpp.function.FunctionSpace.__init__(self, cppV)
         self._cpp_object = cppV
 
-        # Initialize the ufl.FunctionSpace (not calling cpp.Function.__init__)
+        # Initialize the ufl.FunctionSpace
         ufl.FunctionSpace.__init__(self, ufl_domain, ufl_element)
 
     def _init_convenience(self, mesh, family, degree, form_degree=None,
@@ -148,12 +145,8 @@ class FunctionSpace(ufl.FunctionSpace):
             return u._cpp_object._in(self._cpp_object)
         return False
 
-        #return ufl.FunctionSpace.__eq__(self, other) and cpp.function.FunctionSpace.__eq__(self, other)
-        return ufl.FunctionSpace.__eq__(self, other) and self._cpp_object == other._cpp_object
-
     def __eq__(self, other):
         "Comparison for equality."
-        #return ufl.FunctionSpace.__eq__(self, other) and cpp.function.FunctionSpace.__eq__(self, other)
         return ufl.FunctionSpace.__eq__(self, other) and self._cpp_object == other._cpp_object
 
     def __ne__(self, other):
@@ -185,9 +178,8 @@ class FunctionSpace(ufl.FunctionSpace):
         return self._cpp_object.set_x(basis, x, component)
 
     def collapse(self, collapsed_dofs=False):
-        """
-        Collapse a subspace and return a new function space and a map
-        from new to old dofs
+        """Collapse a subspace and return a new function space and a map from
+        new to old dofs
 
         *Arguments*
             collapsed_dofs (bool)
@@ -198,9 +190,9 @@ class FunctionSpace(ufl.FunctionSpace):
                 The new function space.
            dict
                 The map from new to old dofs (optional)
+
         """
         # Get the cpp version of the FunctionSpace
-        #cpp_space, dofs = cpp.function.FunctionSpace.collapse(self)
         cpp_space, dofs = self._cpp_object.collapse()
 
         # Extend with the python layer

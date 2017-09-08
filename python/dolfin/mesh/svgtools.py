@@ -57,7 +57,8 @@ def mesh2svg(mesh, display_width=800.0):
 
     # Compute display scaling
     scale = float(display_width / mesh_width)
-    display_height = max(mesh_height * display_width / mesh_width, strokewidth)
+    display_height = max(mesh_height * display_width / mesh_width,
+                         strokewidth)
 
     # Add padding to include vertex circles
     display_padding = 10*strokewidth
@@ -67,7 +68,8 @@ def mesh2svg(mesh, display_width=800.0):
     # Build list of screen coordinate vertices
     vertices = []
     if d == 1:
-        vertices = [(display_padding + int(scale*(x[i,0] - x_min[0])), display_padding)
+        vertices = [(display_padding + int(scale*(x[i,0] - x_min[0])),
+                     display_padding)
                     for i in range(num_vertices)]
     elif d == 2:
         # Mirror y-axis because of svg coordinate system
@@ -107,5 +109,6 @@ def mesh2svg(mesh, display_width=800.0):
     %s
     </svg>
     '''
+
     code = svg % (display_width, display_height, svg_lines, svg_vertices)
     return code

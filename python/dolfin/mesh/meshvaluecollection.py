@@ -6,6 +6,7 @@ _meshvaluecollection_types = {"bool": cpp.mesh.MeshValueCollection_bool,
                               "int": cpp.mesh.MeshValueCollection_int,
                               "double": cpp.mesh.MeshValueCollection_double}
 
+
 class MeshValueCollection(object):
     def __new__(cls, value_type, mesh, dim=None):
         if value_type not in _meshvaluecollection_types.keys():
