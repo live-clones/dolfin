@@ -15,14 +15,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# Modified by Martin Sandve Alnæs 2008-2015
-# Modified by Anders Logg 2008-2015
-#
-# First added:  2008-03-05
-# Last changed: 2015-11-26
 
-from __future__ import print_function
 import os
 from distutils.version import StrictVersion
 
@@ -33,14 +26,16 @@ import numpy as np
 
 __all__ = ['plot']
 
-_meshfunction_types = (cpp.mesh.MeshFunctionBool, cpp.mesh.MeshFunctionInt,
-                       cpp.mesh.MeshFunctionDouble, cpp.mesh.MeshFunctionSizet)
+_meshfunction_types = (cpp.mesh.MeshFunctionBool,
+                       cpp.mesh.MeshFunctionInt,
+                       cpp.mesh.MeshFunctionDouble,
+                       cpp.mesh.MeshFunctionSizet)
 _matplotlib_plottable_types = (cpp.function.Function,
-                               cpp.function.Expression,
-                               cpp.mesh.Mesh,
+                               cpp.function.Expression, cpp.mesh.Mesh,
                                cpp.fem.DirichletBC) + _meshfunction_types
 _x3dom_plottable_types = (cpp.function.Function, cpp.mesh.Mesh)
-_all_plottable_types = tuple(set.union(set(_matplotlib_plottable_types), set(_x3dom_plottable_types)))
+_all_plottable_types = tuple(set.union(set(_matplotlib_plottable_types),
+                                       set(_x3dom_plottable_types)))
 
 def _has_matplotlib():
     try:
@@ -336,6 +331,7 @@ def _plot_x3dom(obj, kwargs):
     out = x3dom.html(obj)
 
     return out
+
 
 def plot(object, *args, **kwargs):
     """

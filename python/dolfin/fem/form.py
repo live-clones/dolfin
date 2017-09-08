@@ -1,6 +1,16 @@
-import dolfin.cpp as cpp
+# -*- coding: utf-8 -*-
+"""FIXME: Add description"""
+
+# Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
+#
+# Distributed under the terms of the GNU Lesser Public License (LGPL),
+# either version 3 of the License, or (at your option) any later
+# version.
+
 import ufl
 import ffc
+import dolfin.cpp as cpp
+
 
 class Form(cpp.fem.Form):
     def __init__(self, form, **kwargs):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-This module provides a DOLFINErrorControlGenerator for handling UFL
-forms defined over DOLFIN objects.
+"""This module provides a DOLFINErrorControlGenerator for handling
+UFL forms defined over DOLFIN objects.
+
 """
 
 # Copyright (C) 2011 Marie E. Rognes
@@ -22,7 +22,6 @@ forms defined over DOLFIN objects.
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 from ffc.errorcontrol.errorcontrolgenerators import ErrorControlGenerator
-
 from dolfin.function.function import Function
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.fem.formmanipulations import tear, increase_order

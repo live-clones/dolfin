@@ -15,14 +15,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# Modified by Johan Hake 2011
-# Modified by Anders Logg 2011
-# Modified by Jan Blechta 2015
 
 import ufl
 import ufl.algorithms.elementtransformations
-
 import dolfin.cpp as cpp
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.function.function import Function
@@ -48,19 +43,23 @@ def adjoint(form, reordered_arguments=None):
                          "compute adjoint of form",
                          "Form is not bilinear")
 
-    # Define new Argument(s) in the same spaces
-    # (NB: Order does not matter anymore here because number is absolute)
-    v_1 = Argument(arguments[1].function_space(), arguments[0].number(), arguments[0].part())
-    v_0 = Argument(arguments[0].function_space(), arguments[1].number(), arguments[1].part())
+    # Define new Argument(s) in the same spaces (NB: Order does not
+    # matter anymore here because number is absolute)
+    v_1 = Argument(arguments[1].function_space(), arguments[0].number(),
+                   arguments[0].part())
+    v_0 = Argument(arguments[0].function_space(), arguments[1].number(),
+                   arguments[1].part())
 
     # Call ufl.adjoint with swapped arguments as new arguments
     return ufl.adjoint(form, reordered_arguments=(v_1, v_0))
 
 adjoint.__doc__ = ufl.adjoint.__doc__
 
+
 def derivative(form, u, du=None, coefficient_derivatives=None):
     if du is None:
-        # Get existing arguments from form and position the new one with the next argument number
+        # Get existing arguments from form and position the new one
+        # with the next argument number
         form_arguments = form.arguments()
 
         number = max([-1] + [arg.number() for arg in form_arguments]) + 1
@@ -95,26 +94,29 @@ derivative.__doc__ += """
     place of a Coefficient.
     """
 
+
 def increase_order(V):
-    """
-    For a given function space, return the same space, but with a
+    """For a given function space, return the same space, but with a
     higher polynomial degree
+
     """
     mesh = V.mesh()
     element = ufl.algorithms.elementtransformations.increase_order(V.ufl_element())
     constrained_domain = V.dofmap().constrained_domain
     return FunctionSpace(mesh, element, constrained_domain=constrained_domain)
 
+
 def change_regularity(V, family):
-    """
-    For a given function space, return the corresponding space with
-    the finite elements specified by 'family'. Possible families
-    are the families supported by the form compiler
+    """For a given function space, return the corresponding space with
+    the finite elements specified by 'family'. Possible families are
+    the families supported by the form compiler
+
     """
     mesh = V.mesh()
     element = ufl.algorithms.elementtransformations.change_regularity(V.ufl_element(), family)
     constrained_domain = V.dofmap().constrained_domain
     return FunctionSpace(mesh, element, constrained_domain=constrained_domain)
+
 
 def tear(V):
     """

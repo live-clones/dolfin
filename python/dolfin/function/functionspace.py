@@ -1,11 +1,19 @@
+# -*- coding: utf-8 -*-
+"""Main module for DOLFIN"""
+
+# Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
+#
+# Distributed under the terms of the GNU Lesser Public License (LGPL),
+# either version 3 of the License, or (at your option) any later
+# version.
+
+import types
 import ffc
 import ufl
-import types
-
 import dolfin.cpp as cpp
 from . import function
 
-#class FunctionSpace(ufl.FunctionSpace, cpp.function.FunctionSpace):
+
 class FunctionSpace(ufl.FunctionSpace):
 
     def __init__(self,  *args, **kwargs):

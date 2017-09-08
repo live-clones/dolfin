@@ -8,7 +8,9 @@ preprocessing step where code is generated using the
 FFC JIT compiler.
 
 The C++ PDE classes are reimplemented in Python since the C++ classes
-rely on the dolfin::Form class which is not used on the Python side."""
+rely on the dolfin::Form class which is not used on the Python side.
+
+"""
 
 # Copyright (C) 2007-2015 Anders Logg
 #
@@ -26,21 +28,10 @@ rely on the dolfin::Form class which is not used on the Python side."""
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# Modified by Martin Sandve Alnæs 2008-2015
-# Modified by Johan Hake 2008-2009
-# Modified by Garth N. Wells 2008-2013
-# Modified by Joachim B. Haga 2012
 
 import types
-
-# UFL modules
 import ufl
-
-# Import SWIG-generated extension module (DOLFIN C++)
 import dolfin.cpp as cpp
-
-# Local imports
 from dolfin.fem.form import Form
 
 __all__ = ["assemble", "assemble_local", "assemble_system", "SystemAssembler"]
@@ -66,6 +57,7 @@ def _create_dolfin_form(form, form_compiler_parameters=None,
     else:
         raise TypeError("Invalid form type %s" % (type(form),))
 
+
 def assemble_local(form, cell, form_compiler_parameters=None):
     """JIT assemble_local"""
     # Create dolfin Form object
@@ -81,14 +73,10 @@ def assemble_local(form, cell, form_compiler_parameters=None):
             result = result.reshape((result.shape[0]))
     return result
 
-# JIT assembler
-def assemble(form,
-             tensor=None,
-             form_compiler_parameters=None,
-             add_values=False,
-             finalize_tensor=True,
-             keep_diagonal=False,
-             backend=None):
+
+def assemble(form, tensor=None, form_compiler_parameters=None,
+             add_values=False, finalize_tensor=True,
+             keep_diagonal=False, backend=None):
     """Assemble the given form and return the corresponding tensor.
 
     *Arguments*
@@ -230,18 +218,10 @@ def assemble(form,
     return tensor
 
 
-# JIT system assembler
-def assemble_system(A_form,
-                    b_form,
-                    bcs=None,
-                    x0=None,
-                    form_compiler_parameters=None,
-                    add_values=False,
-                    finalize_tensor=True,
-                    keep_diagonal=False,
-                    A_tensor=None,
-                    b_tensor=None,
-                    backend=None):
+def assemble_system(A_form, b_form, bcs=None, x0=None,
+                    form_compiler_parameters=None, add_values=False,
+                    finalize_tensor=True, keep_diagonal=False,
+                    A_tensor=None, b_tensor=None, backend=None):
     """Assemble form(s) and apply any given boundary conditions in a
     symmetric fashion and return tensor(s).
 
@@ -274,7 +254,8 @@ def assemble_system(A_form,
        <dolfin.fem.assembling.assemble>`.
 
     """
-    # Create dolfin Form objects referencing all data needed by assembler
+    # Create dolfin Form objects referencing all data needed by
+    # assembler
     A_dolfin_form = _create_dolfin_form(A_form, form_compiler_parameters)
     b_dolfin_form = _create_dolfin_form(b_form, form_compiler_parameters)
 
@@ -362,7 +343,8 @@ class SystemAssembler(cpp.fem.SystemAssembler):
            bcs (_DirichletBC_)
               A list or a single DirichletBC (optional)
         """
-        # Create dolfin Form objects referencing all data needed by assembler
+        # Create dolfin Form objects referencing all data needed by
+        # assembler
         A_dolfin_form = _create_dolfin_form(A_form, form_compiler_parameters)
         b_dolfin_form = _create_dolfin_form(b_form, form_compiler_parameters)
 
@@ -370,7 +352,9 @@ class SystemAssembler(cpp.fem.SystemAssembler):
         bcs = _wrap_in_list(bcs, 'bcs', cpp.fem.DirichletBC)
 
         # Call C++ assemble function
-        cpp.fem.SystemAssembler.__init__(self, A_dolfin_form, b_dolfin_form, bcs)
+        cpp.fem.SystemAssembler.__init__(self, A_dolfin_form, b_dolfin_form,
+                                         bcs)
 
-        # Keep Python counterpart of bcs (and Python object it owns) alive
+        # Keep Python counterpart of bcs (and Python object it owns)
+        # alive
         self._bcs = bcs

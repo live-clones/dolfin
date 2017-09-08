@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """This module provides a small Python layer on top of the C++
-VariationalProblem/Solver classes as well as the solve function."""
+VariationalProblem/Solver classes as well as the solve function.
+
+"""
 
 # Copyright (C) 2011 Anders Logg
 #
@@ -18,21 +20,13 @@ VariationalProblem/Solver classes as well as the solve function."""
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# Modified by Marie E. Rognes, 2011.
-# Modified by Johan Hake, 2011.
 
-# Import C++ interface
+
 import dolfin.cpp as cpp
-
-# Import UFL
 import ufl
-
-# Local imports
 from dolfin.function.function import Function
 from dolfin.fem.form import Form
 import dolfin.fem.formmanipulations as formmanipulations
-import six
 
 __all__ = ["LinearVariationalProblem",
            "LinearVariationalSolver",
@@ -152,9 +146,6 @@ class NonlinearVariationalProblem(cpp.fem.NonlinearVariationalProblem):
 
 # Solver classes are imported directly
 from dolfin.cpp.fem import LinearVariationalSolver, NonlinearVariationalSolver
-# from dolfin.fem.adaptivesolving import AdaptiveLinearVariationalSolver
-# from dolfin.fem.adaptivesolving import AdaptiveNonlinearVariationalSolver
-
 
 # Solve function handles both linear systems and variational problems
 def solve(*args, **kwargs):

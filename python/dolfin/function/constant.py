@@ -17,18 +17,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# Modified by Johan Hake, 2008.
-# Modified by Martin Sandve Alnæpps, 2008.
 
-from __future__ import print_function
-
-#__all__ = ["Constant"]
-
-# Import UFL and SWIG-generated extension module (DOLFIN C++)
 import ufl
 import dolfin.cpp as cpp
 import numpy
+
 
 class Constant(ufl.Coefficient):
 

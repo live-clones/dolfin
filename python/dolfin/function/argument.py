@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """This module handles the Function class in Python.
+
 """
 # Copyright (C) 2009-2014 Johan Hake
 #
@@ -17,33 +18,25 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# Modified by Martin Sandve Alnæs 2013-2014
-# Modified by Anders Logg 2015
 
 __all__ = ["TestFunction", "TrialFunction", "Argument",
            "TestFunctions", "TrialFunctions"]
 
 import types
-
-# Import UFL and C++ extension module
 import ufl
 import dolfin.cpp as cpp
-
 from .functionspace import FunctionSpace
 
 #--- Subclassing of ufl.{Basis, Trial, Test}Function ---
 
-# TODO: Update this message to clarify dolfin.FunctionSpace vs ufl.FunctionSpace
-_ufl_dolfin_difference_message = """\
-When constructing an Argument, TestFunction or TrialFunction,
-you must to provide a FunctionSpace and not a FiniteElement.
-The FiniteElement class provided by ufl only represents an
-abstract finite element space and is only used in standalone
-.ufl files, while the FunctionSpace provides a full discrete
-function space over a given mesh and should be used in dolfin
-programs in Python.
-"""
+# TODO: Update this message to clarify dolfin.FunctionSpace vs
+# ufl.FunctionSpace
+_ufl_dolfin_difference_message = """\ When constructing an Argument, TestFunction or TrialFunction, you
+must to provide a FunctionSpace and not a FiniteElement.  The
+FiniteElement class provided by ufl only represents an abstract finite
+element space and is only used in standalone .ufl files, while the
+FunctionSpace provides a full discrete function space over a given
+mesh and should be used in dolfin programs in Python.  """
 
 class Argument(ufl.Argument):
     """UFL value: Representation of an argument to a form.
@@ -70,8 +63,10 @@ class Argument(ufl.Argument):
         return self._V
 
     def __eq__(self, other):
-        """Extending UFL __eq__ here to distinguish test and trial
-        functions in different function spaces with same ufl element."""
+        """Extending UFL __eq__ here to distinguish test and trial functions
+        in different function spaces with same ufl element.
+
+        """
         return (isinstance(other, Argument) and
                 self.number() == other.number() and
                 self.part() == other.part() and
@@ -93,6 +88,7 @@ def TrialFunction(V, part=None):
     """UFL value: Create a trial function argument to a form.
 
     This is the overloaded PyDOLFIN variant.
+
     """
     return Argument(V, 1, part)
 
@@ -104,23 +100,28 @@ def Arguments(V, number):
     tuple with the function components corresponding to the subelements.
 
     This is the overloaded PyDOLFIN variant.
+
     """
     return ufl.split(Argument(V, number))
 
 
 def TestFunctions(V):
     """UFL value: Create a TestFunction in a mixed space, and return a
-    tuple with the function components corresponding to the subelements.
+    tuple with the function components corresponding to the
+    subelements.
 
     This is the overloaded PyDOLFIN variant.
+
     """
     return ufl.split(TestFunction(V))
 
 
 def TrialFunctions(V):
     """UFL value: Create a TrialFunction in a mixed space, and return a
-    tuple with the function components corresponding to the subelements.
+    tuple with the function components corresponding to the
+    subelements.
 
     This is the overloaded PyDOLFIN variant.
+
     """
     return ufl.split(TrialFunction(V))

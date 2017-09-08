@@ -2,7 +2,9 @@
 """This module provides a simple way to compute the projection of a
 :py:class:`Function <dolfin.functions.function.Function>` or an
 :py:class:`Expression <dolfin.functions.expression.Expression>` onto a
-finite element space."""
+finite element space.
+
+"""
 
 # Copyright (C) 2008-2011 Anders Logg
 #
@@ -20,23 +22,15 @@ finite element space."""
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# First added:  2008-07-13
-# Last changed: 2011-11-15
 
-# Import UFL and SWIG-generated extension module (DOLFIN C++)
 import ufl
 import dolfin.cpp as cpp
 import dolfin
-
-# Local imports
 from dolfin.function.argument import TestFunction, TrialFunction
 from dolfin.function.function import Function
 from dolfin.fem.assembling import assemble_system
-
-#from dolfin.functions.expression import *
-from dolfin.function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
-#from dolfin.fem.assembling import *
+from dolfin.function.functionspace import (FunctionSpace,
+                                           VectorFunctionSpace, TensorFunctionSpace)
 
 __all__ = ['project']
 
@@ -124,8 +118,10 @@ def project(v, V=None, bcs=None, mesh=None,
 
 
 def _extract_function_space(expression, mesh):
-    """Try to extract a suitable function space for projection of
-    given expression."""
+    """Try to extract a suitable function space for projection of given
+    expression.
+
+    """
 
     # Get mesh from expression
     if mesh is None:

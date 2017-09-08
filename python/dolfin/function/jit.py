@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
+"""FIXME: Add description"""
+
+# Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
+#
+# Distributed under the terms of the GNU Lesser Public License (LGPL),
+# either version 3 of the License, or (at your option) any later
+# version.
+
 import hashlib
 from six import string_types
 import dolfin.cpp as cpp
-
 from dolfin.jit.jit import compile_class, _math_header
+
 
 def jit_generate(class_data, module_name, signature, parameters):
     """TODO: document"""
@@ -104,14 +112,18 @@ extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
             get_props += _get_props.format(key_name=k, name=k)
         elif hasattr(value, "_cpp_object"):
             members += "std::shared_ptr<dolfin::GenericFunction> generic_function_{key};\n".format(key=k)
-            set_generic_function += _set_props.format(key_name=k, name="generic_function_"+k)
-            get_generic_function += _get_props.format(key_name=k, name="generic_function_"+k)
+            set_generic_function += _set_props.format(key_name=k,
+                                                      name="generic_function_"+k)
+            get_generic_function += _get_props.format(key_name=k,
+                                                      name="generic_function_"+k)
+
             value_size = value._cpp_object.value_size()
             if value_size == 1:
                 _setup_statement = """          double {key};
             generic_function_{key}->eval(Eigen::Map<Eigen::Matrix<double, 1, 1>>(&{key}), x);\n""".format(key=k)
             else:
                 _setup_statement = """          double {key}[{value_size}];
+
             generic_function_{key}->eval(Eigen::Map<Eigen::Matrix<double, {value_size}, 1>>({key}), x);\n""".format(key=k, value_size=value_size)
             statement = _setup_statement + statement
 
@@ -120,9 +132,12 @@ extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
         constructor += "_value_shape.push_back(" + str(dim) + ");"
 
     classname = signature
-    code_c = template_code.format(statement=statement, classname=classname,
-                                  members=members, constructor=constructor,
-                                  set_props=set_props, get_props=get_props,
+    code_c = template_code.format(statement=statement,
+                                  classname=classname,
+                                  members=members,
+                                  constructor=constructor,
+                                  set_props=set_props,
+                                  get_props=get_props,
                                   get_generic_function=get_generic_function,
                                   set_generic_function=set_generic_function,
                                   math_header=_math_header)
@@ -134,10 +149,8 @@ extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
 
 def compile_expression(statements, properties):
 
-    cpp_data = {'statements': statements,
-                'properties': properties,
-                'name': 'expression',
-                'jit_generate': jit_generate}
+    cpp_data = {'statements': statements, 'properties': properties,
+                'name': 'expression', 'jit_generate': jit_generate}
 
     expression = compile_class(cpp_data)
     return expression

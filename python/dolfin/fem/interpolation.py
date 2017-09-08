@@ -2,7 +2,9 @@
 """This module provides a simple way to compute the interpolation of a
 :py:class:`Function <dolfin.functions.function.Function>` or
 :py:class:`Expression <dolfin.functions.expression.Expression>` onto a
-finite element space."""
+finite element space.
+
+"""
 
 # Copyright (C) 2009-2011 Anders Logg
 #
@@ -20,11 +22,7 @@ finite element space."""
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# First added:  2009-08-29
-# Last changed: 2011-11-15
 
-# Local imports
 import dolfin.cpp as cpp
 from dolfin.function.function import Function
 

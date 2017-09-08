@@ -2,7 +2,9 @@
 """This module provides a simple way to compute various norms of
 :py:class:`Vectors <dolfin.cpp.Vector>` and :py:class:`Functions
 <dolfin.functions.function.Function>`, including the standard
-:math:`L^2`-norm and other norms."""
+:math:`L^2`-norm and other norms.
+
+"""
 
 # Copyright (C) 2008-2014 Anders Logg
 #
@@ -22,22 +24,16 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 from six import string_types
-import ufl
-from ufl import inner, grad, div, curl, dx, FiniteElement, VectorElement, Coefficient
 from math import sqrt
-
+from ufl import (inner, grad, div, curl, dx, FiniteElement,
+                 VectorElement, Coefficient)
 import dolfin.cpp as cpp
 from dolfin.fem.assembling import assemble
 from dolfin.fem.interpolation import interpolate
-from dolfin.function.functionspace import FunctionSpace, VectorFunctionSpace, TensorFunctionSpace
+from dolfin.function.functionspace import (FunctionSpace,
+                                           VectorFunctionSpace, TensorFunctionSpace)
 from dolfin.function.function import Function
 
-#from dolfin.cpp import GenericVector, GenericFunction, Function, Mesh, error, Vector
-#from dolfin.fem.assembling import assemble
-#from dolfin.fem.interpolation import interpolate
-#from dolfin.functions.function import Function
-#from dolfin.functions.functionspace import FunctionSpace, \
-#    VectorFunctionSpace, TensorFunctionSpace
 
 __all__ = ["norm", "errornorm"]
 
@@ -238,7 +234,6 @@ def errornorm(u, uh, norm_type="l2", degree_rise=3, mesh=None):
         cpp.dolfin_error("norms.py",
                          "compute error norm",
                          "Missing mesh")
-
 
     # Get rank
     if not u.ufl_shape == uh.ufl_shape:

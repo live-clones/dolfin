@@ -1,21 +1,26 @@
 # -*- coding: utf-8 -*-
+"""FIXME: Add description"""
+
+# Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
+#
+# Distributed under the terms of the GNU Lesser Public License (LGPL),
+# either version 3 of the License, or (at your option) any later
+# version.
+
 
 __all__ = ["UserExpression"]
 
-# Python imports
 import hashlib
 from functools import reduce
 from six import add_metaclass, string_types
 from six.moves import xrange as range
 import types
-
-# Import UFL and extension module (DOLFIN C++)
+import numpy
 import ufl
 from ufl import product
-from ufl.utils.indexflattening import flatten_multiindex, shape_to_strides
+from ufl.utils.indexflattening import (flatten_multiindex,
+                                       shape_to_strides)
 import dolfin.cpp as cpp
-import numpy
-
 import dolfin.function.jit as jit
 
 
@@ -177,7 +182,6 @@ class BaseExpression(ufl.Coefficient):
 
         return values
 
-
     def id(self):
         return self._cpp_object.id()
 
@@ -201,6 +205,7 @@ class BaseExpression(ufl.Coefficient):
 
     def compute_vertex_values(self, mesh):
         return self._cpp_object.compute_vertex_values(mesh)
+
 
 class UserExpression(BaseExpression):
     """Base class for user-defined Python Expression classes, where the

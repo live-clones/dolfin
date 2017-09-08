@@ -1,7 +1,13 @@
+"""FIXME: add description"""
+
+# Copyright (C) 2017 Chris N. Richardson and Garth N. Wells
+#
+# Distributed under the terms of the GNU Lesser Public License (LGPL),
+# either version 3 of the License, or (at your option) any later
+# version.
 
 import types
 from six import string_types
-
 import ufl
 import dolfin.cpp as cpp
 from dolfin.mesh.subdomain import CompiledSubDomain
@@ -9,6 +15,7 @@ from dolfin.function.constant import Constant
 from dolfin.function.function import Function
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.fem.projection import project
+
 
 class AutoSubDomain(cpp.mesh.SubDomain):
     "Wrapper class for creating a SubDomain from an inside() function."
@@ -45,7 +52,8 @@ class AutoSubDomain(cpp.mesh.SubDomain):
 class DirichletBC(cpp.fem.DirichletBC):
     def __init__(self, *args, **kwargs):
 
-        # FIXME: the logic in this function is really messy and unclear
+        # FIXME: the logic in this function is really messy and
+        # unclear
 
         # Copy constructor
         if len(args) == 1:

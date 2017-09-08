@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """This module handles the Function class in Python.
+
 """
 # Copyright (C) 2009-2014 Johan Hake
 #
@@ -17,24 +18,17 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# Modified by Martin Sandve Alnæs 2013-2014
-# Modified by Anders Logg 2015
-
-#__all__ = ["Function", "TestFunction", "TrialFunction", "Argument",
-#           "TestFunctions", "TrialFunctions"]
 
 from six import string_types
 import types
 import numpy as np
-
 import ufl
 import dolfin.cpp as cpp
 import dolfin.la as la
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.function.expression import Expression
 from dolfin.function.constant import Constant
-#from dolfin.function.argument import  Argument
+
 
 def _assign_error():
     raise RuntimeError("Expected only linear combinations of Functions in the same FunctionSpaces")

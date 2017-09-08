@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """This module provides a Python layer on top of the C++
-Adaptive*VariationalSolver classes"""
+Adaptive*VariationalSolver classes
+
+"""
 
 # Copyright (C) 2011 Marie E. Rognes
 #
@@ -18,24 +20,17 @@ Adaptive*VariationalSolver classes"""
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# Modified by Anders Logg 2011
-#
-# First added:  2011-06-27
-# Last changed: 2011-11-14
 
 __all__ = ["AdaptiveLinearVariationalSolver",
            "AdaptiveNonlinearVariationalSolver",
-           "generate_error_control",
-           "generate_error_control_forms"]
+           "generate_error_control", "generate_error_control_forms"]
 
 import dolfin.cpp as cpp
-
 from dolfin.fem.form import Form
 from dolfin.fem.solving import LinearVariationalProblem
 from dolfin.fem.solving import NonlinearVariationalProblem
-
 from dolfin.fem.errorcontrolgenerator import DOLFINErrorControlGenerator
+from dolfin.log.log import log
 
 class AdaptiveLinearVariationalSolver(cpp.adaptivity.AdaptiveLinearVariationalSolver):
 
@@ -80,6 +75,7 @@ class AdaptiveLinearVariationalSolver(cpp.adaptivity.AdaptiveLinearVariationalSo
         # Call cpp.AdaptiveLinearVariationalSolver.solve directly
         cpp.adaptivity.AdaptiveLinearVariationalSolver.solve(self, tol)
 
+
 class AdaptiveNonlinearVariationalSolver(cpp.adaptivity.AdaptiveNonlinearVariationalSolver):
 
     # Reuse doc-string
@@ -123,6 +119,7 @@ class AdaptiveNonlinearVariationalSolver(cpp.adaptivity.AdaptiveNonlinearVariati
         # Call cpp.AdaptiveNonlinearVariationlSolver.solve with ec
         cpp.adaptivity.AdaptiveNonlinearVariationalSolver.solve(self, tol)
 
+
 def generate_error_control(problem, goal):
     """
     Create suitable ErrorControl object from problem and the goal
@@ -156,6 +153,7 @@ def generate_error_control(problem, goal):
     # Return generated ErrorControl
     return ec
 
+
 def generate_error_control_forms(problem, goal):
     """
     Create UFL forms required for initializing an ErrorControl object
@@ -177,8 +175,7 @@ def generate_error_control_forms(problem, goal):
     """
 
     msg = "Generating forms required for error control, this may take some time..."
-    #cpp.info(msg)
-    print(msg)
+    cpp.log.info(msg)
 
     # Paranoid checks added after introduction of multidomain features in ufl:
     for form in [goal]:
@@ -190,7 +187,8 @@ def generate_error_control_forms(problem, goal):
     if isinstance(problem, LinearVariationalProblem):
         primal = (problem.a_ufl, problem.L_ufl)
 
-        # Paranoid checks added after introduction of multidomain features in ufl:
+        # Paranoid checks added after introduction of multidomain
+        # features in ufl:
         for form in primal:
             assert len(form.ufl_domains()) > 0, "Error control got as input a form with no domain!"
             assert len(form.ufl_domains()) == 1, "Error control got as input a form with more than one domain!"
@@ -199,7 +197,8 @@ def generate_error_control_forms(problem, goal):
         is_linear = False
         primal = problem.F_ufl
 
-        # Paranoid checks added after introduction of multidomain features in ufl:
+        # Paranoid checks added after introduction of multidomain
+        # features in ufl:
         for form in [primal]:
             assert len(form.ufl_domains()) > 0, "Error control got as input a form with no domain!"
             assert len(form.ufl_domains()) == 1, "Error control got as input a form with more than one domain!"
@@ -216,7 +215,8 @@ def generate_error_control_forms(problem, goal):
     generator = DOLFINErrorControlGenerator(primal, goal, u)
     forms = generator.generate_all_error_control_forms()
 
-    # Paranoid checks added after introduction of multidomain features in ufl:
+    # Paranoid checks added after introduction of multidomain features
+    # in ufl:
     for form in forms:
         assert len(form.ufl_domains()) > 0, "Error control produced a form with no domain!"
         assert len(form.ufl_domains()) == 1, "Error control produced a form with more than one domain!"
