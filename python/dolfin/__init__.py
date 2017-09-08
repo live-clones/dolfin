@@ -127,7 +127,7 @@ from .function.expression import Expression, UserExpression
 # experimental
 from .jit.pybind11jit import compile_cpp_code
 
-from .la import as_backend_type
+from .la import as_backend_type, la_index_dtype
 
 from .mesh.ale import (compute_vertex_map, compute_edge_map, init_parent_edge_indices)
 from .mesh.meshfunction import (MeshFunction, CellFunction,
