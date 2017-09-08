@@ -21,9 +21,9 @@ VariationalProblem/Solver classes as well as the solve function.
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-
-import dolfin.cpp as cpp
+import six
 import ufl
+import dolfin.cpp as cpp
 from dolfin.function.function import Function
 from dolfin.fem.form import Form
 import dolfin.fem.formmanipulations as formmanipulations

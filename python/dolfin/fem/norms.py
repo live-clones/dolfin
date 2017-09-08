@@ -25,6 +25,7 @@
 
 from six import string_types
 from math import sqrt
+import ufl
 from ufl import (inner, grad, div, curl, dx, FiniteElement,
                  VectorElement, Coefficient)
 import dolfin.cpp as cpp
