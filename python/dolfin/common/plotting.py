@@ -15,14 +15,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-#
-# Modified by Martin Sandve Alnæs 2008-2015
-# Modified by Anders Logg 2008-2015
-#
-# First added:  2008-03-05
-# Last changed: 2015-11-26
 
-from __future__ import print_function
 import os
 from distutils.version import StrictVersion
 
@@ -33,22 +26,22 @@ import numpy as np
 
 __all__ = ['plot']
 
-_meshfunction_types = (cpp.MeshFunction, cpp.MeshFunctionBool, cpp.MeshFunctionInt,
-                       cpp.MeshFunctionDouble, cpp.MeshFunctionSizet)
-_matplotlib_plottable_types = (cpp.Function,
-                               cpp.Expression,
-                               cpp.Mesh,
-                               cpp.DirichletBC) + _meshfunction_types
-_x3dom_plottable_types = (cpp.Function,
-                          cpp.Mesh)
-_all_plottable_types = tuple(set.union(set(_matplotlib_plottable_types), set(_x3dom_plottable_types)))
+_meshfunction_types = (cpp.mesh.MeshFunctionBool,
+                       cpp.mesh.MeshFunctionInt,
+                       cpp.mesh.MeshFunctionDouble,
+                       cpp.mesh.MeshFunctionSizet)
+_matplotlib_plottable_types = (cpp.function.Function,
+                               cpp.function.Expression, cpp.mesh.Mesh,
+                               cpp.fem.DirichletBC) + _meshfunction_types
+_x3dom_plottable_types = (cpp.function.Function, cpp.mesh.Mesh)
+_all_plottable_types = tuple(set.union(set(_matplotlib_plottable_types),
+                                       set(_x3dom_plottable_types)))
 
 def _has_matplotlib():
     try:
         import matplotlib
     except ImportError:
         return False
-
     return True
 
 
@@ -65,8 +58,8 @@ def mplot_mesh(ax, mesh, **kwargs):
         color = kwargs.pop("color", '#808080')
         return ax.triplot(mesh2triang(mesh), color=color, **kwargs)
     elif gdim == 3 and tdim == 3:
-        bmesh = dolfin.BoundaryMesh(mesh, "exterior", order=False)
-        return mplot_mesh(ax, bmesh, **kwargs)
+        bmesh = cpp.mesh.BoundaryMesh(mesh, "exterior", order=False)
+        mplot_mesh(ax, bmesh, **kwargs)
     elif gdim == 3 and tdim == 2:
         xy = mesh.coordinates()
         return ax.plot_trisurf(*[xy[:,i] for i in range(gdim)],
@@ -98,7 +91,7 @@ def mplot_expression(ax, f, mesh, **kwargs):
     # TODO: Can probably avoid creating the function space here by
     # restructuring mplot_function a bit so it can handle Expression
     # natively
-    V = create_cg1_function_space(mesh, f.ufl_shape)
+    V = create_cg1_function_space(mesh, f.value_shape)
     g = dolfin.interpolate(f, V)
     return mplot_function(ax, g, **kwargs)
 
@@ -116,10 +109,7 @@ def mplot_function(ax, f, **kwargs):
         fspace = f.function_space()
         try:
             fspace = fspace.collapse()
-        # Happens for part of MultiMeshFunction; no way detecting elsewhere
         except RuntimeError:
-            cpp.warning("Probably trying to plot MultiMeshFunction "
-                        "part. Continuing without plotting...")
             return
         fvec = dolfin.interpolate(f, fspace).vector()
 
@@ -190,14 +180,14 @@ def mplot_function(ax, f, **kwargs):
             ax.set_aspect('auto')
 
             p = ax.plot(x, C, **kwargs)
-            
+
             # Setting limits for Line2D objects
             # Must be done after generating plot to avoid ignoring function
             # range if no vmin/vmax are supplied
             vmin = kwargs.pop("vmin", None)
             vmax = kwargs.pop("vmax", None)
             ax.set_ylim([vmin, vmax])
-            
+
             return p
         #elif tdim == 1: # FIXME: Plot embedded line
         else:
@@ -273,7 +263,7 @@ def mplot_dirichletbc(ax, obj, **kwargs):
 
 def _plot_matplotlib(obj, mesh, kwargs):
     if not isinstance(obj, _matplotlib_plottable_types):
-        cpp.warning("Don't know how to plot type %s." % type(obj))
+        print("Don't know how to plot type %s." % type(obj))
         return
 
     # Plotting is not working with all ufl cells
@@ -318,13 +308,13 @@ def _plot_matplotlib(obj, mesh, kwargs):
             cpp.warning("Matplotlib backend does not support '%s' kwarg yet. "
                         "Ignoring it..." % kw)
 
-    if isinstance(obj, cpp.Function):
+    if isinstance(obj, cpp.function.Function):
         return mplot_function(ax, obj, **kwargs)
-    elif isinstance(obj, cpp.Expression):
+    elif isinstance(obj, cpp.function.Expression):
         return mplot_expression(ax, obj, mesh, **kwargs)
-    elif isinstance(obj, cpp.Mesh):
+    elif isinstance(obj, cpp.mesh.Mesh):
         return mplot_mesh(ax, obj, **kwargs)
-    elif isinstance(obj, cpp.DirichletBC):
+    elif isinstance(obj, cpp.fem.DirichletBC):
         return mplot_dirichletbc(ax, obj, **kwargs)
     elif isinstance(obj, _meshfunction_types):
         return mplot_meshfunction(ax, obj, **kwargs)
@@ -335,12 +325,13 @@ def _plot_matplotlib(obj, mesh, kwargs):
 def _plot_x3dom(obj, kwargs):
     if not isinstance(obj, _x3dom_plottable_types):
         cpp.warning("Don't know how to plot type %s." % type(obj))
-        return 
-    
+        return
+
     x3dom = dolfin.X3DOM()
     out = x3dom.html(obj)
 
     return out
+
 
 def plot(object, *args, **kwargs):
     """
@@ -353,8 +344,7 @@ def plot(object, *args, **kwargs):
             <dolfin.functions.function.Function>`, a :py:class:`Expression`
             <dolfin.cpp.Expression>, a :py:class:`DirichletBC`
             <dolfin.cpp.DirichletBC>, a :py:class:`FiniteElement
-            <ufl.FiniteElement>`, or a :py:class:`MultiMesh
-            <dolfin.cpp.MultiMesh>`.
+            <ufl.FiniteElement>`.
 
     *Examples of usage*
         In the simplest case, to plot only e.g. a mesh, simply use
@@ -404,7 +394,7 @@ def plot(object, *args, **kwargs):
 
     # Return if Matplotlib is not available
     if not _has_matplotlib():
-        cpp.info("Matplotlib is required to plot from Python.")
+        cpp.log.info("Matplotlib is required to plot from Python.")
         return
 
     # Plot element
@@ -412,45 +402,43 @@ def plot(object, *args, **kwargs):
         import ffc
         return ffc.plot(object, *args, **kwargs)
 
+    # For dolfin.function.Function, extract cpp_object
+    if hasattr(object, "cpp_object"):
+        object = object.cpp_object()
+
     # Get mesh from explicit mesh kwarg, only positional arg, or via
     # object
     mesh = kwargs.pop('mesh', None)
-    if isinstance(object, cpp.Mesh):
+    if isinstance(object, cpp.mesh.Mesh):
         if mesh is not None and mesh.id() != object.id():
-            cpp.dolfin_error("plotting.py",
-                             "plot mesh",
-                             "Got different mesh in plot object and keyword argument")
+            raise RuntimeError("Got different mesh in plot object and keyword argument")
         mesh = object
     if mesh is None:
-        if isinstance(object, cpp.Function):
+        if isinstance(object, cpp.function.Function):
             mesh = object.function_space().mesh()
         elif hasattr(object, "mesh"):
             mesh = object.mesh()
 
     # Expressions do not carry their own mesh
-    if isinstance(object, cpp.Expression) and mesh is None:
-        cpp.dolfin_error("plotting.py",
-                         "plot expression",
-                         "Expecting a mesh as keyword argument")
+    if isinstance(object, cpp.function.Expression) and mesh is None:
+        raise RuntimeError("Expecting a mesh as keyword argument")
 
     backend = kwargs.pop("backend", "matplotlib")
     if backend not in ("matplotlib", "x3dom"):
-        cpp.dolfin_error("plotting.py",
-                         "plot",
-                         "Plotting backend %s not recognised" % backend)
-    
+        raise RuntimeError("Plotting backend %s not recognised" % backend)
+
     # Try to project if object is not a standard plottable type
     if not isinstance(object, _all_plottable_types):
         from dolfin.fem.projection import project
         try:
-            cpp.info("Object cannot be plotted directly, projecting to"\
+            cpp.log.info("Object cannot be plotted directly, projecting to"\
                      " piecewise linears.")
             object = project(object, mesh=mesh)
             mesh = object.function_space().mesh()
         except Exception as e:
             msg = "Don't know how to plot given object:\n  %s\n" \
                   "and projection failed:\n  %s" % (str(object), str(e))
-            cpp.dolfin_error("plotting.py", "plot object", msg)
+            raise RuntimeError(msg)
 
     # Plot
     if backend == "matplotlib":
