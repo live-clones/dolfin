@@ -481,7 +481,7 @@ SparsityPatternBuilder::build_contact_sparsity_pattern(
       dofs[i].set(macro_dofs[i]);
 
     // Insert dofs
-    sparsity_pattern.insert_local_row_global_column(dofs);
+    sparsity_pattern.insert_local_global(dofs);
   }
 
   if (finalize)
