@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2011 Anders Logg
+// Copyright (C) 2009-2017 Anders Logg and Garth N. Wells
 //
 // This file is part of DOLFIN.
 //
@@ -21,6 +21,8 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <boost/optional.hpp>
+#include <boost/variant.hpp>
 #include "Parameter.h"
 #include <dolfin/log/log.h>
 
@@ -264,16 +266,11 @@ namespace dolfin
     /// Return informal string representation (pretty-print)
     std::string str(bool verbose) const;
 
-    /// Return reference to parameter. Throws an exception of
-    /// parameters is not present (const version)
-    const Parameter& find_parameter(std::string key) const;
+    /// Return parameter, if present
+    boost::optional<Parameter&> find_parameter(std::string key);
 
-    /// Return reference to parameter. Throws an exception of
-    /// parameters is not present.
-    Parameter& find_parameter(std::string key);
-
-    /// Return pointer to parameter set for given key and 0 if not found
-    Parameters* find_parameter_set(std::string key) const;
+    /// Return parameter set, if present
+    boost::optional<Parameters&> find_parameter_set(std::string key);
 
   protected:
 
@@ -285,7 +282,8 @@ namespace dolfin
 
   private:
 
-    // Add all parameters as options to a boost::program_option instance
+    // Add all parameters as options to a boost::program_option
+    // instance
     void
       add_parameter_set_to_po(boost::program_options::options_description& desc,
                               const Parameters &parameters,
@@ -299,11 +297,23 @@ namespace dolfin
     // Parameter set key
     std::string _key;
 
-    // Map from key to parameter
-    std::map<std::string, Parameter> _parameters;
+    // Map from key to parameter(s)
+    std::map<std::string, boost::variant<Parameter, Parameters>> _parameters;
 
-    // Map from key to parameter sets
-    std::map<std::string, Parameters*> _parameter_sets;
+  public:
+
+    /// Interface for pybind11 iterators
+    std::size_t size() const { return  _parameters.size(); }
+
+    /// Interface for pybind11 iterators
+    std::map<std::string, boost::variant<Parameter, Parameters>>::const_iterator begin() const
+    { return _parameters.cbegin(); }
+    //decltype(_parameters.cbegin()) begin() const { return _parameters.cbegin(); }
+
+    /// Interface for pybind11 iterators
+    std::map<std::string, boost::variant<Parameter, Parameters>>::const_iterator end() const
+    { return _parameters.cend(); }
+    //decltype(_parameters.cend()) end() const { return _parameters.cend(); }
 
   };
 
