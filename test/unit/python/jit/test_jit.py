@@ -61,6 +61,7 @@ def test_mpi_swig():
 
 @skip_if_pybind11
 def test_pass_array_int():
+    import dolfin, numpy
     code = """
     int test_int_array(const Array<int>& int_arr)
     {
@@ -83,6 +84,7 @@ def test_pass_array_int():
 
 @skip_if_pybind11
 def test_pass_array_double():
+    import dolfin, numpy
     code = """
     double test_double_array(const Array<double>& arr)
     {
