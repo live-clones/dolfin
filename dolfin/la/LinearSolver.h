@@ -100,6 +100,7 @@ namespace dolfin
     friend class LUSolver;
     friend class KrylovSolver;
     friend class LinearVariationalSolver;
+    friend class MixedLinearVariationalSolver;
     friend class NewtonSolver;
 
     // Check whether string is contained in list

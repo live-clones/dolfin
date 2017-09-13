@@ -162,15 +162,40 @@ void MixedLinearVariationalSolver::solve()
   auto comm = u[0]->vector()->mpi_comm();
   auto x = u[0]->vector()->factory().create_vector(comm);
   auto b = u[0]->vector()->factory().create_vector(comm);
+  
+  // Combine the vectors (solution and rhs)
   A.init_vectors(*x, us);
   A.init_vectors(*b, bs);
 
   // Solve linear system
-  // TEMPORARY : Force PETScKrylovSolver (need to be carefully configured)
+  // NOTE : Direct solvers cannot be used with PETScNestMatrix.
+  // (For now,) we force the use of a krylov solver
+  // (options given by the user for linear_solver are not taken into account)
+
+  // Get list of available preconditioners
+  std::map<std::string, std::string>
+    preconditioners = u[0]->vector()->factory().krylov_solver_preconditioners();
+
+  // Adjust iterative solver type
+  if (symmetric)
+    solver_type = "cg";
+  else
+    solver_type = "gmres";
+
+  if (pc_type != "default"
+      && !LinearSolver::in_list(pc_type, preconditioners))
+  {
+    dolfin_error("MixedLinearVariationalSolver.cpp",
+		 "solve mixed linear system",
+		 "Unknown preconditioner method \"%s\". "
+		 "Use list_krylov_solver_preconditioners() to list available methods",
+		 pc_type.c_str());
+  }
+
   PETScKrylovSolver solver(comm, solver_type, pc_type);
   solver.parameters.update(parameters("krylov_solver"));
 
-  solver.set_operators(A,A);
+  solver.set_operator(A);
   solver.solve(*x,*b);
 
   end();
