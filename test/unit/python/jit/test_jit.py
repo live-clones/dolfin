@@ -60,6 +60,7 @@ def test_mpi_swig():
 
 
 @skip_if_pybind11
+@pytest.mark.xfail
 def test_pass_array_int():
     import dolfin, numpy
     code = """
