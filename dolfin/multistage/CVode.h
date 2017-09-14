@@ -22,12 +22,12 @@
 
 #include <dolfin/la/SUNDIALSNVector.h>
 
-#include <sundials/sundials_types.h>
-#include <sundials/sundials_dense.h>
-#include <sundials/sundials_iterative.h>
 #include <cvode/cvode.h>
 #include <cvode/cvode_impl.h>
 #include <cvode/cvode_spgmr.h>
+#include <sundials/sundials_dense.h>
+#include <sundials/sundials_types.h>
+#include <sundials/sundials_iterative.h>
 
 namespace dolfin
 {
@@ -37,34 +37,13 @@ namespace dolfin
   public:
 
     /// Constructor
-    CVode(int cv_lmm, int cv_iter) : t(0.0)
-    {
-      
-      this->cv_lmm = cv_lmm;
-      this->cv_iter = cv_iter;
-      // Create CVode memory block
-      cvode_mem = CVodeCreate(cv_lmm, cv_iter);
-      dolfin_assert(cvode_mem);
-
-      // Point user_data back to this object
-      // (for use in "f" below)
-      int flag = CVodeSetUserData(cvode_mem, (void *)this);
-      dolfin_assert(flag == 0);
-//    if(cv_iter == CV_NEWTON){
-//        flag = CVSpgmr(cvode_mem, PREC_LEFT, 0);
-//        if(check_flag(&flag, "CVSpgmr", 1)) return(1); 
-//          flag = CVSpilsSetPreconditioner(cvode_mem, NULL, 0);
-//      }
-    }
-
+    CVode(int cv_lmm, int cv_iter);
+    
     /// Destructor
-    virtual ~CVode()
-    {
-      CVodeFree(&cvode_mem);
-    }
+    virtual ~CVode();
 
     /// Initialise CVode
-    void init(std::shared_ptr<GenericVector> u0, double atol, double rtol);
+    void init(std::shared_ptr<GenericVector> u0, double atol, double rtol, long int mxsteps = 0);
 
     /// Advance time by timestep dt
     double step(double dt);
