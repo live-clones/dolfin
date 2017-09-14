@@ -49,16 +49,16 @@ namespace dolfin
     const std::size_t slave_facet_idx;
     const std::size_t slave_facet_local_idx;
 
-    const std::vector<double> get_dof_coords()
+    const std::vector<double>& get_dof_coords() const
     { return _dof_coords; };
 
-    const std::vector<double> get_dof_coeffs()
+    const std::vector<double>& get_dof_coeffs() const
     { return _dof_coeffs; };
 
-    const std::vector<std::size_t> get_cell_dofs()
+    const std::vector<std::size_t>& get_cell_dofs() const
     { return _cell_dofs; };
 
-    const std::vector<Point> get_cell_vertices(const Mesh& mesh)
+    const std::vector<Point> get_cell_vertices(const Mesh& mesh) const
     {
       const std::size_t gdim = mesh.geometry().dim();
 
@@ -67,12 +67,12 @@ namespace dolfin
       std::vector<Point> cell_verts(num_cell_verts);
 
       for (std::size_t j=0; j<num_cell_verts; ++j)
-        cell_verts[j] = Point(gdim, _dof_coeffs.data() + j*gdim);
+        cell_verts[j] = Point(gdim, _dof_coords.data() + j*gdim);
 
       return cell_verts;
     }
 
-    const std::vector<Point> get_displacement_at_vertices(const Mesh& mesh)
+    const std::vector<Point> get_displacement_at_vertices(const Mesh& mesh) const
     {
       const std::size_t gdim = mesh.geometry().dim();
 
@@ -89,7 +89,7 @@ namespace dolfin
       return displacement;
     }
 
-    const std::vector<Point> create_deformed_facet_position(const Mesh& mesh)
+    const std::vector<Point> create_deformed_cell_position(const Mesh& mesh) const
     {
       const auto X = get_cell_vertices(mesh);
       const auto u = get_displacement_at_vertices(mesh);
@@ -171,9 +171,10 @@ namespace dolfin
     };
 
 
-    const std::vector<std::shared_ptr<CellMetaData>> get_cell_meta_data(const std::size_t m_idx)
+    const std::vector<std::shared_ptr<CellMetaData>> get_cell_meta_data(const std::size_t m_idx) const
     {
-      return _master_facet_to_contacted_cells[m_idx];
+      // FIXME: pass back by reference when pybind11 is working.
+      return _master_facet_to_contacted_cells.at(m_idx);
     };
 
 
