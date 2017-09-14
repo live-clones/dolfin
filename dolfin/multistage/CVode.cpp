@@ -19,23 +19,58 @@
 #ifdef HAS_SUNDIALS
 
 #include <cmath>
+#include <vector>
+#include <iostream>
+#include <map>
+#include <string>
 
 #include <dolfin/common/MPI.h>
 #include <dolfin/la/SUNDIALSNVector.h>
 #include <dolfin/log/log.h>
 
-#include <vector>
-#include <iostream>
-#include <map>
-#include <string>
+#include <cvode/cvode.h>
+#include <cvode/cvode_impl.h>
+#include <cvode/cvode_spgmr.h>
+#include <sundials/sundials_dense.h>
+#include <sundials/sundials_types.h>
+#include <sundials/sundials_iterative.h>
+
 
 
 #include "CVode.h"
 
 using namespace dolfin;
 
+/// Constructor
+CVode::CVode(int cv_lmm, int cv_iter) : t(0.0)
+{
+
+  this->cv_lmm = cv_lmm;
+  this->cv_iter = cv_iter;
+
+  // Create CVode memory block
+  cvode_mem = CVodeCreate(cv_lmm, cv_iter);
+  dolfin_assert(cvode_mem);
+
+  // Point user_data back to this object
+  // (for use in "f" below)
+  int flag = CVodeSetUserData(cvode_mem, (void *)this);
+  dolfin_assert(flag == 0);
+//    if(cv_iter == CV_NEWTON){
+//        flag = CVSpgmr(cvode_mem, PREC_LEFT, 0);
+//        if(check_flag(&flag, "CVSpgmr", 1)) return(1); 
+//          flag = CVSpilsSetPreconditioner(cvode_mem, NULL, 0);
+//      }
+}
+
+    /// Destructor
+CVode::~CVode()
+{
+  CVodeFree(&cvode_mem);
+}
+
 //-----------------------------------------------------------------------------
-void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol)
+void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, long int mxsteps)
 {
   dolfin_assert(cvode_mem);
 
@@ -52,6 +87,8 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol)
 
   flag = CVodeSStolerances(cvode_mem, rtol, atol);
   dolfin_assert(flag == CV_SUCCESS);
+
+  CVodeSetMaxNumSteps(cvode_mem, mxsteps);
 
   if(cv_iter == CV_NEWTON)
   {
@@ -74,6 +111,25 @@ double CVode::step(double dt)
   std::cout << "t_out = " << t;
 
   return t;
+}
+//-----------------------------------------------------------------------------
+void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
+                   std::shared_ptr<GenericVector> udot)
+{
+  dolfin_error("CVode.cpp",
+               "form time derivative",
+               "This function should be overloaded");
+}
+//-----------------------------------------------------------------------------
+int CVode::Jacobian(std::shared_ptr<GenericVector> v,
+                          std::shared_ptr<GenericVector> Jv,
+                          double t, std::shared_ptr<GenericVector> y,
+                          std::shared_ptr<GenericVector> fy)
+{
+  dolfin_error("CVode.cpp",
+	       "Jacobian function",
+	       "This function should be overloaded");
+  return 0;
 }
 //-----------------------------------------------------------------------------
 int CVode::fJac(N_Vector v, N_Vector Jv, double t, N_Vector y, N_Vector fy, void* user_data, N_Vector tmp)
@@ -104,25 +160,6 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   // Callback to actually calculate the derivatives (user function)
   cv->derivs(t, uvec, udotvec);
 
-  return 0;
-}
-//-----------------------------------------------------------------------------
-void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
-                   std::shared_ptr<GenericVector> udot)
-{
-  dolfin_error("CVode.cpp",
-               "form time derivative",
-               "This function should be overloaded");
-}
-//-----------------------------------------------------------------------------
-int CVode::Jacobian(std::shared_ptr<GenericVector> v,
-                          std::shared_ptr<GenericVector> Jv,
-                          double t, std::shared_ptr<GenericVector> y,
-                          std::shared_ptr<GenericVector> fy)
-{
-  dolfin_error("CVode.cpp",
-	       "Jacobian function",
-	       "This function should be overloaded");
   return 0;
 }
 

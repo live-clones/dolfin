@@ -199,9 +199,9 @@ endif()
 
 # SUNDIALS
 if (DOLFIN_ENABLE_SUNDIALS AND SUNDIALS_FOUND)
-  list(APPEND DOLFIN_CXX_DEFINITIONS "-DHAS_SUNDIALS")
-  list(APPEND DOLFIN_DEP_SYSTEM_INCLUDE_DIRECTORIES ${SUNDIALS_INCLUDE_DIRS})
-  target_link_libraries(dolfin PUBLIC ${SUNDIALS_LIBRARIES})
+  target_compile_definitions(dolfin PUBLIC HAS_SUNDIALS)
+  target_link_libraries(dolfin PRIVATE ${SUNDIALS_LIBRARIES})
+  target_include_directories(dolfin SYSTEM PUBLIC ${SUNDIALS_INCLUDE_DIRS})
 endif()
 
 # ZLIB
