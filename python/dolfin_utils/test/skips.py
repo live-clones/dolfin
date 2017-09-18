@@ -23,15 +23,18 @@ from dolfin import *
 
 
 # Skips with dependencies
-skip_if_not_PETsc_or_not_slepc = \
-                    pytest.mark.skipif(not has_linear_algebra_backend("PETSc") or not has_slepc(),
-                                       reason='Skipping unit test(s) depending on PETSc and slepc.')
+skip_if_not_MPI = pytest.mark.skipif(not has_mpi(),
+                                     reason="Skipping unit test(s) depending on MPI.")
+skip_if_not_PETsc_or_not_slepc = pytest.mark.skipif(not has_linear_algebra_backend("PETSc") or not has_slepc(),
+                                                    reason='Skipping unit test(s) depending on PETSc and slepc.')
 skip_if_not_HDF5 = pytest.mark.skipif(not has_hdf5(),
-                                    reason="Skipping unit test(s) depending on HDF5.")
+                                      reason="Skipping unit test(s) depending on HDF5.")
 skip_if_not_PETSc = pytest.mark.skipif(not has_linear_algebra_backend("PETSc"),
                                        reason="Skipping unit test(s) depending on PETSc.")
 skip_if_not_petsc4py = pytest.mark.skipif(not has_petsc4py(),
                                           reason="Skipping unit test(s) depending on petsc4py.")
+skip_if_not_SLEPc = pytest.mark.skipif(not has_slepc(),
+                                       reason="Skipping unit test(s) depending on SLEPc.")
 
 # Skips with respect to parallel or serial
 xfail_in_parallel = pytest.mark.xfail(MPI.size(MPI.comm_world) > 1,
