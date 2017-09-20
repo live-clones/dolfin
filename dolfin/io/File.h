@@ -41,13 +41,14 @@ namespace dolfin
   ///     * XML    (.xml)
   ///     * XYZ    (.xyz)
   ///     * VTK    (.pvd)
+  ///     * JSON   (.json)
 
   class File
   {
   public:
 
     /// File formats
-    enum class Type {x3d, xml, vtk, raw, xyz, binary, svg};
+    enum class Type {x3d, xml, vtk, raw, xyz, binary, svg, json};
 
     /// Create a file with given name
     ///

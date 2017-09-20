@@ -26,6 +26,7 @@ set(HEADERS
   xmlutils.h
   XMLVector.h
   XYZFile.h
+  JSONFile.h
   PARENT_SCOPE)
 
 set(SOURCES
@@ -52,4 +53,5 @@ set(SOURCES
   xmlutils.cpp
   XMLVector.cpp
   XYZFile.cpp
+  JSONFile.cpp
   PARENT_SCOPE)

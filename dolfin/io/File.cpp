@@ -29,6 +29,7 @@
 #include "X3DFile.h"
 #include "XMLFile.h"
 #include "XYZFile.h"
+#include "JSONFile.h"
 
 #include "File.h"
 
@@ -177,6 +178,8 @@ void File::init(MPI_Comm comm, const std::string filename,
     _file.reset(new XYZFile(filename));
   else if (extension == ".svg")
     _file.reset(new SVGFile(filename));
+  else if (extension == ".json")
+    _file.reset(new JSONFile(filename));
   else
   {
     dolfin_error("File.cpp",
@@ -205,6 +208,9 @@ void File::init(MPI_Comm comm, const std::string filename, Type type,
     break;
   case Type::xyz:
     _file.reset(new XYZFile(filename));
+    break;
+  case Type::json:
+    _file.reset(new JSONFile(filename));
     break;
   default:
     dolfin_error("File.cpp",

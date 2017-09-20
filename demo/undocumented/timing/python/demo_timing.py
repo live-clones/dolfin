@@ -64,3 +64,10 @@ f << t
 
 # Helper function for storing rank-wise average, min and max
 dump_timings_to_xml("timings_avg_min_max.xml", TimingClear_clear)
+
+
+# Store timings of each rank separately in json format
+f = File(mpi_comm_self(), "timings_rank_%d.json"
+         % MPI.rank(mpi_comm_world()))
+
+f << t_max

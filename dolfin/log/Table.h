@@ -31,6 +31,7 @@ namespace dolfin
   class MPI;
   class XMLTable;
   class TableEntry;
+  class JSONFile;
 
   /// This class provides storage and pretty-printing for tables.
   /// Example usage:
@@ -110,6 +111,9 @@ namespace dolfin
 
     // Allow XMLTable accessing data
     friend class XMLTable;
+
+    // Allow JSONFile class accessing data
+    friend class JSONFile;
 
   };
 
