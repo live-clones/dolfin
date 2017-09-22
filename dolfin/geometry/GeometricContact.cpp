@@ -597,12 +597,10 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
   std::vector<std::vector<double>> slave_cell_dof_coeffs_recv;
 
   // FIXME: This is too much MP....?
-  Timer t0("UUUUUU: Loads of MPI. Why is this so fast?");
   MPI::all_to_all(mesh.mpi_comm(), slave_facet_infos_send, slave_facet_infos_recv);
   MPI::all_to_all(mesh.mpi_comm(), slave_cell_global_dofs_send, slave_cell_global_dofs_recv);
   MPI::all_to_all(mesh.mpi_comm(), slave_cell_dof_coords_send, slave_cell_dof_coords_recv);
   MPI::all_to_all(mesh.mpi_comm(), slave_cell_dof_coeffs_send, slave_cell_dof_coeffs_recv);
-  t0.stop();
 
   const std::size_t num_coords_per_cell = Cell(mesh, 0).num_vertices()*mesh.geometry().dim();
   const std::size_t num_dofs_per_cell = dofmap->max_element_dofs();
