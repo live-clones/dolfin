@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
+#include <syscall.h>
 #include <memory>
 #include <set>
 #include <string>
@@ -97,6 +98,33 @@ namespace dolfin_wrappers
           });
     m.def("dump_timings_to_xml", &dolfin::dump_timings_to_xml);
 
+    // Load a module from memory, using memfd RAM to store data (only on Linux) else return None
+    m.def("load_module", [](std::string module_name, const std::vector<unsigned char>& data)
+          {
+            const py::object none = py::none();
+
+            // If possible, write module to memfd 'file' in RAM and load, else return None
+  #ifndef SYS_memfd_create
+            return none;
+  #else
+            int fd = syscall(SYS_memfd_create, module_name, 0);
+            if (fd < 0)
+              return none;
+
+            std::size_t n = write(fd, data.data(), data.size());
+            if (n != data.size())
+              throw std::runtime_error("Failed to write to memfd");
+
+            // Load module from 'file'
+            std::string memfd = "/proc/self/fd/" + std::to_string(fd);
+            auto load_dynamic = py::module::import("imp").attr("load_dynamic");
+            auto mod = load_dynamic(module_name, memfd);
+            close(fd);
+            return mod;
+  #endif
+          }
+          );
+
   }
 
   // Interface for MPI
@@ -129,6 +157,9 @@ namespace dolfin_wrappers
       .def_static("size", &dolfin::MPI::size)
       .def_static("local_range", (std::pair<std::int64_t, std::int64_t> (*)(MPI_Comm, std::int64_t))
                   &dolfin::MPI::local_range)
+      .def_static("broadcast", [](MPI_Comm comm, std::vector<unsigned char>& value)
+                  { dolfin::MPI::broadcast(comm, value);
+                    return value; })
       .def_static("max", &dolfin::MPI::max<double>)
       .def_static("min", &dolfin::MPI::min<double>)
       .def_static("sum", &dolfin::MPI::sum<double>)

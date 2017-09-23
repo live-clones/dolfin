@@ -20,6 +20,7 @@ const double pi = DOLFIN_PI;
 """ % "\n".join("using std::%s;" % mf for mf in _cpp_math_builtins)
 
 
+
 def compile_class(cpp_data):
     """Compile a user C(++) string or set of statements to a Python object
 
@@ -43,6 +44,7 @@ def compile_class(cpp_data):
     params['build']['include_dirs'] = d["include_dirs"]
     params['build']['libs'] = d["libraries"]
     params['build']['lib_dirs'] = d["library_dirs"]
+    params['cache']['lib_loader'] = my_loader
 
     name = cpp_data['name']
     if name not in ('subdomain', 'expression'):

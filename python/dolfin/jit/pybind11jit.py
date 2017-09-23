@@ -3,11 +3,39 @@
 import hashlib
 import dijitso
 import pkgconfig
-import re
+import re, os
 
 import dolfin.cpp as cpp
+from dolfin.cpp.common import load_module
+from dolfin.cpp import MPI
 from . import get_pybind_include
 from dolfin.function.expression import BaseExpression, _select_element
+
+def my_loader(signature, lib_filename, cache_parameters):
+    try:
+        # Read module on rank 0
+        rank = MPI.rank(MPI.comm_world)
+        if rank == 0:
+            if not os.path.exists(lib_filename):
+                data = [0]
+            else:
+                data = open(lib_filename, "rb").read()
+        else:
+            data = []
+
+        # distribute and load on each process
+        qq = MPI.broadcast(MPI.comm_world, data)
+        print(rank, len(qq), len(data), qq[0])
+        if len(qq) == 1 and qq[0] == 0:
+            lib = None
+        else:
+            lib = load_module(signature, qq)
+    except Exception as e:
+        print(e)
+        lib = None
+        print("Something went wrong loading module")
+
+    return lib
 
 
 def jit_generate(cpp_code, module_name, signature, parameters):
@@ -46,7 +74,7 @@ def compile_cpp_code(cpp_code):
     pyversion = "python" + sysconfig.get_config_var("LDVERSION")
     params['cache']['lib_prefix'] = ""
     params['cache']['lib_basename'] = ""
-    params['cache']['lib_loader'] = "import"
+    params['cache']['lib_loader'] = my_loader
     params['build']['include_dirs'] = d["include_dirs"] + get_pybind_include() + [sysconfig.get_config_var("INCLUDEDIR") + "/" + pyversion]
     params['build']['libs'] = d["libraries"] + [ pyversion ]
     params['build']['lib_dirs'] = d["library_dirs"] + [sysconfig.get_config_var("LIBDIR")]
@@ -72,7 +100,13 @@ def compile_cpp_code(cpp_code):
     module_hash = hashlib.md5(cpp_code.encode('utf-8')).hexdigest()
     module_name = "dolfin_cpp_module_" + module_hash
 
+    generator = jit_generate if MPI.rank(MPI.comm_world) == 0 else None
+
+    # FIXME: don't need this - should disable in dijitso
+    def barrier():
+        return
+
     module, signature = dijitso.jit(cpp_code, module_name, params,
-                                    generate=jit_generate)
+                                    generate=generator, wait=barrier)
 
     return module
