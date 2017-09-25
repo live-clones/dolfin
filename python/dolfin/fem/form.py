@@ -7,9 +7,16 @@
 # either version 3 of the License, or (at your option) any later
 # version.
 
+import pkgconfig
+
 import ufl
 import ffc
+
+import sys
+import traceback
+
 import dolfin.cpp as cpp
+from dolfin.parameter import ffc_default_parameters
 
 
 class Form(cpp.fem.Form):
@@ -28,20 +35,40 @@ class Form(cpp.fem.Form):
         if mesh is None:
             raise RuntimeError("Expecting to find a Mesh in the form.")
 
+        # FIXME: Have explicit kwarg in function signature
         form_compiler_parameters = kwargs.pop("form_compiler_parameters", None)
+
+        # Prepare form compiler parameters with overrides from dolfin and kwargs
+        p = ffc_default_parameters()
+        p.update(cpp.parameter.parameters["form_compiler"])
+        p.update(form_compiler_parameters or {})
 
         # Add DOLFIN include paths (just the Boost path for special
         # math functions is really required)
         # FIXME: move getting include paths to elsewhere
-        import pkgconfig
-        d = pkgconfig.parse('dolfin')
-        if form_compiler_parameters is None:
-            form_compiler_parameters = {"external_include_dirs": d["include_dirs"]}
-        else:
-            # FIXME: add paths if dict entry already exists
-            form_compiler_parameters["external_include_dirs"] = d["include_dirs"]
+        # FIXME: do we really want to store include dirs as repr(str)?
+        #        we would need to do
+        #          p["external_include_dirs"] = repr(dirs + eval(p["external_include_dirs"]))
+        #        which is a security risk
+        dirs = repr(pkgconfig.parse('dolfin')["include_dirs"])
+        assert p["external_include_dirs"] == "", "Don't know how to concat include dirs"
+        p["external_include_dirs"] += dirs
 
-        ufc_form = ffc.jit(form, form_compiler_parameters)
+        # FIXME: Cast Parameters to dict to avoid later problem in FFC; get rid of this block
+        p_ = {}
+        for k in p:
+            p_[k] = p[k]
+        p = p_
+
+        # Execute!
+        try:
+            ufc_form = ffc.jit(form, p)
+        except Exception as e:
+            #tb_text = ''.join(traceback.format_exception(*sys.exc_info()))
+            #raise RuntimeError("ffc.jit failed with message:\n%s" % (tb_text,))
+            raise RuntimeError("ffc.jit failed; see message above")
+
+        # Unpack result (ffc.jit returns different tuples based on input type)
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 
         function_spaces = [func.function_space()._cpp_object for func in form.arguments()]
