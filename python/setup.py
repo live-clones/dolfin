@@ -15,9 +15,9 @@ RESTRICT_REQUIREMENTS = ">=2017.2.0.dev0,<2017.3"
 REQUIREMENTS = [
     "numpy",
     "pkgconfig",
-    "fenics-ffc%s" % RESTRICT_REQUIREMENTS,
-    "fenics-ufl%s" % RESTRICT_REQUIREMENTS,
-    "fenics-dijitso%s" % RESTRICT_REQUIREMENTS,
+    "fenics-ffc{}".format(RESTRICT_REQUIREMENTS),
+    "fenics-ufl{}".format(RESTRICT_REQUIREMENTS),
+    "fenics-dijitso{}".format(RESTRICT_REQUIREMENTS),
 ]
 
 class CMakeExtension(Extension):
