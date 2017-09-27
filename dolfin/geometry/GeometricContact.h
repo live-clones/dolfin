@@ -194,6 +194,7 @@ namespace dolfin
 
   private:
 
+    // local master facet index to collided slave facets' CellMetaData.
     std::map<std::size_t, std::vector<std::shared_ptr<CellMetaData>>> _master_facet_to_contacted_cells;
 
     // Project surface forward from a facet using 'u', creating a prismoidal volume in 2D or 3D
@@ -217,6 +218,7 @@ namespace dolfin
         const std::vector<std::size_t>& recv_facets,
         const std::vector<double>& coord);
 
+    // Create a mesh of the
     static void create_on_process_sub_mesh(Mesh& sub_mesh, const Mesh& mesh);
 
     // Tabulate pairings between collided displacement volume meshes on this process only.
@@ -251,9 +253,14 @@ namespace dolfin
     // Find number of cells in projected prism in 2D or 3D
     static std::size_t vertices_per_facet(std::size_t tdim) { return tdim*2; };
 
+    // master facet local index to vector of (process, slave local index)
     std::map<std::size_t, std::vector<std::size_t>> _master_to_slave;
     std::map<std::size_t, std::vector<std::size_t>> _slave_to_master;
+
+    // facet local index to collided facets' neighbouring cells' (global) dofs
     std::map<std::size_t, std::vector<std::size_t>> _local_facet_to_contact_dofs;
+
+    // facet local index to off process collided facets' neighbouring cells' (global) dofs
     std::map<std::size_t, std::vector<std::size_t>> _local_facet_to_off_proc_contact_dofs;
 
   };

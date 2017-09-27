@@ -678,7 +678,6 @@ void GeometricContact::tabulate_on_process_bbox_collisions(const std::size_t mpi
 //-----------------------------------------------------------------------------
 void GeometricContact::create_on_process_sub_mesh(Mesh& sub_mesh, const Mesh& mesh)
 {
-
   MeshEditor me;
   me.open(sub_mesh, mesh.topology().dim(), mesh.geometry().dim());
 
