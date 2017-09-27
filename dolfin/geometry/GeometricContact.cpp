@@ -83,7 +83,7 @@ std::vector<Point> GeometricContact::create_deformed_segment_volume(const Mesh& 
 //-----------------------------------------------------------------------------
 void GeometricContact::create_displacement_volume_mesh(Mesh& displacement_mesh,
                                                        const Mesh& mesh,
-                                                       const std::vector<std::size_t> contact_facets,
+                                                       const std::vector<std::size_t>& contact_facets,
                                                        const Function& u)
 {
   // Precalculate triangles making the surface of a prism
@@ -310,7 +310,7 @@ void GeometricContact::tabulate_off_process_displacement_volume_mesh_pairs(
   ta.stop();
 }
 //-----------------------------------------------------------------------------
-void GeometricContact::contact_surface_map_volume_sweep(Mesh& mesh, Function& u,
+void GeometricContact::contact_surface_map_volume_sweep(const Mesh& mesh, const Function& u,
 const std::vector<std::size_t>& master_facets, const std::vector<std::size_t>& slave_facets)
 {
   // Construct a dictionary mapping master facets to their collided slave counterparts.
@@ -509,7 +509,7 @@ void GeometricContact::tabulate_contact_cell_to_shared_dofs(const Mesh& mesh, co
 }
 //-----------------------------------------------------------------------------
 void
-GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
+GeometricContact::tabulate_contact_shared_cells(const Mesh& mesh, const Function& u,
                                                 const std::vector<std::size_t>& master_facets,
                                                 const std::vector<std::size_t>& slave_facets)
 {
@@ -634,7 +634,7 @@ GeometricContact::tabulate_contact_shared_cells(Mesh& mesh, Function& u,
 
 }
 //-----------------------------------------------------------------------------
-void GeometricContact::tabulate_on_process_bbox_collisions(const std::size_t mpi_rank,
+void GeometricContact::tabulate_on_process_bbox_collisions(std::size_t mpi_rank,
                                                            const Mesh& master_mesh,
                                                            const std::vector<std::size_t>& master_facets,
                                                            const Mesh& slave_mesh,

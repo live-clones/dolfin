@@ -135,7 +135,7 @@ namespace dolfin
     /// performs the geometric collision detection step.
     void
       contact_surface_map_volume_sweep(
-          Mesh& mesh, Function& u,
+          const Mesh& mesh, const Function& u,
           const std::vector<std::size_t>& master_facets,
           const std::vector<std::size_t>& slave_facets);
 
@@ -153,7 +153,7 @@ namespace dolfin
     /// may then be computed on the master process.
     void
     tabulate_contact_shared_cells(
-        Mesh& mesh, Function& u,
+        const Mesh& mesh, const Function& u,
         const std::vector<std::size_t>& master_facets,
         const std::vector<std::size_t>& slave_facets);
 
@@ -208,7 +208,7 @@ namespace dolfin
     static void create_displacement_volume_mesh(
         Mesh& displacement_mesh,
         const Mesh& mesh,
-        const std::vector<std::size_t> contact_facets,
+        const std::vector<std::size_t>& contact_facets,
         const Function& u);
 
     // Make a mesh of a communicated facets mesh
@@ -223,7 +223,7 @@ namespace dolfin
 
     // Tabulate pairings between collided displacement volume meshes on this process only.
     static void tabulate_on_process_bbox_collisions(
-        const std::size_t mpi_rank,
+        std::size_t mpi_rank,
         const Mesh& master_mesh,
         const std::vector<std::size_t>& master_facets,
         const Mesh& slave_mesh,
