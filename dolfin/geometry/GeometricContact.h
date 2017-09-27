@@ -107,22 +107,32 @@ namespace dolfin
     const std::vector<double> _dof_coeffs;
   };
 
-  /// This class implements ...
-
+  /// This class computes the candididate contact collisions between exterior facets on a mesh.
+  /// Furthermore it tabulate the cell DoFs of the cells neighbouring contact facets such
+  /// that they may be inserted into the sparsity pattern.
+  ///
+  /// The contact data is computed and communicated in three steps:
+  /// 1. Geometric collision detection
+  ///     Given a mesh defined by coordinates X and displacement vector Function u,
+  ///     find the facets in the deformed configuration, x = X + u, which collide with
+  ///     each other.
+  ///
+  /// 2. Communication of colliding facets' DoFs
+  ///     The DoFs of the cells neighbouring the collided facets are communicated with
+  ///     each others' processes.
+  ///
+  /// 3. Communication of colliding facets' deformed configuration
+  ///     CellMetaData objects which contain data of the deformed configuration of slave
+  ///     facets existing off process to the master are communicated to the master process.
   class GeometricContact
   {
   public:
-    GeometricContact()
-    {
-      // Constructor
-    }
+    GeometricContact() { }
 
-    ~GeometricContact()
-    {
-      // Destructor
-    }
+    ~GeometricContact() { }
 
-    /// Calculate map from master facets to possible colliding slave facets
+    /// Calculate map from master facets to colliding slave facets. This function
+    /// performs the geometric collision detection step.
     void
       contact_surface_map_volume_sweep(
           Mesh& mesh, Function& u,
@@ -130,7 +140,7 @@ namespace dolfin
           const std::vector<std::size_t>& slave_facets);
 
     /// For each of the master facets on this process, compute the DoFs of the cells belonging
-    /// to the facets in contact on the contact process(es).
+    /// to the slave facets in contact on the contact process(es).
     void
     tabulate_contact_cell_to_shared_dofs(
         const Mesh& mesh, const Function& u,
@@ -138,39 +148,43 @@ namespace dolfin
         const std::vector<std::size_t>& slave_facets);
 
 
-    /// Tabulate the mapping from local master facet, which are in possible contact with their
-    /// shared cells' metadata.
+    /// For each master facet, compute the colliding slave facets' neighbouring CellMetaData
+    /// and communicate to the master facet process. The contact assembly and integration
+    /// may then be computed on the master process.
     void
     tabulate_contact_shared_cells(
         Mesh& mesh, Function& u,
         const std::vector<std::size_t>& master_facets,
         const std::vector<std::size_t>& slave_facets);
 
-    /// Get master to slave mapping
+    /// Get master facet local index to slave facet(s) (process, local index) mapping
     const std::map<std::size_t, std::vector<std::size_t>>& master_to_slave() const
     {
       return _master_to_slave;
     }
 
-    /// Get slave to master mapping
+    /// Get slave facet index to collided master facet(s) (process, local index) index
+    /// mapping. Ideally (but not guaranteed), this is the transpose of master_to_slave.
     const std::map<std::size_t, std::vector<std::size_t>>& slave_to_master() const
     {
       return _slave_to_master;
     }
 
-    /// Get dof matchup
+    /// Given the local index of a facet, return the neighbouring cell (global)
+    /// dofs of the colliding facets which are on this process
     const std::map<std::size_t, std::vector<std::size_t>>& local_facet_to_contact_dofs() const
     {
       return _local_facet_to_contact_dofs;
     };
 
-    /// Get dof matchup
+    /// Given the local index of a facet, return the neighbouring cell (global)
+    /// dofs of the colliding facets which are not on this process
     const std::map<std::size_t, std::vector<std::size_t>>& local_facet_to_off_proc_contact_dofs() const
     {
       return _local_facet_to_off_proc_contact_dofs;
     };
 
-
+    /// Get the collided slave facets' CellMetaData for the given master facet local index
     const std::vector<std::shared_ptr<CellMetaData>> get_cell_meta_data(const std::size_t m_idx) const
     {
       // FIXME: pass back by reference when pybind11 is working.
