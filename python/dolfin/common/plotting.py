@@ -23,6 +23,7 @@ import dolfin
 import dolfin.cpp as cpp
 import ufl
 import numpy as np
+from .plotting_trace import _is_trace_function, _plot_matplotlib_trace
 
 __all__ = ['plot']
 
@@ -97,7 +98,7 @@ def mplot_expression(ax, f, mesh, **kwargs):
     return mplot_function(ax, g, **kwargs)
 
 
-def mplot_function(ax, f, **kwargs):
+def mplot_function(ax, f, fpy, **kwargs):
     mesh = f.function_space().mesh()
     gdim = mesh.geometry().dim()
     tdim = mesh.topology().dim()
@@ -113,6 +114,10 @@ def mplot_function(ax, f, **kwargs):
         except RuntimeError:
             return
         fvec = dolfin.interpolate(f, fspace).vector()
+
+    if _is_trace_function(fpy):
+        # Function defined on the trace of the mesh
+        return _plot_matplotlib_trace(ax, fpy, fvec, **kwargs)
 
     if fvec.size() == mesh.num_cells():
         # DG0 cellwise function
@@ -262,7 +267,7 @@ def mplot_dirichletbc(ax, obj, **kwargs):
     raise AttributeError("Matplotlib plotting backend doesn't handle DirichletBC.")
 
 
-def _plot_matplotlib(obj, mesh, kwargs):
+def _plot_matplotlib(obj, py_obj, mesh, kwargs):
     if not isinstance(obj, _matplotlib_plottable_types):
         print("Don't know how to plot type %s." % type(obj))
         return
@@ -310,7 +315,7 @@ def _plot_matplotlib(obj, mesh, kwargs):
                         "Ignoring it..." % kw)
 
     if isinstance(obj, cpp.function.Function):
-        return mplot_function(ax, obj, **kwargs)
+        return mplot_function(ax, obj, py_obj, **kwargs)
     elif isinstance(obj, cpp.function.Expression):
         return mplot_expression(ax, obj, mesh, **kwargs)
     elif isinstance(obj, cpp.mesh.Mesh):
@@ -404,6 +409,7 @@ def plot(object, *args, **kwargs):
         return ffc.plot(object, *args, **kwargs)
 
     # For dolfin.function.Function, extract cpp_object
+    py_obj = object
     if hasattr(object, "cpp_object"):
         object = object.cpp_object()
 
@@ -443,7 +449,7 @@ def plot(object, *args, **kwargs):
 
     # Plot
     if backend == "matplotlib":
-        return _plot_matplotlib(object, mesh, kwargs)
+        return _plot_matplotlib(object, py_obj, mesh, kwargs)
     elif backend == "x3dom":
         return _plot_x3dom(object, kwargs)
     else:
