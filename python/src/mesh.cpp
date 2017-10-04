@@ -48,6 +48,7 @@
 #include <dolfin/mesh/DomainBoundary.h>
 #include <dolfin/mesh/PeriodicBoundaryComputation.h>
 #include <dolfin/mesh/MeshTransformation.h>
+#include <dolfin/mesh/MultiMesh.h>
 
 #include "casters.h"
 
@@ -282,7 +283,6 @@ namespace dolfin_wrappers
       .def("normal", (dolfin::Point (dolfin::Cell::*)(std::size_t) const) &dolfin::Cell::normal)
       .def("circumradius", &dolfin::Cell::circumradius)
       .def("radius_ratio", &dolfin::Cell::radius_ratio)
-      .def("triangulate_intersection", &dolfin::Cell::triangulate_intersection)
       .def("volume", &dolfin::Cell::volume)
       .def("get_vertex_coordinates", [](const dolfin::Cell& self){
           std::vector<double> x;
@@ -537,5 +537,21 @@ namespace dolfin_wrappers
       .def_static("rotate", (void (*)(dolfin::Mesh&, double, std::size_t)) &dolfin::MeshTransformation::rotate)
       .def_static("rotate", (void (*)(dolfin::Mesh&, double, std::size_t, const dolfin::Point&))
                   &dolfin::MeshTransformation::rotate);
+
+    py::class_<dolfin::MultiMesh, std::shared_ptr<dolfin::MultiMesh>,
+	       dolfin::Variable>(m, "MultiMesh")
+      .def(py::init<>())
+      .def("add", &dolfin::MultiMesh::add)
+      .def("build", &dolfin::MultiMesh::build, py::arg("quadrature_order") = 2)
+      .def("num_parts", &dolfin::MultiMesh::num_parts)
+      .def("compute_volume", &dolfin::MultiMesh::compute_volume)
+      .def("part", &dolfin::MultiMesh::part)
+      .def("cut_cells", &dolfin::MultiMesh::cut_cells)
+      .def("uncut_cells", &dolfin::MultiMesh::uncut_cells)
+      .def("covered_cells", &dolfin::MultiMesh::covered_cells)
+      .def("quadrature_rules_cut_cells",
+	   static_cast<const dolfin::MultiMesh::quadrature_rule(dolfin::MultiMesh::*)(std::size_t, unsigned int) const>(&dolfin::MultiMesh::quadrature_rules_cut_cells));
   }
+
+
 }
