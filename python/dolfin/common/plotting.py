@@ -98,7 +98,10 @@ def mplot_expression(ax, f, mesh, **kwargs):
     return mplot_function(ax, g, **kwargs)
 
 
-def mplot_function(ax, f, fpy, **kwargs):
+def mplot_function(ax, f, fpy=None, **kwargs):
+    if fpy is None:
+        fpy = f
+
     mesh = f.function_space().mesh()
     gdim = mesh.geometry().dim()
     tdim = mesh.topology().dim()
