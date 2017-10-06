@@ -20,7 +20,7 @@
 #include <algorithm>
 #include <dolfin/log/log.h>
 #include <dolfin/log/Progress.h>
-#include <dolfin/common/Array.h>
+#include <dolfin/common/ArrayView.h>
 #include <dolfin/common/Timer.h>
 #include <dolfin/parameter/GlobalParameters.h>
 #include <dolfin/la/GenericTensor.h>
@@ -170,7 +170,7 @@ void MixedAssembler::assemble_cells(
 
     // Get local-to-global dof maps for cell
     bool empty_dofmap = false;
-    int cell_index; // = cell->index();
+    int cell_index;
 
     for (std::size_t i = 0; i < form_rank; ++i)
     {
@@ -182,7 +182,8 @@ void MixedAssembler::assemble_cells(
 	  cell_index = mapping->cell_map()[cell->index()];
       }
 
-      dofs[i] = dofmaps[i]->cell_dofs(cell_index);
+      auto dmap = dofmaps[i]->cell_dofs(cell_index);
+      dofs[i] = ArrayView<const dolfin::la_index>(dmap.size(), dmap.data());
       empty_dofmap = empty_dofmap || dofs[i].size() == 0;
     }
 
@@ -291,7 +292,10 @@ void MixedAssembler::assemble_exterior_facets(
 
     // Get local-to-global dof maps for cell
     for (std::size_t i = 0; i < form_rank; ++i)
-      dofs[i] = dofmaps[i]->cell_dofs(mesh_cell.index());
+    {
+      auto dmap = dofmaps[i]->cell_dofs(mesh_cell.index());
+      dofs[i].set(dmap.size(), dmap.data());
+    }
 
     // Tabulate exterior facet tensor
     integral->tabulate_tensor(ufc.A.data(),
@@ -414,10 +418,8 @@ void MixedAssembler::assemble_interior_facets(
     for (std::size_t i = 0; i < form_rank; i++)
     {
       // Get dofs for each cell
-      const ArrayView<const dolfin::la_index> cell_dofs0
-        = dofmaps[i]->cell_dofs(cell0.index());
-      const ArrayView<const dolfin::la_index> cell_dofs1
-        = dofmaps[i]->cell_dofs(cell1.index());
+      auto cell_dofs0 = dofmaps[i]->cell_dofs(cell0.index());
+      auto cell_dofs1 = dofmaps[i]->cell_dofs(cell1.index());
 
       // Create space in macro dof vector
       macro_dofs[i].resize(cell_dofs0.size() + cell_dofs1.size());
@@ -638,7 +640,8 @@ void MixedAssembler::assemble_vertices(
     for (std::size_t i = 0; i < form_rank; ++i)
     {
       // Get local-to-global dof maps for cell
-      dofs[i] = dofmaps[i]->cell_dofs(mesh_cell.index());
+      auto dmap = dofmaps[i]->cell_dofs(mesh_cell.index());
+      dofs[i].set(dmap.size(), dmap.data());
 
       // Get local dofs of the local vertex
       dofmaps[i]->tabulate_entity_dofs(local_to_local_dofs[i], 0, local_vertex);

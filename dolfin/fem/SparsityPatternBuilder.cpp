@@ -108,19 +108,29 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
       // Otherwise, the non-zero entries are not the right ones. This cause a PETSc error when add_local (applied to an entry which is supposed to be zero)
       if(mapping && rank > 1) // Only if we have a matrix AND if the considered mesh comes from a parent mesh
       {
+	auto dmap0 = dofmaps[0]->cell_dofs(cell->index());
+	auto dmap1 = dofmaps[1]->cell_dofs(cell->index());
+
 	int max_rows = dofmaps[0]->index_map()->local_range().second; // nb test functions
 	int max_cols = dofmaps[1]->index_map()->local_range().second; // nb trial function
 	if(max_rows > max_cols) // Test functions in mesh while trial functions in the submesh
-	  dofs[0] = dofmaps[0]->cell_dofs(mapping->cell_map()[cell->index()]); // Index (cell) in the parent mesh
+	{
+	  auto dmap0 = dofmaps[0]->cell_dofs(mapping->cell_map()[cell->index()]);
+	  dofs[0].set(dmap0.size(), dmap0.data());
+	}
 	else
-	  dofs[0] = dofmaps[0]->cell_dofs(cell->index());
+	  dofs[0].set(dmap0.size(), dmap0.data());
+
 	// No changes for dofs[1]
-	dofs[1] = dofmaps[1]->cell_dofs(cell->index());
+	dofs[1].set(dmap1.size(), dmap1.data());
       }
       else
       {
 	for (std::size_t i = 0; i < rank; ++i)
-	  dofs[i] = dofmaps[i]->cell_dofs(cell->index());
+	{
+	  auto dmap = dofmaps[i]->cell_dofs(cell->index());
+	  dofs[i].set(dmap.size(), dmap.data());
+	}
       }
 
       // Insert non-zeroes in sparsity pattern

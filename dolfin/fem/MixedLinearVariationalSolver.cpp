@@ -79,7 +79,7 @@ void MixedLinearVariationalSolver::solve()
     us.push_back(u[i]->vector());
 
     // Create rhs vectors
-    MPI_Comm comm = u[i]->vector()->mpi_comm(); // TO CHECK
+    MPI_Comm comm = u[0]->vector()->mpi_comm(); // TO CHECK (not tested in //)
     std::shared_ptr<GenericVector> b = u[i]->vector()->factory().create_vector(comm);
     bs.push_back(b);
 
