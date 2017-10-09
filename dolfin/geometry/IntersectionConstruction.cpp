@@ -610,7 +610,7 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
   // Compute intersection point
   const double num = n.dot(p0 - q0);
   const double den = n.dot(q1 - q0);
-  const Point x = p0 + num / den * (p1 - p0);
+  const Point x = q0 + num / den * (q1 - q0);
 
   // Project point to major axis plane and check if inside triangle
   const Point X = GeometryTools::project_to_plane_3d(x, major_axis);
