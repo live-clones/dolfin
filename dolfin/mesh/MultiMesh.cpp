@@ -19,7 +19,7 @@
 // Modified by Benjamin Kehlet 2016
 //
 // First added:  2013-08-05
-// Last changed: 2017-10-09
+// Last changed: 2017-10-10
 
 #include <cmath>
 #include <dolfin/log/log.h>
@@ -278,7 +278,6 @@ void MultiMesh::clear()
   _uncut_cells.clear();
   _covered_cells.clear();
   _collision_maps_cut_cells.clear();
-  _collision_maps_cut_cells_boundary.clear();
   _quadrature_rules_cut_cells.clear();
   _quadrature_rules_overlap.clear();
   _quadrature_rules_interface.clear();
@@ -489,7 +488,6 @@ void MultiMesh::_build_collision_maps()
   _uncut_cells.clear();
   _covered_cells.clear();
   _collision_maps_cut_cells.clear();
-  _collision_maps_cut_cells_boundary.clear();
 
   // Iterate over all parts
   for (std::size_t i = 0; i < num_parts(); i++)
@@ -631,7 +629,6 @@ void MultiMesh::_build_collision_maps()
 
     // Store data for this mesh
     _uncut_cells.push_back(uncut_cells);
-    //_cut_cells.push_back(cut_cells);
     _covered_cells.push_back(covered_cells);
     _collision_maps_cut_cells.push_back(collision_map_cut_cells);
 

@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2014-03-03
-// Last changed: 2017-09-22
+// Last changed: 2017-10-10
 
 #ifndef __MULTI_MESH_H
 #define __MULTI_MESH_H
@@ -436,12 +436,6 @@ namespace dolfin
     std::vector<std::map<unsigned int,
                          std::vector<std::pair<std::size_t, unsigned int> > > >
     _collision_maps_cut_cells;
-
-    // FIXME: test saving collision with boundary in its own data
-    // structure (this saves only the boundary part)
-    std::vector<std::map<unsigned int,
-                         std::vector<std::pair<std::size_t, unsigned int> > > >
-    _collision_maps_cut_cells_boundary;
 
     // Quadrature rules for cut cells. Access data by
     //
