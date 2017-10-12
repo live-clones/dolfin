@@ -225,7 +225,8 @@ namespace dolfin_wrappers
       .def("type_str", &dolfin::HDF5Attribute::type_str);
 
     // dolfin::HDF5File
-    py::class_<dolfin::HDF5File, std::shared_ptr<dolfin::HDF5File>> (m, "HDF5File")
+    py::class_<dolfin::HDF5File, std::shared_ptr<dolfin::HDF5File>,
+               dolfin::Variable> (m, "HDF5File")
       .def(py::init<MPI_Comm, std::string, std::string>())
       .def("__enter__", [](dolfin::HDF5File& self){ return &self; })
       .def("__exit__", [](dolfin::HDF5File& self, py::args args, py::kwargs kwargs){ self.close(); })
@@ -307,7 +308,8 @@ namespace dolfin_wrappers
 #endif
 
     // dolfin::XDMFFile
-    py::class_<dolfin::XDMFFile, std::shared_ptr<dolfin::XDMFFile>> xdmf_file(m, "XDMFFile");
+    py::class_<dolfin::XDMFFile, std::shared_ptr<dolfin::XDMFFile>,
+               dolfin::Variable> xdmf_file(m, "XDMFFile");
 
     xdmf_file
       .def(py::init<MPI_Comm, std::string>())
@@ -436,7 +438,7 @@ namespace dolfin_wrappers
            {
              if (color.ndim() != 1 or color.shape(0) != 3)
                throw pybind11::type_error("Color must be a 1D array or length 3");
-             self.set_diffuse_color({*color.data(0), *color.data(1), *color.data(2)});
+             self.set_diffuse_color({{*color.data(0), *color.data(1), *color.data(2)}});
            });
 
     // dolfin::X3DOM
