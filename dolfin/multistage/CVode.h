@@ -24,7 +24,7 @@
 
 #include <cvode/cvode.h>
 #include <cvode/cvode_impl.h>
-#include <cvode/cvode_spgmr.h>
+#include <sunlinsol/sunlinsol_spgmr.h>
 #include <sundials/sundials_dense.h>
 #include <sundials/sundials_types.h>
 #include <sundials/sundials_iterative.h>
@@ -74,10 +74,15 @@ namespace dolfin
     // Internal callback from CVode to get time derivatives - passed on to derivs (above)
     static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 
+    static int fJacSetup(double t, N_Vector y, N_Vector fy, void *user_data);
+
     static int fJac(N_Vector u, N_Vector fu, double t, N_Vector y, N_Vector fy, void* , N_Vector tmp);
 
     // Vector of values - wrapper around dolfin::GenericVector
     std::shared_ptr<SUNDIALSNVector> _u;
+
+    // SUNDIALS Linear Solver
+    std::shared_ptr<SUNLinearSolver> ls;
 
     // Current time
     double t;
