@@ -1,4 +1,4 @@
-// Copyright (C) 2017
+// Copyright (C) 2017 Chris Hadjigeorgiou and Chris Richardson
 //
 // This file is part of DOLFIN.
 //
@@ -14,11 +14,7 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
-//
-// Modified by Chris Hadjigeorgiou: 2017.
-//
-// First added:  2017-01-31
-// Last changed: 2011-02-07
+
 
 #ifndef __DOLFIN_N_VECTOR_H
 #define __DOLFIN_N_VECTOR_H
@@ -294,15 +290,15 @@ namespace dolfin
       auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
 
       // w = a*x
-      Vector w(*vx);
-      w *= a;
+      auto w = vx->copy();
+      *w *= a;
 
       // z = b*y
       *vz = *vy;
       *vz *= b;
 
       // z = a*x + b*y
-      *vz += w;
+      *vz += *w;
     }
 
     /// Returns  the  weighted  root-mean-square  norm  of  the N_Vector x with
