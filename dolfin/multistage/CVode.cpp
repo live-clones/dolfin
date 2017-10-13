@@ -30,7 +30,8 @@
 
 #include <cvode/cvode.h>
 #include <cvode/cvode_impl.h>
-#include <cvode/cvode_spgmr.h>
+#include <cvode/cvode_spils.h>
+#include <sunlinsol/sunlinsol_spgmr.h>
 #include <sundials/sundials_dense.h>
 #include <sundials/sundials_types.h>
 #include <sundials/sundials_iterative.h>
@@ -92,9 +93,9 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
 
   if(cv_iter == CV_NEWTON)
   {
-    flag = CVSpgmr(cvode_mem, PREC_LEFT,0);
+    ls = std::make_shared<SUNLinearSolver>(SUNSPGMR(_u->nvector(), PREC_LEFT,0));
     dolfin_assert(flag == CV_SUCCESS);
-    flag = CVSpilsSetJacTimesVecFn(cvode_mem, fJac);
+    flag = CVSpilsSetJacTimes(cvode_mem, fJacSetup, fJac);
     dolfin_assert(flag == CV_SUCCESS);
   }
 
@@ -129,6 +130,12 @@ int CVode::Jacobian(std::shared_ptr<GenericVector> v,
   dolfin_error("CVode.cpp",
 	       "Jacobian function",
 	       "This function should be overloaded");
+  return 0;
+}
+//-----------------------------------------------------------------------------
+int CVode::fJacSetup(double t, N_Vector y, N_Vector fy, void *user_data)
+{
+  
   return 0;
 }
 //-----------------------------------------------------------------------------
