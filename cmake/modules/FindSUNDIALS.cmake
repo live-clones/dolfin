@@ -50,12 +50,12 @@ if (MPI_CXX_FOUND)
 #  find_library(SUNDIALS_LIBRARY sundials_cvode
 #    DOC "Directory where the SUNDIALS_CVODE library is located"
 #  )
-  find_library(SUNDIALS_NVECTOR_PARALLEL_LIBRARY
-    NAMES sundials_nvecparallel
-    HINTS ${SUNDIALS_DIR}/lib $ENV{SUNDIALS_DIR}/lib ${PETSC_LIBRARY_DIRS}
-    NO_DEFAULT_PATH
-    DOC "Directory where the SUNDIALS CVODE library is located"
-  )
+#  find_library(SUNDIALS_NVECTOR_PARALLEL_LIBRARY
+#    NAMES sundials_nvecparallel
+#    HINTS ${SUNDIALS_DIR}/lib $ENV{SUNDIALS_DIR}/lib ${PETSC_LIBRARY_DIRS}
+#    NO_DEFAULT_PATH
+#    DOC "Directory where the SUNDIALS CVODE library is located"
+#  )
   find_library(SUNDIALS_NVECTOR_SERIAL_LIBRARY
     NAMES sundials_nvecserial
     HINTS ${SUNDIALS_DIR}/lib $ENV{SUNDIALS_DIR}/lib ${PETSC_LIBRARY_DIRS}
@@ -94,8 +94,8 @@ int main() {
 #ifdef SUNDIALS_PACKAGE_VERSION
   std::cout << SUNDIALS_PACKAGE_VERSION;
 #else
-  std::cout << SUNDIALS_MAJOR_VERSION << \".\"
-	    << SUNDIALS_MINOR_VERSION;
+std::cout << SUNDIALS_VERSION_MAJOR << \".\"
+<< SUNDIALS_VERSION_MINOR;
 #endif
   return 0;
 }
@@ -134,8 +134,7 @@ int main() {
     file(WRITE ${SUNDIALS_TEST_LIB_CPP} "
 #define MPICH_IGNORE_CXX_SEEK 1
 #define NEQ 10
-#include <mpi.h>
-#include <nvector/nvector_parallel.h>
+#include <nvector/nvector_serial.h>
 #include <cvode/cvode.h>
 
 int main(int argc, char** argv)
@@ -143,25 +142,12 @@ int main(int argc, char** argv)
   int my_pe, npes;
   long int local_N, nperpe, nrem;
   N_Vector u;  
-  
-  MPI_Comm comm;
-  
-  MPI_Init(&argc,&argv);
-  comm = MPI_COMM_WORLD;
-  MPI_Comm_size(comm, &npes);
-  MPI_Comm_rank(comm, &my_pe);
 
   nperpe = NEQ/npes;
   nrem = NEQ - npes*nperpe;
-  local_N = (my_pe < nrem) ? nperpe+1 : nperpe;
-  u = N_VNew_Parallel(comm,local_N, NEQ);
-  if( u == NULL )
-  {
-    MPI_Abort(comm, 1);
-  }
-  
-  N_VDestroy_Parallel(u);
-  MPI_Finalize();
+  u = N_VNew_Serial(NEQ);
+  N_VDestroy_Serial(u);
+
   return 0;
 }") 
 
