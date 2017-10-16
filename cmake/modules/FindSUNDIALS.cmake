@@ -47,15 +47,6 @@ if (MPI_CXX_FOUND)
     NO_DEFAULT_PATH
     DOC "Directory where the SUNDIALS CVODE library is located"
   )
-#  find_library(SUNDIALS_LIBRARY sundials_cvode
-#    DOC "Directory where the SUNDIALS_CVODE library is located"
-#  )
-#  find_library(SUNDIALS_NVECTOR_PARALLEL_LIBRARY
-#    NAMES sundials_nvecparallel
-#    HINTS ${SUNDIALS_DIR}/lib $ENV{SUNDIALS_DIR}/lib ${PETSC_LIBRARY_DIRS}
-#    NO_DEFAULT_PATH
-#    DOC "Directory where the SUNDIALS CVODE library is located"
-#  )
   find_library(SUNDIALS_NVECTOR_SERIAL_LIBRARY
     NAMES sundials_nvecserial
     HINTS ${SUNDIALS_DIR}/lib $ENV{SUNDIALS_DIR}/lib ${PETSC_LIBRARY_DIRS}
@@ -143,8 +134,6 @@ int main(int argc, char** argv)
   long int local_N, nperpe, nrem;
   N_Vector u;  
 
-  nperpe = NEQ/npes;
-  nrem = NEQ - npes*nperpe;
   u = N_VNew_Serial(NEQ);
   N_VDestroy_Serial(u);
 
