@@ -24,6 +24,8 @@
 #include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/function/Constant.h>
 #include <dolfin/function/Function.h>
+#include <dolfin/la/GenericVector.h>
+#include <dolfin/multistage/CVode.h>
 #include <dolfin/multistage/MultiStageScheme.h>
 #include <dolfin/multistage/PointIntegralSolver.h>
 #include <dolfin/multistage/RKSolver.h>
@@ -65,5 +67,24 @@ namespace dolfin_wrappers
       .def("reset_stage_solutions", &dolfin::PointIntegralSolver::reset_stage_solutions)
       .def("step", &dolfin::PointIntegralSolver::step)
       .def("step_interval", &dolfin::PointIntegralSolver::step_interval);
+
+    //dolfin::CVode
+    py::class_<dolfin::CVode, std::shared_ptr<dolfin::CVode>>(m,"CVode")
+      .def(py::init<int, int>())
+      .def("init", (void (dolfin::CVode::*)(std::shared_ptr<dolfin::GenericVector>,
+                    double, double, long int)) &dolfin::CVode::init)
+      .def("step", (double (dolfin::CVode::*)(double))
+          &dolfin::CVode::step)
+      .def("derivs", (void (dolfin::CVode::*)(double,
+                      std::shared_ptr<dolfin::GenericVector>,
+                      std::shared_ptr<dolfin::GenericVector>))
+          &dolfin::CVode::derivs)
+      .def("Jacobian", (int (dolfin::CVode::*)(std::shared_ptr<dolfin::GenericVector>,
+                      std::shared_ptr<dolfin::GenericVector>,
+                      double,
+                      std::shared_ptr<dolfin::GenericVector>,
+                      std::shared_ptr<dolfin::GenericVector>))
+          &dolfin::CVode::derivs);
+
   }
 }
