@@ -69,6 +69,8 @@ namespace dolfin_wrappers
           "Return `True` if DOLFIN is configured with PETSc");
     m.def("has_slepc", &dolfin::has_slepc,
           "Return `True` if DOLFIN is configured with SLEPc");
+    m.def("has_sundials", &dolfin::has_sundials,
+          "Return `True` if DOLFIN is configured with SUNDIALS");
     m.def("has_petsc4py", []()
           {
             #ifdef HAS_PYBIND11_PETSC4PY

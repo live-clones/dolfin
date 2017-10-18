@@ -34,9 +34,10 @@ del sys
 from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          has_hdf5_parallel, has_mpi, has_mpi4py,
                          has_petsc, has_petsc4py, has_parmetis,
-                         has_slepc, has_slepc4py, git_commit_hash,
-                         DOLFIN_EPS, DOLFIN_PI, TimingClear, TimingType,
-                         timing, timings, list_timings, dump_timings_to_xml,
+                         has_slepc, has_slepc4py, has_sundials,
+                         git_commit_hash, DOLFIN_EPS, DOLFIN_PI,
+                         TimingClear, TimingType, timing, timings,
+                         list_timings, dump_timings_to_xml,
                          SubSystemsManager)
 
 if has_hdf5():
@@ -106,6 +107,10 @@ from .cpp.nls import (NonlinearProblem, NewtonSolver, OptimisationProblem)
 from .cpp.refinement import refine
 from .cpp.parameter import Parameters, parameters
 from .cpp.io import X3DOM, X3DOMParameters
+
+if has_sundials():
+    from .cpp.la import SUNDIALSNVector
+    from .cpp.multistage import CVode
 
 # Import Python modules
 from . import io

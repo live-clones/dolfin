@@ -68,6 +68,7 @@ namespace dolfin_wrappers
       .def("step", &dolfin::PointIntegralSolver::step)
       .def("step_interval", &dolfin::PointIntegralSolver::step_interval);
 
+    #ifdef HAS_SUNDIALS
     //dolfin::CVode
     py::class_<dolfin::CVode, std::shared_ptr<dolfin::CVode>>(m,"CVode")
       .def(py::init<int, int>())
@@ -85,6 +86,7 @@ namespace dolfin_wrappers
                       std::shared_ptr<dolfin::GenericVector>,
                       std::shared_ptr<dolfin::GenericVector>))
           &dolfin::CVode::derivs);
+     #endif
 
   }
 }
