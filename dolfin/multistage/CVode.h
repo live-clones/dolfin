@@ -36,6 +36,11 @@ namespace dolfin
   {
   public:
 
+    // These enums are used by PYBIND11 to map the definitions from C
+    enum LMM { cv_bdf = CV_BDF, cv_adams = CV_ADAMS };
+
+    enum ITER { cv_functional = CV_FUNCTIONAL, cv_newton = CV_NEWTON };
+
     /// Constructor
     CVode(int cv_lmm, int cv_iter);
     
@@ -49,12 +54,10 @@ namespace dolfin
     double step(double dt);
 
     /// Get current time
-    double get_time() const
-    { return t; }
+    double get_time() const;
 
     /// Set the current time
-    void set_time(double t0)
-    { t = t0; }
+    void set_time(double t0);
 
     /// Overloaded function for time derivatives of u at time t
     /// Given the vector u, at time t, provide the time derivative udot.

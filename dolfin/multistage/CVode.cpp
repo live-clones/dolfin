@@ -114,6 +114,16 @@ double CVode::step(double dt)
   return t;
 }
 //-----------------------------------------------------------------------------
+double CVode::get_time() const
+{
+  return t;
+}
+//-----------------------------------------------------------------------------
+void CVode::set_time(double t0)
+{
+  t = t0;
+}
+//-----------------------------------------------------------------------------
 void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                    std::shared_ptr<GenericVector> udot)
 {
