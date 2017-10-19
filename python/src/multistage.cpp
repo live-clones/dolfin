@@ -34,6 +34,7 @@ namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
+
   void multistage(py::module& m)
   {
     // dolfin::MultiStageScheme
@@ -69,11 +70,31 @@ namespace dolfin_wrappers
       .def("step_interval", &dolfin::PointIntegralSolver::step_interval);
 
     #ifdef HAS_SUNDIALS
+    //CVode trampoline class for allowing overloading of virtual functions
+    class PyCVode : public dolfin::CVode
+    {
+    public:
+      using dolfin::CVode::CVode;
+
+      void derivs(double t, std::shared_ptr<dolfin::GenericVector> u,
+                  std::shared_ptr<dolfin::GenericVector> udot)
+      { PYBIND11_OVERLOAD_NAME(void, dolfin::CVode, "derivs", derivs, t, u, udot);}
+    
+      int Jacobian( std::shared_ptr<dolfin::GenericVector> v,
+                    std::shared_ptr<dolfin::GenericVector> Jv,
+                    double t,
+                    std::shared_ptr<dolfin::GenericVector> y,
+                    std::shared_ptr<dolfin::GenericVector> fy)
+      { PYBIND11_OVERLOAD_NAME(int, dolfin::CVode, "Jacobian", Jacobian, v, Jv, t, y, fy);}
+    };
+
     //dolfin::CVode
-    py::class_<dolfin::CVode, std::shared_ptr<dolfin::CVode>>(m,"CVode")
+    py::class_<dolfin::CVode, PyCVode, std::shared_ptr<dolfin::CVode>>cvode(m,"CVode");
+    cvode
       .def(py::init<int, int>())
-      .def("init", (void (dolfin::CVode::*)(std::shared_ptr<dolfin::GenericVector>,
-                    double, double, long int)) &dolfin::CVode::init)
+      .def("init", &dolfin::CVode::init, py::arg("u0"), py::arg("atol"), py::arg("rtol"), py::arg("mxsteps")=0)
+      .def("set_time", &dolfin::CVode::set_time, py::arg("t0"))
+      .def("get_time", &dolfin::CVode::get_time)
       .def("step", (double (dolfin::CVode::*)(double))
           &dolfin::CVode::step)
       .def("derivs", (void (dolfin::CVode::*)(double,
@@ -86,7 +107,14 @@ namespace dolfin_wrappers
                       std::shared_ptr<dolfin::GenericVector>,
                       std::shared_ptr<dolfin::GenericVector>))
           &dolfin::CVode::derivs);
-     #endif
+//      .def("derivs", &PyCVode::derivs)
+    py::enum_<dolfin::CVode::LMM>(cvode,"LMM")
+      .value("CV_BDF", dolfin::CVode::LMM::cv_bdf)
+      .value("CV_ADAMS", dolfin::CVode::LMM::cv_adams); 
+    py::enum_<dolfin::CVode::ITER>(cvode,"ITER")
+      .value("CV_FUNCTIONAL", dolfin::CVode::ITER::cv_functional)
+      .value("CV_NEWTON", dolfin::CVode::ITER::cv_newton);
+    #endif
 
   }
 }
