@@ -198,7 +198,9 @@ std::map<std::string, double> CVode::statistics()
   stats["CurrentStep"] = cv->cv_next_h;
   stats["CurrentTime"] = cv->cv_tn;
   stats["TolScaleFactor"] = cv->cv_tolsf;
-  stats["GEvals"] = cv->cv_nge;
+  stats["NumGEvals"] = cv->cv_nge;
+  stats["NumNonlinSolvIter"] = cv->cv_nni;
+  stats["NumNonlinSolvConvFails"] = cv->cv_ncfn;
 
   return stats;
 }
