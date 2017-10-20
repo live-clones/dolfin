@@ -607,12 +607,6 @@ namespace dolfin_wrappers
       .def("local_range", (std::pair<std::int64_t, std::int64_t> (dolfin::GenericVector::*)() const) &dolfin::GenericVector::local_range)
       .def("owns_index", &dolfin::GenericVector::owns_index)
       .def("apply", &dolfin::GenericVector::apply)
-      .def("array", [](const dolfin::GenericVector& instance)
-           {
-             std::vector<double> values;
-             instance.get_local(values);
-             return py::array_t<double>(values.size(), values.data());
-           })
       .def_property_readonly("__array_priority__", [](const dolfin::GenericVector& self){ return 0; });
 
     // dolfin::Matrix
@@ -749,8 +743,8 @@ namespace dolfin_wrappers
         { return std::unique_ptr<dolfin::EigenVector>(new dolfin::EigenVector(comm.get())); }))
       .def(py::init([](const MPICommWrapper comm, std::size_t N)
         { return std::unique_ptr<dolfin::EigenVector>(new dolfin::EigenVector(comm.get(), N)); }))
-      //.def("array", (std::shared_ptr<Eigen::VectorXd> (dolfin::EigenVector::*)()) &dolfin::EigenVector::vec);
-      .def("array", [](dolfin::EigenVector& self) -> Eigen::Ref<Eigen::VectorXd> { return *self.vec(); } );
+      .def("array_view", [](dolfin::EigenVector& self) -> Eigen::Ref<Eigen::VectorXd> { return *self.vec(); },
+           "Return a writable numpy array view of the data in the EigenVector");
 
     // dolfin::EigenMatrix
     py::class_<dolfin::EigenMatrix, std::shared_ptr<dolfin::EigenMatrix>,
