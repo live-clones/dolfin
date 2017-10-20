@@ -74,40 +74,42 @@ namespace dolfin_wrappers
     class PyCVode : public dolfin::CVode
     {
     public:
+
       using dolfin::CVode::CVode;
 
       void derivs(double t, std::shared_ptr<dolfin::GenericVector> u,
                   std::shared_ptr<dolfin::GenericVector> udot)
-      { PYBIND11_OVERLOAD_NAME(void, dolfin::CVode, "derivs", derivs, t, u, udot);}
-    
+      { PYBIND11_OVERLOAD_NAME(void, dolfin::CVode, "derivs", derivs,
+                                t, u, udot);}
       int Jacobian( std::shared_ptr<dolfin::GenericVector> v,
                     std::shared_ptr<dolfin::GenericVector> Jv,
                     double t,
                     std::shared_ptr<dolfin::GenericVector> y,
                     std::shared_ptr<dolfin::GenericVector> fy)
-      { PYBIND11_OVERLOAD_NAME(int, dolfin::CVode, "Jacobian", Jacobian, v, Jv, t, y, fy);}
+      { PYBIND11_OVERLOAD_NAME(int, dolfin::CVode, "Jacobian", Jacobian,
+                                v, Jv, t, y, fy);}
     };
 
     //dolfin::CVode
     py::class_<dolfin::CVode, PyCVode, std::shared_ptr<dolfin::CVode>>cvode(m,"CVode");
     cvode
       .def(py::init<int, int>())
-      .def("init", &dolfin::CVode::init, py::arg("u0"), py::arg("atol"), py::arg("rtol"), py::arg("mxsteps")=0)
+      .def("init", &dolfin::CVode::init, py::arg("u0"), py::arg("atol"), 
+        py::arg("rtol"), py::arg("mxsteps")=0)
       .def("set_time", &dolfin::CVode::set_time, py::arg("t0"))
       .def("get_time", &dolfin::CVode::get_time)
       .def("step", (double (dolfin::CVode::*)(double))
-          &dolfin::CVode::step)
+        &dolfin::CVode::step)
+      .def("statistics", &dolfin::CVode::statistics)
       .def("derivs", (void (dolfin::CVode::*)(double,
-                      std::shared_ptr<dolfin::GenericVector>,
-                      std::shared_ptr<dolfin::GenericVector>))
-          &dolfin::CVode::derivs)
+        std::shared_ptr<dolfin::GenericVector>,
+        std::shared_ptr<dolfin::GenericVector>))
+        &dolfin::CVode::derivs)
       .def("Jacobian", (int (dolfin::CVode::*)(std::shared_ptr<dolfin::GenericVector>,
-                      std::shared_ptr<dolfin::GenericVector>,
-                      double,
-                      std::shared_ptr<dolfin::GenericVector>,
-                      std::shared_ptr<dolfin::GenericVector>))
-          &dolfin::CVode::derivs);
-//      .def("derivs", &PyCVode::derivs)
+        std::shared_ptr<dolfin::GenericVector>, double,
+        std::shared_ptr<dolfin::GenericVector>,
+        std::shared_ptr<dolfin::GenericVector>))
+        &dolfin::CVode::derivs);
     py::enum_<dolfin::CVode::LMM>(cvode,"LMM")
       .value("CV_BDF", dolfin::CVode::LMM::cv_bdf)
       .value("CV_ADAMS", dolfin::CVode::LMM::cv_adams); 
