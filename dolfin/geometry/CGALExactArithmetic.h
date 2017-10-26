@@ -995,12 +995,10 @@ namespace dolfin
 
     const Nef_polyhedron_3 intersection_nef = tet_a_nef*tet_b_nef;
 
-    Polyhedron_3 intersection;
-    intersection_nef.convert_to_polyhedron(intersection);
-
     std::vector<Point> res;
-    for (Polyhedron_3::Vertex_const_iterator vit = intersection.vertices_begin();
-	 vit != intersection.vertices_end(); vit++)
+
+    for (auto vit = intersection_nef.vertices_begin();
+	 vit != intersection_nef.vertices_end(); ++vit)
     {
       res.push_back(Point(CGAL::to_double(vit->point().x()),
 			  CGAL::to_double(vit->point().y()),
