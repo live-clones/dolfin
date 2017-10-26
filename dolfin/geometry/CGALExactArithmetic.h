@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2016-05-03
-// Last changed: 2017-10-07
+// Last changed: 2017-10-26
 //
 // Developer note:
 //
@@ -993,7 +993,7 @@ namespace dolfin
     const Nef_polyhedron_3 tet_a_nef(tet_a);
     const Nef_polyhedron_3 tet_b_nef(tet_b);
 
-    const Nef_polyhedron_3 intersection_nef = tet_a_nef*tet_a_nef;
+    const Nef_polyhedron_3 intersection_nef = tet_a_nef*tet_b_nef;
 
     Polyhedron_3 intersection;
     intersection_nef.convert_to_polyhedron(intersection);
