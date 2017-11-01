@@ -26,6 +26,7 @@ __all__ = ["derivative", "adjoint", "increase_order", "tear"]
 
 
 def adjoint(form, reordered_arguments=None):
+    """Document"""
 
     # Call UFL directly if new arguments are provided directly
     if reordered_arguments is not None:
@@ -97,9 +98,9 @@ def increase_order(V):
 
 
 def change_regularity(V, family):
-    """For a given function space, return the corresponding space with
-    the finite elements specified by 'family'. Possible families are
-    the families supported by the form compiler
+    """For a given function space, return the corresponding space with the
+    finite elements specified by 'family'. Possible families are the
+    families supported by the form compiler
 
     """
     mesh = V.mesh()
@@ -109,8 +110,8 @@ def change_regularity(V, family):
 
 
 def tear(V):
-    """
-    For a given function space, return the corresponding discontinuous
+    """For a given function space, return the corresponding discontinuous
     space
+
     """
     return change_regularity(V, "DG")
