@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-)
-                    "deprecated. Defaulting 
+# -*- coding: utf-8 -*-
 """This module handles the Function class in Python.
 
 """
