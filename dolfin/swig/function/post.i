@@ -110,13 +110,14 @@ def function_space(self):
     from dolfin.functions.functionspace import FunctionSpace
     return FunctionSpace(self._function_space())
 
-def copy(self, deepcopy=False):
+def copy(self, deepcopy=None):
     """
     Return a copy of itself
 
     *Arguments*
         deepcopy (bool)
-            If false (default) the dof vector is shared.
+            DEPRECATED: If false the dof vector is shared, if None or
+            True deep copy is taken.
 
     *Returns*
          _Function_
@@ -124,9 +125,21 @@ def copy(self, deepcopy=False):
 
     """
     from dolfin.functions.function import Function
-    if deepcopy:
+    if deepcopy is True:
+        cpp.deprecation("2017.2.0",
+                        "'deepcopy' keyword argument of Function.copy()",
+                        "Use just Function.copy() for deep copy")
         return Function(self.function_space(), self.vector().copy())
-    return Function(self.function_space(), self.vector())
+    elif deepcopy is False:
+        cpp.deprecation("2017.2.0",
+                        "'deepcopy' keyword argument of Function.copy()",
+                        "Use just Python assignment operator for shallow copy")
+        return Function(self.function_space(), self.vector())
+    elif deepcopy is None:
+        cpp.warning("Function.copy() changed its default behaviour to deep copy!")
+        return Function(self.function_space(), self.vector().copy())
+    else:
+        raise TypeError("Unexpected kwarg deepcopy=%s".format(deepcopy))
 
 def leaf_node(self):
     "Return the finest Function in hierarchy"
@@ -156,13 +169,14 @@ def parent(self):
 %extend dolfin::MultiMeshFunction {
 %pythoncode %{
 
-def copy(self, deepcopy=False):
+def copy(self, deepcopy=None):
     """
     Return a copy of itself
 
     *Arguments*
         deepcopy (bool)
-            If false (default) the dof vector is shared.
+            DEPRECATED: If false the dof vector is shared, if None or
+            True deep copy is taken.
 
     *Returns*
          _MultiMeshFunction_
@@ -170,8 +184,20 @@ def copy(self, deepcopy=False):
 
     """
     from dolfin.functions.multimeshfunction import MultiMeshFunction
-    if deepcopy:
+    if deepcopy is True:
+        cpp.deprecation("2017.2.0",
+                        "'deepcopy' keyword argument of Function.copy()",
+                        "Use just Function.copy() for deep copy")
         return MultiMeshFunction(self.function_space(), self.vector().copy())
-    return MultiMeshFunction(self.function_space(), self.vector())
+    elif deepcopy is False:
+        cpp.deprecation("2017.2.0",
+                        "'deepcopy' keyword argument of Function.copy()",
+                        "Use just Python assignment operator for shallow copy")
+        return MultiMeshFunction(self.function_space(), self.vector())
+    elif deepcopy is None:
+        cpp.warning("Function.copy() changed its default behaviour to deep copy!")
+        return MultiMeshFunction(self.function_space(), self.vector().copy())
+    else:
+        raise TypeError("Unexpected kwarg deepcopy=%s".format(deepcopy))
 %}
 }

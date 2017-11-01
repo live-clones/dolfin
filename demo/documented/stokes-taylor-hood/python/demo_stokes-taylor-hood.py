@@ -73,15 +73,11 @@ L = inner(f, v)*dx
 w = Function(W)
 solve(a == L, w, bcs)
 
-# Split the mixed solution using deepcopy
-# (needed for further computation on coefficient vector)
-(u, p) = w.split(True)
-
-print("Norm of velocity coefficient vector: %.15g" % u.vector().norm("l2"))
-print("Norm of pressure coefficient vector: %.15g" % p.vector().norm("l2"))
-
-# # Split the mixed solution using a shallow copy
+# Extract components of mixed function
 (u, p) = w.split()
+
+print("Norm of velocity coefficient vector: %.15g" % u.copy().vector().norm("l2"))
+print("Norm of pressure coefficient vector: %.15g" % p.copy().vector().norm("l2"))
 
 # Save solution in VTK format
 ufile_pvd = File("velocity.pvd")

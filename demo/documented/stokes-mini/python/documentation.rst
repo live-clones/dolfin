@@ -105,10 +105,7 @@ function space ``W``. The actual
 computation is performed by calling solve with the arguments ``a``,
 ``L``, ``w`` and ``bcs``. The separate components ``u`` and ``p`` of
 the solution can be extracted by calling the :py:meth:`split
-<dolfin.functions.function.Function.split>` function. Here we use an
-optional argument True in the split function to specify that we want a
-deep copy. If no argument is given we will get a shallow copy. We want
-a deep copy for further computations on the coefficient vectors.
+<dolfin.functions.function.Function.split>` function.
 
 .. code-block:: python
 
@@ -116,25 +113,16 @@ a deep copy for further computations on the coefficient vectors.
     w = Function(W)
     solve(a == L, w, bcs)
 
-    # Split the mixed solution using deepcopy
-    # (needed for further computation on coefficient vector)
-    (u, p) = w.split(True)
+    # Extract components of mixed function
+    (u, p) = w.split()
 
 We may be interested in the :math:`l^2` norms of u and p, they can be
 calculated and printed by writing
 
 .. code-block:: python
 
-    print("Norm of velocity coefficient vector: %.15g" % u.vector().norm("l2"))
-    print("Norm of pressure coefficient vector: %.15g" % p.vector().norm("l2"))
-
-One can also split functions using shallow copies (which is enough
-when we just plot the result) by writing
-
-.. code-block:: python
-
-    # Split the mixed solution using a shallow copy
-    (u, p) = w.split()
+    print("Norm of velocity coefficient vector: %.15g" % u.copy().vector().norm("l2"))
+    print("Norm of pressure coefficient vector: %.15g" % p.copy().vector().norm("l2"))
 
 Finally, we can store to file and plot the solutions.
 

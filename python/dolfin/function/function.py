@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-)
+                    "deprecated. Defaulting 
 """This module handles the Function class in Python.
 
 """
@@ -171,7 +172,7 @@ def _check_and_contract_linear_comb(expr, self, multi_index):
     for ind, func in enumerate(funcs):
         if func == self:
             # If so make a copy
-            funcs[ind] = self.copy(deepcopy=True)
+            funcs[ind] = self.copy()
             break
 
     return list(zip(funcs, weights))
@@ -186,7 +187,7 @@ class Function(ufl.Coefficient):
             other = args[0]
             if len(args) == 1:
                 # Copy constructor used to be here
-                raise RuntimeError("Use 'Function.copy(deepcopy=True)' for copying.")
+                raise RuntimeError("Use 'Function.copy()' for copying.")
             elif len(args) == 2:
                 i = args[1]
                 if not isinstance(i, int):
@@ -374,11 +375,8 @@ class Function(ufl.Coefficient):
     def get_allow_extrapolation(self):
         return self._cpp_object.get_allow_extrapolation()
 
-    def copy(self, deepcopy=False):
-        # See https://bitbucket.org/fenics-project/dolfin/issues/702
-        if deepcopy:
-            return Function(self.function_space(), self._cpp_object.vector().copy())
-        return Function(self.function_space(), self._cpp_object.vector())
+    def copy(self):
+        return Function(self.function_space(), self._cpp_object.vector().copy())
 
     def vector(self):
         return self._cpp_object.vector()
@@ -478,7 +476,7 @@ class Function(ufl.Coefficient):
     def cpp_object(self):
         return self._cpp_object
 
-    def sub(self, i, deepcopy=False):
+    def sub(self, i):
         """
         Return a sub function.
 
@@ -500,27 +498,17 @@ class Function(ufl.Coefficient):
                                % num_sub_spaces)
 
         # Create and instantiate the Function
-        if deepcopy:
-            return Function(self.function_space().sub(i),
-                            self.cpp_object().sub(i),
-                            name='%s-%d' % (str(self), i))
-        else:
-            return Function(self, i, name='%s-%d' % (str(self), i))
+        return Function(self, i, name='%s-%d' % (str(self), i))
 
-    def split(self, deepcopy=False):
+    def split(self):
         """Extract any sub functions.
 
         A sub function can be extracted from a discrete function that
         is in a mixed, vector, or tensor FunctionSpace. The sub
         function resides in the subspace of the mixed space.
-
-        *Arguments*
-            deepcopy
-                Copy sub function vector instead of sharing
-
         """
 
         num_sub_spaces = self.function_space().num_sub_spaces()
         if num_sub_spaces == 1:
             raise RuntimeError("No subfunctions to extract")
-        return tuple(self.sub(i, deepcopy) for i in range(num_sub_spaces))
+        return tuple(self.sub(i) for i in range(num_sub_spaces))

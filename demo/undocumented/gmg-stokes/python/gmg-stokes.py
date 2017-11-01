@@ -82,6 +82,5 @@ if pc.type == "fieldsplit":
 z = Function(Zf)
 solver.solve(z.vector(), b)
 
-File("output/velocity.pvd") << z.split(deepcopy=True)[0]
-File("output/pressure.pvd") << z.split(deepcopy=True)[1]
-
+File("output/velocity.pvd") << z.sub(0)
+File("output/pressure.pvd") << z.sub(1)
