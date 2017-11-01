@@ -125,21 +125,22 @@ def copy(self, deepcopy=None):
 
     """
     from dolfin.functions.function import Function
+    from dolfin import cpp
     if deepcopy is True:
-        cpp.deprecation("2017.2.0",
-                        "'deepcopy' keyword argument of Function.copy()",
+        cpp.deprecation("'deepcopy' keyword argument of Function.copy()",
+                        "2017.2.0",
                         "Use just Function.copy() for deep copy")
         return Function(self.function_space(), self.vector().copy())
     elif deepcopy is False:
-        cpp.deprecation("2017.2.0",
-                        "'deepcopy' keyword argument of Function.copy()",
+        cpp.deprecation("'deepcopy' keyword argument of Function.copy()",
+                        "2017.2.0",
                         "Use just Python assignment operator for shallow copy")
         return Function(self.function_space(), self.vector())
     elif deepcopy is None:
         cpp.warning("Function.copy() changed its default behaviour to deep copy!")
         return Function(self.function_space(), self.vector().copy())
     else:
-        raise TypeError("Unexpected kwarg deepcopy=%s".format(deepcopy))
+        raise TypeError("Unexpected kwarg deepcopy={}".format(deepcopy))
 
 def leaf_node(self):
     "Return the finest Function in hierarchy"
@@ -184,20 +185,21 @@ def copy(self, deepcopy=None):
 
     """
     from dolfin.functions.multimeshfunction import MultiMeshFunction
+    from dolfin import cpp
     if deepcopy is True:
-        cpp.deprecation("2017.2.0",
-                        "'deepcopy' keyword argument of Function.copy()",
+        cpp.deprecation("'deepcopy' keyword argument of Function.copy()",
+                        "2017.2.0",
                         "Use just Function.copy() for deep copy")
         return MultiMeshFunction(self.function_space(), self.vector().copy())
     elif deepcopy is False:
-        cpp.deprecation("2017.2.0",
-                        "'deepcopy' keyword argument of Function.copy()",
+        cpp.deprecation("'deepcopy' keyword argument of Function.copy()",
+                        "2017.2.0",
                         "Use just Python assignment operator for shallow copy")
         return MultiMeshFunction(self.function_space(), self.vector())
     elif deepcopy is None:
         cpp.warning("Function.copy() changed its default behaviour to deep copy!")
         return MultiMeshFunction(self.function_space(), self.vector().copy())
     else:
-        raise TypeError("Unexpected kwarg deepcopy=%s".format(deepcopy))
+        raise TypeError("Unexpected kwarg deepcopy={}".format(deepcopy))
 %}
 }
