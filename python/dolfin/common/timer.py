@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Timer utilities."""
+
 # Copyright (C) 2017 Jan Blechta
 #
 # This file is part of DOLFIN.
