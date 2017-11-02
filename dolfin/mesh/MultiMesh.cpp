@@ -19,7 +19,7 @@
 // Modified by Benjamin Kehlet 2016
 //
 // First added:  2013-08-05
-// Last changed: 2017-10-10
+// Last changed: 2017-11-02
 
 #include <cmath>
 #include <dolfin/log/log.h>
@@ -471,8 +471,8 @@ void MultiMesh::_build_bounding_box_trees()
     std::shared_ptr<BoundingBoxTree> boundary_tree(new BoundingBoxTree());
 
     // FIXME: what if the boundary mesh is empty?
-    dolfin_assert(_boundary_meshes[i]->num_vertices()>0);
-    if (_boundary_meshes[i]->num_vertices()>0)
+    dolfin_assert(_boundary_meshes[i]->num_vertices() > 0);
+    if (_boundary_meshes[i]->num_vertices() > 0)
       boundary_tree->build(*_boundary_meshes[i]);
     _boundary_trees.push_back(boundary_tree);
   }
@@ -690,10 +690,10 @@ void MultiMesh::_build_quadrature_rules_overlap(std::size_t quadrature_order)
       	dolfin_assert(cutting_cell.mesh().geometry().dim() == gdim);
 
         // Compute the intersection (a polyhedron)
-        // const Polyhedron polyhedron
-        //   = IntersectionTriangulation::triangulate(cut_cell, cutting_cell);
+	const std::vector<Point> intersection
+	  = IntersectionConstruction::intersection(cut_cell, cutting_cell);
         const Polyhedron polyhedron =
-          ConvexTriangulation::triangulate(IntersectionConstruction::intersection(cut_cell, cutting_cell), gdim, tdim);
+          ConvexTriangulation::triangulate(intersection, gdim, tdim);
 
 	// dolfin_assert(!ConvexTriangulation::selfintersects(polyhedron));
 
@@ -703,8 +703,7 @@ void MultiMesh::_build_quadrature_rules_overlap(std::size_t quadrature_order)
 	// Store key and polyhedron but only use polyhedron of same tdim
 	Polyhedron polyhedron_same_tdim;
 	for (const Simplex& s: polyhedron)
-	  if (s.size() == tdim + 1 and
-	      !GeometryPredicates::is_degenerate(s, gdim))
+	  if (s.size() == tdim + 1)
 	    polyhedron_same_tdim.push_back(s);
 
 	// Note that this can be empty
@@ -932,58 +931,51 @@ void MultiMesh::_build_quadrature_rules_interface(std::size_t quadrature_order)
 	  // The intersection should be either empty or one simplex
 	  dolfin_assert(Eij_part.size() <= 1);
 
-	  if (Eij_part.size())
+	  // Do not include if the point (or line) is degenerate,
+	  // neither here nor below
+	  if (Eij_part[0].size() == tdim_interface + 1)
 	  {
-	    // Do not include if the point (or line) is degenerate,
-	    // neither here nor below
-	    if (Eij_part[0].size() == tdim_interface + 1 and
-		!GeometryPredicates::is_degenerate(Eij_part[0], gdim))
+	    const Simplex& Eij = Eij_part[0];
+
+	    // Store the |Eij| and normals
+	    const std::size_t num_pts
+	      = _add_quadrature_rule(interface_qr[local_cutting_cell_j_index],
+				     sq, Eij, gdim, quadrature_order, 1.);
+	    _add_normal(interface_normals[local_cutting_cell_j_index],
+			facet_normal, num_pts, gdim);
+
+	    // No need to run inc exc if there are no cutting cells
+	    if (initial_polygons.size())
 	    {
-	      const Simplex& Eij = Eij_part[0];
+	      // Call inclusion exclusion
+	      _inclusion_exclusion_interface
+		(interface_qr[local_cutting_cell_j_index],
+		 interface_normals[local_cutting_cell_j_index],
+		 sq, Eij, facet_normal, initial_polygons,
+		 tdim_interface, gdim, quadrature_order);
+	    }
 
-	      // Store the |Eij| and normals
-	      const std::size_t num_pts
-		= _add_quadrature_rule(interface_qr[local_cutting_cell_j_index],
-				       sq, Eij, gdim, quadrature_order, 1.);
-	      _add_normal(interface_normals[local_cutting_cell_j_index],
-			  facet_normal, num_pts, gdim);
+	    // // Remove any near-trival quadrature rules
+	    // // TODO: Investigate the tolerance
+	    // double cut_size;
+	    // if  (Eij.size() == 2)
+	    //   cut_size = (Eij[1] - Eij[0]).norm();
+	    // else if (Eij.size() == 3)
+	    //   cut_size = (Eij[1] - Eij[0]).cross(Eij[2] - Eij[0]).norm() / 2;
+	    //const double tolerance = DOLFIN_EPS * cut_size;
+	    //remove_quadrature_rule(interface_qr[local_cutting_cell_j_index], tolerance);
 
-	      // No need to run inc exc if there are no cutting cells
-	      if (initial_polygons.size())
-	      {
-		// Call inclusion exclusion
-		_inclusion_exclusion_interface
-		  (interface_qr[local_cutting_cell_j_index],
-		   interface_normals[local_cutting_cell_j_index],
-		   sq, Eij, facet_normal, initial_polygons,
-		   tdim_interface, gdim, quadrature_order);
-	      }
-
-	      // // Remove any near-trival quadrature rules
-	      // // TODO: Investigate the tolerance
-              // double cut_size;
-              // if  (Eij.size() == 2)
-              //   cut_size = (Eij[1] - Eij[0]).norm();
-              // else if (Eij.size() == 3)
-              //   cut_size = (Eij[1] - Eij[0]).cross(Eij[2] - Eij[0]).norm() / 2;
-              //const double tolerance = DOLFIN_EPS * cut_size;
-	      //remove_quadrature_rule(interface_qr[local_cutting_cell_j_index], tolerance);
-
-	      // TODO: Investigate if we should compress here or below
-	      if (parameters["compress_interface_quadrature"])
-	      {
-		const std::vector<std::size_t> indices
-		  = SimplexQuadrature::compress(interface_qr[local_cutting_cell_j_index], gdim, quadrature_order);
-		if (indices.size())
-		{
-		  // Reorder the normals
-		  std::vector<double> normals(gdim*indices.size());
-		  for (std::size_t j = 0; j < indices.size(); ++j)
-		    for (std::size_t d = 0; d < gdim; ++d)
-		      normals[gdim*j + d] = interface_normals[local_cutting_cell_j_index][gdim*indices[j] + d];
-		  interface_normals[local_cutting_cell_j_index] = normals;
-		}
-	      }
+	    // TODO: Investigate if we should compress here or below
+	    if (parameters["compress_interface_quadrature"])
+	    {
+	      const std::vector<std::size_t> indices
+		= SimplexQuadrature::compress(interface_qr[local_cutting_cell_j_index], gdim, quadrature_order);
+	      // Reorder the normals
+	      std::vector<double> normals(gdim*indices.size());
+	      for (std::size_t j = 0; j < indices.size(); ++j)
+		for (std::size_t d = 0; d < gdim; ++d)
+		  normals[gdim*j + d] = interface_normals[local_cutting_cell_j_index][gdim*indices[j] + d];
+	      interface_normals[local_cutting_cell_j_index] = normals;
 	    }
 	  }
 	} // end loop over boundary_cell_j
@@ -1207,7 +1199,6 @@ void MultiMesh::_inclusion_exclusion_overlap
                 if (!GeometryPredicates::convex_hull_is_degenerate(intersection_points,
                                                                    gdim))
                 {
-
                   const Polyhedron intersection
                     = ConvexTriangulation::triangulate(intersection_points,
                                                        gdim,
@@ -1222,8 +1213,7 @@ void MultiMesh::_inclusion_exclusion_overlap
 		  // large
 		  for (const Simplex& simplex: intersection)
                   {
-		    if (simplex.size() == tdim + 1 and
-			!GeometryPredicates::is_degenerate(simplex, gdim))
+		    if (simplex.size() == tdim + 1)
 		    {
 		      new_polyhedron.push_back(simplex);
 		      any_intersections = true;
@@ -1322,28 +1312,21 @@ void MultiMesh::_inclusion_exclusion_interface
   {
     for (const Simplex& simplex: pol_pair.second)
     {
-      if (simplex.size() == tdim_bulk + 1 and
-	  !GeometryPredicates::is_degenerate(simplex, gdim))
+      if (simplex.size() == tdim_bulk + 1)
       {
-
 	const std::vector<Point> Eij_cap_Tk_points
 	  = IntersectionConstruction::intersection(Eij, simplex, gdim);
+	const Polyhedron Eij_cap_Tk
+	  = ConvexTriangulation::triangulate(Eij_cap_Tk_points, gdim, tdim_interface);
 
-	if (Eij_cap_Tk_points.size())
+	for (const Simplex& s: Eij_cap_Tk)
 	{
-	  const Polyhedron Eij_cap_Tk
-	    = ConvexTriangulation::triangulate(Eij_cap_Tk_points, gdim, tdim_interface);
-
-	  for (const Simplex& s: Eij_cap_Tk)
+	  if (s.size() == tdim_interface + 1)
 	  {
-	    if (s.size() == tdim_interface + 1 and
-		!GeometryPredicates::is_degenerate(s, gdim))
-	    {
-	      const std::size_t num_pts
-		= _add_quadrature_rule(qr_stage0, sq, s, gdim,
-				       quadrature_order, -1.); // Stage 0 is negative
-	      _add_normal(normals_stage0, facet_normal, num_pts, gdim);
-	    }
+	    const std::size_t num_pts
+	      = _add_quadrature_rule(qr_stage0, sq, s, gdim,
+				     quadrature_order, -1.); // Stage 0 is negative
+	    _add_normal(normals_stage0, facet_normal, num_pts, gdim);
 	  }
 	}
       }
@@ -1396,38 +1379,28 @@ void MultiMesh::_inclusion_exclusion_interface
 		  = IntersectionConstruction::intersection(initial_simplex,
 							   previous_simplex,
 							   gdim);
-		// FIXME: Should we avoid this if statement and let
-		// ConvexTriangulation deal with empty input?
-		if (intersection_points.size())
+		const Polyhedron intersection
+		  = ConvexTriangulation::triangulate(intersection_points,
+						     gdim,
+						     tdim_bulk);
+
+		// To save all intersections as a single
+		// polyhedron, we don't call this a polyhedron
+		// yet, but rather a std::vector<Simplex> since we
+		// are still filling the polyhedron with simplices
+
+		// FIXME: We could add only if area is sufficiently large
+		for (const Simplex& simplex: intersection)
 		{
-		  const Polyhedron intersection
-		    = ConvexTriangulation::triangulate(intersection_points,
-						       gdim,
-						       tdim_bulk);
-
-		  if (intersection.size())
+		  if (simplex.size() == tdim_bulk + 1)
 		  {
-		    // To save all intersections as a single
-		    // polyhedron, we don't call this a polyhedron
-		    // yet, but rather a std::vector<Simplex> since we
-		    // are still filling the polyhedron with simplices
-
-		    // FIXME: We could add only if area is sufficiently large
-		    for (const Simplex& simplex: intersection)
-		    {
-		      if (simplex.size() == tdim_bulk + 1 and
-			  !GeometryPredicates::is_degenerate(simplex, gdim))
-		      {
-			new_polyhedron.push_back(simplex);
-			any_intersections = true;
-		      }
-		    }
+		    new_polyhedron.push_back(simplex);
+		    any_intersections = true;
 		  }
 		}
 	      }
 	    }
 	  }
-
 
 	  if (any_intersections)
 	  {
@@ -1467,8 +1440,7 @@ void MultiMesh::_inclusion_exclusion_interface
 					       tdim_interface);
 	  for (const Simplex& s: Eij_cap_Tk)
 	  {
-	    if (s.size() == tdim_interface + 1 and
-		!GeometryPredicates::is_degenerate(s, gdim))
+	    if (s.size() == tdim_interface + 1)
 	    {
 	      const std::size_t num_pts
 		= _add_quadrature_rule(qr_stage, sq, s, gdim,
