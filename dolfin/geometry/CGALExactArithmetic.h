@@ -89,8 +89,8 @@ namespace dolfin
     {
       dolfin_error("CGALExactArithmetic.h",
 		   "verify intersection",
-		   "size of point set differs (%d vs %d)",
-		   dolfin_result.size(), cgal_result.size());
+		   "Intersection function %s and CGAL give different size of point sets (%d vs %d)",
+		   function.c_str(), dolfin_result.size(), cgal_result.size());
     }
 
     for (const Point& p1 : dolfin_result)
@@ -108,8 +108,8 @@ namespace dolfin
       if (!found)
 	dolfin_error("CGALExactArithmetic.h",
 		     "verify intersection construction result",
-		     "Point (%f, %f, %f) in dolfin result not found in cgal result",
-		     p1[0], p1[1], p1[2]);
+		     "Error in intersection function %s\nPoint (%f, %f, %f) in dolfin result not found",
+		     function.c_str(), p1[0], p1[1], p1[2]);
     }
     return dolfin_result;
   }
