@@ -70,6 +70,9 @@ namespace dolfin
    		          double t, std::shared_ptr<GenericVector> y,
                           std::shared_ptr<GenericVector> fy);
 
+    virtual int JacobianSetup(double t,
+                          std::shared_ptr<GenericVector> Jv,
+                          std::shared_ptr<GenericVector> y);
 
     std::map<std::string,double> statistics();
 
@@ -85,7 +88,7 @@ namespace dolfin
     std::shared_ptr<SUNDIALSNVector> _u;
 
     // SUNDIALS Linear Solver
-    std::shared_ptr<SUNLinearSolver> ls;
+    std::unique_ptr<_generic_SUNLinearSolver> ls;
 
     // Current time
     double t;
@@ -93,6 +96,7 @@ namespace dolfin
 
     // Pointer to CVode memory struct
     void *cvode_mem;
+    SUNLinearSolver sunls;
 
   };
 

@@ -29,6 +29,7 @@
 #include <dolfin/log/log.h>
 
 #include <cvode/cvode.h>
+#include <cvode/cvode_bandpre.h>
 #include <cvode/cvode_impl.h>
 #include <cvode/cvode_spils.h>
 #include <sunlinsol/sunlinsol_spgmr.h>
@@ -57,17 +58,19 @@ CVode::CVode(int cv_lmm, int cv_iter) : t(0.0)
   // (for use in "f" below)
   int flag = CVodeSetUserData(cvode_mem, (void *)this);
   dolfin_assert(flag == 0);
-//    if(cv_iter == CV_NEWTON){
-//        flag = CVSpgmr(cvode_mem, PREC_LEFT, 0);
-//        if(check_flag(&flag, "CVSpgmr", 1)) return(1); 
-//          flag = CVSpilsSetPreconditioner(cvode_mem, NULL, 0);
-//      }
+//  if(cv_iter == CV_NEWTON)
+//  {
+//    flag = CVSpgmr(cvode_mem, PREC_LEFT, 0);
+//    if(check_flag(&flag, "CVSpgmr", 1)) return(1); 
+//    flag = CVSpilsSetPreconditioner(cvode_mem, NULL, 0);
+//  }
 }
 
-    /// Destructor
+/// Destructor
 CVode::~CVode()
 {
   CVodeFree(&cvode_mem);
+//  SUNLinSolFree(sunls);
 }
 
 //-----------------------------------------------------------------------------
@@ -76,7 +79,8 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
   dolfin_assert(cvode_mem);
 
   auto fu = std::shared_ptr<GenericVector>();
-
+  int NEQ = 20*20;
+  int ml,mu;
   // Make a sundials n_vector sharing data with u0
   _u = std::make_shared<SUNDIALSNVector>(u0);
 
@@ -91,11 +95,19 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
 
   CVodeSetMaxNumSteps(cvode_mem, mxsteps);
 
+
   if(cv_iter == CV_NEWTON)
   {
-    ls = std::make_shared<SUNLinearSolver>(SUNSPGMR(_u->nvector(), PREC_LEFT,0));
+    dolfin_debug("Initialising Newtonian solver");
+    ls = std::unique_ptr<_generic_SUNLinearSolver>(SUNSPGMR(_u->nvector(), PREC_LEFT,0));
     dolfin_assert(flag == CV_SUCCESS);
-    flag = CVSpilsSetJacTimes(cvode_mem, fJacSetup, fJac);
+    dolfin_assert( ls != NULL);
+    flag = CVSpilsSetLinearSolver(cvode_mem,ls.get());
+    /* Call CVBandPreInit to initialize band preconditioner */
+    ml = mu = 2;
+    flag = CVBandPrecInit(cvode_mem, NEQ, mu, ml);
+    dolfin_assert(flag == CV_SUCCESS);
+    flag = CVSpilsSetJacTimes(cvode_mem, NULL, fJac);
     dolfin_assert(flag == CV_SUCCESS);
   }
 
@@ -143,9 +155,27 @@ int CVode::Jacobian(std::shared_ptr<GenericVector> v,
   return 0;
 }
 //-----------------------------------------------------------------------------
+int CVode::JacobianSetup(double t,
+                          std::shared_ptr<GenericVector> Jv,
+                          std::shared_ptr<GenericVector> y)
+{
+  dolfin_error("CVode.cpp",
+	       "Jacobian setup function",
+	       "This function should be overloaded");
+  return 0;
+}
+
+
+//-----------------------------------------------------------------------------
 int CVode::fJacSetup(double t, N_Vector y, N_Vector fy, void *user_data)
 {
+
+  CVode* cv = static_cast<CVode*>(user_data);
+
+  auto yvec = static_cast<const SUNDIALSNVector*>(y->content)->vec();
+  auto fyvec = static_cast<SUNDIALSNVector*>(fy->content)->vec();
   
+  cv->JacobianSetup(t, yvec, fyvec);
   return 0;
 }
 //-----------------------------------------------------------------------------
