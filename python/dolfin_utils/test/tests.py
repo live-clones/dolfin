@@ -28,8 +28,8 @@ import platform
 from instant import get_status_output
 from dolfin import  *
 
-from dolfin_utils.test.fixtures import filedir, gc_barrier
-from dolfin_utils.test.skips import skip_in_parallel
+from .fixtures import filedir, gc_barrier
+from .skips import skip_in_parallel
 
 @skip_in_parallel
 @pytest.mark.cpp

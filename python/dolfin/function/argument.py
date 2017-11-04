@@ -20,7 +20,7 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import ufl
-from dolfin.function.functionspace import FunctionSpace
+from .functionspace import FunctionSpace
 
 __all__ = ["TestFunction", "TrialFunction", "Argument",
            "TestFunctions", "TrialFunctions"]
