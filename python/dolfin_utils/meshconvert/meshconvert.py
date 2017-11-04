@@ -47,8 +47,8 @@ import os.path
 import numpy
 import six
 
-from . import abaqus
-from . import xml_writer
+from dolfin_utils.meshconvert import abaqus
+from dolfin_utils.meshconvert import xml_writer
 
 def format_from_suffix(suffix):
     "Return format for given suffix"

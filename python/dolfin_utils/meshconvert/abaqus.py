@@ -28,7 +28,7 @@ import re
 import csv
 import numpy as np
 
-from . import xml_writer
+from dolfin_utils.meshconvert import xml_writer
 
 class State:
     Init, Unknown, Invalid, ReadHeading, ReadNodes, ReadCells, \

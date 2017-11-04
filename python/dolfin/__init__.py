@@ -31,7 +31,7 @@ del sys
 # del sys
 
 # Import cpp modules
-from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
+from dolfin.cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          has_hdf5_parallel, has_mpi, has_mpi4py,
                          has_petsc, has_petsc4py, has_parmetis,
                          has_slepc, has_slepc4py, git_commit_hash,
@@ -40,15 +40,15 @@ from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          SubSystemsManager)
 
 if has_hdf5():
-    from .cpp.adaptivity import TimeSeries
-    from .cpp.io import HDF5File
+    from dolfin.cpp.adaptivity import TimeSeries
+    from dolfin.cpp.io import HDF5File
 
-from .cpp.ale import ALE
-from .cpp import MPI
-from .cpp.function import (Expression, Constant, FunctionAXPY,
+from dolfin.cpp.ale import ALE
+from dolfin.cpp import MPI
+from dolfin.cpp.function import (Expression, Constant, FunctionAXPY,
                            LagrangeInterpolator, FunctionAssigner,
                            assign, MultiMeshFunction, MultiMeshFunctionSpace)
-from .cpp.fem import (FiniteElement, DofMap, Assembler,
+from dolfin.cpp.fem import (FiniteElement, DofMap, Assembler,
                       get_coordinates, create_mesh, set_coordinates,
                       vertex_to_dof_map, dof_to_vertex_map,
                       PointSource, DiscreteOperators,
@@ -56,45 +56,45 @@ from .cpp.fem import (FiniteElement, DofMap, Assembler,
                       NonlinearVariationalSolver,
                       SparsityPatternBuilder)
 
-from .cpp.geometry import (BoundingBoxTree,
+from dolfin.cpp.geometry import (BoundingBoxTree,
                            Point,
                            MeshPointIntersection,
                            intersect)
-from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh,
+from dolfin.cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh,
                              UnitDiscMesh, UnitQuadMesh, UnitHexMesh,
                              UnitTriangleMesh, UnitCubeMesh,
                              UnitSquareMesh, UnitIntervalMesh,
                              SphericalShellMesh)
-from .cpp.graph import GraphBuilder
-from .cpp.io import File, XDMFFile, VTKFile
-from .cpp.la import (has_linear_algebra_backend,
+from dolfin.cpp.graph import GraphBuilder
+from dolfin.cpp.io import File, XDMFFile, VTKFile
+from dolfin.cpp.la import (has_linear_algebra_backend,
                      linear_algebra_backends,
                      has_krylov_solver_method,
                      has_krylov_solver_preconditioner, normalize,
                      VectorSpaceBasis, in_nullspace)
 
 if has_linear_algebra_backend('PETSc'):
-    from .cpp.la import (PETScVector, PETScMatrix, PETScFactory,
+    from dolfin.cpp.la import (PETScVector, PETScMatrix, PETScFactory,
                          PETScOptions, PETScLUSolver,
                          PETScKrylovSolver, PETScPreconditioner)
-    from .cpp.fem import PETScDMCollection
-    from .cpp.nls import (PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver)
+    from dolfin.cpp.fem import PETScDMCollection
+    from dolfin.cpp.nls import (PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver)
 
 if has_linear_algebra_backend('Tpetra'):
-    from .cpp.la import (TpetraVector, TpetraMatrix, TpetraFactory,
+    from dolfin.cpp.la import (TpetraVector, TpetraMatrix, TpetraFactory,
                          MueluPreconditioner, BelosKrylovSolver)
 
 if has_slepc():
-    from .cpp.la import SLEPcEigenSolver
+    from dolfin.cpp.la import SLEPcEigenSolver
 
-from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar,
+from dolfin.cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar,
                      EigenMatrix, EigenVector, EigenFactory, LUSolver,
                      KrylovSolver, TensorLayout, LinearOperator,
                      BlockMatrix, BlockVector)
-from .cpp.la import GenericVector  # Remove when pybind11 transition complete
-from .cpp.log import (info, Table, set_log_level, get_log_level, LogLevel)
-from .cpp.math import ipow, near, between
-from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
+from dolfin.cpp.la import GenericVector  # Remove when pybind11 transition complete
+from dolfin.cpp.log import (info, Table, set_log_level, get_log_level, LogLevel)
+from dolfin.cpp.math import ipow, near, between
+from dolfin.cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        MeshColoring, CellType, Cell, Facet, Face,
                        Edge, Vertex, cells, facets, faces, edges,
                        entities, vertices, SubDomain, BoundaryMesh,
@@ -102,67 +102,67 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        DomainBoundary, PeriodicBoundaryComputation,
                        MeshTransformation, SubsetIterator, MultiMesh)
 
-from .cpp.nls import (NonlinearProblem, NewtonSolver, OptimisationProblem)
-from .cpp.refinement import refine
-from .cpp.parameter import Parameters, parameters
-from .cpp.io import X3DOM, X3DOMParameters
+from dolfin.cpp.nls import (NonlinearProblem, NewtonSolver, OptimisationProblem)
+from dolfin.cpp.refinement import refine
+from dolfin.cpp.parameter import Parameters, parameters
+from dolfin.cpp.io import X3DOM, X3DOMParameters
 
 # Import Python modules
-from . import io
-from . import la
-from . import mesh
-from . import parameter
+from dolfin import io
+from dolfin import la
+from dolfin import mesh
+from dolfin import parameter
 
-from .common import timer
-from .common.timer import Timer, timed
-from .common.plotting import plot
+from dolfin.common import timer
+from dolfin.common.timer import Timer, timed
+from dolfin.common.plotting import plot
 
-from .fem.assembling import (assemble, assemble_system,
+from dolfin.fem.assembling import (assemble, assemble_system,
                              SystemAssembler, assemble_local)
-from .fem.form import Form
-from .fem.norms import norm, errornorm
-from .fem.dirichletbc import DirichletBC, AutoSubDomain
-from .fem.interpolation import interpolate
-from .fem.projection import project
-from .fem.solvers import LocalSolver
-from .fem.solving import (solve, LinearVariationalProblem,
+from dolfin.fem.form import Form
+from dolfin.fem.norms import norm, errornorm
+from dolfin.fem.dirichletbc import DirichletBC, AutoSubDomain
+from dolfin.fem.interpolation import interpolate
+from dolfin.fem.projection import project
+from dolfin.fem.solvers import LocalSolver
+from dolfin.fem.solving import (solve, LinearVariationalProblem,
                           NonlinearVariationalProblem)
-from .fem.formmanipulations import (derivative, adjoint, increase_order, tear)
+from dolfin.fem.formmanipulations import (derivative, adjoint, increase_order, tear)
 
 # Need to be careful with other to avoid circular dependency
-from .fem.adaptivesolving import (AdaptiveLinearVariationalSolver,
+from dolfin.fem.adaptivesolving import (AdaptiveLinearVariationalSolver,
                                   AdaptiveNonlinearVariationalSolver)
 
-from .function.functionspace import (FunctionSpace,
+from dolfin.function.functionspace import (FunctionSpace,
                                      VectorFunctionSpace, TensorFunctionSpace)
-from .function.function import Function
-from .function.argument import (TestFunction, TrialFunction,
+from dolfin.function.function import Function
+from dolfin.function.argument import (TestFunction, TrialFunction,
                                 TestFunctions, TrialFunctions)
-from .function.constant import Constant
-from .function.specialfunctions import (MeshCoordinates, FacetArea, FacetNormal,
+from dolfin.function.constant import Constant
+from dolfin.function.specialfunctions import (MeshCoordinates, FacetArea, FacetNormal,
                                         CellVolume, SpatialCoordinate, CellNormal,
                                         CellDiameter, Circumradius,
                                         MinCellEdgeLength, MaxCellEdgeLength,
                                         MinFacetEdgeLength, MaxFacetEdgeLength)
-from .function.expression import Expression, UserExpression, CompiledExpression
+from dolfin.function.expression import Expression, UserExpression, CompiledExpression
 
 # experimental
-from .jit.pybind11jit import compile_cpp_code
+from dolfin.jit.pybind11jit import compile_cpp_code
 
-from .la import as_backend_type, la_index_dtype
-from .mesh.ale import (compute_vertex_map, compute_edge_map,
+from dolfin.la import as_backend_type, la_index_dtype
+from dolfin.mesh.ale import (compute_vertex_map, compute_edge_map,
                        init_parent_edge_indices)
-from .mesh.meshfunction import (MeshFunction, CellFunction,
+from dolfin.mesh.meshfunction import (MeshFunction, CellFunction,
                                 FacetFunction, FaceFunction,
                                 EdgeFunction, VertexFunction)
-from .mesh.meshvaluecollection import MeshValueCollection
-from .mesh.subdomain import CompiledSubDomain
+from dolfin.mesh.meshvaluecollection import MeshValueCollection
+from dolfin.mesh.subdomain import CompiledSubDomain
 
-from .multistage.multistagescheme import (RK4, CN2, ExplicitMidPoint,
+from dolfin.multistage.multistagescheme import (RK4, CN2, ExplicitMidPoint,
                                           ESDIRK3, ESDIRK4,
                                           ForwardEuler, BackwardEuler)
-from .multistage.multistagesolvers import PointIntegralSolver, RKSolver
-from .multistage.rushlarsenschemes import RL1, RL2, GRL1, GRL2
+from dolfin.multistage.multistagesolvers import PointIntegralSolver, RKSolver
+from dolfin.multistage.rushlarsenschemes import RL1, RL2, GRL1, GRL2
 
 # Import from ufl
 from ufl import (FiniteElement, TensorElement, VectorElement,

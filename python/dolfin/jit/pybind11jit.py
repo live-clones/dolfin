@@ -7,7 +7,7 @@ import re
 
 import dolfin.cpp as cpp
 from dolfin.cpp.log import log, LogLevel
-from . import get_pybind_include
+from dolfin.jit import get_pybind_include
 
 from dolfin.jit.jit import dijitso_jit
 

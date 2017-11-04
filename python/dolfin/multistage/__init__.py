@@ -5,9 +5,9 @@ from dolfin.multistage import multistagescheme
 from dolfin.multistage import multistagesolvers
 from dolfin.multistage import rushlarsenschemes
 
-from .multistagescheme import *  # noqa
-from .multistagesolvers import *  # noqa
-from .rushlarsenschemes import *  # noqa
+from dolfin.multistage.multistagescheme import *  # noqa
+from dolfin.multistage.multistagesolvers import *  # noqa
+from dolfin.multistage.rushlarsenschemes import *  # noqa
 
 # NOTE: The automatic documentation system in DOLFIN requires to _not_
 # define classes or functions within this file. Use separate modules

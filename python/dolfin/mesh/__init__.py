@@ -1,6 +1,6 @@
 import ufl
 import dolfin.cpp as cpp
-from . import svgtools
+from dolfin.mesh import svgtools
 
 # Functions to extend cpp.mesh.Mesh with
 
