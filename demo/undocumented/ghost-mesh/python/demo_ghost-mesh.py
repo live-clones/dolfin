@@ -50,12 +50,12 @@ if (n == 0):
         vtx = Vertex(mesh, k)
         verts_note.append( (vtx.point().x(), vtx.point().y(), " "+str(val)) )
 elif (n == 1):
-    for i in range(mesh.num_vertices()):
+    for i in range(mesh.num_entities(0)):
         vtx = Vertex(mesh, i)
         val = vtx.global_index()
         verts_note.append( (vtx.point().x(), vtx.point().y(), " "+str(val)) )
 else:
-    for i in range(mesh.num_vertices()):
+    for i in range(mesh.num_entities(0)):
         vtx = Vertex(mesh, i)
         val = vtx.index()
         verts_note.append( (vtx.point().x(), vtx.point().y(), " "+str(val)) )
@@ -64,7 +64,7 @@ x,y = mesh.coordinates().transpose()
 
 rank = MPI.rank(mesh.mpi_comm())
 
-cell_ownership = np.ones(mesh.num_cells(),dtype='int')*rank
+cell_ownership = np.ones(mesh.num_entities(mesh.topology().dim()), dtype='int')*rank
 cell_owner = mesh.topology().cell_owner()
 if len(cell_owner) > 0 :
     cell_ownership[-len(cell_owner):] = cell_owner
