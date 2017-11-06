@@ -144,7 +144,7 @@ std::size_t Mesh::init(std::size_t dim) const
   // create new connectivity.
 
   // Skip if mesh is empty
-  if (num_cells() == 0)
+  if (num_entities(topology().dim()) == 0)
   {
     warning("Mesh is empty, unable to create entities of dimension %d.", dim);
     return 0;
@@ -186,7 +186,7 @@ void Mesh::init(std::size_t d0, std::size_t d1) const
   // create new connectivity.
 
   // Skip if mesh is empty
-  if (num_cells() == 0)
+  if (num_entities(topology().dim()) == 0)
   {
     warning("Mesh is empty, unable to create connectivity %d --> %d.", d0, d1);
     return;
@@ -421,8 +421,8 @@ std::string Mesh::str(bool verbose) const
     s << "<Mesh of topological dimension "
       << topology().dim() << " ("
       << cell_type << ") with "
-      << num_vertices() << " vertices and "
-      << num_cells() << " cells, "
+      << num_entities(0) << " vertices and "
+      << num_entities(topology().dim()) << " cells, "
       << (_ordered ? "ordered" : "unordered") << ">";
   }
 
@@ -450,7 +450,7 @@ void Mesh::init_cell_orientations(const Expression& global_normal)
   }
 
   // Resize storage
-  _cell_orientations.resize(num_cells());
+  _cell_orientations.resize(num_entities(topology().dim()));
 
   // Set orientation
   Array<double> values(ndim);

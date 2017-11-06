@@ -277,12 +277,15 @@ void XMLFunctionData::build_dof_map(std::vector<std::vector<la_index>>& dof_map,
   const Mesh& mesh = *V.mesh();
   const GenericDofMap& dofmap = *V.dofmap();
 
+  // Topological dimension
+  const std::size_t tdim = mesh.topology().dim();
+
   // Get local-to-global map
   std::vector<std::size_t> local_to_global_dof;
   dofmap.tabulate_local_to_global_dofs(local_to_global_dof);
 
   // Get global number of cells
-  const std::size_t num_cells = MPI::sum(mesh.mpi_comm(), mesh.num_cells());
+  const std::size_t num_cells = MPI::sum(mesh.mpi_comm(), mesh.num_entities(tdim));
 
   std::vector<dolfin::la_index> local_dofmap;
   if (MPI::size(mesh.mpi_comm()) > 1)

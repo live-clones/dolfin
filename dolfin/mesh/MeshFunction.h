@@ -463,7 +463,7 @@ namespace dolfin
       if (d != D)
       {
         // Get global (local to to process) entity index
-        dolfin_assert(cell_index < _mesh->num_cells());
+        dolfin_assert(cell_index < _mesh->num_entities(D));
         entity_index = connectivity(cell_index)[local_entity];
       }
       else
@@ -579,7 +579,7 @@ namespace dolfin
 
     }
     _mesh->init(dim);
-    init(_mesh, dim, _mesh->size(dim));
+    init(_mesh, dim, _mesh->num_entities(dim));
   }
   //---------------------------------------------------------------------------
   template <typename T>
@@ -601,7 +601,7 @@ namespace dolfin
   {
     dolfin_assert(mesh);
     mesh->init(dim);
-    init(mesh, dim, mesh->size(dim));
+    init(mesh, dim, mesh->num_entities(dim));
   }
   //---------------------------------------------------------------------------
   template <typename T>
@@ -612,7 +612,7 @@ namespace dolfin
 
     // Initialize mesh for entities of given dimension
     mesh->init(dim);
-    dolfin_assert(mesh->size(dim) == size);
+    dolfin_assert(mesh->num_entities(dim) == size);
 
     // Initialize data
     if (_size != size)

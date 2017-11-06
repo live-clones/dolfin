@@ -170,7 +170,7 @@ void Expression::compute_vertex_values(std::vector<double>& vertex_values,
   Array<double> local_vertex_values(size);
 
   // Resize vertex_values
-  vertex_values.resize(size*mesh.num_vertices());
+  vertex_values.resize(size*mesh.num_entities(0));
 
   // Iterate over cells, overwriting values when repeatedly visiting vertices
   ufc::cell ufc_cell;
@@ -192,7 +192,7 @@ void Expression::compute_vertex_values(std::vector<double>& vertex_values,
       // Copy to array
       for (std::size_t i = 0; i < size; i++)
       {
-        const std::size_t global_index = i*mesh.num_vertices() + vertex->index();
+        const std::size_t global_index = i*mesh.num_entities(0) + vertex->index();
         vertex_values[global_index] = local_vertex_values[i];
       }
     }

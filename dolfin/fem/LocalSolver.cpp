@@ -125,6 +125,9 @@ void LocalSolver::_solve_local(GenericVector& x, const GenericVector* global_b,
   dolfin_assert(_a->function_space(0)->mesh());
   const Mesh& mesh = *_a->function_space(0)->mesh();
 
+  // Topological dimension
+  const std::size_t tdim = mesh.topology().dim();
+
   // Get bilinear form dofmaps
   std::array<std::shared_ptr<const GenericDofMap>, 2> dofmaps_a
     = {{_a->function_space(0)->dofmap(), _a->function_space(1)->dofmap()}};
@@ -149,7 +152,7 @@ void LocalSolver::_solve_local(GenericVector& x, const GenericVector* global_b,
   bool use_cache = !(_cholesky_cache.empty() and _lu_cache.empty());
 
   // Loop over cells and solve local problems
-  Progress p("Performing local (cell-wise) solve", mesh.num_cells());
+  Progress p("Performing local (cell-wise) solve", mesh.num_entities(tdim));
   ufc::cell ufc_cell;
   std::vector<double> coordinate_dofs;
   for (CellIterator cell(mesh); !cell.end(); ++cell)
@@ -252,11 +255,14 @@ void LocalSolver::factorize()
   dolfin_assert(_a->function_space(0)->mesh());
   const Mesh& mesh = *_a->function_space(0)->mesh();
 
+  // Topological dimension
+  const std::size_t tdim = mesh.topology().dim();
+
   // Resize cache
   if (_solver_type == SolverType::Cholesky)
-    _cholesky_cache.resize(mesh.num_cells());
+    _cholesky_cache.resize(mesh.num_entities(tdim));
   else
-    _lu_cache.resize(mesh.num_cells());
+    _lu_cache.resize(mesh.num_entities(tdim));
 
   // Create UFC objects
   UFC ufc_a(*_a);
@@ -278,7 +284,7 @@ void LocalSolver::factorize()
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> A_e;
 
   // Loop over cells and solve local problems
-  Progress p("Performing local (cell-wise) factorization", mesh.num_cells());
+  Progress p("Performing local (cell-wise) factorization", mesh.num_entities(tdim));
   ufc::cell ufc_cell;
   std::vector<double> coordinate_dofs;
   for (CellIterator cell(mesh); !cell.end(); ++cell)

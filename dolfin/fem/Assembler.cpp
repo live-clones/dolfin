@@ -120,6 +120,9 @@ void Assembler::assemble_cells(
   dolfin_assert(a.mesh());
   const Mesh& mesh = *(a.mesh());
 
+  // Topological dimension
+  const std::size_t D = mesh.topology().dim();
+
   // Form rank
   const std::size_t form_rank = ufc.form.rank();
 
@@ -144,7 +147,7 @@ void Assembler::assemble_cells(
   ufc::cell ufc_cell;
   std::vector<double> coordinate_dofs;
   Progress p(AssemblerBase::progress_message(A.rank(), "cells"),
-             mesh.num_cells());
+             mesh.num_entities(D));
   for (CellIterator cell(mesh); !cell.end(); ++cell)
   {
     // Get integral for sub domain (if any)
@@ -239,7 +242,7 @@ void Assembler::assemble_exterior_facets(
   ufc::cell ufc_cell;
   std::vector<double> coordinate_dofs;
   Progress p(AssemblerBase::progress_message(A.rank(), "exterior facets"),
-             mesh.num_facets());
+             mesh.num_entities(D - 1));
   for (FacetIterator facet(mesh); !facet.end(); ++facet)
   {
     // Only consider exterior facets
@@ -354,7 +357,7 @@ void Assembler::assemble_interior_facets(
   ufc::cell ufc_cell[2];
   std::vector<double> coordinate_dofs[2];
   Progress p(AssemblerBase::progress_message(A.rank(), "interior facets"),
-             mesh.num_facets());
+             mesh.num_entities(D-1));
   for (FacetIterator facet(mesh); !facet.end(); ++facet)
   {
     if (facet->num_entities(D) == 1)
@@ -557,7 +560,7 @@ void Assembler::assemble_vertices(
   ufc::cell ufc_cell;
   std::vector<double> coordinate_dofs;
   Progress p(AssemblerBase::progress_message(A.rank(), "vertices"),
-             mesh.num_vertices());
+             mesh.num_entities(0));
   for (VertexIterator vert(mesh); !vert.end(); ++vert)
   {
     // Get integral for sub domain (if any)

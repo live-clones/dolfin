@@ -952,6 +952,9 @@ void DirichletBC::compute_bc_pointwise(Map& boundary_values,
   // Geometric dim
   const std::size_t gdim = mesh.geometry().dim();
 
+  // Topological dim
+  const std::size_t tdim = mesh.topology().dim();
+
   // Create UFC cell object
   ufc::cell ufc_cell;
 
@@ -971,7 +974,7 @@ void DirichletBC::compute_bc_pointwise(Map& boundary_values,
     // First time around all cells must be iterated over.  Create map
     // from cells attached to boundary to local dofs.
     Progress p("Computing Dirichlet boundary values, pointwise search",
-               mesh.num_cells());
+               mesh.num_entities(tdim));
     for (CellIterator cell(mesh); !cell.end(); ++cell)
     {
       // Update UFC cell

@@ -203,7 +203,7 @@ std::int32_t TopologyComputation::compute_entities_by_key_matching(Mesh& mesh,
   std::vector<std::tuple<std::array<std::int32_t, N>,
                          std::pair<std::int8_t, std::int32_t>,
                          std::array<std::int32_t, N>, std::int32_t>>
-    keyed_entities(num_entities*mesh.num_cells());
+    keyed_entities(num_entities*mesh.num_entities(mesh.topology().dim() ));
 
   // Loop over cells to build list of keyed (by vertices) entities
   int entity_counter = 0;
@@ -286,7 +286,7 @@ std::int32_t TopologyComputation::compute_entities_by_key_matching(Mesh& mesh,
 
   // List of entity e indices connected to cell
   boost::multi_array<int, 2>
-    connectivity_ce(boost::extents[mesh.num_cells()][num_entities]);
+    connectivity_ce(boost::extents[mesh.num_entities(mesh.topology().dim())][num_entities]);
 
   // Build connectivity arrays (with ghost entities at the end)
   //std::int32_t previous_index = -1;
@@ -383,12 +383,12 @@ void TopologyComputation::compute_from_map(Mesh& mesh,
                                                        .entity_type(d0)));
 
   MeshConnectivity& connectivity = mesh.topology()(d0, d1);
-  connectivity.init(mesh.size(d0), cell_type->num_entities(d1));
+  connectivity.init(mesh.num_entities(d0), cell_type->num_entities(d1));
 
   // Make a map from the sorted d1 entity vertices to the d1 entity index
   boost::unordered_map<std::vector<unsigned int>, unsigned int>
     entity_to_index;
-  entity_to_index.reserve(mesh.size(d1));
+  entity_to_index.reserve(mesh.num_entities(d1));
 
   const std::size_t num_verts_d1 = mesh.type().num_vertices(d1);
   std::vector<unsigned int> key(num_verts_d1);

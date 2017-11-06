@@ -48,19 +48,22 @@ void LocalMeshCoarsening::coarsen_mesh_by_edge_collapse(Mesh& mesh,
 {
   log(TRACE, "Coarsen simplicial mesh by edge collapse.");
 
+  const std::size_t tdim = mesh.topology().dim();
+
   // Get size of old mesh
-  //const std::size_t num_vertices = mesh.size(0);
-  const std::size_t num_cells = mesh.size(mesh.topology().dim());
+  const std::size_t num_cells = mesh.num_entities(tdim);
 
   // Check cell marker
   if ( cell_marker.size() != num_cells )
+  {
     dolfin_error("LocalMeshCoarsening.cpp",
                  "coarsen mesh by collapsing edges",
                  "Number of cell markers (%d) does not match number of cells (%d)",
                  cell_marker.size(), num_cells);
+  }
 
   // Generate cell - edge connectivity if not generated
-  mesh.init(mesh.topology().dim(), 1);
+  mesh.init(tdim, 1);
 
   // Generate edge - vertex connectivity if not generated
   mesh.init(1, 0);
@@ -79,8 +82,8 @@ void LocalMeshCoarsening::coarsen_mesh_by_edge_collapse(Mesh& mesh,
     cell_forbidden[c->index()] = false;
 
   // Init new vertices and cells
-  std::vector<int> old2new_cell(mesh.num_cells());
-  std::vector<int> old2new_vertex(mesh.num_vertices());
+  std::vector<int> old2new_cell(mesh.num_entities(tdim));
+  std::vector<int> old2new_vertex(mesh.num_entities(0));
 
   std::list<int> cells_to_coarsen(0);
 
@@ -114,8 +117,8 @@ void LocalMeshCoarsening::coarsen_mesh_by_edge_collapse(Mesh& mesh,
         *iter = old2new_cell[*iter];
     }
 
-    old2new_cell.resize(mesh.num_cells());
-    old2new_vertex.resize(mesh.num_vertices());
+    old2new_cell.resize(mesh.num_entities(tdim));
+    old2new_vertex.resize(mesh.num_entities(0));
 
     // Coarsen cells in list
     for(std::list<int>::iterator iter = cells_to_coarsen.begin();
@@ -196,11 +199,8 @@ bool LocalMeshCoarsening::coarsen_cell(Mesh& mesh, Mesh& coarse_mesh,
 				      std::vector<int>& old2new_cell,
 				      bool coarsen_boundary)
 {
-  cout << "coarsen_cell: " << cellid << endl;
-  cout << "num_cells: " << mesh.num_cells() << endl;
-
-  const std::size_t num_vertices = mesh.size(0);
-  const std::size_t num_cells = mesh.size(mesh.topology().dim());
+  const std::size_t num_vertices = mesh.num_entities(0);
+  const std::size_t num_cells = mesh.num_entities(mesh.topology().dim());
 
   auto _mesh = reference_to_no_delete_pointer(mesh);
 

@@ -899,10 +899,11 @@ void X3DOM::add_menu_summary_tab(pugi::xml_node& xml_node, const Mesh& mesh)
 {
   // Compute the number of vertices and cells to add to the summary
   // tab
+  std::size_t tdim = mesh.topology().dim();
   std::string vertices_data = "Number of vertices: "
-    + std::to_string(mesh.num_vertices());
+    + std::to_string(mesh.num_entities(0));
   std::string cells_data = "Number of cells: "
-    + std::to_string(mesh.num_cells());
+    + std::to_string(mesh.num_entities(tdim));
 
   // Append to the parent node the data (with break in between)
   xml_node.append_child(pugi::node_pcdata).set_value(vertices_data.c_str());
@@ -1103,6 +1104,9 @@ void X3DOM::get_function_values(const Function& u,
   dolfin_assert(u.function_space()->mesh());
   const Mesh& mesh = *u.function_space()->mesh();
 
+  // Topological dimension
+  const std::size_t tdim = mesh.topology().dim();
+
   const std::size_t value_rank = u.value_rank();
 
   // Print warning for vector-valued functions and error for higher
@@ -1117,7 +1121,6 @@ void X3DOM::get_function_values(const Function& u,
   }
 
   // Test for cell-centred data
-  const std::size_t tdim = mesh.topology().dim();
   std::size_t cell_based_dim = 1;
   for (std::size_t i = 0; i < value_rank; i++)
     cell_based_dim *= tdim;
@@ -1131,7 +1134,7 @@ void X3DOM::get_function_values(const Function& u,
     // Compute l2 norm for vector-valued problems
     if (value_rank == 1)
     {
-      const std::size_t num_vertices = mesh.num_vertices();
+      const std::size_t num_vertices = mesh.num_entities(0);
       std::vector<double> magnitude(num_vertices);
       for (std::size_t i = 0; i < num_vertices ; ++i)
       {
@@ -1162,8 +1165,8 @@ void X3DOM::get_function_values(const Function& u,
     }
 
     // Get dofs for cell centered data
-    std::vector<dolfin::la_index> dofs(mesh.num_cells());
-    for (std::size_t i = 0; i != mesh.num_cells(); ++i)
+    std::vector<dolfin::la_index> dofs(mesh.num_entities(tdim));
+    for (std::size_t i = 0; i != mesh.num_entities(tdim); ++i)
     {
       // Get dof index of cell data
       dolfin_assert(dofmap.num_element_dofs(i) == 1);
@@ -1177,7 +1180,7 @@ void X3DOM::get_function_values(const Function& u,
 
     // FIXME: this is inefficient and a bit random for interior facets
     // (which we don't need) - so needs a redesign.
-    facet_values.resize(mesh.num_facets());
+    facet_values.resize(mesh.num_entities(tdim-1));
     if (tdim == 3)
     {
       for (FaceIterator f(mesh); !f.end(); ++f)

@@ -83,7 +83,7 @@ SubMesh::SubMesh(const Mesh& mesh, std::size_t sub_domain)
     = mesh.domains().markers(D);
 
   // Build vector for all cells to hold markers
-  std::vector<std::size_t> sub_domains(mesh.num_cells(),
+  std::vector<std::size_t> sub_domains(mesh.num_entities(D),
                                 std::numeric_limits<std::size_t>::max());
   std::map<std::size_t, std::size_t>::const_iterator it;
   for (it = cell_markers.begin(); it != cell_markers.end(); ++it)
@@ -109,7 +109,7 @@ void SubMesh::init(const Mesh& mesh,
               mesh.geometry().dim());
 
   // Build set of cells that are in sub-mesh
-  std::vector<bool> parent_cell_in_subdomain(mesh.num_cells(), false);
+  std::vector<bool> parent_cell_in_subdomain(mesh.num_entities(D), false);
   std::set<std::size_t> submesh_cells;
   for (CellIterator cell(mesh); !cell.end(); ++cell)
   {
@@ -128,7 +128,7 @@ void SubMesh::init(const Mesh& mesh,
   submesh_cell_parent_indices.reserve(submesh_cells.size());
 
   // Vector from parent cell index to submesh cell index
-  std::vector<std::size_t> parent_to_submesh_cell_indices(mesh.num_cells(), 0);
+  std::vector<std::size_t> parent_to_submesh_cell_indices(mesh.num_entities(D), 0);
 
   // Add sub-mesh cells
   editor.init_cells_global(submesh_cells.size(), submesh_cells.size());
@@ -206,7 +206,7 @@ void SubMesh::init(const Mesh& mesh,
   // Build submesh-to-parent map for vertices
   std::vector<std::size_t>& parent_vertex_indices_mf
     = data().create_array("parent_vertex_indices", 0);
-  parent_vertex_indices_mf.resize(num_vertices());
+  parent_vertex_indices_mf.resize(num_entities(0));
   for (std::map<std::size_t, std::size_t>::iterator it
          = parent_to_submesh_vertex_indices.begin();
        it != parent_to_submesh_vertex_indices.end(); ++it)
@@ -217,7 +217,7 @@ void SubMesh::init(const Mesh& mesh,
   // Build submesh-to-parent map for cells
   std::vector<std::size_t>& parent_cell_indices
     = data().create_array("parent_cell_indices", D);
-  parent_cell_indices.resize(num_cells());
+  parent_cell_indices.resize(num_entities(D));
   current_cell = 0;
   for (std::vector<std::size_t>::iterator it
          = submesh_cell_parent_indices.begin();

@@ -102,7 +102,7 @@ void MeshDisplacement::compute_vertex_values(std::vector<double>& vertex_values,
 
   vertex_values.clear();
 
-  std::size_t num_vertices = mesh.num_vertices();
+  std::size_t num_vertices = mesh.num_entities(0);
   vertex_values.reserve(_dim*num_vertices);
 
   for (std::size_t i = 0; i < _dim; i++)

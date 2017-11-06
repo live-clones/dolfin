@@ -138,7 +138,7 @@ void ALE::move(Mesh& mesh, const GenericFunction& displacement)
   }
 
   // Interpolate at vertices
-  const std::size_t N = mesh.num_vertices();
+  const std::size_t N = mesh.num_entities(0);
   std::vector<double> vertex_values;
   displacement.compute_vertex_values(vertex_values, mesh);
 

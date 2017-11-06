@@ -34,7 +34,7 @@ void MeshOrdering::order(Mesh& mesh)
   log(TRACE, "Ordering mesh.");
 
   // Special case
-  if (mesh.num_cells() == 0)
+  if (mesh.num_entities(mesh.topology().dim() ) == 0)
     return;
 
   // Get global vertex numbering
@@ -54,7 +54,7 @@ void MeshOrdering::order(Mesh& mesh)
 bool MeshOrdering::ordered(const Mesh& mesh)
 {
   // Special case
-  if (mesh.num_cells() == 0)
+  if (mesh.num_entities(mesh.topology().dim()) == 0)
     return true;
 
   // Get global vertex numbering

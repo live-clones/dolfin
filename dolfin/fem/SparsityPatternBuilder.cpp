@@ -94,7 +94,8 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
   // Build sparsity pattern for cell integrals
   if (cells)
   {
-    Progress p("Building sparsity pattern over cells", mesh.num_cells());
+    std::size_t tdim = mesh.topology().dim();
+    Progress p("Building sparsity pattern over cells", mesh.num_entities(tdim));
     for (CellIterator cell(mesh); !cell.end(); ++cell)
     {
       // Tabulate dofs for each dimension and get local dimensions
@@ -127,7 +128,7 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
       local_to_local_dofs[i].resize(dofmaps[i]->num_entity_dofs(0));
     }
 
-    Progress p("Building sparsity pattern over vertices", mesh.num_vertices());
+    Progress p("Building sparsity pattern over vertices", mesh.num_entities(0));
     for (VertexIterator vert(mesh); !vert.end(); ++vert)
     {
       // Get mesh cell to which mesh vertex belongs (pick first)
@@ -178,7 +179,7 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
     }
 
     Progress p("Building sparsity pattern over interior facets",
-               mesh.num_facets());
+               mesh.num_entities(D-1));
     for (FacetIterator facet(mesh); !facet.end(); ++facet)
     {
       bool this_exterior_facet = false;

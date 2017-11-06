@@ -42,7 +42,7 @@ namespace dolfin
       : _entity(mesh, 0), _pos(0), pos_end(0), index(0)
     {
       // Check if mesh is empty
-      if (mesh.num_vertices() == 0)
+      if (mesh.num_entities(0) == 0)
         return;
 
       // Get number of entities (excluding ghosts)
@@ -59,7 +59,7 @@ namespace dolfin
       : _entity(mesh, 0), _pos(0), pos_end(0), index(0)
     {
       // Check if mesh is empty
-      if (mesh.num_vertices() == 0)
+      if (mesh.num_entities(0) == 0)
         return;
 
       const std::size_t dim = _entity.dim();

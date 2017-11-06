@@ -137,13 +137,13 @@ void LocalMeshData::extract_mesh_data(const Mesh& mesh)
   // Set scalar data
   geometry.dim = mesh.geometry().dim();
   topology.dim = mesh.topology().dim();
-  geometry.num_global_vertices = mesh.num_vertices();
-  topology.num_global_cells = mesh.num_cells();
+  geometry.num_global_vertices = mesh.num_entities(0);
+  topology.num_global_cells = mesh.num_entities(topology.dim);
   topology.num_vertices_per_cell = mesh.type().num_entities(0);
   topology.cell_type = mesh.type().cell_type();
 
   // Get coordinates for all vertices stored on local processor
-  geometry.vertex_coordinates.resize(boost::extents[mesh.num_vertices()][geometry.dim]);
+  geometry.vertex_coordinates.resize(boost::extents[mesh.num_entities(0)][geometry.dim]);
   for (VertexIterator vertex(mesh); !vertex.end(); ++vertex)
   {
     const std::size_t index = vertex->index();
@@ -152,13 +152,13 @@ void LocalMeshData::extract_mesh_data(const Mesh& mesh)
   }
 
   // Get global vertex indices for all vertices stored on local processor
-  geometry.vertex_indices.reserve(mesh.num_vertices());
+  geometry.vertex_indices.reserve(mesh.num_entities(0));
   for (VertexIterator vertex(mesh); !vertex.end(); ++vertex)
     geometry.vertex_indices.push_back(vertex->index());
 
   // Get global vertex indices for all cells stored on local processor
-  topology.cell_vertices.resize(boost::extents[mesh.num_cells()][topology.num_vertices_per_cell]);
-  topology.global_cell_indices.reserve(mesh.num_cells());
+  topology.cell_vertices.resize(boost::extents[mesh.num_entities(topology.dim)][topology.num_vertices_per_cell]);
+  topology.global_cell_indices.reserve(mesh.num_entities(topology.dim));
   for (CellIterator cell(mesh); !cell.end(); ++cell)
   {
     const std::size_t index = cell->index();

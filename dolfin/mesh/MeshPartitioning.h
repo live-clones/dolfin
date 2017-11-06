@@ -369,7 +369,7 @@ namespace dolfin
       const std::size_t local_cell_entity = received_data0[2*i];
       const std::size_t local_entity_index = received_data0[2*i + 1];
       const T value = received_data1[i];
-      dolfin_assert(local_cell_entity < mesh.num_cells());
+      dolfin_assert(local_cell_entity < mesh.num_entities(mesh.topology().dim()));
       markers.set_value(local_cell_entity, local_entity_index, value);
     }
 

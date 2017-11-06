@@ -218,7 +218,8 @@ void ErrorControl::compute_indicators(MeshFunction<double>& indicators,
   _eta_T->set_coefficient(3, _Pi_E_z_h);
 
   // Assemble error indicator form
-  Vector x(indicators.mesh()->mpi_comm(), indicators.mesh()->num_cells());
+  const std::size_t tdim = indicators.mesh()->topology().dim();
+  Vector x(indicators.mesh()->mpi_comm(), indicators.mesh()->num_entities(tdim));
   assemble(x, *_eta_T);
 
   // Take absolute value of indicators
@@ -238,7 +239,6 @@ void ErrorControl::compute_indicators(MeshFunction<double>& indicators,
     indicators[cell->index()] = x[dofs[0]];
   }
 }
-
 //-----------------------------------------------------------------------------
 void ErrorControl::residual_representation(Function& R_T,
                                            SpecialFacetFunction& R_dT,
@@ -381,7 +381,8 @@ void ErrorControl::compute_facet_residual(SpecialFacetFunction& R_dT,
   Eigen::VectorXd x(N);
 
   // Variables to be used for the construction of the cone function
-  const std::size_t num_cells = mesh.num_cells();
+  const std::size_t tdim = mesh.topology().dim();
+  const std::size_t num_cells = mesh.num_entities(tdim);
   const std::vector<double> ones(num_cells, 1.0);
   std::vector<dolfin::la_index> facet_dofs(num_cells);
 

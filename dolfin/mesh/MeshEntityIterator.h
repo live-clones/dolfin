@@ -73,7 +73,7 @@ namespace dolfin
       : _entity(), _pos(0), pos_end(0), index(0)
     {
       // Check if mesh is empty
-      if (mesh.num_vertices() == 0)
+      if (mesh.num_entities(0) == 0)
         return;
 
       // Initialize mesh entity
@@ -90,7 +90,7 @@ namespace dolfin
       : _entity(), _pos(0), pos_end(0), index(0)
     {
       // Check if mesh is empty
-      if (mesh.num_vertices() == 0)
+      if (mesh.num_entities(0) == 0)
         return;
 
       // Initialize mesh entity

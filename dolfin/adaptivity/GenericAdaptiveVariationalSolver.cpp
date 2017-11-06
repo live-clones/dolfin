@@ -130,7 +130,7 @@ void GenericAdaptiveVariationalSolver::solve(const double tol)
     log(PROGRESS, "Error estimate is %g (tol = %g).", error_estimate, tol);
     end();
 
-    const int num_cells = mesh->num_cells();
+    const int num_cells = mesh->num_entities(mesh->topology().dim());
     const int num_dofs = V.dim();
     datum->add("num_cells", num_cells);
     datum->add("num_dofs", num_dofs);

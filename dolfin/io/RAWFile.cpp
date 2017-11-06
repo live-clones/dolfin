@@ -87,6 +87,9 @@ void RAWFile::ResultsWrite(const Function& u) const
   const Mesh& mesh = *V.mesh();
   const GenericDofMap& dofmap = *V.dofmap();
 
+  // Topological dimension
+  const std::size_t tdim = mesh.topology().dim();
+
   // Get rank of Function
   dolfin_assert(V.element());
   const std::size_t rank = V.element()->value_rank();
@@ -116,7 +119,6 @@ void RAWFile::ResultsWrite(const Function& u) const
   if (data_type == "cell")
   {
     // Allocate memory for function values at cell centres
-    //const std::size_t size = mesh.num_cells()*dim;
     std::vector<double> values;
 
     // Get function values on cells
@@ -124,7 +126,7 @@ void RAWFile::ResultsWrite(const Function& u) const
     u.vector()->get_local(values);
 
     // Write function data at cells
-    std::size_t num_cells = mesh.num_cells();
+    std::size_t num_cells = mesh.num_entities(tdim);
     fp << num_cells << std::endl;
 
     std::ostringstream ss;
@@ -134,7 +136,7 @@ void RAWFile::ResultsWrite(const Function& u) const
       // Write all components
       ss.str("");
       for (std::size_t i = 0; i < dim; i++)
-        ss  <<" "<< values[cell->index() + i*mesh.num_cells()];
+        ss  <<" "<< values[cell->index() + i*mesh.num_entities(tdim)];
       ss << std::endl;
       fp << ss.str();
     }
@@ -149,7 +151,7 @@ void RAWFile::ResultsWrite(const Function& u) const
     u.compute_vertex_values(values, mesh);
 
     // Write function data at mesh vertices
-    std::size_t num_vertices = mesh.num_vertices();
+    std::size_t num_vertices = mesh.num_entities(0);
     fp << num_vertices << std::endl;
 
     std::ostringstream ss;
@@ -158,7 +160,7 @@ void RAWFile::ResultsWrite(const Function& u) const
     {
       ss.str("");
       for(std::size_t i = 0; i<dim; i++)
-        ss << " " << values[vertex->index() + i*mesh.num_cells()];
+        ss << " " << values[vertex->index() + i*mesh.num_entities(tdim)];
 
       ss << std::endl;
       fp << ss.str();
@@ -217,7 +219,7 @@ void RAWFile::MeshFunctionWrite(T& meshfunction)
   // Open file
   std::ofstream fp(raw_filename.c_str(), std::ios_base::app);
 
-  fp << mesh.num_cells( ) << std::endl;
+  fp << mesh.num_entities(mesh.topology().dim()) << std::endl;
   for (CellIterator cell(mesh); !cell.end(); ++cell)
     fp << meshfunction[cell->index()] << std::endl;
 

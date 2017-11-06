@@ -61,7 +61,7 @@ void RegularCutRefinement::refine(Mesh& refined_mesh,
 
   // Compute refinement markers
   std::vector<int> refinement_markers;
-  IndexSet marked_edges(mesh.num_edges());
+  IndexSet marked_edges(mesh.num_entities(1));
   compute_markers(refinement_markers, marked_edges, mesh, cell_markers);
 
   // Refine mesh based on computed markers
@@ -79,8 +79,8 @@ RegularCutRefinement::compute_markers(std::vector<int>& refinement_markers,
 
   // Create edge markers and initialize to false
   const std::size_t edges_per_cell = D + 1;
-  std::vector<std::vector<bool>> edge_markers(mesh.num_cells());
-  for (std::size_t i = 0; i < mesh.num_cells(); i++)
+  std::vector<std::vector<bool>> edge_markers(mesh.num_entities(D));
+  for (std::size_t i = 0; i < mesh.num_entities(D); i++)
   {
     edge_markers[i].resize(edges_per_cell);
     for (std::size_t j = 0; j < edges_per_cell; j++)
@@ -88,8 +88,8 @@ RegularCutRefinement::compute_markers(std::vector<int>& refinement_markers,
   }
 
   // Create index sets for marked cells
-  IndexSet cells(mesh.num_cells());
-  IndexSet marked_cells(mesh.num_cells());
+  IndexSet cells(mesh.num_entities(D));
+  IndexSet marked_cells(mesh.num_entities(D));
 
   // Get bisection data
   const std::vector<std::size_t>* bisection_twins = NULL;
@@ -185,7 +185,7 @@ RegularCutRefinement::compute_markers(std::vector<int>& refinement_markers,
   }
 
   // Extract which cells to refine and indices which edges to bisect
-  refinement_markers.resize(mesh.num_cells());
+  refinement_markers.resize(mesh.num_entities(D));
   for (std::size_t i = 0; i < edge_markers.size(); i++)
   {
     // Count the number of marked edges
@@ -258,7 +258,7 @@ void RegularCutRefinement::refine_marked(Mesh& refined_mesh,
   }
 
   // Initialize mesh editor
-  const std::size_t num_vertices = mesh.num_vertices() + marked_edges.size();
+  const std::size_t num_vertices = mesh.num_entities(0) + marked_edges.size();
   MeshEditor editor;
   editor.open(refined_mesh, mesh.topology().dim(), mesh.geometry().dim());
   editor.init_vertices_global(num_vertices, num_vertices);
@@ -294,7 +294,7 @@ void RegularCutRefinement::refine_marked(Mesh& refined_mesh,
 
   // Mapping from old to new unrefined cells (-1 means refined or not
   // yet processed)
-  std::vector<int> unrefined_cells(mesh.num_cells());
+  std::vector<int> unrefined_cells(mesh.num_entities(D));
   std::fill(unrefined_cells.begin(), unrefined_cells.end(), -1);
 
   // Iterate over all cells and add new cells
@@ -342,7 +342,7 @@ void RegularCutRefinement::refine_marked(Mesh& refined_mesh,
       dolfin_assert(e);
 
       // Get offset for new vertex indices
-      const std::size_t offset = mesh.num_vertices();
+      const std::size_t offset = mesh.num_entities(0);
 
       // Compute indices for the six new vertices
       const std::size_t v0 = v[0];
@@ -401,7 +401,7 @@ void RegularCutRefinement::refine_marked(Mesh& refined_mesh,
       dolfin_assert(edges_1);
 
       // Get offset for new vertex indices
-      const std::size_t offset = mesh.num_vertices();
+      const std::size_t offset = mesh.num_entities(0);
 
       // Locate vertices such that v_i is the vertex opposite to
       // the edge e_i on the parent triangle
@@ -489,7 +489,7 @@ void RegularCutRefinement::refine_marked(Mesh& refined_mesh,
       dolfin_assert(marker >= 0);
       const std::size_t local_edge_index = static_cast<std::size_t>(marker);
       const std::size_t global_edge_index = e[local_edge_index];
-      const std::size_t ee = mesh.num_vertices() + marked_edges.find(global_edge_index);
+      const std::size_t ee = mesh.num_entities(0) + marked_edges.find(global_edge_index);
 
       // Add the two new cells
       if (local_edge_index == 0)

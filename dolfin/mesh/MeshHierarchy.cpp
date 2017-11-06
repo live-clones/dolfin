@@ -142,7 +142,8 @@ std::vector<std::size_t> MeshHierarchy::weight() const
 {
   // Assign each fine cell a weight of 1.
   // FIXME? Not all fine cells are the same size - possibly weight by size
-  std::vector<std::size_t> cell_weights(finest()->num_cells(), 1);
+  const std::size_t tdim = finest()->topology().dim();
+  std::vector<std::size_t> cell_weights(finest()->num_entities(tdim), 1);
 
   for (std::size_t level = size() - 1; level > 0; --level)
   {
@@ -151,7 +152,7 @@ std::vector<std::size_t> MeshHierarchy::weight() const
     const std::vector<std::size_t> parent_cell
       = mesh.data().array("parent_cell", mesh.topology().dim());
     dolfin_assert(parent_cell.size() == cell_weights.size());
-    std::vector<std::size_t> parent_cell_weights(parent_mesh.num_cells(), 0);
+    std::vector<std::size_t> parent_cell_weights(parent_mesh.num_entities(parent_mesh.topology().dim()), 0);
     for (unsigned int i = 0; i != cell_weights.size(); ++i)
       parent_cell_weights[parent_cell[i]] += cell_weights[i];
 
@@ -192,7 +193,7 @@ std::shared_ptr<Mesh> MeshHierarchy::rebalance() const
   // Cells
 
   local_mesh_data.topology.num_global_cells = coarse_mesh.size_global(tdim);
-  const std::size_t num_local_cells = coarse_mesh.size(tdim);
+  const std::size_t num_local_cells = coarse_mesh.num_entities(tdim);
   local_mesh_data.topology.global_cell_indices.resize(num_local_cells);
   local_mesh_data.topology.cell_vertices.resize(boost::extents[num_local_cells][local_mesh_data.topology.num_vertices_per_cell]);
 
@@ -206,7 +207,7 @@ std::shared_ptr<Mesh> MeshHierarchy::rebalance() const
 
   // Vertices - must be reordered into global order
 
-  const std::size_t num_local_vertices = coarse_mesh.size(0);
+  const std::size_t num_local_vertices = coarse_mesh.num_entities(0);
   local_mesh_data.geometry.num_global_vertices = coarse_mesh.size_global(0);
   local_mesh_data.geometry.vertex_indices.resize(num_local_vertices);
   for (VertexIterator v(coarse_mesh); !v.end(); ++v)

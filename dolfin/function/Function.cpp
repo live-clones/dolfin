@@ -503,7 +503,7 @@ void Function::compute_vertex_values(std::vector<double>& vertex_values,
   const std::size_t value_size_loc = value_size();
 
   // Resize Array for holding vertex values
-  vertex_values.resize(value_size_loc*(mesh.num_vertices()));
+  vertex_values.resize(value_size_loc*(mesh.num_entities(0)));
 
   // Create vector to hold cell vertex values
   std::vector<double> cell_vertex_values(value_size_loc*num_cell_vertices);
@@ -537,7 +537,7 @@ void Function::compute_vertex_values(std::vector<double>& vertex_values,
       for (std::size_t i = 0; i < value_size_loc; ++i)
       {
         const std::size_t local_index  = vertex.pos()*value_size_loc + i;
-        const std::size_t global_index = i*mesh.num_vertices()+vertex->index();
+        const std::size_t global_index = i*mesh.num_entities(0) + vertex->index();
         vertex_values[global_index] = cell_vertex_values[local_index];
       }
     }

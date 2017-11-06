@@ -62,6 +62,9 @@ void dolfin::dorfler_mark(dolfin::MeshFunction<bool>& markers,
   // Extract mesh
   const dolfin::Mesh& mesh = *markers.mesh();
 
+  // Dimension
+  const std::size_t tdim = mesh.topology().dim();
+
   // Initialize marker mesh function
   markers.set_all(false);
 
@@ -70,7 +73,7 @@ void dolfin::dorfler_mark(dolfin::MeshFunction<bool>& markers,
   std::map<double, std::size_t> sorted_cells;
   std::map<double, std::size_t>::reverse_iterator it;
   double eta_T_H = 0;
-  for (std::size_t i = 0; i < mesh.num_cells(); i++)
+  for (std::size_t i = 0; i < mesh.num_entities(tdim); i++)
   {
     const double value = indicators[i];
     eta_T_H += value;

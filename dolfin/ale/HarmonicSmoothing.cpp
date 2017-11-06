@@ -90,7 +90,7 @@ HarmonicSmoothing::move(std::shared_ptr<Mesh> mesh,
   assemble(*A, *form);
 
   // Number of mesh vertices (local)
-  const std::size_t num_vertices = mesh->num_vertices();
+  const std::size_t num_vertices = mesh->num_entities(0);
 
   // Dof range
   const dolfin::la_index n0 = V->dofmap()->ownership_range().first;

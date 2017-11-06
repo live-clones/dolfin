@@ -312,6 +312,9 @@ void SystemAssembler::cell_wise_assembly(
   dolfin_assert(ufc[0]->dolfin_form.mesh());
   const Mesh& mesh = *(ufc[0]->dolfin_form.mesh());
 
+  // Topological dimension
+  const std::size_t D = mesh.topology().dim();
+
   // Initialize entities if using external facet integrals
   dolfin_assert(mesh.ordered());
   bool has_exterior_facet_integrals=ufc[0]->form.has_exterior_facet_integrals()
@@ -319,7 +322,6 @@ void SystemAssembler::cell_wise_assembly(
   if (has_exterior_facet_integrals)
   {
     // Compute facets and facet-cell connectivity if not already computed
-    const std::size_t D = mesh.topology().dim();
     mesh.init(D - 1);
     mesh.init(D - 1, D);
   }
@@ -352,7 +354,7 @@ void SystemAssembler::cell_wise_assembly(
   // Iterate over all cells
   ufc::cell ufc_cell;
   std::vector<double> coordinate_dofs;
-  Progress p("Assembling system (cell-wise)", mesh.num_cells());
+  Progress p("Assembling system (cell-wise)", mesh.num_entities(D));
   for (CellIterator cell(mesh); !cell.end(); ++cell)
   {
     // Check that cell is not a ghost
@@ -568,12 +570,12 @@ void SystemAssembler::facet_wise_assembly(
 
   // Track whether or not cell contribution has been computed
   std::array<bool, 2> compute_cell_tensor = {{true, true}};
-  std::vector<bool> cell_tensor_computed(mesh.num_cells(), false);
+  std::vector<bool> cell_tensor_computed(mesh.num_entities(D), false);
 
   // Iterate over facets
   std::array<ufc::cell, 2> ufc_cell;
   std::array<std::vector<double>, 2> coordinate_dofs;
-  Progress p("Assembling system (facet-wise)", mesh.num_facets());
+  Progress p("Assembling system (facet-wise)", mesh.num_entities(D - 1));
   for (FacetIterator facet(mesh); !facet.end(); ++facet)
   {
     // Number of cells sharing facet

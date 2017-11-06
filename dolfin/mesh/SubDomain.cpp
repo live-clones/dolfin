@@ -201,10 +201,10 @@ void SubDomain::apply_markers(S& sub_domains,
 
   // Speed up the computation by only checking each vertex once (or
   // twice if it is on the boundary for some but not all facets).
-  RangedIndexSet boundary_visited(mesh.num_vertices());
-  RangedIndexSet interior_visited(mesh.num_vertices());
-  std::vector<bool> boundary_inside(mesh.num_vertices());
-  std::vector<bool> interior_inside(mesh.num_vertices());
+  RangedIndexSet boundary_visited(mesh.num_entities(0));
+  RangedIndexSet interior_visited(mesh.num_entities(0));
+  std::vector<bool> boundary_inside(mesh.num_entities(0));
+  std::vector<bool> interior_inside(mesh.num_entities(0));
 
   // Always false when marking cells
   bool on_boundary = false;
@@ -303,10 +303,10 @@ void SubDomain::apply_markers(std::map<std::size_t, std::size_t>& sub_domains,
 
   // Speed up the computation by only checking each vertex once (or
   // twice if it is on the boundary for some but not all facets).
-  RangedIndexSet boundary_visited(mesh.num_vertices());
-  RangedIndexSet interior_visited(mesh.num_vertices());
-  std::vector<bool> boundary_inside(mesh.num_vertices());
-  std::vector<bool> interior_inside(mesh.num_vertices());
+  RangedIndexSet boundary_visited(mesh.num_entities(0));
+  RangedIndexSet interior_visited(mesh.num_entities(0));
+  std::vector<bool> boundary_inside(mesh.num_entities(0));
+  std::vector<bool> interior_inside(mesh.num_entities(0));
 
   // Always false when marking cells
   bool on_boundary = false;
@@ -318,8 +318,8 @@ void SubDomain::apply_markers(std::map<std::size_t, std::size_t>& sub_domains,
     // Check if entity is on the boundary if entity is a facet
     if (dim == D - 1)
       on_boundary = (entity->num_global_entities(D) == 1);
-    // Or, if entity is of topological dimension less than D - 1, check if any connected
-    // facet is on the boundary
+    // Or, if entity is of topological dimension less than D - 1,
+    // check if any connected facet is on the boundary
     else if (dim < D - 1)
     {
       on_boundary = false;

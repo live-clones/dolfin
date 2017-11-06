@@ -202,7 +202,7 @@ std::string VTKWriter::base64_cell_data(const Mesh& mesh,
                                         std::size_t data_dim, std::size_t rank,
                                         bool compress)
 {
-  const std::size_t num_cells = mesh.num_cells();
+  const std::size_t num_cells = mesh.num_entities(mesh.topology().dim());
 
   // Number of zero paddings per point
   std::size_t padding_per_point = 0;
@@ -316,7 +316,7 @@ void VTKWriter::write_base64_mesh(const Mesh& mesh, std::size_t cell_dim,
   file << "<Points>" << std::endl;
   file << "<DataArray  type=\"Float64\"  NumberOfComponents=\"3\"  format=\""
        << "binary" << "\">" << std::endl;
-  std::vector<double> vertex_data(3*mesh.num_vertices());
+  std::vector<double> vertex_data(3*mesh.num_entities(0));
   std::vector<double>::iterator vertex_entry = vertex_data.begin();
   for (VertexIterator v(mesh); !v.end(); ++v)
   {

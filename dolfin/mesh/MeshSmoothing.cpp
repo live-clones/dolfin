@@ -63,7 +63,7 @@ void MeshSmoothing::smooth(Mesh& mesh, std::size_t num_iterations)
   const MeshFunction<std::size_t> vertex_map = boundary.entity_map(0);
   MeshFunction<bool> on_boundary(reference_to_no_delete_pointer(mesh), 0);
   on_boundary = false;
-  if (boundary.num_vertices() > 0)
+  if (boundary.num_entities(0) > 0)
   {
     for (VertexIterator v(boundary); !v.end(); ++v)
       on_boundary[vertex_map[*v]] = true;
@@ -193,7 +193,7 @@ void MeshSmoothing::snap_boundary(Mesh& mesh,
 
   // Smooth boundary
   MeshGeometry& geometry = boundary.geometry();
-  for (std::size_t i = 0; i < boundary.num_vertices(); i++)
+  for (std::size_t i = 0; i < boundary.num_entities(0); i++)
   {
     Point p = geometry.point(i);
     Array<double> x(dim, p.coordinates());

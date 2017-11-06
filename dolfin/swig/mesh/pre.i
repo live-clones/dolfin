@@ -90,7 +90,7 @@ __idiv__ = __itruediv__
 
   PyObject* _cells() {
     // FIXME: Works only for Mesh with Intervals, Triangles and Tetrahedrons
-    return %make_numpy_array(2, uint)(self->num_cells(),
+    return %make_numpy_array(2, uint)(self->num_entities(self->topology().dim()),
                                       self->type().num_entities(0),
                                       self->cells().data(), false);
   }
@@ -98,7 +98,7 @@ __idiv__ = __itruediv__
   PyObject* _cell_orientations()
   {
     if (!self->cell_orientations().empty())
-      dolfin_assert(self->cell_orientations().size() == self->num_cells());
+      dolfin_assert(self->cell_orientations().size() == self->num_entities(self->topology().dim()));
     return %make_numpy_array(1, int)(self->cell_orientations().size(),
                                      self->cell_orientations().data(), true);
   }
@@ -366,10 +366,10 @@ typedef std::pair<std::vector<double>, std::vector<double> > quadrature_rule;
 %{
 typedef std::pair<std::vector<double>, std::vector<double> > quadrature_rule;
 %}
-%fragment("convert_dolfin_quadrature_rule", "header"){ 
+%fragment("convert_dolfin_quadrature_rule", "header"){
 SWIGINTERNINLINE PyObject * convert_dolfin_quadrature_rule(quadrature_rule qr)
 {
-  // Typemap Function for dolfin::quadrature_rule 
+  // Typemap Function for dolfin::quadrature_rule
   npy_intp n0 = qr.first.size();
   npy_intp n1 = qr.second.size();
 
@@ -414,7 +414,7 @@ PyObject* quadrature_rules_##cell_type(std::size_t part)
 {
   PyObject* ret = PyDict_New();
   auto qr_map = ($self)->quadrature_rules_##cell_type (part);
-  
+
   for (auto it = qr_map.begin(); it != qr_map.end(); it++)
   {
     PyObject* key = SWIG_From_dec(unsigned int)(it->first);
@@ -442,4 +442,3 @@ dolfin::MultiMesh::quadrature_rules_##cell_type(std::size_t part);
 EXTEND_MULTIMESH_QUADRATURE_RULE(cut_cells)
 EXTEND_MULTIMESH_QUADRATURE_RULE(interface)
 EXTEND_MULTIMESH_QUADRATURE_RULE(overlap)
-

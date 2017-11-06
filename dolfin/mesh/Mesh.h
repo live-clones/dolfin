@@ -127,46 +127,6 @@ namespace dolfin
     ///         Another Mesh object.
     const Mesh& operator=(const Mesh& mesh);
 
-    /// Get number of vertices in mesh.
-    ///
-    /// @return std::size_t
-    ///         Number of vertices.
-    ///
-    std::size_t num_vertices() const
-    { return _topology.size(0); }
-
-    /// Get number of edges in mesh.
-    ///
-    /// @return std::size_t
-    ///         Number of edges.
-    ///
-    std::size_t num_edges() const
-    { return _topology.size(1); }
-
-    /// Get number of faces in mesh.
-    ///
-    /// @return std::size_t
-    ///         Number of faces.
-    ///
-    std::size_t num_faces() const
-    { return _topology.size(2); }
-
-    /// Get number of facets in mesh.
-    ///
-    /// @return std::size_t
-    ///         Number of facets.
-    ///
-    std::size_t num_facets() const
-    { return _topology.size(_topology.dim() - 1); }
-
-    /// Get number of cells in mesh.
-    ///
-    /// @return std::size_t
-    ///         Number of cells.
-    ///
-    std::size_t num_cells() const
-    { return _topology.size(_topology.dim()); }
-
     /// Get number of entities of given topological dimension.
     ///
     /// @param d (std::size_t)
@@ -201,17 +161,6 @@ namespace dolfin
     ///
     const std::vector<unsigned int>& cells() const
     { return _topology(_topology.dim(), 0)(); }
-
-    /// Get number of local entities of given topological dimension.
-    ///
-    /// @param  dim (std::size_t)
-    ///         Topological dimension.
-    ///
-    /// @return std::size_t
-    ///         Number of local entities of topological dimension d.
-    ///
-    std::size_t size(std::size_t dim) const
-    { return _topology.size(dim); }
 
     /// Get global number of entities of given topological dimension.
     ///

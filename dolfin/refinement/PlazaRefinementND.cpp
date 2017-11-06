@@ -223,15 +223,15 @@ void PlazaRefinementND::face_long_edge(std::vector<unsigned int>& long_edge,
   mesh.init(2, 1);
 
   // Storage for face-local index of longest edge
-  long_edge.resize(mesh.num_faces());
+  long_edge.resize(mesh.num_entities(2));
 
   // Check mesh face quality (may be used in 2D to switch to "uniform" refinement)
   const double min_ratio = sqrt(2.0)/2.0;
   if (tdim == 2)
-    edge_ratio_ok.resize(mesh.num_faces());
+    edge_ratio_ok.resize(mesh.num_entities(2));
 
   // Store all edge lengths in Mesh to save recalculating for each Face
-  std::vector<double> edge_length(mesh.num_edges());
+  std::vector<double> edge_length(mesh.num_entities(1));
   for (EdgeIterator e(mesh); !e.end(); ++e)
     edge_length[e->index()] = e->length();
 
@@ -512,14 +512,14 @@ void PlazaRefinementND::set_parent_facet_markers(const Mesh& mesh,
 
   new_mesh.init(tdim - 1);
   new_parent_facet.clear();
-  new_parent_facet.resize(new_mesh.num_facets(),
+  new_parent_facet.resize(new_mesh.num_entities(tdim-1),
                           std::numeric_limits<std::size_t>::max());
 
   std::vector<std::size_t>& parent_cell
     = new_mesh.data().array("parent_cell", tdim);
 
   // Make a map from parent->child cells
-  std::vector<std::set<std::size_t>> reverse_cell_map(mesh.num_cells());
+  std::vector<std::set<std::size_t>> reverse_cell_map(mesh.num_entities(tdim));
   for (CellIterator cell(new_mesh); !cell.end(); ++cell)
   {
     const std::size_t cell_index = cell->index();

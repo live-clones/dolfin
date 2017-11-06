@@ -416,7 +416,7 @@ std::size_t DofMapBuilder::build_constrained_vertex_indices(
     shared_vertices = DistributedMeshTools::compute_shared_entities(mesh, 0);
 
    // Mark shared vertices
-  std::vector<bool> vertex_shared(mesh.num_vertices(), false);
+  std::vector<bool> vertex_shared(mesh.num_entities(0), false);
   for (auto shared_vertex = shared_vertices.begin();
        shared_vertex != shared_vertices.end(); ++shared_vertex)
   {
@@ -425,7 +425,7 @@ std::size_t DofMapBuilder::build_constrained_vertex_indices(
   }
 
   // Mark slave vertices
-  std::vector<bool> slave_vertex(mesh.num_vertices(), false);
+  std::vector<bool> slave_vertex(mesh.num_entities(0), false);
   std::map<unsigned int, std::pair<unsigned int,
                                    unsigned int>>::const_iterator slave;
   for (slave = slave_to_master_vertices.begin();
@@ -445,7 +445,7 @@ std::size_t DofMapBuilder::build_constrained_vertex_indices(
   // Compute modified global vertex indices
   std::size_t new_index = 0;
   modified_vertex_indices_global
-    = std::vector<std::int64_t>(mesh.num_vertices(), -1);
+    = std::vector<std::int64_t>(mesh.num_entities(0), -1);
 
   for (VertexIterator vertex(mesh); !vertex.end(); ++vertex)
   {
@@ -617,7 +617,7 @@ void DofMapBuilder::build_local_ufc_dofmap(
     entity_indices[d].resize(mesh.type().num_entities(d));
 
   // Build dofmap from ufc::dofmap
-  dofmap.resize(mesh.num_cells(),
+  dofmap.resize(mesh.num_entities(D),
                 std::vector<la_index>(ufc_dofmap.num_element_dofs()));
   std::vector<std::size_t> dof_holder(ufc_dofmap.num_element_dofs());
   for (CellIterator cell(mesh, "all"); !cell.end(); ++cell)
@@ -1106,7 +1106,7 @@ std::shared_ptr<const ufc::dofmap> DofMapBuilder::build_ufc_node_graph(
 
   // Allocate space for dof map
   node_dofmap.clear();
-  node_dofmap.resize(mesh.num_cells());
+  node_dofmap.resize(mesh.num_entities(D));
 
   // Get standard local elem2ent dimension
   const std::size_t local_dim = dofmaps[0]->num_element_dofs();
@@ -1229,7 +1229,7 @@ DofMapBuilder::build_ufc_node_graph_constrained(
 
   // Allocate space for dof map
   node_dofmap.clear();
-  node_dofmap.resize(mesh.num_cells());
+  node_dofmap.resize(mesh.num_entities(D));
 
   // Get standard local element dimension
   const std::size_t local_dim = dofmaps[0]->num_element_dofs();

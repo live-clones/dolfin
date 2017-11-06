@@ -424,15 +424,18 @@ void XMLMesh::read_array_uint(std::vector<std::size_t>& array,
 //-----------------------------------------------------------------------------
 void XMLMesh::write_mesh(const Mesh& mesh, pugi::xml_node mesh_node)
 {
+  // Toplogical dimension
+  const std::size_t tdim = mesh.topology().dim();
+
   // Add mesh attributes
   const CellType::Type _cell_type = mesh.type().cell_type();
   const std::string cell_type = CellType::type2string(_cell_type);
   mesh_node.append_attribute("celltype") = cell_type.c_str();
-  mesh_node.append_attribute("dim") = (unsigned int) mesh.geometry().dim();
+  mesh_node.append_attribute("dim") = (unsigned int) tdim;
 
   // Add vertices node
   pugi::xml_node vertices_node = mesh_node.append_child("vertices");
-  vertices_node.append_attribute("size") = (unsigned int) mesh.num_vertices();
+  vertices_node.append_attribute("size") = (unsigned int) mesh.num_entities(0);
 
   // Write each vertex
   for (VertexIterator v(mesh); !v.end(); ++v)
@@ -470,7 +473,7 @@ void XMLMesh::write_mesh(const Mesh& mesh, pugi::xml_node mesh_node)
 
   // Add cells node
   pugi::xml_node cells_node = mesh_node.append_child("cells");
-  cells_node.append_attribute("size") = (unsigned int) mesh.num_cells();
+  cells_node.append_attribute("size") = (unsigned int) mesh.num_entities(tdim);
 
   // Add each cell
   for (CellIterator c(mesh); !c.end(); ++c)

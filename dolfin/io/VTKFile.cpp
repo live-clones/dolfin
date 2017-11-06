@@ -293,7 +293,7 @@ void VTKFile::write_point_data(const GenericFunction& u, const Mesh& mesh,
                                std::string vtu_filename) const
 {
   const std::size_t rank = u.value_rank();
-  const std::size_t num_vertices = mesh.num_vertices();
+  const std::size_t num_vertices = mesh.num_entities(0);
 
   // Get number of components
   const std::size_t dim = u.value_size();

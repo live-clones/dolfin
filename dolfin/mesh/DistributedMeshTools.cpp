@@ -196,7 +196,7 @@ std::size_t DistributedMeshTools::number_entities(
   // Prepare list of global entity numbers. Check later that nothing
   // is equal to -1
   global_entity_indices
-    = std::vector<std::int64_t>(mesh.size(d), -1);
+    = std::vector<std::int64_t>(mesh.num_entities(d), -1);
 
   std::map<Entity, EntityData>::const_iterator it;
 
@@ -396,7 +396,7 @@ DistributedMeshTools::locate_off_process_entities(const std::vector<std::size_t>
   const std::vector<std::int64_t> global_entity_indices
       = mesh.topology().global_indices(dim);
 
-  dolfin_assert(global_entity_indices.size() == mesh.num_cells());
+  dolfin_assert(global_entity_indices.size() == mesh.num_entities(D));
 
   // Prepare map to hold process numbers
   std::map<std::size_t, std::set<std::pair<std::size_t, std::size_t>>>
@@ -1030,7 +1030,7 @@ void DistributedMeshTools::init_facet_cell_connections(Mesh& mesh)
 
   // Create vector to hold number of cells connected to each
   // facet. Initially copy over from local values.
-  std::vector<unsigned int> num_global_neighbors(mesh.num_facets());
+  std::vector<unsigned int> num_global_neighbors(mesh.num_entities(D-1));
 
   std::map<std::int32_t, std::set<unsigned int>>& shared_facets
     = mesh.topology().shared_entities(D - 1);
@@ -1127,7 +1127,7 @@ void DistributedMeshTools::reorder_values_by_global_indices(const Mesh& mesh,
 {
   Timer t("DistributedMeshTools: reorder vertex values");
 
-  dolfin_assert(mesh.num_vertices()*width == data.size());
+  dolfin_assert(mesh.num_entities(0)*width == data.size());
 
   // MPI communicator
   const MPI_Comm mpi_comm = mesh.mpi_comm();
@@ -1168,7 +1168,7 @@ void DistributedMeshTools::reorder_values_by_global_indices(const Mesh& mesh,
 
   // Reference to data to send, reorganised as a 2D boost::multi_array
   boost::multi_array_ref<double, 2>
-    data_array(data.data(), boost::extents[mesh.num_vertices()][width]);
+    data_array(data.data(), boost::extents[mesh.num_entities(0)][width]);
 
   std::vector<std::int64_t> global_indices;
   std::vector<double> reduced_data;

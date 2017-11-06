@@ -168,7 +168,7 @@ MultiMesh::quadrature_rules_cut_cells(std::size_t part,
                                       unsigned int cell_index) const
 {
   auto q = quadrature_rules_cut_cells(part);
-  dolfin_assert(cell_index < this->part(part)->num_cells());
+  dolfin_assert(cell_index < this->part(part)->num_entities(this->part(part)->topology().dim()));
   return q[cell_index];
 }
 //-----------------------------------------------------------------------------
@@ -184,7 +184,7 @@ MultiMesh::quadrature_rules_overlap(std::size_t part,
 				    unsigned int cell_index) const
 {
   auto q = quadrature_rules_overlap(part);
-  dolfin_assert(cell_index < this->part(part)->num_cells());
+  dolfin_assert(cell_index < this->part(part)->num_entities(this->part(part)->topology().dim()));
   return q[cell_index];
 }
 //-----------------------------------------------------------------------------
@@ -200,7 +200,7 @@ MultiMesh::quadrature_rules_interface(std::size_t part,
 				      unsigned int cell_index) const
 {
   auto q = quadrature_rules_interface(part);
-  dolfin_assert(cell_index < this->part(part)->num_cells());
+  dolfin_assert(cell_index < this->part(part)->num_entities(this->part(part)->topology().dim()));
   return q[cell_index];
 }
 //-----------------------------------------------------------------------------
@@ -394,7 +394,7 @@ std::string MultiMesh::plot_matplotlib(double delta_z,
     std::stringstream x, y;
     x << "    x = np.array((";
     y << "    y = np.array((";
-    for (std::size_t i = 0; i < current->num_vertices(); i++)
+    for (std::size_t i = 0; i < current->num_entities(0); i++)
     {
       x << current->coordinates()[i*2] << ", ";
       y << current->coordinates()[i*2 + 1] << ",";
@@ -472,8 +472,8 @@ void MultiMesh::_build_bounding_box_trees()
     std::shared_ptr<BoundingBoxTree> boundary_tree(new BoundingBoxTree());
 
     // FIXME: what if the boundary mesh is empty?
-    dolfin_assert(_boundary_meshes[i]->num_vertices()>0);
-    if (_boundary_meshes[i]->num_vertices()>0)
+    dolfin_assert(_boundary_meshes[i]->num_entities(0) > 0);
+    if (_boundary_meshes[i]->num_entities(0) > 0)
       boundary_tree->build(*_boundary_meshes[i]);
     _boundary_trees.push_back(boundary_tree);
   }
@@ -501,14 +501,14 @@ void MultiMesh::_build_collision_maps()
     // 2: covered = cell colliding with some higher domain but not its boundary
 
     // Create vector of markers for cells in part `i` (0, 1, or 2)
-    std::vector<char> markers(_meshes[i]->num_cells(), 0);
+    std::vector<char> markers(_meshes[i]->num_entities(_meshes[i]->topology().dim()), 0);
 
     // Create local arrays for marking domain and boundary collisions
     // for cells in part `i`. Note that in contrast to the markers
     // above which are global to part `i`, these markers are local to
     // the collision between part `i` and part `j`.
-    std::vector<bool> collides_with_boundary(_meshes[i]->num_cells());
-    std::vector<bool> collides_with_domain(_meshes[i]->num_cells());
+    std::vector<bool> collides_with_boundary(_meshes[i]->num_entities(_meshes[i]->topology().dim()));
+    std::vector<bool> collides_with_domain(_meshes[i]->num_entities(_meshes[i]->topology().dim()));
 
     // Create empty collision map for cut cells in part `i`
     std::map<unsigned int, std::vector<std::pair<std::size_t, unsigned int>>>
@@ -614,7 +614,7 @@ void MultiMesh::_build_collision_maps()
     std::vector<unsigned int> uncut_cells;
     std::vector<unsigned int> cut_cells;
     std::vector<unsigned int> covered_cells;
-    for (unsigned int c = 0; c < _meshes[i]->num_cells(); c++)
+    for (unsigned int c = 0; c < _meshes[i]->num_entities(_meshes[i]->topology().dim()); c++)
     {
       switch (markers[c])
       {
@@ -1496,8 +1496,9 @@ void MultiMesh::_inclusion_exclusion_interface
 std::vector<std::vector<std::pair<std::size_t, std::size_t>>>
 MultiMesh::_boundary_facets_to_full_mesh(std::size_t part) const
 {
+  const std::size_t tdim = _meshes[part]->topology().dim();
   std::vector<std::vector<std::pair<std::size_t, std::size_t>>>
-    full_to_bdry(_meshes[part]->num_cells());
+    full_to_bdry(_meshes[part]->num_entities(tdim));
 
   // Get map from boundary mesh to facets of full mesh
   const std::size_t tdim_boundary
@@ -1506,7 +1507,6 @@ MultiMesh::_boundary_facets_to_full_mesh(std::size_t part) const
     = _boundary_meshes[part]->entity_map(tdim_boundary);
 
   // Generate facet to cell connectivity for full mesh
-  const std::size_t tdim = _meshes[part]->topology().dim();
   _meshes[part]->init(tdim_boundary, tdim);
   const MeshConnectivity& full_facet_cell_map
     = _meshes[part]->topology()(tdim_boundary, tdim);

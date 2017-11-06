@@ -145,7 +145,7 @@ void PointIntegralSolver::step(double dt)
     // Iterate over vertices
     ufc::cell ufc_cell;
     std::vector<double> coordinate_dofs;
-    for (std::size_t vert_ind = 0; vert_ind < _mesh->num_vertices(); ++vert_ind)
+    for (std::size_t vert_ind = 0; vert_ind < _mesh->num_entities(0); ++vert_ind)
     {
       // Cell containing vertex
       const Cell cell(*_mesh, _vertex_map[vert_ind].first);
@@ -570,7 +570,7 @@ void PointIntegralSolver::_init()
   }
 
   // Build vertex map
-  _vertex_map.resize(_mesh->num_vertices());
+  _vertex_map.resize(_mesh->num_entities(0));
 
   // Init mesh connections
   _mesh->init(0);

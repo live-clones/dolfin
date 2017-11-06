@@ -44,7 +44,7 @@ using namespace dolfin;
 ParallelRefinement::ParallelRefinement(const Mesh& mesh) : _mesh(mesh),
   shared_edges(DistributedMeshTools::compute_shared_entities(_mesh, 1)),
   local_edge_to_new_vertex(new std::map<std::size_t, std::size_t>()),
-  marked_edges(mesh.num_edges(), false),
+  marked_edges(mesh.num_entities(1), false),
   marked_for_update(MPI::size(mesh.mpi_comm()))
 {
   // Do nothing
@@ -57,13 +57,13 @@ ParallelRefinement::~ParallelRefinement()
 //-----------------------------------------------------------------------------
 bool ParallelRefinement::is_marked(std::size_t edge_index) const
 {
-  dolfin_assert(edge_index < _mesh.num_edges());
+  dolfin_assert(edge_index < _mesh.num_entities(1));
   return marked_edges[edge_index];
 }
 //-----------------------------------------------------------------------------
 void ParallelRefinement::mark(std::size_t edge_index)
 {
-  dolfin_assert(edge_index < _mesh.num_edges());
+  dolfin_assert(edge_index < _mesh.num_entities(1));
 
   // Already marked, so nothing to do
   if (marked_edges[edge_index])
@@ -83,7 +83,7 @@ void ParallelRefinement::mark(std::size_t edge_index)
 //-----------------------------------------------------------------------------
 void ParallelRefinement::mark_all()
 {
-  marked_edges.assign(_mesh.num_edges(), true);
+  marked_edges.assign(_mesh.num_entities(1), true);
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<const std::map<std::size_t, std::size_t>>
@@ -159,7 +159,7 @@ void ParallelRefinement::create_new_vertices()
   // owned on this process.  Index them sequentially from zero.
   const std::size_t gdim = _mesh.geometry().dim();
   std::size_t n = 0;
-  for (std::size_t local_i = 0 ; local_i < _mesh.num_edges(); ++local_i)
+  for (std::size_t local_i = 0 ; local_i < _mesh.num_entities(1); ++local_i)
   {
     if (marked_edges[local_i] == true)
     {

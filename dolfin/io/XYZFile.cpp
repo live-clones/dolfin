@@ -195,7 +195,7 @@ void XYZFile::mesh_function_write(T& meshfunction)
                  "Unable to open file \"%s\"", _filename.c_str());
   }
 
-  fp << mesh.num_cells() << std::endl;
+  fp << mesh.num_entities(mesh.topology().dim()) << std::endl;
   for (CellIterator cell(mesh); !cell.end(); ++cell)
     fp << meshfunction.get(cell->index())  << std::endl;
 
