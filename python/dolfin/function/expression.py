@@ -7,11 +7,6 @@
 # either version 3 of the License, or (at your option) any later
 # version.
 
-
-__all__ = ["UserExpression"]
-
-import hashlib
-from functools import reduce
 import types
 import numpy
 import ufl
@@ -20,6 +15,8 @@ from ufl.utils.indexflattening import (flatten_multiindex,
                                        shape_to_strides)
 import dolfin.cpp as cpp
 import dolfin.function.jit as jit
+
+__all__ = ["UserExpression"]
 
 
 def _select_element(family, cell, degree, value_shape):
@@ -54,6 +51,7 @@ class _InterfaceExpression(cpp.function.Expression):
         # Wrap eval functions
         def wrapped_eval(self, values, x):
             self.user_expression.eval(values, x)
+
         def wrapped_eval_cell(self, values, x, cell):
             self.user_expression.eval_cell(values, x, cell)
 
@@ -95,8 +93,25 @@ class BaseExpression(ufl.Coefficient):
         label = label or "User defined expression"
         self._cpp_object.rename(name, label)
 
-    #def __call__(self, x):
-    #    return self._cpp_object(x)
+    def ufl_evaluate(self, x, component, derivatives):
+        """Function used by ufl to evaluate the Expression"""
+        assert derivatives == ()  # TODO: Handle derivatives
+
+        if component:
+            shape = self.ufl_shape
+            assert len(shape) == len(component)
+            value_size = product(shape)
+            index = flatten_multiindex(component, shape_to_strides(shape))
+            values = numpy.zeros(value_size)
+            # FIXME: use a function with a return value
+            self(*x, values=values)
+            return values[index]
+        else:
+            # Scalar evaluation
+            return self(*x)
+
+    # def __call__(self, x):
+    #     return self._cpp_object(x)
     def __call__(self, *args, **kwargs):
         # GNW: This function is copied from the old DOLFIN Python
         # code. It is far too complicated. There is no need to provide
@@ -119,13 +134,14 @@ class BaseExpression(ufl.Coefficient):
         # Some help variables
         value_size = product(self.ufl_element().value_shape())
 
-        # If values (return argument) is passed, check the type and length
+        # If values (return argument) is passed, check the type and
+        # length
         values = kwargs.get("values", None)
         if values is not None:
             if not isinstance(values, numpy.ndarray):
                 raise TypeError("expected a NumPy array for 'values'")
             if len(values) != value_size or not numpy.issubdtype(values.dtype, 'd'):
-                raise TypeError("expected a double NumPy array of length"\
+                raise TypeError("expected a double NumPy array of length"
                                 " %d for return values." % value_size)
             values_provided = True
         else:
@@ -153,7 +169,7 @@ class BaseExpression(ufl.Coefficient):
         # Convert it to an 1D numpy array
         try:
             x = numpy.fromiter(x, 'd')
-        except (TypeError, ValueError, AssertionError) as e:
+        except (TypeError, ValueError, AssertionError):
             raise TypeError("expected scalar arguments for the coordinates")
 
         if len(x) == 0:
@@ -168,7 +184,7 @@ class BaseExpression(ufl.Coefficient):
             pass
         else:
             if len(x) != dim:
-                raise TypeError("expected the geometry argument to be of "\
+                raise TypeError("expected the geometry argument to be of "
                                 "length %d" % dim)
 
         # The actual evaluation
@@ -220,7 +236,7 @@ class UserExpression(BaseExpression):
         domain = kwargs.pop("domain", None)
         name = kwargs.pop("name", None)
         label = kwargs.pop("label", None)
-        mpi_comm = kwargs.pop("mpi_comm", None)
+        # mpi_comm = kwargs.pop("mpi_comm", None)
         if (len(kwargs) > 0):
             raise RuntimeError("Invalid keyword argument")
 
@@ -247,6 +263,8 @@ class ExpressionParameters(object):
     def __init__(self, cpp_object, params):
         self._params = params
         self._cpp_object = cpp_object
+        if "user_parameters" in self._params:
+            raise RuntimeError("'user_parameters' is reserved. Do not use in Expression")
         for k, v in self._params.items():
             self[k] = v
 
@@ -269,8 +287,64 @@ class ExpressionParameters(object):
         return key in self._params
 
     def update(self, params):
-        for k,v in dict(params).items():
+        for k, v in dict(params).items():
             self[k] = v
+
+
+class CompiledExpression(BaseExpression):
+    """Wrap a compiled module of type cpp.Expression"""
+
+    def __init__(self, cpp_module=None, **kwargs):
+
+        # Remove arguments that are used in Expression creation
+        element = kwargs.pop("element", None)
+        degree = kwargs.pop("degree", None)
+        cell = kwargs.pop("cell", None)
+        domain = kwargs.pop("domain", None)
+        name = kwargs.pop("name", None)
+        label = kwargs.pop("label", None)
+        # mpi_comm = kwargs.pop("mpi_comm", None)
+
+        if not isinstance(cpp_module, cpp.function.Expression):
+            raise RuntimeError("Must supply compiled C++ Expression module to CompiledExpression")
+        else:
+            self._cpp_object = cpp_module
+
+            params = kwargs
+            for k, val in params.items():
+                if not isinstance(k, str):
+                    raise KeyError("User Parameter key must be a string")
+                if not hasattr(self._cpp_object, k):
+                    raise AttributeError("Compiled module does not have attribute %s", k)
+                setattr(self._cpp_object, k, val)
+
+        if element and degree:
+            raise RuntimeError("Cannot specify an element and a degree for Expressions.")
+
+        # Deduce element type if not provided
+        if element is None:
+            if degree is None:
+                raise KeyError("Must supply element or degree")
+            value_shape = tuple(self.value_dimension(i)
+                                for i in range(self.value_rank()))
+            if domain is not None and cell is None:
+                cell = domain.ufl_cell()
+            element = _select_element(family=None, cell=cell, degree=degree,
+                                      value_shape=value_shape)
+
+        BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
+                                name=name, label=label)
+
+    def __getattr__(self, name):
+        if hasattr(self._cpp_object, name):
+            return getattr(self._cpp_object, name)
+
+    def __setattr__(self, name, value):
+        if name.startswith("_"):
+            super().__setattr__(name, value)
+        elif hasattr(self._cpp_object, name):
+            setattr(self._cpp_object, name, value)
+
 
 class Expression(BaseExpression):
     """JIT Expressions"""
@@ -288,13 +362,17 @@ class Expression(BaseExpression):
         domain = kwargs.pop("domain", None)
         name = kwargs.pop("name", None)
         label = kwargs.pop("label", None)
-        mpi_comm = kwargs.pop("mpi_comm", None)
+        # FIXME: feed mpi_comm through to JIT
+        # mpi_comm = kwargs.pop("mpi_comm", None)
 
-        if cpp_code is not None:
+        if not isinstance(cpp_code, (str, tuple, list)):
+            raise RuntimeError("Must supply C++ code to Expression. You may want to use UserExpression")
+        else:
             params = kwargs
             for k in params:
                 if not isinstance(k, str):
-                    raise KeyError("User Parameter key must be a string")
+                    raise KeyError("User parameter key must be a string")
+
             self._cpp_object = jit.compile_expression(cpp_code, params)
             self._parameters = ExpressionParameters(self._cpp_object, params)
 

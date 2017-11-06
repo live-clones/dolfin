@@ -122,42 +122,26 @@ def norm(v, norm_type="L2", mesh=None):
 
     elif isinstance(v, ufl.Coefficient):
         if norm_type.lower() == "l2":
-            M = v**2*dx
+            M = v**2 * dx
         elif norm_type.lower() == "h1":
-            M = (v**2 + grad(v)**2)*dx
+            M = (v**2 + grad(v)**2) * dx
         elif norm_type.lower() == "h10":
-            M = grad(v)**2*dx
+            M = grad(v)**2 * dx
         elif norm_type.lower() == "hdiv":
-            M = (v**2 + div(v)**2)*dx
+            M = (v**2 + div(v)**2) * dx
         elif norm_type.lower() == "hdiv0":
-            M = div(v)**2*dx
+            M = div(v)**2 * dx
         elif norm_type.lower() == "hcurl":
-            M = (v**2 + curl(v)**2)*dx
+            M = (v**2 + curl(v)**2) * dx
         elif norm_type.lower() == "hcurl0":
-            M = curl(v)**2*dx
-        # else:
-        #     cpp.dolfin_error("norms.py",
-        #                      "compute norm",
-        #                      "Unknown norm type (\"%s\") for functions"
-        #                      % str(norm_type))
-    # else:
-    #     cpp.dolfin_error("norms.py",
-    #                      "compute norm",
-    #                      "Unknown object type. Must be a vector or a function")
-
-    # Assemble value
-    r = assemble(M)
-
-    # Check value
-    if r < 0.0:
-        pass
-        # cpp.dolfin_error("norms.py",
-        #                  "compute norm",
-        #                  "Square of norm is negative, might be a round-off error")
-    elif r == 0.0:
-        return 0.0
+            M = curl(v)**2 * dx
+        else:
+            raise ValueError("Unknown norm type {}".format(str(norm_type)))
     else:
-        return sqrt(r)
+        raise TypeError("Do not know how to compute norm of {}".format(str(v)))
+
+    # Assemble value and return
+    return sqrt(assemble(M))
 
 
 def errornorm(u, uh, norm_type="l2", degree_rise=3, mesh=None):
@@ -230,23 +214,18 @@ def errornorm(u, uh, norm_type="l2", degree_rise=3, mesh=None):
     if hasattr(u, "_cpp_object") and mesh is None:
         mesh = u._cpp_object.function_space().mesh()
     if mesh is None:
-        cpp.dolfin_error("norms.py",
-                         "compute error norm",
-                         "Missing mesh")
+        raise RuntimeError("Cannot compute error norm. Missing mesh.")
 
     # Get rank
     if not u.ufl_shape == uh.ufl_shape:
-        cpp.dolfin_error("norms.py",
-                         "compute error norm",
-                         "Value shapes don't match")
+        raise RuntimeError("Cannot compute error norm. Value shapes do not match.")
+
     shape = u.ufl_shape
     rank = len(shape)
 
     # Check that uh is associated with a finite element
     if uh.ufl_element().degree() is None:
-        cpp.dolfin_error("norms.py",
-                         "compute error norm",
-                         "Function uh must have a finite element")
+        raise RuntimeError("Cannot compute error norm. Function uh must have a finite element.")
 
     # Degree for interpolation space. Raise degree with respect to uh.
     degree = uh.ufl_element().degree() + degree_rise

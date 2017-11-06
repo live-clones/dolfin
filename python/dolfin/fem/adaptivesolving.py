@@ -21,15 +21,15 @@ Adaptive*VariationalSolver classes
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ["AdaptiveLinearVariationalSolver",
-           "AdaptiveNonlinearVariationalSolver",
-           "generate_error_control", "generate_error_control_forms"]
-
 import dolfin.cpp as cpp
 from dolfin.fem.form import Form
 from dolfin.fem.solving import LinearVariationalProblem
 from dolfin.fem.solving import NonlinearVariationalProblem
 from dolfin.fem.errorcontrolgenerator import DOLFINErrorControlGenerator
+
+__all__ = ["AdaptiveLinearVariationalSolver",
+           "AdaptiveNonlinearVariationalSolver",
+           "generate_error_control", "generate_error_control_forms"]
 
 
 class AdaptiveLinearVariationalSolver(cpp.adaptivity.AdaptiveLinearVariationalSolver):
@@ -207,9 +207,7 @@ def generate_error_control_forms(problem, goal):
             assert len(form.ufl_domains()) == 1, "Error control got as input a form with more than one domain!"
 
     else:
-        cpp.dolfin_error("adaptivesolving.py",
-                         "generate forms required for error control",
-                         "Unknown problem type (\"%s\")" % str(problem))
+        raise RuntimeError("Generate forms required for error control. Unknown problem type (\"{}\")".format(problem))
 
     # Extract unknown Function from problem
     u = problem.u_ufl

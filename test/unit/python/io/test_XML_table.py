@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 """Unit tests for the XML io library for Tables"""
 
 # Copyright (C) 2016 Simon Funke and Marie E. Rognes
@@ -23,10 +21,6 @@ import pytest
 from dolfin import *
 from dolfin_utils.test import cd_tempdir
 
-if has_pybind11():
-    TimingClear_keep = TimingClear.keep
-    TimingType_wall = TimingType.wall
-    TimingType_system = TimingType.system
 
 def test_write_and_read_table(cd_tempdir):
     # Do something that takes time

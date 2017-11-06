@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 "Unit tests for the mesh library"
 
 # Copyright (C) 2006 Anders Logg
@@ -151,9 +149,8 @@ def test_UnitSquareMeshDistributed():
     mesh = UnitSquareMesh(mpi_comm_world(), 5, 7)
     assert mesh.size_global(0) == 48
     assert mesh.size_global(2) == 70
-    if has_petsc4py():
+    if has_petsc4py() and not has_pybind11():
         import petsc4py
-        assert isinstance(mpi_comm_world(), petsc4py.PETSc.Comm)
         assert isinstance(mesh.mpi_comm(), petsc4py.PETSc.Comm)
         assert mesh.mpi_comm() == mpi_comm_world()
 
@@ -163,9 +160,8 @@ def test_UnitSquareMeshLocal():
     mesh = UnitSquareMesh(mpi_comm_self(), 5, 7)
     assert mesh.num_vertices() == 48
     assert mesh.num_cells() == 70
-    if has_petsc4py():
+    if has_petsc4py() and not has_pybind11():
         import petsc4py
-        assert isinstance(mpi_comm_self(), petsc4py.PETSc.Comm)
         assert isinstance(mesh.mpi_comm(), petsc4py.PETSc.Comm)
         assert mesh.mpi_comm() == mpi_comm_self()
 
@@ -281,6 +277,14 @@ def test_Read(cd_tempdir):
     # file << f
     # f = MeshFunction('int', mesh, "saved_mesh_function.xml")
     # assert all(f.array() == f.array())
+
+
+def test_hash():
+    h1 = UnitSquareMesh(4, 4).hash()
+    h2 = UnitSquareMesh(4, 5).hash()
+    h3 = UnitSquareMesh(4, 4).hash()
+    assert h1 == h3
+    assert h1 != h2
 
 
 @skip_in_parallel
@@ -532,7 +536,7 @@ def test_shared_entities(mesh_factory, ghost_mode):
 
         # Check that sum(local-shared) = global count
         rank = MPI.rank(mesh.mpi_comm())
-        ct = sum(1 for val in six.itervalues(shared_entities) if val[0] < rank)
+        ct = sum(1 for val in six.itervalues(shared_entities) if list(val)[0] < rank)
         size_global = MPI.sum(mesh.mpi_comm(), mesh.size(shared_dim) - ct)
 
         assert size_global ==  mesh.size_global(shared_dim)

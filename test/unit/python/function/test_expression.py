@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 """Unit tests for the function library"""
 
 # Copyright (C) 2007-2014 Anders Logg
@@ -27,7 +25,7 @@ from math import sin, cos, exp, tan
 from numpy import array, zeros, float_
 import numpy as np
 
-from dolfin_utils.test import fixture, skip_in_parallel, skip_if_pybind11
+from dolfin_utils.test import fixture, skip_in_parallel, skip_if_pybind11, skip_if_not_pybind11
 
 @fixture
 def mesh():
@@ -226,13 +224,15 @@ def test_vector_valued_expression_member_function(mesh):
     for f in fs:
         u = Expression("f[0] + f[1] + f[2]", f=f, degree=1)
         v = interpolate(u, V)
-        assert np.allclose(v.vector().array(), 6.0)
+        assert np.allclose(v.vector().get_local(), 6.0)
         for g in fs:
             u.f = g
             v = interpolate(u, V)
-            assert np.allclose(v.vector().array(), 6.0)
+            assert np.allclose(v.vector().get_local(), 6.0)
 
 
+# NOTE: Do we want this to work (attaching MeshFunctions to
+# Expressions) with pybind11, or use full JIT?
 @skip_in_parallel
 @skip_if_pybind11
 def test_meshfunction_expression():
@@ -312,7 +312,7 @@ def test_compute_vertex_values(mesh):
     assert all(e1_values[mesh.num_vertices():mesh.num_vertices()*2] == 2)
     assert all(e1_values[mesh.num_vertices()*2:mesh.num_vertices()*3] == 3)
 
-
+@skip_if_pybind11
 def test_wrong_sub_classing():
 
     def noAttributes():
@@ -377,6 +377,30 @@ def test_wrong_sub_classing():
     with pytest.raises(RuntimeError):
         noDefaultValues()
     with pytest.raises(TypeError):
+        wrongDefaultType()
+    with pytest.raises(RuntimeError):
+        wrongParameterNames0()
+    with pytest.raises(RuntimeError):
+        wrongParameterNames1()
+
+@skip_if_not_pybind11
+def test_runtime_exceptions():
+
+    def noDefaultValues():
+        Expression("a")
+
+    def wrongDefaultType():
+        Expression("a", a="1", degree=1)
+
+    def wrongParameterNames0():
+        Expression("foo", bar=1.0, degree=1)
+
+    def wrongParameterNames1():
+        Expression("user_parameters", user_parameters=1.0, degree=1)
+
+    with pytest.raises(RuntimeError):
+        noDefaultValues()
+    with pytest.raises(RuntimeError):
         wrongDefaultType()
     with pytest.raises(RuntimeError):
         wrongParameterNames0()

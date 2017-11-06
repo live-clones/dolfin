@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 """Unit tests for LocalSolver"""
 
 # Copyright (C) 2013 Garth N. Wells
@@ -29,9 +27,6 @@ from dolfin_utils.test import skip_in_parallel
 from dolfin_utils.test import set_parameters_fixture
 ghost_mode = set_parameters_fixture("ghost_mode", ["shared_facet"])
 
-if has_pybind11():
-    LocalSolver.SolverType_LU = LocalSolver.SolverType.LU
-    LocalSolver.SolverType_Cholesky = LocalSolver.SolverType.Cholesky
 
 def test_solve_global_rhs():
     mesh = UnitCubeMesh(2, 3, 3)

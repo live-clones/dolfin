@@ -19,10 +19,12 @@
 # First added:  2009-02-12
 # Last changed: 2012-09-28
 
+from dolfin.cpp.mesh import Vertex, edges
+from dolfin.cpp.log import info
+from dolfin import cpp
+
 __all__ = ["compute_vertex_map", "compute_edge_map", "init_parent_edge_indices"]
 
-from dolfin.cpp.mesh import Vertex
-from dolfin import cpp
 
 def compute_vertex_map(mesh0, mesh1):
     """
@@ -43,9 +45,7 @@ def compute_vertex_map(mesh0, mesh1):
 
     # Check arguments
     if not isinstance(mesh0, cpp.mesh.Mesh) or not isinstance(mesh1, cpp.mesh.Mesh):
-        cpp.dolfin_error("ale.py",
-                         "compute vertex map",
-                         "Expected 'Mesh' as argument")
+        raise RuntimeError("Compute vertex map. Expected 'Mesh' as argument.")
 
     # Get parent vertex numbers
     vertices0 = mesh0.data().array("parent_vertex_indices", 0)
@@ -53,9 +53,7 @@ def compute_vertex_map(mesh0, mesh1):
 
     # Check mappings
     if vertices0 is None or vertices1 is None:
-        cpp.dolfin_error("ale.py",
-                         "compute vertex map",
-                         "Parent vertex indices are missing")
+        raise RuntimeError("Compute vertex map. Parent vertex indices are missing")
 
     # Compute parent-to-local mapping for mesh1
     parent_to_local_mesh1 = {}
@@ -70,6 +68,7 @@ def compute_vertex_map(mesh0, mesh1):
             vertex_map[i] = parent_to_local_mesh1[parent_vertex]
 
     return vertex_map
+
 
 def compute_edge_map(mesh0, mesh1):
     """
@@ -90,19 +89,15 @@ def compute_edge_map(mesh0, mesh1):
 
     # Check arguments
     if not isinstance(mesh0, cpp.mesh.Mesh) or not isinstance(mesh1, cpp.mesh.Mesh):
-        cpp.dolfin_error("ale.py",
-                         "compute edge map",
-                         "Expected 'Mesh' as argument")
+        raise RuntimeError("Compute edge map. Expected 'Mesh' as argument.")
 
     # Get parent vertex numbers
     vertices0 = mesh0.data().array("parent_vertex_indices", 0)
     vertices1 = mesh1.data().array("parent_vertex_indices", 0)
 
     # Check mappings
-    if len(vertices0) == 0  or len(vertices1) == 0:
-        cpp.dolfin_error("ale.py",
-                         "compute edge map",
-                         "Parent vertex indices are missing")
+    if len(vertices0) == 0 or len(vertices1) == 0:
+        raise RuntimeError("Compute edge map. Parent vertex indices are missing.")
 
     # Initialize edges
     mesh0.init(1)
@@ -132,14 +127,13 @@ def compute_edge_map(mesh0, mesh1):
 
     return edge_map
 
+
 def init_parent_edge_indices(submesh, mesh):
     "Initialize data 'parent_edge_indices' for submesh."
 
     # Check arguments
     if not isinstance(submesh, cpp.mesh.Mesh) or not isinstance(mesh, cpp.mesh.Mesh):
-        cpp.dolfin_error("ale.py",
-                         "initialize parent edge indices",
-                         "Expected 'Mesh' as argument")
+        raise RuntimeError("Initialize parent edge indices. Expected 'Mesh' as argument")
 
     # Check if edge map has already been computed
     if not submesh.data().exists("parent_edge_indices", 1):
@@ -148,9 +142,7 @@ def init_parent_edge_indices(submesh, mesh):
     # Get parent vertex numbers
     parent_vertex_indices = submesh.data().array("parent_vertex_indices", 0)
     if parent_vertex_indices is None:
-        cpp.dolfin_error("ale.py",
-                         "initialize parent edge indices",
-                         "Parent vertex indice are missing")
+        raise RuntimeError("Initialize parent edge indices. Parent vertex indice are missing.")
 
     # Make sure that we have edges for both meshes
     submesh.init(1)
@@ -177,9 +169,7 @@ def init_parent_edge_indices(submesh, mesh):
         # Check intersection
         common_edges = edges0.intersection(edges1)
         if not len(common_edges) == 1:
-            cpp.dolfin_error("ale.py",
-                             "initialize parent edge indices",
-                             "Parent vertices do not share exactly one common edge")
+            raise RuntimeError("Initialize parent edge indices. Parent vertices do not share exactly one common edge")
         parent_edge_index = list(common_edges)[0]
 
         # Set value

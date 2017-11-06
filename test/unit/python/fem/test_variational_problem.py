@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 """Unit tests for the Nonlinear- and Linear-VariationalProblem classes"""
 
 # Copyright (C) 2016 Garth N. Wells
@@ -41,9 +39,9 @@ def test_linear_construction():
     w = Function(V)
     with pytest.raises(TypeError):
         problem = LinearVariationalProblem(a, L)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(Exception):
         problem = LinearVariationalProblem(a, L, [bc])
-    with pytest.raises(RuntimeError):
+    with pytest.raises(Exception):
         problem = LinearVariationalProblem(a, L, [bc], w)
     problem = LinearVariationalProblem(a, L, w, [])
     problem = LinearVariationalProblem(a, L, w, [bc])
@@ -64,7 +62,7 @@ def test_nonlinear_construction():
     J = derivative(F, u, du)
     bc = DirichletBC(V, 0.0, DomainBoundary())
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(Exception):
         problem = NonlinearVariationalProblem(F, u, J)
     problem = NonlinearVariationalProblem(F, u)
     problem = NonlinearVariationalProblem(F, u, [])

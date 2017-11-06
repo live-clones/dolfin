@@ -1,5 +1,3 @@
-#!/usr/bin/env py.test
-
 """Unit tests for the Attribute interface of the HDF5 io library"""
 
 # Copyright (C) 2013 Chris Richardson
@@ -107,8 +105,14 @@ def test_attribute_container_interface(attr):
         names.append("partition")
         values.append(attr["partition"])
 
-    assert(attr.list_attributes()==names)
-    assert(attr.to_dict() == dict(zip(names, values)))
+    assert(attr.list_attributes() == names)
+    for (name0, value0), (name1, value1) in zip(attr.to_dict().items(),
+                                                dict(zip(names, values)).items()):
+        assert name0 == name1
+        if isinstance(value0, numpy.ndarray):
+            assert (value0 == value1).all()
+        else:
+            assert value0 == value1
 
     # GNW: Should really just use h5py rather than wrap this. It could
     # be interfaced with pybind11, but not worth it
