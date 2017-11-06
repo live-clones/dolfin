@@ -43,7 +43,7 @@ while t < 1.0:
     mesh = refine(mesh);
 
     # Set some vector values
-    x = Vector(mesh.mpi_comm(), mesh.num_vertices());
+    x = Vector(mesh.mpi_comm(), mesh.num_entities(0));
     x[:] = ones(x.size())
 
     # Append to series

@@ -24,7 +24,7 @@
 #
 # To create movies from the generated PNG files, enter the output
 # directory and run the following commmands:
-# 
+#
 # ffmpeg -i multimesh_quadrature_%04d.png multimesh_quadrature.mp4
 # ffmpeg -i multimesh_quadrature_%04d.png multimesh_quadrature_compressed.mp4
 
@@ -125,7 +125,7 @@ for compress in [True, False]:
 	        plot_triangle(c, mesh, white, alpha_line=0.1)
 
 	    # Plot propeller mesh
-	    for c in range(propeller.num_cells()):
+	    for c in range(propeller.num_entities(propeller.topology().dim())):
 	        plot_triangle(c, propeller, color=white, alpha_fill=0.25)
 
 	    # Plot quadrature points
