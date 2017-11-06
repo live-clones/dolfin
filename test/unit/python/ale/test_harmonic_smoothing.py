@@ -43,7 +43,7 @@ def test_HarmonicSmoothing():
 
     # Check that coordinates are almost equal
     err = sum(sum(abs(boundary.coordinates() \
-                    - boundary_new.coordinates()))) / mesh.num_vertices()
+                    - boundary_new.coordinates()))) / mesh.num_entities(0)
     print("Current CG solver produced error in boundary coordinates", err)
     assert round(err - 0.0, 5) == 0
 

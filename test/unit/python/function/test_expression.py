@@ -308,9 +308,9 @@ def test_compute_vertex_values(mesh):
     e1_values = e1.compute_vertex_values(mesh)
 
     assert all(e0_values == 1)
-    assert all(e1_values[:mesh.num_vertices()] == 1)
-    assert all(e1_values[mesh.num_vertices():mesh.num_vertices()*2] == 2)
-    assert all(e1_values[mesh.num_vertices()*2:mesh.num_vertices()*3] == 3)
+    assert all(e1_values[:mesh.num_entities(0)] == 1)
+    assert all(e1_values[mesh.num_entities(0):mesh.num_entities(0)*2] == 2)
+    assert all(e1_values[mesh.num_entities(0)*2:mesh.num_entities(0)*3] == 3)
 
 @skip_if_pybind11
 def test_wrong_sub_classing():
@@ -679,9 +679,10 @@ def test_doc_string_complex_compiled_expression(mesh):
     c2 = bb.compute_first_entity_collision(p2)
 
     # Cell indices should be valid
-    assert c0 < mesh.num_cells()
-    assert c1 < mesh.num_cells()
-    assert c2 < mesh.num_cells()
+    tdim = mesh.topology().dim()
+    assert c0 < mesh.num_entities(tdim)
+    assert c1 < mesh.num_entities(tdim)
+    assert c2 < mesh.num_entities(tdim)
 
     # Cell data should be 0,1,2 by construction
     assert cell_data[c0] == 0
@@ -742,7 +743,8 @@ def test_doc_string_compiled_expression_with_system_headers():
         {
           const std::shared_ptr<const Mesh> mesh = u->function_space()->mesh();
           const std::shared_ptr<const GenericDofMap> dofmap = u->function_space()->dofmap();
-          const std::size_t ncells = mesh->num_cells();
+          const std::size_t tdim = mesh->topology().dim();
+          const std::size_t ncells = mesh->num_entities(tdim);
           std::size_t ndofs_per_cell;
           if (ncells > 0)
           {
@@ -780,7 +782,8 @@ def test_doc_string_compiled_expression_with_system_headers():
         {
           const std::shared_ptr<const Mesh> mesh = u->function_space()->mesh();
           const std::shared_ptr<const GenericDofMap> dofmap = u->function_space()->dofmap();
-          const std::size_t ncells = mesh->num_cells();
+          const std::size_t tdim = mesh->topology().dim();
+          const std::size_t ncells = mesh->num_entities(tdim);
           std::size_t ndofs_per_cell;
           if (ncells > 0)
           {

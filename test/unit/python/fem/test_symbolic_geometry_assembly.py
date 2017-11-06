@@ -273,7 +273,7 @@ def test_manifold_line_geometry(mesh, uflacs_representation_only):
     # refinement
     length = assemble(1.0*dx)
     mesh2 = refine(mesh)
-    assert mesh2.num_cells() == 2*mesh.num_cells()
+    assert mesh2.num_entities(tdim) == 2*mesh.num_entities(tdim)
     dx2 = Measure("dx")
     length2 = assemble(1.0*dx2(mesh2))
     assert round(length - length2, 7) == 0.0
@@ -281,7 +281,7 @@ def test_manifold_line_geometry(mesh, uflacs_representation_only):
     # Check that number of cells can be computed correctly by scaling
     # integral by |detJ|^-1
     num_cells = assemble(1.0/abs(detJ)*dx)
-    assert round(num_cells - mesh.num_cells(), 7) == 0.0
+    assert round(num_cells - mesh.num_entities(tdim), 7) == 0.0
 
     # Check that norm of Jacobian column matches detJ and volume
     assert round(length - assemble(sqrt(J[:, 0]**2)/abs(detJ)*dx), 7) == 0.0
@@ -292,7 +292,7 @@ def test_manifold_line_geometry(mesh, uflacs_representation_only):
     cells = mesh.cells()
 
     # Checks on each cell separately
-    for k in range(mesh.num_cells()):
+    for k in range(mesh.num_entities(tdim)):
         # Mark current cell
         mf.set_all(0)
         mf[k] = 1
@@ -508,9 +508,9 @@ def test_manifold_point_evaluation(square3d, any_representation):
 @skip_in_parallel
 def test_manifold_symbolic_geometry(square3d, uflacs_representation_only):
     mesh = square3d
-    assert mesh.num_cells() == 2
     gdim = mesh.geometry().dim()
     tdim = mesh.topology().dim()
+    assert mesh.num_entities(tdim) == 2
 
     area = sqrt(3.0)  # known area of mesh
     A = area/2.0  # area of single cell
@@ -568,7 +568,7 @@ def test_manifold_symbolic_geometry(square3d, uflacs_representation_only):
     x0 = as_vector((0.0, 0.0, 1.0))
 
     # Checks on each cell separately
-    for k in range(mesh.num_cells()):
+    for k in range(mesh.num_entities(tdim)):
         # Mark current cell
         mf.set_all(0)
         mf[k] = 1
@@ -730,9 +730,9 @@ def test_manifold_piola_mapped_functions(square3d, any_representation):
 @skip_in_parallel
 def test_tetrahedron_symbolic_geometry(uflacs_representation_only):
     mesh = UnitCubeMesh(1, 1, 1)
-    assert mesh.num_cells() == 6
     gdim = mesh.geometry().dim()
     tdim = mesh.topology().dim()
+    assert mesh.num_entities(tdim) == 6
 
     area = 1.0  # known volume of mesh
     A = area/6.0  # volume of single cell
@@ -759,7 +759,7 @@ def test_tetrahedron_symbolic_geometry(uflacs_representation_only):
     coordinates = mesh.coordinates()
     cells = mesh.cells()
 
-    for k in range(mesh.num_cells()):
+    for k in range(mesh.num_entities(tdim)):
         # Mark current cell
         mf.set_all(0)
         mf[k] = 1
@@ -815,9 +815,9 @@ def test_tetrahedron_symbolic_geometry(uflacs_representation_only):
 @skip_in_parallel
 def test_triangle_symbolic_geometry(uflacs_representation_only):
     mesh = UnitSquareMesh(1, 1)
-    assert mesh.num_cells() == 2
     gdim = mesh.geometry().dim()
     tdim = mesh.topology().dim()
+    assert mesh.num_entities(tdim) == 2
 
     area = 1.0  # known volume of mesh
     A = area/2.0  # volume of single cell
@@ -844,7 +844,7 @@ def test_triangle_symbolic_geometry(uflacs_representation_only):
     coordinates = mesh.coordinates()
     cells = mesh.cells()
 
-    for k in range(mesh.num_cells()):
+    for k in range(mesh.num_entities(tdim)):
         # Mark current cell
         mf.set_all(0)
         mf[k] = 1

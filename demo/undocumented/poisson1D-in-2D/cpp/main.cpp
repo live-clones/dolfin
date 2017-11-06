@@ -53,7 +53,7 @@ void rotate(Mesh& mesh)
 {
   std::vector<double>& x = mesh.coordinates();
   double tmpx;
-  for (std::size_t i = 0; i < mesh.num_vertices(); i++)
+  for (std::size_t i = 0; i < mesh.num_entities(0); i++)
   {
     tmpx = x[2*i]*cos(THETA) - x[2*i+1]*sin(THETA);
 

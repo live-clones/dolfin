@@ -72,7 +72,8 @@ def create_multimesh_with_meshes_on_diagonal(width, offset, Nx):
     exact_area = 0 if multimesh.num_parts() == 1 else 4*width + (multimesh.num_parts()-2)*(2*width + 2*offset)
     error = abs(area - exact_area)
     relative_error = error / exact_area
-    tol = max(DOLFIN_EPS_LARGE, multimesh.num_parts()*multimesh.part(0).num_cells()*DOLFIN_EPS)
+    tdim = multimesh.part(0).topology().dim()
+    tol = max(DOLFIN_EPS_LARGE, multimesh.num_parts()*multimesh.part(0).num_entities(tdim)*DOLFIN_EPS)
 
     print("")
     print("width = {}, offset = {}, Nx = {}, num_parts = {}".format(width, offset, Nx, multimesh.num_parts()))
@@ -80,6 +81,7 @@ def create_multimesh_with_meshes_on_diagonal(width, offset, Nx):
     print("relative error", relative_error)
     print("tol", tol)
     return relative_error < tol
+
 
 @skip_in_parallel
 @skip_if_pybind11
@@ -131,9 +133,8 @@ def test_meshes_with_boundary_edge_overlap_2d():
     area = compute_area_using_quadrature(multimesh)
     assert  abs(area - exact_area) < DOLFIN_EPS_LARGE
 
-    # next translate mesh 1 such that no boundaries overlap with edges 
+    # next translate mesh 1 such that no boundaries overlap with edges
     mesh1.translate(Point(0.0, 0.1))
     multimesh.build()
     area = compute_area_using_quadrature(multimesh)
     assert  abs(area - exact_area) < DOLFIN_EPS_LARGE
-

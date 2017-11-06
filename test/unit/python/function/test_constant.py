@@ -80,16 +80,13 @@ def test_compute_vertex_values(mesh_factory):
     e0 = Constant(1)
     e1 = Constant((1, 2, 3))
 
-    # e0_values = zeros(mesh.num_vertices(),dtype='d')
-    # e1_values = zeros(mesh.num_vertices()*3,dtype='d')
-
     e0_values = e0.compute_vertex_values(mesh)
     e1_values = e1.compute_vertex_values(mesh)
 
     assert all(e0_values == 1)
-    assert all(e1_values[:mesh.num_vertices()] == 1)
-    assert all(e1_values[mesh.num_vertices():mesh.num_vertices()*2] == 2)
-    assert all(e1_values[mesh.num_vertices()*2:mesh.num_vertices()*3] == 3)
+    assert all(e1_values[:mesh.num_entities(0)] == 1)
+    assert all(e1_values[mesh.num_entities(0):mesh.num_entities(0)*2] == 2)
+    assert all(e1_values[mesh.num_entities(0)*2:mesh.num_entities(0)*3] == 3)
 
 
 def test_values():

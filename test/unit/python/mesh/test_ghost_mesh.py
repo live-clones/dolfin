@@ -30,7 +30,6 @@ from dolfin_utils.test import fixture, skip_in_parallel, xfail_in_parallel, cd_t
 def xtest_ghost_vertex_1d(pushpop_parameters):
     parameters["ghost_mode"] = "shared_vertex"
     mesh = UnitIntervalMesh(20)
-    #print("Test: {}".format(MPI.sum(mesh.mpi_comm(), mesh.num_cells())))
 
 
 def xtest_ghost_facet_1d(pushpop_parameters):
@@ -47,25 +46,25 @@ def test_ghost_2d(pushpop_parameters):
 
         mesh = UnitSquareMesh(N, N)
         if MPI.size(mesh.mpi_comm()) > 1:
-            assert MPI.sum(mesh.mpi_comm(), mesh.num_cells()) > num_cells
+            assert MPI.sum(mesh.mpi_comm(), mesh.num_entities(2)) > num_cells
 
         parameters["reorder_cells_gps"] = True
         parameters["reorder_vertices_gps"] = False
         mesh = UnitSquareMesh(N, N)
         if MPI.size(mesh.mpi_comm()) > 1:
-            assert MPI.sum(mesh.mpi_comm(), mesh.num_cells()) > num_cells
+            assert MPI.sum(mesh.mpi_comm(), mesh.num_entities(2)) > num_cells
 
         parameters["reorder_cells_gps"] = True
         parameters["reorder_vertices_gps"] = True
         mesh = UnitSquareMesh(N, N)
         if MPI.size(mesh.mpi_comm()) > 1:
-            assert MPI.sum(mesh.mpi_comm(), mesh.num_cells()) > num_cells
+            assert MPI.sum(mesh.mpi_comm(), mesh.num_entities(2)) > num_cells
 
         parameters["reorder_cells_gps"] = False
         parameters["reorder_vertices_gps"] = True
         mesh = UnitSquareMesh(N, N)
         if MPI.size(mesh.mpi_comm()) > 1:
-            assert MPI.sum(mesh.mpi_comm(), mesh.num_cells()) > num_cells
+            assert MPI.sum(mesh.mpi_comm(), mesh.num_entities(2)) > num_cells
 
 
 def test_ghost_3d(pushpop_parameters):
@@ -77,22 +76,22 @@ def test_ghost_3d(pushpop_parameters):
 
         mesh = UnitCubeMesh(N, N, N)
         if MPI.size(mesh.mpi_comm()) > 1:
-            assert MPI.sum(mesh.mpi_comm(), mesh.num_cells()) > num_cells
+            assert MPI.sum(mesh.mpi_comm(), mesh.num_entities(3)) > num_cells
 
         parameters["reorder_cells_gps"] = True
         parameters["reorder_vertices_gps"] = False
         mesh = UnitCubeMesh(N, N, N)
         if MPI.size(mesh.mpi_comm()) > 1:
-            assert MPI.sum(mesh.mpi_comm(), mesh.num_cells()) > num_cells
+            assert MPI.sum(mesh.mpi_comm(), mesh.num_entities(3)) > num_cells
 
         parameters["reorder_cells_gps"] = True
         parameters["reorder_vertices_gps"] = True
         mesh = UnitCubeMesh(N, N, N)
         if MPI.size(mesh.mpi_comm()) > 1:
-            assert MPI.sum(mesh.mpi_comm(), mesh.num_cells()) > num_cells
+            assert MPI.sum(mesh.mpi_comm(), mesh.num_entities(3)) > num_cells
 
         parameters["reorder_cells_gps"] = False
         parameters["reorder_vertices_gps"] = True
         mesh = UnitCubeMesh(N, N, N)
         if MPI.size(mesh.mpi_comm()) > 1:
-            assert MPI.sum(mesh.mpi_comm(), mesh.num_cells()) > num_cells
+            assert MPI.sum(mesh.mpi_comm(), mesh.num_entities(3)) > num_cells

@@ -49,7 +49,7 @@ def test_vertex_iterators():
         for j, con in cons:
             assert numpy.all(con(i) == v.entities(j))
 
-    assert n == mesh.num_vertices()
+    assert n == mesh.num_entities(0)
 
     # Check coordinate assignment
     # FIXME: Outcomment to hopefully please Mac-buildbot
@@ -82,7 +82,7 @@ def test_edge_iterators():
         for j, con in cons:
             assert numpy.all(con(i) == e.entities(j))
 
-    assert n == mesh.num_edges()
+    assert n == mesh.num_entities(1)
 
 def test_face_iterator():
     "Iterate over faces"
@@ -107,7 +107,7 @@ def test_face_iterator():
         for j, con in cons:
             assert numpy.all(con(i) == f.entities(j))
 
-    assert n == mesh.num_faces()
+    assert n == mesh.num_entities(2)
 
 def test_facet_iterators():
     "Iterate over facets"
@@ -115,7 +115,7 @@ def test_facet_iterators():
     n = 0
     for f in facets(mesh):
         n += 1
-    assert n == mesh.num_facets()
+    assert n == mesh.num_entities(2)
 
 def test_cell_iterators():
     "Iterate over cells"
@@ -139,7 +139,7 @@ def test_cell_iterators():
         for j, con in cons:
             assert numpy.all(con(i) == c.entities(j))
 
-    assert n == mesh.num_cells()
+    assert n == mesh.num_entities(mesh.topology().dim())
 
     # Test non destruction of MeshEntities
     cell_list = [c for c in cells(mesh)]
@@ -153,4 +153,4 @@ def test_mixed_iterators():
     for c in cells(mesh):
         for v in vertices(c):
             n += 1
-    assert n == 4*mesh.num_cells()
+    assert n == 4*mesh.num_entities(mesh.topology().dim())

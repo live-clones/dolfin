@@ -65,7 +65,7 @@ def test_case_2(width, offset, Nx):
     multimesh.build()
     return multimesh
 
-test_cases = [test_case_1(4,3), 
+test_cases = [test_case_1(4,3),
               test_case_2(DOLFIN_PI/5, 0.1111, 3)]
 
 @skip_in_parallel
@@ -83,7 +83,8 @@ def test_cut_cell_has_quadrature(multimesh):
 def test_multimesh_cell_types(multimesh):
     # Test that every cell in the multimesh is either cut, uncut, or covered
     for part in range(multimesh.num_parts()):
-        cells = set(range(multimesh.part(part).num_cells()))
+        tdim = multimesh.part(part).topology().dim()
+        cells = set(range(multimesh.part(part).num_entities(tdim)))
         cut_cells = set(multimesh.cut_cells(part))
         uncut_cells = set(multimesh.uncut_cells(part))
         covered_cells = set(multimesh.covered_cells(part))

@@ -41,7 +41,7 @@ def test_creation(MeshFunc):
     domains = CellFunction("size_t", mesh, 0)
     for cell in cells(mesh):
         # Mark half the cells
-        if cell.index() > mesh.num_cells()/2:
+        if cell.index() > mesh.num_entities(mesh.topology().dim())/2:
             break
         domains[cell] = 1
         mesh.domains().set_marker((cell.index(), 1), dim_t)
@@ -50,8 +50,8 @@ def test_creation(MeshFunc):
     # external CellFunction
     smesh0 = SubMesh(mesh, 1)
     smesh1 = SubMesh(mesh, domains, 1)
-    assert smesh0.num_cells() == smesh1.num_cells()
-    assert smesh0.num_vertices() == smesh1.num_vertices()
+    assert smesh0.num_entities(smesh0.topology().dim()) == smesh1.num_entities(smesh1.topology().dim())
+    assert smesh0.num_entities(0) == smesh1.num_entities(0)
     # Check that we create the same sub mesh with the same
     # MeshValueCollection
     for cell0, cell1 in zip(cells(smesh0), cells(smesh1)):

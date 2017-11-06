@@ -62,17 +62,6 @@ def f(cube):
     return MeshFunction('int', cube, 0)
 
 
-def test_size(tp, name, funcs, mesh):
-    if name is "Vertex":
-        a = len(funcs[(tp, name)])
-        b = mesh.num_vertices()
-        assert a == b
-    else:
-        a = len(funcs[(tp, name)])
-        b = getattr(mesh, "num_%ss" % name.lower())()
-        assert a == b
-
-
 def test_access_type(tp, name, funcs):
     type_dict = dict(int=int, size_t=int, double=float, bool=bool)
     assert isinstance(funcs[(tp, name)][0], type_dict[tp])
@@ -102,36 +91,38 @@ def test_setvalues(tp, funcs, name):
 def test_Create(cube):
     """Create MeshFunctions."""
 
+    tdim = cube.topology().dim()
+
     v = MeshFunction("size_t", cube, 0)
-    assert v.size() == cube.num_vertices()
+    assert v.size() == cube.num_entities(0)
 
     v = MeshFunction("size_t", cube, 1)
-    assert v.size() == cube.num_edges()
+    assert v.size() == cube.num_entities(1)
 
     v = MeshFunction("size_t", cube, 2)
-    assert v.size() == cube.num_facets()
+    assert v.size() == cube.num_entities(tdim-1)
 
     v = MeshFunction("size_t", cube, 3)
-    assert v.size() == cube.num_cells()
+    assert v.size() == cube.num_entities(tdim)
 
 
 def test_CreateAssign(cube):
     """Create MeshFunctions with value."""
     i = 10
     v = MeshFunction("size_t", cube, 0, i)
-    assert v.size() == cube.num_vertices()
+    assert v.size() == cube.num_entities(0)
     assert v[0] == i
 
     v = MeshFunction("size_t", cube, 1, i)
-    assert v.size() == cube.num_edges()
+    assert v.size() == cube.num_entities(1)
     assert v[0] == i
 
     v = MeshFunction("size_t", cube, 2, i)
-    assert v.size() == cube.num_facets()
+    assert v.size() == cube.num_entities(2)
     assert v[0] == i
 
     v = MeshFunction("size_t", cube, 3, i)
-    assert v.size() == cube.num_cells()
+    assert v.size() == cube.num_entities(3)
     assert v[0] == i
 
 

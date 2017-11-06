@@ -158,8 +158,8 @@ def test_UnitSquareMeshDistributed():
 def test_UnitSquareMeshLocal():
     """Create mesh of unit square."""
     mesh = UnitSquareMesh(mpi_comm_self(), 5, 7)
-    assert mesh.num_vertices() == 48
-    assert mesh.num_cells() == 70
+    assert mesh.num_entities(0) == 48
+    assert mesh.num_entities(2) == 70
     if has_petsc4py() and not has_pybind11():
         import petsc4py
         assert isinstance(mesh.mpi_comm(), petsc4py.PETSc.Comm)
@@ -183,8 +183,8 @@ def test_UnitCubeMeshDistributed():
 def test_UnitCubeMeshDistributedLocal():
     """Create mesh of unit cube."""
     mesh = UnitCubeMesh(mpi_comm_self(), 5, 7, 9)
-    assert mesh.num_vertices() == 480
-    assert mesh.num_cells() == 1890
+    assert mesh.num_entities(0) == 480
+    assert mesh.num_entities(3) == 1890
 
 
 def test_UnitQuadMesh():
@@ -239,8 +239,8 @@ def test_BoundaryBoundary():
     mesh = UnitCubeMesh(2, 2, 2)
     b0 = BoundaryMesh(mesh, "exterior")
     b1 = BoundaryMesh(b0, "exterior")
-    assert b1.num_vertices() == 0
-    assert b1.num_cells() == 0
+    assert b1.num_entities(0) == 0
+    assert b1.num_entities(b1.topology().dim()) == 0
 
 
 @skip_in_parallel
@@ -317,7 +317,7 @@ def test_MeshXML2D(cd_tempdir):
     file = File("unitsquare.xml")
     file << mesh_out
     file >> mesh_in
-    assert mesh_in.num_vertices() == 16
+    assert mesh_in.num_entities(0) == 16
 
 
 @skip_in_parallel
@@ -328,7 +328,7 @@ def test_MeshXML3D(cd_tempdir):
     file = File("unitcube.xml")
     file << mesh_out
     file >> mesh_in
-    assert mesh_in.num_vertices() == 64
+    assert mesh_in.num_entities(0) == 64
 
 
 @skip_in_parallel
@@ -429,8 +429,8 @@ def test_basic_cell_orientations():
 
     mesh.init_cell_orientations(Expression(("0.0", "1.0", "0.0"), degree=0))
     orientations = mesh.cell_orientations()
-    assert len(orientations) == mesh.num_cells()
-    for i in range(mesh.num_cells()):
+    assert len(orientations) == mesh.num_entities(mesh.topology().dim())
+    for i in range(mesh.num_entities(mesh.topology().dim())):
         assert mesh.cell_orientations()[i] == 0
 
 
@@ -439,7 +439,7 @@ def test_cell_orientations():
     "Test that cell orientations update as expected."
     mesh = UnitIntervalMesh(12)
     mesh.init_cell_orientations(Expression(("0.0", "1.0", "0.0"), degree=0))
-    for i in range(mesh.num_cells()):
+    for i in range(mesh.num_entities(mesh.topology().dim())):
         assert mesh.cell_orientations()[i] == 0
 
     mesh = UnitSquareMesh(2, 2)
@@ -447,7 +447,7 @@ def test_cell_orientations():
     reference = numpy.array((0, 1, 0, 1, 0, 1, 0, 1))
     # Only compare against reference in serial (don't know how to
     # compare in parallel)
-    for i in range(mesh.num_cells()):
+    for i in range(mesh.num_entities(mesh.topology().dim())):
         assert mesh.cell_orientations()[i] == reference[i]
 
     mesh = BoundaryMesh(UnitSquareMesh(2, 2), "exterior")
@@ -530,14 +530,14 @@ def test_shared_entities(mesh_factory, ghost_mode):
                     assert isinstance(sharing, set)
                     assert (len(sharing) > 0) == e.is_shared()
 
-        n_entities = mesh.size(shared_dim)
+        n_entities = mesh.num_entities(shared_dim)
         n_global_entities = mesh.size_global(shared_dim)
         shared_entities = mesh.topology().shared_entities(shared_dim)
 
         # Check that sum(local-shared) = global count
         rank = MPI.rank(mesh.mpi_comm())
         ct = sum(1 for val in six.itervalues(shared_entities) if list(val)[0] < rank)
-        size_global = MPI.sum(mesh.mpi_comm(), mesh.size(shared_dim) - ct)
+        size_global = MPI.sum(mesh.mpi_comm(), mesh.num_entities(shared_dim) - ct)
 
         assert size_global ==  mesh.size_global(shared_dim)
 

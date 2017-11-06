@@ -114,7 +114,8 @@ def test_error_indicators(problem, u, mesh):
     solver.solve()
 
     # Compute error indicators
-    indicators = Vector(mesh.mpi_comm(), u.function_space().mesh().num_cells())
+    tdim = mesh.topology().dim()
+    indicators = Vector(mesh.mpi_comm(), u.function_space().mesh().num_entities(tdim))
     indicators[0] = 1.0
     #ec.compute_indicators(indicators, u) #
 

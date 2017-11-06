@@ -276,7 +276,7 @@ def test_dof_to_vertex_map(mesh_factory, reorder_dofs):
     u0 = Function(Q)
     u0.interpolate(c0)
 
-    vert_values = np.zeros(mesh.num_vertices()*2)
+    vert_values = np.zeros(mesh.num_entities(0)*2)
     u1 = Function(Q)
     vert_values[::2] = 1
     vert_values[1::2] = 2

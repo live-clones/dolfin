@@ -447,8 +447,8 @@ class TestTriangle(Tester):
 
         # Read in dolfin mesh and check number of cells and vertices
         mesh = Mesh(dfname)
-        self.assertEqual(mesh.num_vertices(), 96)
-        self.assertEqual(mesh.num_cells(), 159)
+        self.assertEqual(mesh.num_entities(0), 96)
+        self.assertEqual(mesh.num_entities(mesh.topology().dim()), 159)
 
         # Clean up
         os.unlink(dfname)
@@ -469,8 +469,8 @@ class TestTriangle(Tester):
         mesh = Mesh(dfname)
         mesh.init()
         mfun = MeshFunction('double', mesh, dfname0)
-        self.assertEqual(mesh.num_vertices(), 58)
-        self.assertEqual(mesh.num_cells(), 58)
+        self.assertEqual(mesh.num_entities(0), 58)
+        self.assertEqual(mesh.num_entities(mesh.topology().dim()), 58)
 
         # Create a size_t CellFunction and assign the values based on the
         # converted Meshfunction
@@ -534,8 +534,8 @@ class TestDiffPack(Tester):
 
         # Read in dolfin mesh and check number of cells and vertices
         mesh = Mesh(dfname)
-        self.assertEqual(mesh.num_vertices(), 27)
-        self.assertEqual(mesh.num_cells(), 48)
+        self.assertEqual(mesh.num_entities(0), 27)
+        self.assertEqual(mesh.num_entities(mesh.topology().dim()), 48)
         self.assertEqual(len(mesh.domains().markers(3)), 48)
         self.assertEqual(len(mesh.domains().markers(2)), 16)
 
@@ -563,8 +563,8 @@ class TestDiffPack(Tester):
         # Read in dolfin mesh and check number of cells and vertices
         mesh = Mesh(dfname)
 
-        self.assertEqual(mesh.num_vertices(), 41)
-        self.assertEqual(mesh.num_cells(), 64)
+        self.assertEqual(mesh.num_entities(0), 41)
+        self.assertEqual(mesh.num_entities(mesh.topology().dim()), 64)
         self.assertEqual(len(mesh.domains().markers(2)), 64)
 
         mf_basename = dfname.replace(".xml", "_marker_%d.xml")

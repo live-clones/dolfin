@@ -26,7 +26,7 @@ from dolfin import *
 
 def test_assign_2D_cells():
     mesh = UnitSquareMesh(3, 3)
-    ncells = mesh.num_cells()
+    ncells = mesh.num_entities(2)
     f = MeshValueCollection("int", mesh, 2)
     all_new = True
     for cell in cells(mesh):
@@ -50,7 +50,7 @@ def test_assign_2D_cells():
 def test_assign_2D_facets():
     mesh = UnitSquareMesh(3, 3)
     mesh.init(2, 1)
-    ncells = mesh.num_cells()
+    ncells = mesh.num_entities(2)
     f = MeshValueCollection("int", mesh, 1)
     all_new = True
     for cell in cells(mesh):
@@ -73,7 +73,7 @@ def test_assign_2D_facets():
 def test_assign_2D_vertices():
     mesh = UnitSquareMesh(3, 3)
     mesh.init(2, 0)
-    ncells = mesh.num_cells()
+    ncells = mesh.num_entities(2)
     f = MeshValueCollection("int", mesh, 0)
     all_new = True
     for cell in cells(mesh):
@@ -95,7 +95,7 @@ def test_assign_2D_vertices():
 
 def test_mesh_function_assign_2D_cells():
     mesh = UnitSquareMesh(3, 3)
-    ncells = mesh.num_cells()
+    ncells = mesh.num_entities(2)
     f = CellFunction("int", mesh)
     for cell in cells(mesh):
         f[cell] = ncells - cell.index()
@@ -142,8 +142,8 @@ def test_mesh_function_assign_2D_facets():
 
     g = MeshValueCollection("int", mesh, 1)
     g.assign(f)
-    assert mesh.num_facets() == f.size()
-    assert mesh.num_cells()*3 == g.size()
+    assert mesh.num_entities(1) == f.size()
+    assert mesh.num_entities(2)*3 == g.size()
     for cell in cells(mesh):
         for i, facet in enumerate(facets(cell)):
             assert 25 == g.get_value(cell.index(), i)
@@ -161,8 +161,8 @@ def test_mesh_function_assign_2D_vertices():
     f = VertexFunction("int", mesh, 25)
     g = MeshValueCollection("int", mesh, 0)
     g.assign(f)
-    assert mesh.num_vertices() == f.size()
-    assert mesh.num_cells()*3 == g.size()
+    assert mesh.num_entities(0) == f.size()
+    assert mesh.num_entities(2)*3 == g.size()
 
     f2 = MeshFunction("int", mesh, g)
 
