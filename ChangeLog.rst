@@ -4,6 +4,10 @@ Change log
 2017.2.0 (unreleased)
 ---------------------
 
+- Remove redundant ``dolfin::Mesh`` functions for getting number of
+  mesh entities Removed: ``Mesh::size``, ``Mesh::num_vertices``,
+  ``Mesh::num_edges``, ``Mesh::num_faces``, ``Mesh::num_facets``,
+  ``Mesh::num_cells``, removed. Use ``Mesh::num_entities`` instead).
 - Improved mesh topology computation performance.
 - Remove excessive calls to MPI init. It may now be necessary in some
   cases to explicitly intialise MPI.
