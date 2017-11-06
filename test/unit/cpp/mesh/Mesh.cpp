@@ -29,26 +29,26 @@ TEST_CASE("Simple shapes test")
   {
     // Create mesh of unit square
     UnitSquareMesh mesh(5, 7);
-    CHECK(mesh.num_vertices() == (std::size_t) 48);
-    CHECK(mesh.num_cells() == (std::size_t) 70);
+    CHECK(mesh.num_entities(0) == (std::size_t) 48);
+    CHECK(mesh.num_entities(2) == (std::size_t) 70);
 
     // Create mesh of unit square
     auto mesh1 = UnitSquareMesh::create({{5, 7}});
-    CHECK(mesh1.num_vertices() == (std::size_t) 48);
-    CHECK(mesh1.num_cells() == (std::size_t) 70);
+    CHECK(mesh1.num_entities(0) == (std::size_t) 48);
+    CHECK(mesh1.num_entities(2) == (std::size_t) 70);
   }
 
   SECTION("Test UnitCubeMesh")
   {
     // Create mesh of unit cube
     UnitCubeMesh mesh(5, 7, 9);
-    CHECK(mesh.num_vertices() == (std::size_t) 480);
-    CHECK(mesh.num_cells() == (std::size_t) 1890);
+    CHECK(mesh.num_entities(0) == (std::size_t) 480);
+    CHECK(mesh.num_entities(3) == (std::size_t) 1890);
 
     // Create mesh of unit cube
     auto mesh1 = UnitCubeMesh::create({{5, 7, 9}});
-    CHECK(mesh1.num_vertices() == (std::size_t) 480);
-    CHECK(mesh1.num_cells() == (std::size_t) 1890);
+    CHECK(mesh1.num_entities(0) == (std::size_t) 480);
+    CHECK(mesh1.num_entities(3) == (std::size_t) 1890);
   }
 }
 
@@ -59,8 +59,8 @@ TEST_CASE("Mesh refinement")
     // Refine mesh of unit square
     UnitSquareMesh mesh0(5, 7);
     Mesh mesh1 = refine(mesh0);
-    CHECK(mesh1.num_vertices() == (std::size_t) 165);
-    CHECK(mesh1.num_cells() == (std::size_t) 280);
+    CHECK(mesh1.num_entities(0) == (std::size_t) 165);
+    CHECK(mesh1.num_entities(2) == (std::size_t) 280);
   }
 
   SECTION("Test refine UnitCubeMesh")
@@ -68,8 +68,8 @@ TEST_CASE("Mesh refinement")
     // Refine mesh of unit cube
     UnitCubeMesh mesh0(5, 7, 9);
     Mesh mesh1 = refine(mesh0);
-    CHECK(mesh1.num_vertices() == (std::size_t) 3135);
-    CHECK(mesh1.num_cells() == (std::size_t) 15120);
+    CHECK(mesh1.num_entities(0) == (std::size_t) 3135);
+    CHECK(mesh1.num_entities(3) == (std::size_t) 15120);
   }
 }
 
@@ -83,7 +83,7 @@ TEST_CASE("Mesh iterators")
     for (VertexIterator v(mesh); !v.end(); ++v)
       n++;
 
-    CHECK(n == mesh.num_vertices());
+    CHECK(n == mesh.num_entities(0));
   }
 
   SECTION("Test edge iterators")
@@ -94,7 +94,7 @@ TEST_CASE("Mesh iterators")
     for (EdgeIterator e(mesh); !e.end(); ++e)
       n++;
 
-    CHECK(n == mesh.num_edges());
+    CHECK(n == mesh.num_entities(1));
   }
 
   SECTION("Test face iterators")
@@ -105,7 +105,7 @@ TEST_CASE("Mesh iterators")
     for (FaceIterator f(mesh); !f.end(); ++f)
       n++;
 
-    CHECK(n == mesh.num_faces());
+    CHECK(n == mesh.num_entities(2));
   }
 
   SECTION("Test facet iterators")
@@ -116,7 +116,7 @@ TEST_CASE("Mesh iterators")
     for (FacetIterator f(mesh); !f.end(); ++f)
       n++;
 
-    CHECK(n == mesh.num_facets());
+    CHECK(n == mesh.num_entities(2));
   }
 
   SECTION("Test cell iterators")
@@ -127,7 +127,7 @@ TEST_CASE("Mesh iterators")
     for (CellIterator c(mesh); !c.end(); ++c)
       n++;
 
-    CHECK(n == mesh.num_cells());
+    CHECK(n == mesh.num_entities(3));
   }
 
   SECTION("Test mixed iterators")
@@ -139,7 +139,7 @@ TEST_CASE("Mesh iterators")
       for (VertexIterator v(*c); !v.end(); ++v)
         n++;
 
-    CHECK(n == 4*mesh.num_cells());
+    CHECK(n == 4*mesh.num_entities(3));
   }
 
   SECTION("Test boundary computation")
@@ -147,8 +147,8 @@ TEST_CASE("Mesh iterators")
     // Compute boundary of mesh
     UnitCubeMesh mesh(2, 2, 2);
     BoundaryMesh boundary(mesh, "exterior");
-    CHECK(boundary.num_vertices() == (std::size_t) 26);
-    CHECK(boundary.num_cells() == (std::size_t) 48);
+    CHECK(boundary.num_entities(0) == (std::size_t) 26);
+    CHECK(boundary.num_entities(boundary.topology().dim()) == (std::size_t) 48);
   }
 }
 
@@ -170,8 +170,8 @@ TEST_CASE("Boundary extraction")
     BoundaryMesh b0(mesh, "exterior");
     b0.order();
     BoundaryMesh b1(b0, "exterior");
-    CHECK(b1.num_vertices() == (std::size_t) 0);
-    CHECK(b1.num_cells() == (std::size_t) 0);
+    CHECK(b1.num_entities(0) == (std::size_t) 0);
+    CHECK(b1.num_entities(b1.topology().dim()) == (std::size_t) 0);
   }
 
   SECTION("Test assign")
@@ -195,7 +195,7 @@ TEST_CASE("InputOutput")
     File file("unitsquare.xml");
     file << mesh_out;
     file >> mesh_in;
-    CHECK(mesh_in.num_vertices() == (std::size_t) 16);
+    CHECK(mesh_in.num_entities(0) == (std::size_t) 16);
   }
 
   SECTION("Test mesh XML 3D")
@@ -206,7 +206,7 @@ TEST_CASE("InputOutput")
     File file("unitcube.xml");
     file << mesh_out;
     file >> mesh_in;
-    CHECK(mesh_in.num_vertices() == (std::size_t) 64);
+    CHECK(mesh_in.num_entities(0) == (std::size_t) 64);
   }
 
   SECTION("Test MeshFunction")

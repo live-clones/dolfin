@@ -27,7 +27,7 @@ TEST_CASE("MeshValueCollections")
   SECTION("Test assign 2D cells")
   {
     auto mesh = std::make_shared<UnitSquareMesh>(3, 3);
-    const std::size_t ncells = mesh->num_cells();
+    const std::size_t ncells = mesh->num_entities(2);
     MeshValueCollection<int> f(mesh, 2);
     bool all_new = true;
     for (CellIterator cell(*mesh); !cell.end(); ++cell)
@@ -53,7 +53,7 @@ TEST_CASE("MeshValueCollections")
   {
     auto mesh = std::make_shared<UnitSquareMesh>(3, 3);
     mesh->init(2,1);
-    const std::size_t ncells = mesh->num_cells();
+    const std::size_t ncells = mesh->num_entities(2);
     MeshValueCollection<int> f(mesh, 1);
     bool all_new = true;
     for (CellIterator cell(*mesh); !cell.end(); ++cell)
@@ -85,7 +85,7 @@ TEST_CASE("MeshValueCollections")
   {
     auto mesh = std::make_shared<UnitSquareMesh>(3, 3);
     mesh->init(2, 0);
-    const std::size_t ncells = mesh->num_cells();
+    const std::size_t ncells = mesh->num_entities(2);
     MeshValueCollection<int> f(mesh, 0);
     bool all_new = true;
     for (CellIterator cell(*mesh); !cell.end(); ++cell)
@@ -116,7 +116,7 @@ TEST_CASE("MeshValueCollections")
   SECTION("Test MeshFunction assign 2D cells")
   {
     auto mesh = std::make_shared<UnitSquareMesh>(3, 3);
-    const std::size_t ncells = mesh->num_cells();
+    const std::size_t ncells = mesh->num_entities(2);
     MeshFunction<int> f(mesh, 2, 0);
     for (CellIterator cell(*mesh); !cell.end(); ++cell)
       f[cell->index()] = ncells - cell->index();
@@ -138,8 +138,8 @@ TEST_CASE("MeshValueCollections")
     MeshFunction<int> f(mesh, 1, 25);
     MeshValueCollection<int> g(mesh, 1);
     g = f;
-    CHECK(mesh->num_facets() == f.size());
-    CHECK(mesh->num_cells()*3 == g.size());
+    CHECK(mesh->num_entities(1) == f.size());
+    CHECK(mesh->num_entities(2)*3 == g.size());
     for (CellIterator cell(*mesh); !cell.end(); ++cell)
     {
       for (std::size_t i = 0; i < cell->num_entities(1); ++i)
@@ -154,8 +154,8 @@ TEST_CASE("MeshValueCollections")
     MeshFunction<int> f(mesh, 0, 25);
     MeshValueCollection<int> g(mesh, 0);
     g = f;
-    CHECK(mesh->num_vertices() == f.size());
-    CHECK(mesh->num_cells()*3 == g.size());
+    CHECK(mesh->num_entities(0) == f.size());
+    CHECK(mesh->num_entities(2)*3 == g.size());
     for (CellIterator cell(*mesh); !cell.end(); ++cell)
     {
       for (std::size_t i = 0; i < cell->num_entities(0); ++i)
