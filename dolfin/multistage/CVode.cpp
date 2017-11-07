@@ -46,7 +46,6 @@ using namespace dolfin;
 /// Constructor
 CVode::CVode(int cv_lmm, int cv_iter) : t(0.0)
 {
-
   this->cv_lmm = cv_lmm;
   this->cv_iter = cv_iter;
 
@@ -58,19 +57,13 @@ CVode::CVode(int cv_lmm, int cv_iter) : t(0.0)
   // (for use in "f" below)
   int flag = CVodeSetUserData(cvode_mem, (void *)this);
   dolfin_assert(flag == 0);
-//  if(cv_iter == CV_NEWTON)
-//  {
-//    flag = CVSpgmr(cvode_mem, PREC_LEFT, 0);
-//    if(check_flag(&flag, "CVSpgmr", 1)) return(1); 
-//    flag = CVSpilsSetPreconditioner(cvode_mem, NULL, 0);
-//  }
 }
 
 /// Destructor
 CVode::~CVode()
 {
   CVodeFree(&cvode_mem);
-//  SUNLinSolFree(sunls);
+  SUNLinSolFree(sunls);
 }
 
 //-----------------------------------------------------------------------------
@@ -101,8 +94,8 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
     dolfin_debug("Initialising Newtonian solver");
     ls = std::unique_ptr<_generic_SUNLinearSolver>(SUNSPGMR(_u->nvector(), PREC_LEFT,0));
     dolfin_assert(flag == CV_SUCCESS);
-    dolfin_assert( ls != NULL);
     flag = CVSpilsSetLinearSolver(cvode_mem,ls.get());
+
     /* Call CVBandPreInit to initialize band preconditioner */
     ml = mu = 2;
     flag = CVBandPrecInit(cvode_mem, NEQ, mu, ml);
