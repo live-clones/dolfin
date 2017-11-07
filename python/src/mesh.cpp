@@ -162,6 +162,8 @@ namespace dolfin_wrappers
            { return MPICommWrapper(self.mpi_comm()); })
       .def("num_entities", &dolfin::Mesh::num_entities,
            "Number of mesh entities of dimension d")
+      .def("num_cells", &dolfin::Mesh::num_cells,
+           "Number of cells in mesh")
       .def("ordered", &dolfin::Mesh::ordered)
       .def("size", &dolfin::Mesh::size)
       .def("rmax", &dolfin::Mesh::rmax)

@@ -138,6 +138,14 @@ namespace dolfin
     std::size_t num_entities(std::size_t d) const
     { return _topology.size(d); }
 
+    /// Get number of cells in mesh.
+    ///
+    /// @return std::size_t
+    ///         Number of cells.
+    ///
+    std::size_t num_cells() const
+    { return _topology.size(_topology.dim()); }
+
     /// Get vertex coordinates.
     ///
     /// @return std::vector<double>&
