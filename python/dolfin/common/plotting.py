@@ -197,7 +197,7 @@ def mplot_function(ax, f, **kwargs):
     elif f.value_rank() == 1:
         # Vector function, interpolated to vertices
         w0 = f.compute_vertex_values(mesh)
-        nv = mesh.num_vertices()
+        nv = mesh.num_entities(0)
         if len(w0) != gdim * nv:
             raise AttributeError('Vector length must match geometric dimension.')
         X = mesh.coordinates()
