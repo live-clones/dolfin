@@ -1545,7 +1545,7 @@ void XDMFFile::build_mesh_quadratic(Mesh& mesh, const CellType& cell_type,
   std::vector<std::int32_t> topology_data
     = get_dataset<std::int32_t>(mesh.mpi_comm(), topology_dataset_node,
                                 relative_path);
-  dolfin_assert(topology_data.size()%num_cells == 0);
+  dolfin_assert(topology_data.size() % num_cells == 0);
   const int num_points_per_cell = topology_data.size()/num_cells;
   const int num_vertices_per_cell = cell_type.num_entities(0);
   const int num_edges_per_cell = cell_type.num_entities(1);
