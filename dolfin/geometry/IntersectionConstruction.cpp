@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2014-02-03
-// Last changed: 2017-10-07
+// Last changed: 2017-11-08
 
 #include <iomanip>
 #include <dolfin/mesh/MeshEntity.h>
@@ -365,7 +365,7 @@ IntersectionConstruction::intersection_segment_segment_2d(const Point& p0,
   const double q1o = orient2d(p0, p1, q1);
 
   // Case 0: points on the same side --> no intersection
-  if ((q0o > 0.0 and q1o > 0.0) or(q0o < 0.0 and q1o < 0.0))
+  if ((q0o > 0.0 and q1o > 0.0) or (q0o < 0.0 and q1o < 0.0))
     return std::vector<Point>();
 
   // Repeat the same procedure for p
@@ -545,11 +545,8 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
   const double q0o = orient3d(p0, p1, p2, q0);
   const double q1o = orient3d(p0, p1, p2, q1);
 
-  // Compute total orientation of segment wrt plane
-  const double qo = q0o*q1o;
-
   // Case 0: points on the same side --> no intersection
-  if (qo > 0.0)
+  if ((q0o > 0.0 and q1o > 0.0) or (q0o < 0.0 and q1o < 0.0))
     return std::vector<Point>();
 
   // Case 1: exactly one point in plane --> possible point intersection
@@ -570,7 +567,7 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
   const Point Q1 = GeometryTools::project_to_plane_3d(q1, major_axis);
 
   // Case 2: both points in plane (or almost)
-  if (std::abs(q0o) < DOLFIN_EPS_LARGE and std::abs(q1o) < DOLFIN_EPS_LARGE)
+  if (std::abs(q0o) < DOLFIN_EPS and std::abs(q1o) < DOLFIN_EPS)
   {
     // Compute 2D intersection points
     const std::vector<Point>
@@ -608,9 +605,9 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
   // Case 3: points on different sides (main case)
 
   // Compute intersection point
-  const double num = n.dot(p0 - q0);
-  const double den = n.dot(q1 - q0);
-  const Point x = q0 + num / den * (q1 - q0);
+  const Point w = q1 - q0;
+  const double den = n.dot(w);
+  const Point x = q0 + q0o / den * w;
 
   // Project point to major axis plane and check if inside triangle
   const Point X = GeometryTools::project_to_plane_3d(x, major_axis);
