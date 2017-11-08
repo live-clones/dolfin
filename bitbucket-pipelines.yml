@@ -8,10 +8,10 @@ pipelines:
   default:
     - step:
         script:
-          - wget http://computation.llnl.gov/projects/sundials/download/sundials-2.7.0.tar.gz
-          - tar xf sundials-2.7.0.tar.gz
-          - mkdir -p sundials-2.7.0/build
-          - cd sundials-2.7.0/build
+          - wget http://computation.llnl.gov/projects/sundials/download/sundials-3.0.0.tar.gz
+          - tar xf sundials-3.0.0.tar.gz
+          - mkdir -p sundials-3.0.0/build
+          - cd sundials-3.0.0/build
           - cmake -DMPI_ENABLE=ON ..
           - make
           - make install
