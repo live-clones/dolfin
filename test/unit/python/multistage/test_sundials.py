@@ -14,7 +14,7 @@ def test_sundials():
     if has_sundials():
       phi = Vector(mpi_comm_world(),20)
       phi[:] = 1.0
-      cv = MyCVode()
+      cv = MyCVode(CVode.LMM.CV_ADAMS,CVode.ITER.CV_FUNCTIONAL)
       cv.init(phi, 1e-6, 1e-6)
 
       nstep = 20

@@ -63,7 +63,6 @@ CVode::CVode(int cv_lmm, int cv_iter) : t(0.0)
 CVode::~CVode()
 {
   CVodeFree(&cvode_mem);
-  SUNLinSolFree(sunls);
 }
 
 //-----------------------------------------------------------------------------
