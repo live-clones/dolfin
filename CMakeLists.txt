@@ -86,7 +86,6 @@ option(DOLFIN_ENABLE_BENCHMARKS "Enable benchmark programs." OFF)
 option(DOLFIN_ENABLE_CODE_COVERAGE "Enable code coverage." OFF)
 option(DOLFIN_ENABLE_DOCS "Enable generation of documentation." ON)
 option(DOLFIN_ENABLE_TESTING "Enable testing." OFF)
-option(DOLFIN_IGNORE_PETSC4PY_VERSION "Ignore version of PETSc4py." OFF)
 option(DOLFIN_SKIP_BUILD_TESTS "Skip build tests for testing usability of dependency packages." OFF)
 option(DOLFIN_WITH_LIBRARY_VERSION "Build with library version information." ON)
 option(DOLFIN_ENABLE_GEOMETRY_DEBUGGING "Enable geometry debugging (developers only; requires libcgal-dev and libcgal-qt5-dev)." OFF)
@@ -101,7 +100,6 @@ add_feature_info(DOLFIN_ENABLE_BENCHMARKS DOLFIN_ENABLE_BENCHMARKS "Enable bench
 add_feature_info(DOLFIN_ENABLE_DOCS DOLFIN_ENABLE_DOCS "Enable generation of documentation.")
 add_feature_info(DOLFIN_SKIP_BUILD_TESTS DOLFIN_SKIP_BUILD_TESTS "Skip build tests for testing usability of dependency packages.")
 add_feature_info(DOLFIN_DEPRECATION_ERROR DOLFIN_DEPRECATION_ERROR "Turn deprecation warnings into errors.")
-add_feature_info(DOLFIN_IGNORE_PETSC4PY_VERSION DOLFIN_IGNORE_PETSC4PY_VERSION "Ignore version of PETSc4py.")
 add_feature_info(DOLFIN_ENABLE_GEOMETRY_DEBUGGING DOLFIN_ENABLE_GEOMETRY_DEBUGGING "Enable geometry debugging.")
 
 # Add shared library paths so shared libs in non-system paths are found

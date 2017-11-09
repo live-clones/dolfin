@@ -29,7 +29,7 @@ import platform
 import instant
 from time import time
 from instant import get_status_output
-from dolfin import has_mpi, has_parmetis, has_scotch
+#from dolfin import has_mpi, has_parmetis, has_scotch
 
 
 def get_executable_name(demo, lang) :
@@ -46,6 +46,7 @@ def get_executable_name(demo, lang) :
   lang_index = len(directories) - directories_reverted.index(lang) - 1
   truncated_directories = directories[demo_index+2:lang_index]
   return 'demo_' + "_".join(truncated_directories)
+
 
 def run_cpp_demo(prefix, demo, rootdir, timing, failed):
     print("----------------------------------------------------------------------")
@@ -72,6 +73,7 @@ def run_cpp_demo(prefix, demo, rootdir, timing, failed):
         print("*** Failed")
         print(output)
         failed += [(demo, "C++", prefix, output)]
+
 
 def run_python_demo(prefix, demo, rootdir, timing, failed):
     print("----------------------------------------------------------------------")
@@ -105,6 +107,7 @@ def run_python_demo(prefix, demo, rootdir, timing, failed):
             output += instant_error
         failed += [(demo, "Python", prefix, output)]
 
+
 def main():
     # Location of all demos
     demodir = os.path.join(os.curdir, "..", "..", "demo")
@@ -130,12 +133,12 @@ def main():
        os.path.join(demodir, 'undocumented', 'plot',                        'cpp'),
        os.path.join(demodir, 'undocumented', 'coordinates',                 'cpp'),
        os.path.join(demodir, 'undocumented', 'multimesh-quadrature',        'cpp'),
-       os.path.join(demodir, 'undocumented', 'multimesh-3d',                'cpp'),       
+       os.path.join(demodir, 'undocumented', 'multimesh-3d',                'cpp'),
        os.path.join(demodir, 'documented',   'stokes-mini',                 'cpp'),
        os.path.join(demodir, 'documented',   'tensor-weighted-poisson',     'cpp'),
        os.path.join(demodir, 'documented',   'subdomains-poisson',          'cpp'),
        os.path.join(demodir, 'documented',   'singular-poisson-rst',        'cpp'),
-       os.path.join(demodir, 'documented',   'maxwell-eigenvalues',        'cpp'),
+       os.path.join(demodir, 'documented',   'maxwell-eigenvalues',         'cpp'),
        ]
 
     # Check if we should run only Python tests, use for quick testing
@@ -245,10 +248,10 @@ def main():
     # Build prefix list
     prefixes = [""]
     mpi_prefix = "mpirun -np 3 "
-    if has_mpi() and (has_parmetis() or has_scotch()):
-        prefixes.append(mpi_prefix)
-    else:
-        print("Not running regression tests in parallel.")
+    #if has_mpi() and (has_parmetis() or has_scotch()):
+    #    prefixes.append(mpi_prefix)
+    #else:
+    #    print("Not running regression tests in parallel.")
 
     # Allow to disable parallel testing
     if "DISABLE_PARALLEL_TESTING" in os.environ:
