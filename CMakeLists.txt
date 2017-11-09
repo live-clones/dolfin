@@ -128,16 +128,13 @@ endif()
 set(OPTIONAL_PACKAGES "")
 list(APPEND OPTIONAL_PACKAGES "MPI")
 list(APPEND OPTIONAL_PACKAGES "PETSc")
-list(APPEND OPTIONAL_PACKAGES "PETSc4py")
 list(APPEND OPTIONAL_PACKAGES "SLEPc")
-list(APPEND OPTIONAL_PACKAGES "SLEPc4py")
 list(APPEND OPTIONAL_PACKAGES "Trilinos")
 list(APPEND OPTIONAL_PACKAGES "UMFPACK")
 list(APPEND OPTIONAL_PACKAGES "CHOLMOD")
 list(APPEND OPTIONAL_PACKAGES "SCOTCH")
 list(APPEND OPTIONAL_PACKAGES "ParMETIS")
 list(APPEND OPTIONAL_PACKAGES "zlib")
-list(APPEND OPTIONAL_PACKAGES "Python")
 list(APPEND OPTIONAL_PACKAGES "Sphinx")
 list(APPEND OPTIONAL_PACKAGES "HDF5")
 
@@ -305,90 +302,13 @@ set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED
   DESCRIPTION "Interactive high-level object-oriented language"
   URL "http://www.python.org")
 
-if (DOLFIN_ENABLE_PYTHON)
-  set_package_properties(PythonInterp PROPERTIES PURPOSE "Needed for the Python interface to DOLFIN")
-
-  # Set variables to help find Python library that is compatible with
-  # interpreter
-  if (PYTHONINTERP_FOUND)
-    # Get Python include path from Python interpretter
-    execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
-      "import distutils.sysconfig, sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"
-      OUTPUT_VARIABLE _PYTHON_INCLUDE_PATH
-      RESULT_VARIABLE _PYTHON_INCLUDE_RESULT)
-
-    # Get Python library path from interpreter
-    execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
-      "import os, sys, inspect; sys.stdout.write(os.path.split(os.path.split(inspect.getfile(inspect))[0])[0])"
-      OUTPUT_VARIABLE _PYTHON_LIB_PATH
-      RESULT_VARIABLE _PYTHON_LIB_RESULT)
-
-    # Set include path, if returned by interpreter
-    if ("${_PYTHON_INCLUDE_RESULT}" STREQUAL "0")
-      set(PYTHON_INCLUDE_DIR ${_PYTHON_INCLUDE_PATH})
-    endif()
-
-    # Add a search path for Python library based on output from
-    # interpreter
-    set(CMAKE_LIBRARY_PATH_SAVE ${CMAKE_LIBRARY_PATH})
-    if ("${_PYTHON_LIB_RESULT}" STREQUAL "0")
-      set(CMAKE_LIBRARY_PATH ${_PYTHON_LIB_PATH})
-    endif()
-
-    # Find Pythons libs
-    find_package(PythonLibs ${PYTHON_VERSION_STRING} EXACT REQUIRED)
-    set_package_properties(PythonLibs PROPERTIES TYPE REQUIRED
-      DESCRIPTION "Include paths and libraries for Python")
-    set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH_SAVE})
-  endif()
-
-  # If Python is found, check for NumPy, SWIG and ply
-  if (PYTHONINTERP_FOUND AND PYTHONLIBS_FOUND)
-
-    # Check for NumPy
-    find_package(NumPy REQUIRED)
-    set_package_properties(NumPy PROPERTIES TYPE REQUIRED
-      DESCRIPTION "Array processing for numbers, strings, records, and objects in Python."
-      URL "http://www.numpy.org"
-      PURPOSE "Needed for the Python interface to DOLFIN")
-
-    # Check for ply
-    include(FindPythonModule)
-    find_python_module(ply REQUIRED)
-    set_package_properties(ply PROPERTIES TYPE REQUIRED
-      DESCRIPTION "Python Lex & Yacc"
-      URL "http://www.dabeaz.com/ply/"
-      PURPOSE "Needed for the Python interface to DOLFIN")
-    if (NOT PY_PLY_FOUND)
-      message(FATAL_ERROR "Required Python module 'ply' (http://www.dabeaz.com/ply/) could not be found. Install ply or set DOLFIN_ENABLE_PYTHON to false.")
-    endif()
-
-    # Check for SWIG
-    if (DEFINED UFC_SWIG_EXECUTABLE)
-      set(SWIG_EXECUTABLE ${UFC_SWIG_EXECUTABLE})
-    endif()
-    find_package(SWIG REQUIRED)
-    set_package_properties(SWIG PROPERTIES TYPE REQUIRED
-      DESCRIPTION "Tool to wrap C/C++ libraries in high-level languages"
-      URL "http://swig.org"
-      PURPOSE "Needed for the Python interface to DOLFIN")
-    set(REQUIRED_SWIG_VERSION "3.0.5")
-    if ("${SWIG_VERSION}" VERSION_LESS "${REQUIRED_SWIG_VERSION}")
-      message(FATAL_ERROR " DOLFIN requires SWIG version ${REQUIRED_SWIG_VERSION} or greater. You have version ${SWIG_VERSION}. Set DOLFIN_ENABLE_PYTHON to false or install correct SWIG version.")
-    endif()
-    include(UseSWIG)
-    set(PYTHON_FOUND TRUE)
-  endif()
-
-endif()
-
 # Check for required package UFC
 find_package(UFC MODULE 2017.2)
 set_package_properties(UFC PROPERTIES TYPE REQUIRED
   DESCRIPTION "Unified language for form-compilers (part of FFC)"
   URL "https://bitbucket.org/fenics-project/ffc")
 
-# Check for PETSc, SLEPc and petsc4py, slepc4py
+# Check for PETSc and SLEPc
 set(PETSC_FOUND FALSE)
 set(SLEPC_FOUND FALSE)
 if (DOLFIN_ENABLE_PETSC)
@@ -398,40 +318,12 @@ if (DOLFIN_ENABLE_PETSC)
     URL "https://www.mcs.anl.gov/petsc/"
     PURPOSE "Enables the PETSc linear algebra backend")
 
-  if (PETSC_FOUND AND PYTHON_FOUND AND DOLFIN_ENABLE_PETSC4PY)
-    find_package(PETSc4py)
-    set_package_properties(PETSc4py PROPERTIES TYPE OPTIONAL
-      DESCRIPTION "Python bindings for PETSc"
-      URL "https://bitbucket.org/petsc/petsc4py/")
-    if (PETSC4PY_FOUND)
-      if (NOT ("${PETSC4PY_VERSION_MAJOR}" EQUAL "${PETSC_VERSION_MAJOR}"
-               AND "${PETSC4PY_VERSION_MINOR}" EQUAL "${PETSC_VERSION_MINOR}") AND NOT DOLFIN_IGNORE_PETSC4PY_VERSION)
-        message(WARNING "PETSc version ${PETSC_VERSION} and petsc4py version ${PETSC4PY_VERSION} do not match. Disabling PETSc4py.")
-        set(PETSC4PY_FOUND FALSE)
-      endif()
-    endif()
-  endif()
-
   set(SLEPC_FOUND FALSE)
   if (PETSC_FOUND AND DOLFIN_ENABLE_SLEPC)
     find_package(SLEPc 3.7)
     set_package_properties(SLEPc PROPERTIES TYPE OPTIONAL
       DESCRIPTION "Scalable Library for Eigenvalue Problem Computations"
       URL "http://slepc.upv.es/")
-
-    if (SLEPC_FOUND AND PYTHON_FOUND AND DOLFIN_ENABLE_SLEPC4PY)
-      find_package(SLEPc4py)
-      set_package_properties(SLEPc4py PROPERTIES TYPE OPTIONAL
-	DESCRIPTION "Python bindings for SLEPc"
-	URL "https://bitbucket.org/slepc/slepc4py/")
-      if (SLEPC4PY_FOUND)
-        if (NOT ("${SLEPC4PY_VERSION_MAJOR}" EQUAL "${SLEPC_VERSION_MAJOR}"
-              AND "${SLEPC4PY_VERSION_MINOR}" EQUAL "${SLEPC_VERSION_MINOR}"))
-          message(WARNING "SLEPc version ${SLEPC_VERSION} and slepc4py version ${SLEPC4PY_VERSION} do not match.  Disabling slepc4py support")
-          set(SLEPC4PY_FOUND FALSE)
-        endif()
-      endif()
-    endif()
   endif()
 endif()
 
@@ -571,15 +463,6 @@ if (DOLFIN_ENABLE_ZLIB)
     URL "http://www.zlib.net")
 endif()
 
-# Check for Sphinx
-if (DOLFIN_ENABLE_DOCS AND PYTHON_FOUND)
-  find_package(Sphinx 1.1.0)
-  set_package_properties(Sphinx PROPERTIES TYPE OPTIONAL
-    DESCRIPTION "Python documentation generator"
-    URL "http://www.sphinx-doc.org"
-    PURPOSE "Needed to build documentation")
-endif()
-
 # Check for geometry debugging
 if (DOLFIN_ENABLE_GEOMETRY_DEBUGGING)
   message(STATUS "Enabling geometry debugging")
@@ -601,103 +484,6 @@ endif()
 # Print summary of found and not found optional packages
 
 feature_summary(WHAT ALL)
-
-#------------------------------------------------------------------------------
-# Get installation paths for Python modules (pure and platform-dependent)
-
-if (PYTHONINTERP_FOUND)
-
-  if (NOT DEFINED DOLFIN_INSTALL_PYTHON_MODULE_DIR)
-    # Get path for platform-dependent Python modules (since we install
-    # a binary libary)
-
-    # Python command string to discover module install location
-    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-      set(PYTHON_LIB_DISCOVER_STR "import sys, distutils.sysconfig; sys.stdout.write(distutils.sysconfig.get_python_lib(plat_specific=True))")
-    else()
-      set(PYTHON_LIB_DISCOVER_STR "import sys, distutils.sysconfig; sys.stdout.write(distutils.sysconfig.get_python_lib(plat_specific=True, prefix='${CMAKE_INSTALL_PREFIX}'))")
-    endif()
-
-    # Probe Python interpreter
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "${PYTHON_LIB_DISCOVER_STR}"
-      OUTPUT_VARIABLE DOLFIN_INSTALL_PYTHON_MODULE_DIR
-      )
-    set(DOLFIN_INSTALL_PYTHON_MODULE_DIR ${DOLFIN_INSTALL_PYTHON_MODULE_DIR}
-      CACHE PATH "Python extension module installation directory.")
-  endif()
-
-  if (NOT DEFINED DOLFIN_INSTALL_PYTHON_PURE_MODULE_DIR)
-    # Get path for pure Python modules
-
-    # Python command string to discover module install location
-    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-      set(PYTHON_LIB_DISCOVER_STR "import sys, distutils.sysconfig; sys.stdout.write(distutils.sysconfig.get_python_lib(plat_specific=False))")
-    else()
-      set(PYTHON_LIB_DISCOVER_STR "import sys, distutils.sysconfig; sys.stdout.write(distutils.sysconfig.get_python_lib(plat_specific=False, prefix='${CMAKE_INSTALL_PREFIX}'))")
-    endif()
-
-    # Probe Pyton interpreter
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "${PYTHON_LIB_DISCOVER_STR}"
-      OUTPUT_VARIABLE DOLFIN_INSTALL_PYTHON_PURE_MODULE_DIR
-      )
-    set(DOLFIN_INSTALL_PYTHON_PURE_MODULE_DIR ${DOLFIN_INSTALL_PYTHON_PURE_MODULE_DIR}
-      CACHE PATH "Python module installation directory.")
-  endif()
-
-endif()
-
-#------------------------------------------------------------------------------
-# Installation of DOLFIN and FEniCS Python modules
-
-if (DOLFIN_ENABLE_PYTHON AND PYTHON_FOUND)
-  install(DIRECTORY
-    ${CMAKE_SOURCE_DIR}/site-packages/dolfin
-    DESTINATION ${DOLFIN_INSTALL_PYTHON_MODULE_DIR}
-    USE_SOURCE_PERMISSIONS
-    COMPONENT RuntimeLibraries
-    PATTERN "*.in" EXCLUDE
-    )
-
-  configure_file(${CMAKE_SOURCE_DIR}/site-packages/dolfin/common/globalparameters.py.in
-    ${CMAKE_BINARY_DIR}/globalparameters.py @ONLY)
-
-  install(FILES ${CMAKE_BINARY_DIR}/globalparameters.py
-    DESTINATION ${DOLFIN_INSTALL_PYTHON_MODULE_DIR}/dolfin/common/
-    COMPONENT RuntimeLibraries
-    )
-
-  install(DIRECTORY
-    ${CMAKE_SOURCE_DIR}/site-packages/fenics
-    DESTINATION ${DOLFIN_INSTALL_PYTHON_MODULE_DIR}
-    USE_SOURCE_PERMISSIONS
-    COMPONENT RuntimeLibraries
-    PATTERN "*.in" EXCLUDE
-    )
-endif()
-
-#------------------------------------------------------------------------------
-# Installation of dolfin_utils
-
-if (DOLFIN_INSTALL_PYTHON_MODULE_DIR)
-  install(DIRECTORY ${CMAKE_SOURCE_DIR}/site-packages/dolfin_utils
-    DESTINATION ${DOLFIN_INSTALL_PYTHON_PURE_MODULE_DIR}
-    USE_SOURCE_PERMISSIONS)
-
-  # Add target "install_dolfin_utils" for installing dolfin_utils
-  # without building and install the rest of DOLFIN
-  add_custom_target(install_dolfin_utils
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-      "${CMAKE_SOURCE_DIR}/site-packages/dolfin_utils"
-      "${DOLFIN_INSTALL_PYTHON_MODULE_DIR}/dolfin_utils"
-    COMMENT "Installing dolfin_utils in ${DOLFIN_INSTALL_PYTHON_MODULE_DIR}/dolfin_utils")
-endif()
-
-#------------------------------------------------------------------------------
-# Installation of docstrings
-
-#install(DIRECTORY ${CMAKE_SOURCE_DIR}/site-packages/dolfin/docstrings
-#        DESTINATION ${DOLFIN_INSTALL_PYTHON_MODULE_DIR}/dolfin
-#        USE_SOURCE_PERMISSIONS)
 
 #------------------------------------------------------------------------------
 # Installation of DOLFIN library
@@ -1021,50 +807,9 @@ if (DOLFIN_ENABLE_TESTING)
     DEPENDS copy_data_test_demo demo demos_source
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/regression")
 
-  # Add target "run_regressiontests_py" for running Python regression tests
-  add_custom_target(run_regressiontests_py
-    COMMAND ${CMAKE_COMMAND} -E env DISABLE_CPP_TESTING=1 DISABLE_PARALLEL_TESTING=1 ${PYTHON_EXECUTABLE} "-B" "-u" "test.py"
-    DEPENDS copy_data_test_demo demo demos_source
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/regression")
-
-  # Add target "run_regressiontests_py_mpi" for running Python regression tests with mpi
-  add_custom_target(run_regressiontests_py_mpi
-    COMMAND ${CMAKE_COMMAND} -E env DISABLE_CPP_TESTING=1 DISABLE_SERIAL_TESTING=1 ${PYTHON_EXECUTABLE} "-B" "-u" "test.py"
-    DEPENDS copy_data_test_demo demo demos_source
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/regression")
-
   # Add target "run_unittests" for running unit tests
   add_custom_target(run_unittests
-    DEPENDS run_unittests_cpp run_unittests_py run_unittests_py_mpi)
-
-  # Add target "run_unittests_py" for running Python unit tests
-  add_custom_target(run_unittests_py
-    COMMAND ${PYTHON_EXECUTABLE} "-B" "-u" "-m" "pytest"
-    DEPENDS copy_data_test_demo
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/unit/python")
-
-  # Add target "run_unittests_py_mpi" for running Python unit tests with mpi
-  add_custom_target(run_unittests_py_mpi
-    COMMAND ${MPIEXEC} "-np" "3" "./mpipipe.sh" ${PYTHON_EXECUTABLE} "-B" "-u" "-m" "pytest"
-    DEPENDS copy_data_test_demo
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/unit/python")
-
-  # Add target "run_quicktest" for running only Python unit tests not
-  # marked as 'slow'
-  add_custom_target(run_quicktest
-    COMMAND ${PYTHON_EXECUTABLE} "-B" "-u" "-m" "pytest" "-k" "'not" "slow'"
-    DEPENDS copy_data_test_demo
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/unit/python")
-
-  # Add target "run_styletest" for running documentation tests
-  add_custom_target(run_styletest
-    COMMAND ${PYTHON_EXECUTABLE} "-B" "-u" "test_coding_style.py"
-    DEPENDS copy_data_test_demo
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/codingstyle")
-
-  # Create test_coding_style.py in build dir (depends on source path)
-  configure_file(${CMAKE_SOURCE_DIR}/test/codingstyle/test_coding_style.py.in
-    ${CMAKE_BINARY_DIR}/test/codingstyle/test_coding_style.py @ONLY)
+    DEPENDS run_unittests_cpp)
 
   # Add target "runtests" for running all tests
   add_custom_target(runtests
