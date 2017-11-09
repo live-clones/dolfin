@@ -74,6 +74,8 @@ namespace dolfin
                           std::shared_ptr<GenericVector> Jv,
                           std::shared_ptr<GenericVector> y);
 
+    static int PSolve(double, N_Vector, N_Vector, N_Vector, N_Vector, double, double, int, void*);
+
     std::map<std::string,double> statistics();
 
   private:

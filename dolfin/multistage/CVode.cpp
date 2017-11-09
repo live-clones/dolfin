@@ -72,9 +72,10 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
 
   auto fu = std::shared_ptr<GenericVector>();
   int NEQ = 20*20;
-  int ml,mu;
+
   // Make a sundials n_vector sharing data with u0
   _u = std::make_shared<SUNDIALSNVector>(u0);
+  SUNLinearSolver sunls = SUNSPGMR(_u->nvector(), PREC_LEFT,0);
 
   // Initialise
   std::cout << "Initialising with t = " << t << "\n";
@@ -91,13 +92,14 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
   if(cv_iter == CV_NEWTON)
   {
     dolfin_debug("Initialising Newtonian solver");
-    ls = std::unique_ptr<_generic_SUNLinearSolver>(SUNSPGMR(_u->nvector(), PREC_LEFT,0));
-    dolfin_assert(flag == CV_SUCCESS);
+    ls = std::unique_ptr<_generic_SUNLinearSolver>(new _generic_SUNLinearSolver());
+    ls->ops = sunls->ops;
+    ls->content = sunls->content;
     flag = CVSpilsSetLinearSolver(cvode_mem,ls.get());
+    dolfin_assert(flag == CV_SUCCESS);
 
     /* Call CVBandPreInit to initialize band preconditioner */
-    ml = mu = 2;
-    flag = CVBandPrecInit(cvode_mem, NEQ, mu, ml);
+    flag = CVSpilsSetPreconditioner(cvode_mem, NULL, CVode::PSolve);
     dolfin_assert(flag == CV_SUCCESS);
     flag = CVSpilsSetJacTimes(cvode_mem, NULL, fJac);
     dolfin_assert(flag == CV_SUCCESS);
@@ -201,6 +203,15 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 
   return 0;
 }
+
+/* Preconditioner solve routine */
+/* TODO: Create as virtual function */
+int CVode::PSolve(double tn, N_Vector u, N_Vector fu, N_Vector r, N_Vector z,
+                  double gamma, double delta, int lr, void *user_data)
+{
+  return(0);
+}
+
 
 //-----------------------------------------------------------------------------
 std::map<std::string, double> CVode::statistics()
