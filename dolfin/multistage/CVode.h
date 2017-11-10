@@ -74,7 +74,12 @@ namespace dolfin
                           std::shared_ptr<GenericVector> Jv,
                           std::shared_ptr<GenericVector> y);
 
-    static int PSolve(double, N_Vector, N_Vector, N_Vector, N_Vector, double, double, int, void*);
+    /// Overloaded reconditioner solver function
+    virtual int psolve(double tn, std::shared_ptr<GenericVector>u,
+                          std::shared_ptr<GenericVector> fu,
+   		                    std::shared_ptr<GenericVector> r,
+                          std::shared_ptr<GenericVector> z,
+                          double gamma, double delta, int lr);
 
     std::map<std::string,double> statistics();
 
@@ -85,6 +90,8 @@ namespace dolfin
     static int fJacSetup(double t, N_Vector y, N_Vector fy, void *user_data);
 
     static int fJac(N_Vector u, N_Vector fu, double t, N_Vector y, N_Vector fy, void* , N_Vector tmp);
+
+    static int PSolve(double, N_Vector, N_Vector, N_Vector, N_Vector, double, double, int, void*);
 
     // Vector of values - wrapper around dolfin::GenericVector
     std::shared_ptr<SUNDIALSNVector> _u;
@@ -98,7 +105,6 @@ namespace dolfin
 
     // Pointer to CVode memory struct
     void *cvode_mem;
-    SUNLinearSolver sunls;
 
   };
 

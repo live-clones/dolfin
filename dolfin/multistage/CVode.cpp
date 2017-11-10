@@ -75,7 +75,6 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
 
   // Make a sundials n_vector sharing data with u0
   _u = std::make_shared<SUNDIALSNVector>(u0);
-  SUNLinearSolver sunls = SUNSPGMR(_u->nvector(), PREC_LEFT,0);
 
   // Initialise
   std::cout << "Initialising with t = " << t << "\n";
@@ -92,9 +91,7 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
   if(cv_iter == CV_NEWTON)
   {
     dolfin_debug("Initialising Newtonian solver");
-    ls = std::unique_ptr<_generic_SUNLinearSolver>(new _generic_SUNLinearSolver());
-    ls->ops = sunls->ops;
-    ls->content = sunls->content;
+    ls = std::unique_ptr<_generic_SUNLinearSolver>(SUNSPGMR(_u->nvector(), PREC_LEFT, 0));
     flag = CVSpilsSetLinearSolver(cvode_mem,ls.get());
     dolfin_assert(flag == CV_SUCCESS);
 
@@ -159,6 +156,15 @@ int CVode::JacobianSetup(double t,
   return 0;
 }
 
+    /// Overloaded preconditioner solver function
+int CVode::psolve(double tn, std::shared_ptr<GenericVector>u,
+                          std::shared_ptr<GenericVector> fu,
+   		                    std::shared_ptr<GenericVector> r,
+                          std::shared_ptr<GenericVector> z,
+                          double gamma, double delta, int lr)
+{
+  return 0; 
+}
 
 //-----------------------------------------------------------------------------
 int CVode::fJacSetup(double t, N_Vector y, N_Vector fy, void *user_data)
@@ -208,7 +214,16 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 /* TODO: Create as virtual function */
 int CVode::PSolve(double tn, N_Vector u, N_Vector fu, N_Vector r, N_Vector z,
                   double gamma, double delta, int lr, void *user_data)
-{
+{ 
+
+  CVode* cv = static_cast<CVode* >(user_data);
+
+  auto uvec = static_cast<const SUNDIALSNVector*>(u->content)->vec();
+  auto udotvec = static_cast<SUNDIALSNVector*>(fu->content)->vec();
+  auto rvec = static_cast<const SUNDIALSNVector*>(r->content)->vec();
+  auto zvec = static_cast<SUNDIALSNVector*>(z->content)->vec();
+
+  cv->psolve(tn, uvec, udotvec, rvec, zvec, gamma, delta, lr);
   return(0);
 }
 
