@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2016-06-01
-// Last changed: 2017-11-01
+// Last changed: 2017-11-13
 
 #include <algorithm>
 #include <tuple>
@@ -312,7 +312,7 @@ ConvexTriangulation::_triangulate_graham_scan_2d(const std::vector<Point>& input
     const std::vector<Point> tri {{ points[0],
 	  points[order[m].second],
 	  points[order[m + 1].second] }};
-    if (!GeometryPredicates::is_degenerate_3d(tri))
+    if (!GeometryPredicates::is_degenerate_2d(tri))
       triangulation.push_back(tri);
   }
 
