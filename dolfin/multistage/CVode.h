@@ -91,7 +91,7 @@ namespace dolfin
 
     static int fJac(N_Vector u, N_Vector fu, double t, N_Vector y, N_Vector fy, void* , N_Vector tmp);
 
-    static int PSolve(double, N_Vector, N_Vector, N_Vector, N_Vector, double, double, int, void*);
+    static int PrecSolve(double, N_Vector, N_Vector, N_Vector, N_Vector, double, double, int, void*);
 
     // Vector of values - wrapper around dolfin::GenericVector
     std::shared_ptr<SUNDIALSNVector> _u;

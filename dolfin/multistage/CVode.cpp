@@ -96,7 +96,7 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
     dolfin_assert(flag == CV_SUCCESS);
 
     /* Call CVBandPreInit to initialize band preconditioner */
-    flag = CVSpilsSetPreconditioner(cvode_mem, NULL, CVode::PSolve);
+    flag = CVSpilsSetPreconditioner(cvode_mem, NULL, CVode::PrecSolve);
     dolfin_assert(flag == CV_SUCCESS);
     flag = CVSpilsSetJacTimes(cvode_mem, NULL, fJac);
     dolfin_assert(flag == CV_SUCCESS);
@@ -212,11 +212,11 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 
 /* Preconditioner solve routine */
 /* TODO: Create as virtual function */
-int CVode::PSolve(double tn, N_Vector u, N_Vector fu, N_Vector r, N_Vector z,
+int CVode::PrecSolve(double tn, N_Vector u, N_Vector fu, N_Vector r, N_Vector z,
                   double gamma, double delta, int lr, void *user_data)
 { 
 
-  CVode* cv = static_cast<CVode* >(user_data);
+  CVode* cv = static_cast<CVode*>(user_data);
 
   auto uvec = static_cast<const SUNDIALSNVector*>(u->content)->vec();
   auto udotvec = static_cast<SUNDIALSNVector*>(fu->content)->vec();
