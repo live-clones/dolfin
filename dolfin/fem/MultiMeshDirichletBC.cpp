@@ -37,7 +37,8 @@ MultiMeshDirichletBC::MultiMeshDirichletBC(std::shared_ptr<const MultiMeshFuncti
                                            std::string method,
                                            bool check_midpoint,
                                            bool exclude_overlapped_boundaries)
-  : _sub_domain(0),
+  : _function_space(V),
+    _sub_domain(0),
     _exclude_overlapped_boundaries(exclude_overlapped_boundaries)
 {
   log(PROGRESS, "Initializing multimesh Dirichlet boundary conditions.");
@@ -74,7 +75,8 @@ MultiMeshDirichletBC::MultiMeshDirichletBC(std::shared_ptr<const MultiMeshFuncti
                                           std::size_t sub_domain,
                                           std::size_t part,
                                           std::string method)
-  : _sub_domain(0),
+  : _function_space(V),
+    _sub_domain(0),
     _exclude_overlapped_boundaries(false)
 {
   // Get view of function space for part
