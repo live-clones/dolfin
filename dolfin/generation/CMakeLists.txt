@@ -9,6 +9,7 @@ set(HEADERS
   UnitHexMesh.h
   UnitIntervalMesh.h
   UnitQuadMesh.h
+  UnitSphereMesh.h
   UnitSquareMesh.h
   UnitTetrahedronMesh.h
   UnitTriangleMesh.h
@@ -20,6 +21,7 @@ set(SOURCES
   RectangleMesh.cpp
   SphericalShellMesh.cpp
   UnitDiscMesh.cpp
+  UnitSphereMesh.cpp
   UnitHexMesh.cpp
   UnitQuadMesh.cpp
   UnitTetrahedronMesh.cpp
