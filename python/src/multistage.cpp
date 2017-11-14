@@ -74,8 +74,11 @@ namespace dolfin_wrappers
     class PyCVode : public dolfin::CVode
     {
     public:
-
       using dolfin::CVode::CVode;
+
+      double step(double tout)
+      { PYBIND11_OVERLOAD_NAME(double, dolfin::CVode, "step", step,
+                                tout);}
 
       void derivs(double t, std::shared_ptr<dolfin::GenericVector> u,
                   std::shared_ptr<dolfin::GenericVector> udot)
@@ -88,6 +91,14 @@ namespace dolfin_wrappers
                     std::shared_ptr<dolfin::GenericVector> fy)
       { PYBIND11_OVERLOAD_NAME(int, dolfin::CVode, "Jacobian", Jacobian,
                                 v, Jv, t, y, fy);}
+      int psolve( double tn,
+                  std::shared_ptr<dolfin::GenericVector> u,
+                  std::shared_ptr<dolfin::GenericVector> fu,
+                  std::shared_ptr<dolfin::GenericVector> r,
+                  std::shared_ptr<dolfin::GenericVector> z,
+                  double gamma, double delta, int lr)
+      { PYBIND11_OVERLOAD_NAME(int, dolfin::CVode, "psolve", psolve,
+                                tn, u, fu, r, z, gamma, delta, lr);}
     };
 
     //dolfin::CVode
@@ -98,8 +109,9 @@ namespace dolfin_wrappers
         py::arg("rtol"), py::arg("mxsteps")=0)
       .def("set_time", &dolfin::CVode::set_time, py::arg("t0"))
       .def("get_time", &dolfin::CVode::get_time)
-      .def("step", (double (dolfin::CVode::*)(double))
-        &dolfin::CVode::step)
+      .def("step", &dolfin::CVode::step, py::arg("dt"))
+//      .def("step", (double (dolfin::CVode::*)(double))
+//        &dolfin::CVode::step)
       .def("statistics", &dolfin::CVode::statistics)
       .def("derivs", (void (dolfin::CVode::*)(double,
         std::shared_ptr<dolfin::GenericVector>,
@@ -109,7 +121,14 @@ namespace dolfin_wrappers
         std::shared_ptr<dolfin::GenericVector>, double,
         std::shared_ptr<dolfin::GenericVector>,
         std::shared_ptr<dolfin::GenericVector>))
-        &dolfin::CVode::derivs);
+        &dolfin::CVode::Jacobian)
+      .def("psolve", (int (dolfin::CVode::*)(double,
+        std::shared_ptr<dolfin::GenericVector>,
+        std::shared_ptr<dolfin::GenericVector>,
+        std::shared_ptr<dolfin::GenericVector>,
+        std::shared_ptr<dolfin::GenericVector>,
+        double, double, int))
+        &dolfin::CVode::psolve);
     py::enum_<dolfin::CVode::LMM>(cvode,"LMM")
       .value("CV_BDF", dolfin::CVode::LMM::cv_bdf)
       .value("CV_ADAMS", dolfin::CVode::LMM::cv_adams); 
