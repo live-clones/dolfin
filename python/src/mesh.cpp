@@ -168,14 +168,13 @@ namespace dolfin_wrappers
       .def("num_facets", &dolfin::Mesh::num_facets, "Number of facets")
       .def("num_cells", &dolfin::Mesh::num_cells, "Number of cells")
       .def("ordered", &dolfin::Mesh::ordered)
-      .def("size", &dolfin::Mesh::size)
       .def("rmax", &dolfin::Mesh::rmax)
       .def("rmin", &dolfin::Mesh::rmin)
       .def("rotate", (void (dolfin::Mesh::*)(double, std::size_t, const dolfin::Point&))
            &dolfin::Mesh::rotate)
       .def("rotate", (void (dolfin::Mesh::*)(double, std::size_t)) &dolfin::Mesh::rotate,
                       py::arg("angle"), py::arg("axis")=2)
-      .def("size_global", &dolfin::Mesh::size_global)
+      .def("num_entities_global", &dolfin::Mesh::num_entities_global)
       .def("smooth", &dolfin::Mesh::smooth, py::arg("num_iterations")=1)
       .def("smooth_boundary", &dolfin::Mesh::smooth_boundary)
       .def("snap_boundary", &dolfin::Mesh::snap_boundary, py::arg("subdomain"),
