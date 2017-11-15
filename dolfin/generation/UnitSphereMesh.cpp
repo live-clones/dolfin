@@ -21,6 +21,7 @@
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/Edge.h>
 #include <dolfin/mesh/Facet.h>
+#include <dolfin/refinement/refine.h>
 #include "UnitSphereMesh.h"
 
 using namespace dolfin;
