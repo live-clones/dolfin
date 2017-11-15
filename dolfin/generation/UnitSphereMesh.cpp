@@ -21,6 +21,7 @@
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/Edge.h>
 #include <dolfin/mesh/Facet.h>
+#include <dolfin/mesh/MeshPartitioning.h>
 #include <dolfin/refinement/refine.h>
 #include "UnitSphereMesh.h"
 
@@ -29,13 +30,20 @@ using namespace dolfin;
 //-----------------------------------------------------------------------------
 void UnitSphereMesh::build(Mesh& mesh, std::size_t nrefine, std::size_t degree)
 {
+  // Receive mesh according to parallel policy
+  if (MPI::is_receiver(mesh.mpi_comm()))
+  {
+    MeshPartitioning::build_distributed_mesh(mesh);
+    return;
+  }
+
   MeshEditor editor;
   const std::size_t tdim = 3;
   const std::size_t gdim = 3;
 
   dolfin_assert(degree > 0 and degree < 3);
 
-  Mesh base_mesh(mesh.mpi_comm());
+  Mesh base_mesh(MPI_COMM_SELF);
   editor.open(base_mesh, tdim, gdim, 1);
 
   editor.init_vertices_global(13, 13);
@@ -108,7 +116,6 @@ void UnitSphereMesh::build(Mesh& mesh, std::size_t nrefine, std::size_t degree)
 
   // Lift all surface vertices to spherical surface
   move_surface_points(mesh);
-
   if (degree == 2)
   {
     // Initialise entities required for this degree polynomial mesh
@@ -141,13 +148,22 @@ void UnitSphereMesh::build(Mesh& mesh, std::size_t nrefine, std::size_t degree)
       editor2.add_entity_point(1, 0, e->index(), pt);
     }
   }
-
   editor2.close();
+
+  // Broadcast mesh according to parallel policy
+  if (MPI::is_broadcaster(mesh.mpi_comm()))
+  {
+    MeshPartitioning::build_distributed_mesh(mesh);
+    return;
+  }
 }
 //-----------------------------------------------------------------------------
 void UnitSphereMesh::move_surface_points(Mesh& mesh)
 {
   const std::size_t tdim = mesh.topology().dim();
+
+  if (!mesh.ordered())
+    mesh.order();
 
   mesh.init(tdim - 1, tdim);
 

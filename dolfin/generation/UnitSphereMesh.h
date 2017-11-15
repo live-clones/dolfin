@@ -31,6 +31,9 @@ namespace dolfin
   {
   public:
 
+    static Mesh create(std::size_t nrefine, std::size_t degree)
+    { return create(MPI_COMM_WORLD, nrefine, degree); }
+
     /// Create a spherical mesh for testing
     static Mesh create(MPI_Comm comm, std::size_t nrefine, std::size_t degree)
     {
