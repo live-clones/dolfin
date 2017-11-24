@@ -11,6 +11,7 @@
 #include <dolfin/function/Constant.h>
 #include <dolfin/function/SpecialFunctions.h>
 #include <dolfin/function/SpecialFacetFunction.h>
+#include <dolfin/function/MeshExpression.h>
 #include <dolfin/function/MultiMeshFunction.h>
 #include <dolfin/function/MultiMeshFunctionSpace.h>
 #include <dolfin/function/MultiMeshSubSpace.h>

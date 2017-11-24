@@ -32,6 +32,7 @@
 #include <dolfin/function/FunctionAssigner.h>
 #include <dolfin/function/FunctionAXPY.h>
 #include <dolfin/function/FunctionSpace.h>
+#include <dolfin/function/MeshExpression.h>
 #include <dolfin/function/MultiMeshFunction.h>
 #include <dolfin/function/MultiMeshFunctionSpace.h>
 #include <dolfin/function/LagrangeInterpolator.h>
@@ -41,6 +42,7 @@
 #include <dolfin/geometry/Point.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshFunction.h>
 
 namespace py = pybind11;
 
@@ -174,6 +176,11 @@ namespace dolfin_wrappers
              }
            })
       .def("get_generic_function", &dolfin::Expression::get_generic_function);
+
+    // dolfin:MeshExpression
+    py::class_<dolfin::MeshExpression, std::shared_ptr<dolfin::MeshExpression>,
+        dolfin::Expression>(m, "MeshExpression", "An Expression whose values are piecewise constant defined on the MeshFunction topology dimension entities")
+        .def(py::init<>(std::shared_ptr<MeshFunction<double>>));
 
     // dolfin::Constant
     py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>, dolfin::Expression>

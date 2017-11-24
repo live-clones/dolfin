@@ -10,6 +10,7 @@ set(HEADERS
   FunctionSpace.h
   GenericFunction.h
   LagrangeInterpolator.h
+  MeshExpression.h
   MultiMeshCoefficientAssigner.h
   MultiMeshFunction.h
   MultiMeshFunctionSpace.h
@@ -29,6 +30,7 @@ set(SOURCES
   FunctionSpace.cpp
   GenericFunction.cpp
   LagrangeInterpolator.cpp
+  MeshExpression.cpp
   MultiMeshCoefficientAssigner.cpp
   MultiMeshFunction.cpp
   MultiMeshFunctionSpace.cpp
