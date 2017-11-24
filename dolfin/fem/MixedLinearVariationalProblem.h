@@ -47,21 +47,28 @@ namespace dolfin
   class MixedLinearVariationalProblem : public Hierarchical<MixedLinearVariationalProblem>
   {
   public:
-
     /// Create mixed linear variational problem
     /// with a list of boundary conditions
+#if 0
     MixedLinearVariationalProblem(std::vector<std::shared_ptr<const Form>> a,
 				  std::vector<std::shared_ptr<const Form>> L,
 				  std::vector<std::shared_ptr<Function>> u,
 				  std::vector<std::shared_ptr<const DirichletBC>> bcs);
+#else
+    typedef std::vector<std::vector<std::shared_ptr<const Form>>> form_list_type;
+    MixedLinearVariationalProblem(form_list_type a,
+				  form_list_type L,
+				  std::vector<std::shared_ptr<Function>> u,
+				  std::vector<std::shared_ptr<const DirichletBC>> bcs);
+#endif
 
     /// Return bilinear form
-    std::vector<std::shared_ptr<const Form>> bilinear_form() const;
-    std::shared_ptr<const Form> bilinear_form(int i) const;
+    form_list_type bilinear_form() const;
+    std::shared_ptr<const Form> bilinear_form(int i, int j=0) const;
 
     /// Return linear form
-    std::vector<std::shared_ptr<const Form>> linear_form() const;
-    std::shared_ptr<const Form> linear_form(int i) const;
+    form_list_type linear_form() const;
+    std::shared_ptr<const Form> linear_form(int i, int j=0) const;
 
     /// Return solution variable
     std::vector<std::shared_ptr<Function>> solution();
@@ -85,10 +92,10 @@ namespace dolfin
     void check_forms() const;
 
     // The bilinear forms
-    std::vector<std::shared_ptr<const Form>> _a;
+    form_list_type _a;
 
     // The linear forms
-    std::vector<std::shared_ptr<const Form>> _l;
+    form_list_type _l;
 
     // The solution
     std::vector<std::shared_ptr<Function>> _u;

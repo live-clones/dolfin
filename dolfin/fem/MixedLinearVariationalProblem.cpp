@@ -29,12 +29,21 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
+#if 0
 MixedLinearVariationalProblem::MixedLinearVariationalProblem(
   std::vector<std::shared_ptr<const Form>> a,
   std::vector<std::shared_ptr<const Form>> L,
   std::vector<std::shared_ptr<Function>> u,
   std::vector<std::shared_ptr<const DirichletBC>> bcs)
   : Hierarchical<MixedLinearVariationalProblem>(*this), _a(a), _l(L), _u(u)
+#else
+MixedLinearVariationalProblem::MixedLinearVariationalProblem(
+  MixedLinearVariationalProblem::form_list_type a,
+  MixedLinearVariationalProblem::form_list_type L,
+  std::vector<std::shared_ptr<Function>> u,
+  std::vector<std::shared_ptr<const DirichletBC>> bcs)
+  : Hierarchical<MixedLinearVariationalProblem>(*this), _a(a), _l(L), _u(u)  
+#endif
 {
   // Initialize each sub vectors
   for (int i=0; i<u.size(); ++i)
@@ -61,28 +70,28 @@ MixedLinearVariationalProblem::MixedLinearVariationalProblem(
   check_forms();
 }
 //-----------------------------------------------------------------------------
-std::vector<std::shared_ptr<const Form>>
+MixedLinearVariationalProblem::form_list_type
 MixedLinearVariationalProblem::bilinear_form() const
 {
   return _a;
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<const Form>
-MixedLinearVariationalProblem::bilinear_form(int i) const
+MixedLinearVariationalProblem::bilinear_form(int i, int j) const
 {
-  return _a[i];
+  return _a[i][j];
 }
 //-----------------------------------------------------------------------------
-std::vector<std::shared_ptr<const Form>>
+MixedLinearVariationalProblem::form_list_type
 MixedLinearVariationalProblem::linear_form() const
 {
   return _l;
 }
 //-----------------------------------------------------------------------------
 std::shared_ptr<const Form>
-MixedLinearVariationalProblem::linear_form(int i) const
+MixedLinearVariationalProblem::linear_form(int i, int j) const
 {
-  return _l[i];
+  return _l[i][j];
 }
 //-----------------------------------------------------------------------------
 std::vector<std::shared_ptr<Function>>
@@ -115,8 +124,8 @@ MixedLinearVariationalProblem::trial_space() const
   std::vector<std::shared_ptr<const FunctionSpace>> trial_spaces;
   for (int i=0; i<_u.size(); ++i)
   {
-      dolfin_assert(_u[i]);
-      trial_spaces.push_back(_u[i]->function_space());
+    dolfin_assert(_u[i]);
+    trial_spaces.push_back(_u[i]->function_space());
   }
   return trial_spaces;
 }
@@ -127,8 +136,9 @@ MixedLinearVariationalProblem::test_space() const
   std::vector<std::shared_ptr<const FunctionSpace>> test_spaces;
   for (int i=0; i<_l.size(); ++i)
   {
-      dolfin_assert(_l[i]);
-      test_spaces.push_back(_l[i]->function_space(0));
+    dolfin_assert(_l[i]);
+    test_spaces.push_back(_l[i][0]->function_space(0));
+    // TODO : Check if all have the same FS
   }
   return test_spaces;
 }
@@ -144,7 +154,8 @@ std::shared_ptr<const FunctionSpace>
 MixedLinearVariationalProblem::test_space(int i) const
 {
   dolfin_assert(_l[i]);
-  return _l[i]->function_space(0);
+  // FIXME
+  return _l[i][0]->function_space(0);
 }
 //-----------------------------------------------------------------------------
 
@@ -154,61 +165,74 @@ MixedLinearVariationalProblem::check_forms() const
   // Check rank of bilinear form a
   for (int i=0; i<_a.size(); ++i)
   {
-      dolfin_assert(_a[i]);
-      if (_a[i]->rank() != 2)
+    for(int j=0; j<_a[i].size(); ++j)
+    {
+      dolfin_assert(_a[i][j]);
+      if (_a[i][j]->rank() != 2)
       {
-	  dolfin_error("MixedLinearVariationalProblem.cpp",
-		       "define mixed linear variational problem a(u, v) == L(v) for all v",
-		       "Expecting the left-hand side (block %d) to be a bilinear form (not rank %d)",
-		       i, _a[i]->rank());
+	dolfin_error("MixedLinearVariationalProblem.cpp",
+		     "define mixed linear variational problem a(u, v) == L(v) for all v",
+		     "Expecting the left-hand side (block %d, domain %d) to be a bilinear form (not rank %d)",
+		     i, j, _a[i][j]->rank());
       }
+    }
   }
 
+  // Check rank of i-th linear form L
   for (int i=0; i<_l.size(); ++i)
   {
+    for(int j=0; j<_l[i].size(); ++j)
+    {
       // Check rank of i-th linear form L
-      dolfin_assert(_l[i]);
-      if (_l[i]->rank() != 1)
+      dolfin_assert(_l[i][j]);
+      if (_l[i][j]->rank() != 1)
       {
 	  dolfin_error("MixedLinearVariationalProblem.cpp",
 		       "define mixed linear variational problem a(u, v) = L(v) for all v",
-		       "Expecting the right-hand side (block %d) to be a linear form (not rank %d)",
-		       i,_l[i]->rank());
+		       "Expecting the right-hand side (block %d, domain %d) to be a linear form (not rank %d)",
+		       i,j,_l[i][j]->rank());
       }
+    }
 
-      // Check that function space of solution variable matches trial space (for each problem)
-      dolfin_assert(_u[i]);
-      for (int j=0; j<_l.size(); ++j)
+    // Check that function space of solution variable matches trial space (for each problem)
+    dolfin_assert(_u[i]);
+    for (int j=0; j<_l.size(); ++j)
+    {
+      for(int k=0; k<_a[i + j*_l.size()].size(); ++k)
       {
-	  const auto trial_space = _a[i + j*_l.size()]->function_space(1);
-	  dolfin_assert(trial_space);
-	  // trial_space can be null is the block is empty (Form=None)
-	  if (trial_space != nullptr && !_u[i]->in(*trial_space))
-	  {
-	      dolfin_error("MixedLinearVariationalProblem.cpp",
-			   "define mixed linear variational problem a(u, v) = L(v) for all v",
-			   "Expecting the solution variable u to be a member of the trial space");
-	  }
+	const auto trial_space = _a[i + j*_l.size()][k]->function_space(1);
+	dolfin_assert(trial_space);
+	// trial_space can be null is the block is empty (Form=None)
+	if (trial_space != nullptr && !_u[i]->in(*trial_space))
+	{
+	  dolfin_error("MixedLinearVariationalProblem.cpp",
+		       "define mixed linear variational problem a(u, v) = L(v) for all v",
+		       "Expecting the solution variable u to be a member of the trial space");
+	}
       }
+    }
 
-      // Check that function spaces of bcs are contained in trial space
-      for (const auto bc: _bcs[i])
+    // Check that function spaces of bcs are contained in trial space
+    for (const auto bc: _bcs[i])
+    {
+      dolfin_assert(bc);
+      const auto bc_space = bc->function_space();
+      dolfin_assert(bc_space);
+      for (int j=0;  j<_l.size(); ++j)
       {
-	  dolfin_assert(bc);
-	  const auto bc_space = bc->function_space();
-	  dolfin_assert(bc_space);
-	  for (int j=0;  j<_l.size(); ++j)
+	for(int k=0; k<_a[i + j*_l.size()].size(); ++k)
+	{
+	  const auto trial_space = _a[i + j*_l.size()][k]->function_space(1);
+	  if (trial_space != nullptr && !trial_space->contains(*bc_space))
 	  {
-	      const auto trial_space = _a[i + j*_l.size()]->function_space(1);
-	      if (trial_space != nullptr && !trial_space->contains(*bc_space))
-	      {
-		  dolfin_error("MixedLinearVariationalProblem.cpp",
-			       "define mixed linear variational problem a(u, v) = L(v) for all v",
-			       "Expecting the boundary conditions to live on (a "
-			       "subspace of) the trial space");
-	      }
+	    dolfin_error("MixedLinearVariationalProblem.cpp",
+			 "define mixed linear variational problem a(u, v) = L(v) for all v",
+			 "Expecting the boundary conditions to live on (a "
+			 "subspace of) the trial space");
 	  }
+	}
       }
+    }
   }
 }
 //-----------------------------------------------------------------------------
