@@ -19,7 +19,7 @@
 // Modified by Benjamin Kehlet 2016
 //
 // First added:  2013-08-05
-// Last changed: 2017-11-02
+// Last changed: 2017-11-24
 
 #include <cmath>
 #include <dolfin/log/log.h>
@@ -969,26 +969,36 @@ void MultiMesh::_build_quadrature_rules_interface(std::size_t quadrature_order)
 	    if (parameters["compress_interface_quadrature"])
 	    {
 	      const std::vector<std::size_t> indices
-		= SimplexQuadrature::compress(interface_qr[local_cutting_cell_j_index], gdim, quadrature_order);
+	    	= SimplexQuadrature::compress(interface_qr[local_cutting_cell_j_index],
+					      gdim, quadrature_order);
 	      // Reorder the normals
-	      std::vector<double> normals(gdim*indices.size());
-	      for (std::size_t j = 0; j < indices.size(); ++j)
-		for (std::size_t d = 0; d < gdim; ++d)
-		  normals[gdim*j + d] = interface_normals[local_cutting_cell_j_index][gdim*indices[j] + d];
-	      interface_normals[local_cutting_cell_j_index] = normals;
+	      if (indices.size())
+	      {
+		std::vector<double> normals(gdim*indices.size());
+		for (std::size_t j = 0; j < indices.size(); ++j)
+		  for (std::size_t d = 0; d < gdim; ++d)
+		    normals[gdim*j + d]
+		      = interface_normals[local_cutting_cell_j_index][gdim*indices[j] + d];
+		interface_normals[local_cutting_cell_j_index] = normals;
+
+		dolfin_assert(gdim*interface_qr[local_cutting_cell_j_index].second.size()
+			      == normals.size());
+	      }
+
 	    }
+
 	  }
 	} // end loop over boundary_cell_j
       } // end loop over cutting_j
 
-      // // TODO: Investigate if we should compress here or below
+      // // TODO: Investigate if we should compress here or above
       // if (parameters["compress_interface_quadrature"])
       // {
       // 	for (std::size_t i = 0; i < interface_qr.size(); ++i)
       // 	{
-      // 	  const std::size_t sz = interface_qr[i].second.size();
       // 	  const std::vector<std::size_t> indices
-      // 	    = SimplexQuadrature::compress(interface_qr[i], gdim, quadrature_order);
+      // 	    = SimplexQuadrature::compress(interface_qr[i],
+      // 					  gdim, quadrature_order);
 
       // 	  if (indices.size())
       // 	  {
@@ -998,8 +1008,10 @@ void MultiMesh::_build_quadrature_rules_interface(std::size_t quadrature_order)
       // 	      for (std::size_t d = 0; d < gdim; ++d)
       // 		normals[gdim*j + d] = interface_normals[i][gdim*indices[j] + d];
       // 	    interface_normals[i] = normals;
-      // 	    // std::cout<<__FUNCTION__<<" compress " << sz<<' '<<indices.size() << std::endl;
       // 	  }
+
+      // 	  dolfin_assert(gdim*interface_qr[i].second.size()
+      // 			== interface_normals[i].size());
       // 	}
       // }
 
