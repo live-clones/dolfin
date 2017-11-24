@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2014-02-03
-// Last changed: 2017-11-08
+// Last changed: 2017-11-14
 
 #include <iomanip>
 #include <dolfin/mesh/MeshEntity.h>
@@ -566,8 +566,8 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
   const Point Q0 = GeometryTools::project_to_plane_3d(q0, major_axis);
   const Point Q1 = GeometryTools::project_to_plane_3d(q1, major_axis);
 
-  // Case 2: both points in plane (or almost)
-  if (std::abs(q0o) < DOLFIN_EPS and std::abs(q1o) < DOLFIN_EPS)
+  // Case 2: both points in plane
+  if (q0o == 0.0 and q1o == 0.0)
   {
     // Compute 2D intersection points
     const std::vector<Point>
@@ -605,9 +605,15 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
   // Case 3: points on different sides (main case)
 
   // Compute intersection point
-  const Point w = q1 - q0;
-  const double den = n.dot(w);
-  const Point x = q0 + q0o / den * w;
+  const double ratio = std::abs(q0o) / (std::abs(q0o) + std::abs(q1o));
+
+  // Check that the ratio is between 0 and 1
+  if (ratio <= 0.0 or ratio >= 1.0)
+    dolfin_error("IntersectionConstruction.cpp",
+		 "compute intersection between triangle and segment in 3d",
+		 "Scaling ratio gives infeasible intersection point between triangle plane and segment (Case 3)");
+
+  const Point x = q0 + ratio * (q1 - q0);
 
   // Project point to major axis plane and check if inside triangle
   const Point X = GeometryTools::project_to_plane_3d(x, major_axis);
