@@ -86,10 +86,19 @@ void MixedLinearVariationalSolver::solve()
     // Create lhs matrices
     for (int j=0; j<u.size(); ++j)
     {
-      dolfin_assert(a[i*u.size() + j]);
-      std::shared_ptr<GenericMatrix> A = u[j]->vector()->factory().create_matrix(comm);
-      if(a[i*u.size() + j]->ufc_form())
+      bool has_ufc_form = false;
+      for(int k=0; k<a[i*u.size() + j].size(); ++k)
+      {
+	dolfin_assert(a[i*u.size() + j][k]);
+	if(a[i*u.size() + j][k]->ufc_form())
+	  has_ufc_form = true;
+      }
+
+      if(has_ufc_form)
+      {
+	std::shared_ptr<GenericMatrix> A = u[j]->vector()->factory().create_matrix(comm);
 	As.push_back(A);
+      }
       else
 	As.push_back(NULL);
     }
@@ -101,17 +110,24 @@ void MixedLinearVariationalSolver::solve()
     // Check that rhs (L) is not empty
     for (int i=0; i<L.size(); ++i)
     {
-	if (!L[i]->ufc_form())
+      for (int j=0; j<L[i].size(); ++j)
+      {
+	if (!L[i][j]->ufc_form())
 	{
-	    dolfin_error("MixedLinearVariationalSolver.cpp",
-			 "symmetric assembly in linear variational solver",
-			 "Empty linear forms cannot be used with symmetric assembly");
+	  dolfin_error("MixedLinearVariationalSolver.cpp",
+		       "symmetric assembly in linear variational solver",
+		       "Empty linear forms cannot be used with symmetric assembly");
 	}
+      }
     }
 
     // Assemble linear system and apply boundary conditions
+    // FIXME : Update the SystemAssembler
+    std::cout << "NOT YET IMPLEMENTED" << std::endl;
+#if 0
     SystemAssembler assembler(a, L, bcs);
     assembler.assemble(As,bs);
+#endif
   }
   else
   {
@@ -121,26 +137,39 @@ void MixedLinearVariationalSolver::solve()
       for (int j=0; j<u.size(); ++j)
       {
 	// Block-by-block assembly
-	// std::cout << "a block (" << i << "," << j << ")"<< std::endl;
-	if(a[i*u.size() + j]->ufc_form()) // If block(i,j) not empty
-	  assemble_mixed(*(As[i*u.size() + j]), *(a[i*u.size() + j]));
-      }
-      if (L[i]->ufc_form())
-      {
-	// Block-by-block assembly
-	assemble_mixed(*(bs[i]), *(L[i]));
-      }
-      else
-      {
-	if (L[i]->num_coefficients() != 0)
+	for(int k=0; k<a[i*u.size() + j].size(); ++k)
 	{
-	  dolfin_error("MixedLinearVariationalSolver.cpp",
-		       "assemble linear form in linear variational solver",
-		       "Empty linear forms cannot have coefficient");
+	  if(a[i*u.size() + j][k]->ufc_form()) // If block(i,j) not empty
+	    assemble_mixed(*(As[i*u.size() + j]), *(a[i*u.size() + j][k]));
 	}
-	for (int j=0; j<u.size(); ++j)
-	  if(a[i*u.size() + j]->ufc_form()) // If block(i,j) not empty
-	    As[i*u.size() + j]->init_vector(*(bs[i]), 0);
+      }
+      for (int j=0; j<L[i].size(); ++j)
+      {
+	if (L[i][j]->ufc_form())
+	{
+	  // Block-by-block assembly
+	  assemble_mixed(*(bs[i]), *(L[i][j]));
+	}
+	else
+	{
+	  if (L[i][j]->num_coefficients() != 0)
+	  {
+	    dolfin_error("MixedLinearVariationalSolver.cpp",
+			 "assemble linear form in linear variational solver",
+			 "Empty linear forms cannot have coefficient");
+	  }
+	  for (int k=0; k<u.size(); ++k)
+	  {
+	    bool has_ufc_form = false;
+	    for(int l=0; l<a[i*u.size() + k].size(); ++l)
+	    {
+	      if(a[i*u.size() + k][l]->ufc_form())
+		has_ufc_form = true;
+	    }
+	    if(has_ufc_form) // If block(i,j) not empty
+	      As[i*u.size() + k]->init_vector(*(bs[i]), 0);
+	  }
+	}
       }
     }
 
