@@ -29,10 +29,10 @@
 
 namespace dolfin
 {
-  class MeshExpression : Expression
+  class MeshExpression : public Expression
   {
   public:
-    MeshExpression(std::shared_ptr<MeshFunction<double>> mesh_function) :
+    explicit MeshExpression(std::shared_ptr<MeshFunction<double>> mesh_function) :
         _mesh_function(mesh_function)
     { }
 

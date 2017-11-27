@@ -413,3 +413,39 @@ class Expression(BaseExpression):
             super().__setattr__(name, value)
         elif name in self._parameters:
             self._parameters[name] = value
+
+
+class MeshExpression(BaseExpression):
+
+    def __init__(self, mesh_function, *args, **kwargs):
+        element = kwargs.pop("element", None)
+        degree = kwargs.pop("degree", None)
+        cell = kwargs.pop("cell", None)
+        domain = kwargs.pop("domain", None)
+        name = kwargs.pop("name", None)
+        label = kwargs.pop("label", None)
+
+        self._cpp_object = cpp.function.MeshExpression(mesh_function)
+
+        if element is None:
+            if not (degree is None or degree == 0):
+                raise RuntimeError("MeshExpression currently only supports "
+                                   "a piecewise constant representation")
+        else:
+            if not (element.degree() == 0
+                    and element.family() == "Discontinuous Lagrange"):
+                raise RuntimeError("MeshExpression currently only supports "
+                                   "a piecewise constant representation")
+
+        value_shape = tuple(self.value_dimension(i)
+                            for i in range(self.value_rank()))
+
+        if domain is not None and cell is None:
+            cell = domain.ufl_cell()
+
+        element = _select_element(family="Discontinuous Lagrange",
+                                  cell=cell, degree=0,
+                                  value_shape=value_shape)
+
+        BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
+                                name=name, label=label)

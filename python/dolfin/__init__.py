@@ -146,7 +146,7 @@ from .function.specialfunctions import (MeshCoordinates, FacetArea, FacetNormal,
                                         CellDiameter, Circumradius,
                                         MinCellEdgeLength, MaxCellEdgeLength,
                                         MinFacetEdgeLength, MaxFacetEdgeLength)
-from .function.expression import Expression, UserExpression, CompiledExpression
+from .function.expression import Expression, UserExpression, CompiledExpression, MeshExpression
 
 # experimental
 from .jit.pybind11jit import compile_cpp_code
