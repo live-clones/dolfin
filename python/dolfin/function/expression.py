@@ -448,8 +448,7 @@ class MeshExpression(BaseExpression):
                                       cell=cell, degree=0,
                                       value_shape=value_shape)
 
-        if not (element.degree() == 0
-                and element.family() == "Discontinuous Lagrange"):
+        if not (element.degree() == 0 and element.family() == "Discontinuous Lagrange"):
             raise RuntimeError("MeshExpression currently only supports "
                                "a piecewise constant representation")
 
