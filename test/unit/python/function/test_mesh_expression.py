@@ -1,0 +1,159 @@
+"""Unit tests for the function library"""
+
+# Copyright (C) 2017 Nate Sime
+#
+# This file is part of DOLFIN.
+#
+# DOLFIN is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# DOLFIN is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
+
+import pytest
+from dolfin import *
+from dolfin.mesh.meshfunction import _meshfunction_types
+from math import sin, cos, exp, tan
+from numpy import array, zeros, float_
+import numpy as np
+
+from dolfin_utils.test import fixture, skip_in_parallel, skip_if_pybind11, skip_if_not_pybind11
+
+
+meshes = [UnitIntervalMesh(4), 
+          UnitSquareMesh(4, 4, 'left/right'),
+          UnitSquareMesh(4, 4, 'right/left'),
+          UnitSquareMesh(4, 4, 'crossed'),
+          UnitQuadMesh.create(4, 4),
+          UnitCubeMesh(4, 4, 4),
+          UnitHexMesh.create(4, 4, 4)]
+
+supported_dtypes = {"double"}
+unsupported_dtypes = list(set(_meshfunction_types.keys()) - supported_dtypes)
+
+
+@skip_if_not_pybind11
+@pytest.mark.parametrize("mesh", meshes)
+def test_mesh_expressions_cell(mesh):
+    cf = CellFunction("double", mesh, 0.0)
+    for c in cells(mesh):
+        cf[c] = c.midpoint()[0]
+
+    me = MeshExpression(cf, degree=0)
+    f = Expression("x[0]", degree=0)
+
+    V = FunctionSpace(mesh, "CG", 1)
+    u, v = TrialFunction(V), TestFunction(V)
+    a = dot(grad(u), grad(v))*dx
+    L_sym = f*v*dx
+    L_me = me*v*dx
+
+    bc = DirichletBC(V, Constant(0.0), "on_boundary")
+
+    u_sym = Function(V)
+    solve(a == L_sym, u_sym, bc)
+
+    u_me = Function(V)
+    solve(a == L_me, u_me, bc)
+
+    for j in range(u_sym.vector().local_size()):
+        assert(near(u_sym.vector()[j], u_me.vector()[j]))
+
+
+@skip_if_not_pybind11
+@pytest.mark.parametrize("mesh", meshes)
+def test_mesh_expressions_facet(mesh):
+    mesh.init_global(mesh.topology().dim() - 1)
+
+    V = FunctionSpace(mesh, "CG", 1)
+    u, v = TrialFunction(V), TestFunction(V)
+    a = dot(grad(u), grad(v))*dx
+
+    ff_d = FacetFunction("double", mesh, 0.0)
+    ff_i = FacetFunction("size_t", mesh, 0)
+
+    ds = Measure("ds", subdomain_data=ff_i)
+    L_sym = Constant(0.0)*v*ds
+
+    exterior_facets_local = list(f.global_index() for f in facets(mesh) if f.exterior())
+    proc_facets = mesh.mpi_comm().allgather(exterior_facets_local)
+    exterior_facets = [facet for facets in proc_facets for facet in facets]
+    num_exterior_facets = len(exterior_facets)
+
+    for ext_facet_id in exterior_facets:
+        L_sym += float(ext_facet_id + 1)*v*ds(ext_facet_id)
+
+    for fa in facets(mesh):
+        if fa.exterior():
+            f_idx, f_val = fa.global_index(), float(fa.global_index()) + 1.0
+            ff_d[fa] = f_val
+            ff_i[fa] = f_idx
+
+    me = MeshExpression(ff_d, degree=0)
+    L_me = me*v*ds
+
+    bc = DirichletBC(V, Constant(0.0), "near(x[0], 0.0)")
+
+    u_sym = Function(V)
+    solve(a == L_sym, u_sym, bc)
+
+    u_me = Function(V)
+    solve(a == L_me, u_me, bc)
+
+    for j in range(u_sym.vector().local_size()):
+        assert(near(u_sym.vector()[j], u_me.vector()[j]))
+
+
+@skip_if_not_pybind11
+@pytest.mark.parametrize("mesh", meshes)
+@pytest.mark.parametrize("dtype", unsupported_dtypes)
+def test_mesh_expressions_unsupported_type(mesh, dtype):
+
+    ff = FacetFunction(dtype, mesh, 0)
+    cf = CellFunction(dtype, mesh, 0)
+
+    with pytest.raises(TypeError):
+        MeshExpression(cf)
+
+
+@skip_if_not_pybind11
+@pytest.mark.parametrize("mesh", meshes)
+@pytest.mark.parametrize("dtype", supported_dtypes)
+@pytest.mark.xfail
+def test_mesh_expressions_unsupported_topology(mesh, dtype):
+    if mesh.topology().dim() == 1:
+        return
+
+    for t_dim in range(mesh.topology().dim() - 1):
+        mf = MeshFunction(dtype, mesh, t_dim)
+        MeshExpression(mf)
+
+
+@skip_if_not_pybind11
+@pytest.mark.parametrize("mesh", meshes)
+@pytest.mark.parametrize("dtype", supported_dtypes)
+def test_mesh_expressions_unsupported_elements(mesh, dtype):
+    if mesh.topology().dim() == 1:
+        return
+
+    for t_dim in range(mesh.topology().dim() - 1, mesh.topology().dim() + 1):
+        mf = MeshFunction(dtype, mesh, t_dim)
+
+        with pytest.raises(RuntimeError):
+            MeshExpression(mf, degree=1)
+
+        with pytest.raises(RuntimeError):
+            MeshExpression(mf, element=FiniteElement("CG", mesh.ufl_cell(), 1))
+
+        with pytest.raises(RuntimeError):
+            MeshExpression(mf, degree=1, element=FiniteElement("DG", mesh.ufl_cell(), 0))
+
+        with pytest.raises(RuntimeError):
+            MeshExpression(mf, degree=0, element=FiniteElement("DG", mesh.ufl_cell(), 1))
