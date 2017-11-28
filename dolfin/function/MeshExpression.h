@@ -34,7 +34,14 @@ namespace dolfin
   public:
     explicit MeshExpression(std::shared_ptr<MeshFunction<double>> mesh_function) :
         _mesh_function(mesh_function)
-    { }
+    {
+      if (mesh_function->dim() < mesh_function->mesh()->topology().dim() - 1)
+      {
+        dolfin_error("Mesh expression",
+                     "Instantiate mesh expression",
+                     "MeshFunction topology must be defined on cells or facets");
+      }
+    }
 
     virtual void eval(Eigen::Ref<Eigen::VectorXd> values,
                       Eigen::Ref<const Eigen::VectorXd> x,

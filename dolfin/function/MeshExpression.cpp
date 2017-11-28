@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
+#include <dolfin/mesh/Cell.h>
+
 #include "MeshExpression.h"
 
 using namespace dolfin;
@@ -24,8 +26,28 @@ void MeshExpression::eval(Eigen::Ref<Eigen::VectorXd> values,
                   Eigen::Ref<const Eigen::VectorXd> x,
                   const ufc::cell& cell) const
 {
-  info("ufc cell dim %d, index %d, local facet %d", cell.topological_dimension, cell.index, cell.local_facet);
-//  dolfin_assert(cell.topological_dimension == _mesh_function->dim());
-  values[0] = (*_mesh_function)[cell.index];
+  dolfin_assert(_mesh_function);
+  dolfin_assert(_mesh_function->mesh());
+  const std::size_t mesh_tdim = _mesh_function->mesh()->topology().dim();
+
+  dolfin_assert(_mesh_function->dim() > mesh_tdim - 1);
+
+  if ((cell.local_facet < 0) and ((mesh_tdim - 1) == _mesh_function->dim()))
+  {
+    dolfin_error("MeshExpression::eval",
+                 "evaluate facet MeshExpression on a cell",
+                 "MeshExpression topological dimension permits solely facet integration.");
+  }
+
+  if ((cell.local_facet < 0) or (mesh_tdim == _mesh_function->dim()))
+  {
+    values[0] = (*_mesh_function)[cell.index];
+  }
+  else
+  {
+    const unsigned int facet_idx =
+        Cell(*_mesh_function->mesh(), cell.index).entities(_mesh_function->dim())[cell.local_facet];
+    values[0] = (*_mesh_function)[facet_idx];
+  }
 }
 //-----------------------------------------------------------------------------

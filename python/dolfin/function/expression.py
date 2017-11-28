@@ -427,25 +427,31 @@ class MeshExpression(BaseExpression):
 
         self._cpp_object = cpp.function.MeshExpression(mesh_function)
 
+        if element and degree:
+            raise RuntimeError("Cannot specify an element and a degree for Expressions.")
+
         if element is None:
-            if not (degree is None or degree == 0):
+            if degree is None:
+                degree = 0
+
+            if degree is not None and degree > 0:
                 raise RuntimeError("MeshExpression currently only supports "
                                    "a piecewise constant representation")
-        else:
-            if not (element.degree() == 0
-                    and element.family() == "Discontinuous Lagrange"):
-                raise RuntimeError("MeshExpression currently only supports "
-                                   "a piecewise constant representation")
 
-        value_shape = tuple(self.value_dimension(i)
-                            for i in range(self.value_rank()))
+            value_shape = tuple(self.value_dimension(i)
+                                for i in range(self.value_rank()))
 
-        if domain is not None and cell is None:
-            cell = domain.ufl_cell()
+            if domain is not None and cell is None:
+                cell = domain.ufl_cell()
 
-        element = _select_element(family="Discontinuous Lagrange",
-                                  cell=cell, degree=0,
-                                  value_shape=value_shape)
+            element = _select_element(family="Discontinuous Lagrange",
+                                      cell=cell, degree=0,
+                                      value_shape=value_shape)
+
+        if not (element.degree() == 0
+                and element.family() == "Discontinuous Lagrange"):
+            raise RuntimeError("MeshExpression currently only supports "
+                               "a piecewise constant representation")
 
         BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
                                 name=name, label=label)
