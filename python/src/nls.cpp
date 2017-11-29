@@ -25,6 +25,7 @@
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/PETScObject.h>
+#include <dolfin/la/GenericLinearAlgebraFactory.h>
 #include <dolfin/nls/NewtonSolver.h>
 #include <dolfin/nls/PETScSNESSolver.h>
 #include <dolfin/nls/PETScTAOSolver.h>
@@ -97,6 +98,9 @@ namespace dolfin_wrappers
       .def(py::init<>())
       .def(py::init([](const MPICommWrapper comm)
           { return std::unique_ptr<dolfin::NewtonSolver>(new dolfin::NewtonSolver(comm.get())); }))
+      .def(py::init([](const MPICommWrapper comm, std::shared_ptr<dolfin::GenericLinearSolver> solver,
+                       dolfin::GenericLinearAlgebraFactory& factory)
+          { return std::unique_ptr<dolfin::NewtonSolver>(new dolfin::NewtonSolver(comm.get(), solver, factory)); }))
       .def("solve", &dolfin::NewtonSolver::solve)
       .def("converged", &PyPublicNewtonSolver::converged)
       .def("solver_setup", &PyPublicNewtonSolver::solver_setup)
