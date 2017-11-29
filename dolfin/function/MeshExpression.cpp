@@ -22,7 +22,8 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-MeshExpression::MeshExpression(std::shared_ptr<MeshFunction<double>> mesh_function) :
+MeshExpression::MeshExpression(
+    std::shared_ptr<MeshFunction<double>> mesh_function) :
     _mesh_function(mesh_function)
 {
   if (mesh_function->dim() < mesh_function->mesh()->topology().dim() - 1)
@@ -39,7 +40,8 @@ MeshExpression::MeshExpression(std::shared_ptr<MeshFunction<double>> mesh_functi
                             std::placeholders::_3);
 }
 //-----------------------------------------------------------------------------
-MeshExpression::MeshExpression(std::shared_ptr<MeshValueCollection<double>> mesh_value_collection) :
+MeshExpression::MeshExpression(
+    std::shared_ptr<MeshValueCollection<double>> mesh_value_collection) :
     _mesh_value_collection(mesh_value_collection)
 {
   if (mesh_value_collection->dim() < mesh_value_collection->mesh()->topology().dim() - 1)

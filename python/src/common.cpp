@@ -113,6 +113,8 @@ namespace dolfin_wrappers
 
     // dolfin/common free functions
     m.def("timing", &dolfin::timing);
+    m.def("tic", &dolfin::tic);
+    m.def("toc", &dolfin::toc);
     m.def("timings", [](dolfin::TimingClear clear, std::vector<dolfin::TimingType> type)
           {
             std::set<dolfin::TimingType> _type(type.begin(), type.end());
