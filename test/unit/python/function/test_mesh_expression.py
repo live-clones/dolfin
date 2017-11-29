@@ -166,8 +166,8 @@ def test_mesh_expressions_mvc_unsupported_topology(mesh, dtype):
         return
 
     for t_dim in range(mesh.topology().dim() - 1):
-        mf = MeshValueCollection(dtype, mesh, t_dim)
-        MeshExpression(mf)
+        mvc = MeshValueCollection(dtype, mesh, t_dim)
+        MeshExpression(mvc)
 
 
 @skip_if_not_pybind11
@@ -181,14 +181,15 @@ def test_mesh_expressions_unsupported_elements(mesh, dtype):
         mf = MeshFunction(dtype, mesh, t_dim)
         mvc = MeshValueCollection(dtype, mf)
 
-        with pytest.raises(RuntimeError):
-            MeshExpression(mf, degree=1)
+        for data in [mf, mvc]:
+            with pytest.raises(RuntimeError):
+                MeshExpression(data, degree=1)
 
-        with pytest.raises(RuntimeError):
-            MeshExpression(mf, element=FiniteElement("CG", mesh.ufl_cell(), 1))
+            with pytest.raises(RuntimeError):
+                MeshExpression(data, element=FiniteElement("CG", mesh.ufl_cell(), 1))
 
-        with pytest.raises(RuntimeError):
-            MeshExpression(mf, degree=1, element=FiniteElement("DG", mesh.ufl_cell(), 0))
+            with pytest.raises(RuntimeError):
+                MeshExpression(data, degree=1, element=FiniteElement("DG", mesh.ufl_cell(), 0))
 
-        with pytest.raises(RuntimeError):
-            MeshExpression(mf, degree=0, element=FiniteElement("DG", mesh.ufl_cell(), 1))
+            with pytest.raises(RuntimeError):
+                MeshExpression(data, degree=0, element=FiniteElement("DG", mesh.ufl_cell(), 1))
