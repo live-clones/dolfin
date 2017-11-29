@@ -42,6 +42,12 @@ namespace dolfin
                      "Instantiate mesh expression",
                      "MeshFunction topology must be defined on cells or facets");
       }
+
+      eval_function = std::bind(&MeshExpression::eval_mesh_function,
+                                this,
+                                std::placeholders::_1,
+                                std::placeholders::_2,
+                                std::placeholders::_3);
     }
 
     explicit MeshExpression(std::shared_ptr<MeshValueCollection<double>> mesh_value_collection) :
@@ -53,12 +59,34 @@ namespace dolfin
                      "Instantiate mesh expression",
                      "MeshValueCollection topology must be defined on cells or facets");
       }
+
+      eval_function = std::bind(&MeshExpression::eval_mesh_value_collection,
+                                this,
+                                std::placeholders::_1,
+                                std::placeholders::_2,
+                                std::placeholders::_3);
     }
 
     virtual void eval(Eigen::Ref<Eigen::VectorXd> values,
                       Eigen::Ref<const Eigen::VectorXd> x,
-                      const ufc::cell& cell) const;
+                      const ufc::cell& cell) const
+    {
+      eval_function(values, x, cell);
+    }
+
   private:
+
+    std::function<void(Eigen::Ref<Eigen::VectorXd> values,
+                       Eigen::Ref<const Eigen::VectorXd> x,
+                       const ufc::cell& cell)> eval_function;
+
+    void eval_mesh_function(Eigen::Ref<Eigen::VectorXd> values,
+                            Eigen::Ref<const Eigen::VectorXd> x,
+                            const ufc::cell& cell) const;
+
+    void eval_mesh_value_collection(Eigen::Ref<Eigen::VectorXd> values,
+                                    Eigen::Ref<const Eigen::VectorXd> x,
+                                    const ufc::cell& cell) const;
 
     std::shared_ptr<MeshFunction<double>> _mesh_function;
     std::shared_ptr<MeshValueCollection<double>> _mesh_value_collection;
