@@ -106,14 +106,14 @@ def test_mesh_expressions_facet(mesh):
             f_idx, f_val = fa.global_index(), float(fa.global_index()) + 1.0
             ff_d[fa] = f_val
             ff_i[fa] = f_idx
+
             c = Cell(mesh, fa.entities(mesh.topology().dim())[0])
-            print(c)
             mvc.set_value(c.index(), c.index(fa), f_val)
 
-    me_cf = MeshExpression(ff_d, degree=0)
+    me_ff = MeshExpression(ff_d, degree=0)
     me_mvc = MeshExpression(mvc, degree=0)
 
-    L_me_cf = me_cf*v*ds
+    L_me_ff = me_ff*v*ds
     L_me_mvc = me_mvc*v*ds
 
     bc = DirichletBC(V, Constant(0.0), "near(x[0], 0.0)")
@@ -121,11 +121,15 @@ def test_mesh_expressions_facet(mesh):
     u_sym = Function(V)
     solve(a == L_sym, u_sym, bc)
 
-    u_me_cf = Function(V)
-    solve(a == L_me_cf, u_me_cf, bc)
+    u_me_ff = Function(V)
+    solve(a == L_me_ff, u_me_ff, bc)
+
+    u_me_mvc = Function(V)
+    solve(a == L_me_mvc, u_me_mvc, bc)
 
     for j in range(u_sym.vector().local_size()):
-        assert(near(u_sym.vector()[j], u_me_cf.vector()[j]))
+        assert(near(u_sym.vector()[j], u_me_ff.vector()[j]))
+        assert(near(u_sym.vector()[j], u_me_mvc.vector()[j]))
 
 
 @skip_if_not_pybind11
@@ -156,12 +160,26 @@ def test_mesh_expressions_unsupported_topology(mesh, dtype):
 @skip_if_not_pybind11
 @pytest.mark.parametrize("mesh", meshes)
 @pytest.mark.parametrize("dtype", supported_dtypes)
+@pytest.mark.xfail
+def test_mesh_expressions_mvc_unsupported_topology(mesh, dtype):
+    if mesh.topology().dim() == 1:
+        return
+
+    for t_dim in range(mesh.topology().dim() - 1):
+        mf = MeshValueCollection(dtype, mesh, t_dim)
+        MeshExpression(mf)
+
+
+@skip_if_not_pybind11
+@pytest.mark.parametrize("mesh", meshes)
+@pytest.mark.parametrize("dtype", supported_dtypes)
 def test_mesh_expressions_unsupported_elements(mesh, dtype):
     if mesh.topology().dim() == 1:
         return
 
     for t_dim in range(mesh.topology().dim() - 1, mesh.topology().dim() + 1):
         mf = MeshFunction(dtype, mesh, t_dim)
+        mvc = MeshValueCollection(dtype, mf)
 
         with pytest.raises(RuntimeError):
             MeshExpression(mf, degree=1)
