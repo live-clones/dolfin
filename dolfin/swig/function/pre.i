@@ -50,6 +50,8 @@
 %ignore dolfin::Expression::eval(Eigen::Ref<Eigen::VectorXd>,
                                  Eigen::Ref<const Eigen::VectorXd>) const;
 
+%ignore dolfin::MeshExpression;
+
 
 %ignore dolfin::Function::eval(Eigen::Ref<Eigen::VectorXd>,
                                Eigen::RefE<const Eigen::VectorXd>,

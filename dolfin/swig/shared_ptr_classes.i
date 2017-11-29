@@ -102,6 +102,7 @@
 %shared_ptr(dolfin::FacetArea)
 %shared_ptr(dolfin::Constant)
 %shared_ptr(dolfin::MeshCoordinates)
+%shared_ptr(dolfin::MeshExpression)
 %shared_ptr(dolfin::MultiMeshFunctionSpace)
 %shared_ptr(dolfin::MultiMeshSubSpace)
 %shared_ptr(dolfin::MultiMeshFunction)
