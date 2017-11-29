@@ -33,39 +33,9 @@ namespace dolfin
   class MeshExpression : public Expression
   {
   public:
-    explicit MeshExpression(std::shared_ptr<MeshFunction<double>> mesh_function) :
-        _mesh_function(mesh_function)
-    {
-      if (mesh_function->dim() < mesh_function->mesh()->topology().dim() - 1)
-      {
-        dolfin_error("MeshExpression",
-                     "Instantiate mesh expression",
-                     "MeshFunction topology must be defined on cells or facets");
-      }
+    explicit MeshExpression(std::shared_ptr<MeshFunction<double>> mesh_function);
 
-      eval_function = std::bind(&MeshExpression::eval_mesh_function,
-                                this,
-                                std::placeholders::_1,
-                                std::placeholders::_2,
-                                std::placeholders::_3);
-    }
-
-    explicit MeshExpression(std::shared_ptr<MeshValueCollection<double>> mesh_value_collection) :
-        _mesh_value_collection(mesh_value_collection)
-    {
-      if (mesh_value_collection->dim() < mesh_value_collection->mesh()->topology().dim() - 1)
-      {
-        dolfin_error("MeshExpression",
-                     "Instantiate mesh expression",
-                     "MeshValueCollection topology must be defined on cells or facets");
-      }
-
-      eval_function = std::bind(&MeshExpression::eval_mesh_value_collection,
-                                this,
-                                std::placeholders::_1,
-                                std::placeholders::_2,
-                                std::placeholders::_3);
-    }
+    explicit MeshExpression(std::shared_ptr<MeshValueCollection<double>> mesh_value_collection);
 
     virtual void eval(Eigen::Ref<Eigen::VectorXd> values,
                       Eigen::Ref<const Eigen::VectorXd> x,
