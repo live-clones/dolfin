@@ -236,6 +236,8 @@ namespace dolfin_wrappers
       .def("mesh", &dolfin::MeshEntity::mesh, "Associated mesh")
       .def("index", (std::size_t (dolfin::MeshEntity::*)() const)
            &dolfin::MeshEntity::index, "Index")
+      .def("index", (std::size_t (dolfin::MeshEntity::*)(const dolfin::MeshEntity&) const)
+           &dolfin::MeshEntity::index, "Index")
       .def("global_index", &dolfin::MeshEntity::global_index, "Global index")
       .def("num_entities", &dolfin::MeshEntity::num_entities,
            "Number of incident entities of given dimension")

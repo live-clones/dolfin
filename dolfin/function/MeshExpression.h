@@ -23,6 +23,7 @@
 #include <Eigen/Dense>
 #include <dolfin/common/Array.h>
 #include <dolfin/mesh/MeshFunction.h>
+#include <dolfin/mesh/MeshValueCollection.h>
 #include "GenericFunction.h"
 #include "Expression.h"
 
@@ -37,9 +38,20 @@ namespace dolfin
     {
       if (mesh_function->dim() < mesh_function->mesh()->topology().dim() - 1)
       {
-        dolfin_error("Mesh expression",
+        dolfin_error("MeshExpression",
                      "Instantiate mesh expression",
                      "MeshFunction topology must be defined on cells or facets");
+      }
+    }
+
+    explicit MeshExpression(std::shared_ptr<MeshValueCollection<double>> mesh_value_collection) :
+        _mesh_value_collection(mesh_value_collection)
+    {
+      if (mesh_value_collection->dim() < mesh_value_collection->mesh()->topology().dim() - 1)
+      {
+        dolfin_error("MeshExpression",
+                     "Instantiate mesh expression",
+                     "MeshValueCollection topology must be defined on cells or facets");
       }
     }
 
@@ -49,6 +61,7 @@ namespace dolfin
   private:
 
     std::shared_ptr<MeshFunction<double>> _mesh_function;
+    std::shared_ptr<MeshValueCollection<double>> _mesh_value_collection;
   };
 }
 

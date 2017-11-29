@@ -43,28 +43,38 @@ unsupported_dtypes = list(set(_meshfunction_types.keys()) - supported_dtypes)
 @pytest.mark.parametrize("mesh", meshes)
 def test_mesh_expressions_cell(mesh):
     cf = CellFunction("double", mesh, 0.0)
+    mvc = MeshValueCollection("double", mesh, mesh.topology().dim())
+
     for c in cells(mesh):
         cf[c] = c.midpoint()[0]
+        mvc.set_value(c.index(), c.midpoint()[0])
 
-    me = MeshExpression(cf, degree=0)
+    me_cf = MeshExpression(cf, degree=0)
+    me_mvc = MeshExpression(mvc, degree=0)
     f = Expression("x[0]", degree=0)
 
     V = FunctionSpace(mesh, "CG", 1)
     u, v = TrialFunction(V), TestFunction(V)
     a = dot(grad(u), grad(v))*dx
+
     L_sym = f*v*dx
-    L_me = me*v*dx
+    L_me_cf = me_cf*v*dx
+    L_me_mvc = me_mvc*v*dx
 
     bc = DirichletBC(V, Constant(0.0), "on_boundary")
 
     u_sym = Function(V)
     solve(a == L_sym, u_sym, bc)
 
-    u_me = Function(V)
-    solve(a == L_me, u_me, bc)
+    u_me_cf = Function(V)
+    solve(a == L_me_cf, u_me_cf, bc)
+
+    u_me_mvc = Function(V)
+    solve(a == L_me_mvc, u_me_mvc, bc)
 
     for j in range(u_sym.vector().local_size()):
-        assert(near(u_sym.vector()[j], u_me.vector()[j]))
+        assert(near(u_sym.vector()[j], u_me_cf.vector()[j]))
+        assert(near(u_sym.vector()[j], u_me_mvc.vector()[j]))
 
 
 @skip_if_not_pybind11
@@ -77,6 +87,7 @@ def test_mesh_expressions_facet(mesh):
     a = dot(grad(u), grad(v))*dx
 
     ff_d = FacetFunction("double", mesh, 0.0)
+    mvc = MeshValueCollection("double", mesh, mesh.topology().dim() - 1)
     ff_i = FacetFunction("size_t", mesh, 0)
 
     ds = Measure("ds", subdomain_data=ff_i)
@@ -95,20 +106,26 @@ def test_mesh_expressions_facet(mesh):
             f_idx, f_val = fa.global_index(), float(fa.global_index()) + 1.0
             ff_d[fa] = f_val
             ff_i[fa] = f_idx
+            c = Cell(mesh, fa.entities(mesh.topology().dim())[0])
+            print(c)
+            mvc.set_value(c.index(), c.index(fa), f_val)
 
-    me = MeshExpression(ff_d, degree=0)
-    L_me = me*v*ds
+    me_cf = MeshExpression(ff_d, degree=0)
+    me_mvc = MeshExpression(mvc, degree=0)
+
+    L_me_cf = me_cf*v*ds
+    L_me_mvc = me_mvc*v*ds
 
     bc = DirichletBC(V, Constant(0.0), "near(x[0], 0.0)")
 
     u_sym = Function(V)
     solve(a == L_sym, u_sym, bc)
 
-    u_me = Function(V)
-    solve(a == L_me, u_me, bc)
+    u_me_cf = Function(V)
+    solve(a == L_me_cf, u_me_cf, bc)
 
     for j in range(u_sym.vector().local_size()):
-        assert(near(u_sym.vector()[j], u_me.vector()[j]))
+        assert(near(u_sym.vector()[j], u_me_cf.vector()[j]))
 
 
 @skip_if_not_pybind11

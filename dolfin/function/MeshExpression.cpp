@@ -26,28 +26,56 @@ void MeshExpression::eval(Eigen::Ref<Eigen::VectorXd> values,
                   Eigen::Ref<const Eigen::VectorXd> x,
                   const ufc::cell& cell) const
 {
-  dolfin_assert(_mesh_function);
-  dolfin_assert(_mesh_function->mesh());
-  const std::size_t mesh_tdim = _mesh_function->mesh()->topology().dim();
-
-  dolfin_assert(_mesh_function->dim() > mesh_tdim - 1);
-
-  if ((cell.local_facet < 0) and ((mesh_tdim - 1) == _mesh_function->dim()))
+  if (_mesh_function)
   {
-    dolfin_error("MeshExpression::eval",
-                 "evaluate facet MeshExpression on a cell",
-                 "MeshExpression topological dimension permits solely facet integration.");
-  }
+    dolfin_assert(_mesh_function);
+    dolfin_assert(_mesh_function->mesh());
+    const std::size_t mesh_tdim = _mesh_function->mesh()->topology().dim();
 
-  if ((cell.local_facet < 0) or (mesh_tdim == _mesh_function->dim()))
-  {
-    values[0] = (*_mesh_function)[cell.index];
+    dolfin_assert(_mesh_function->dim() >= mesh_tdim - 1);
+
+    if ((cell.local_facet < 0) and ((mesh_tdim - 1) == _mesh_function->dim()))
+    {
+      dolfin_error("MeshExpression::eval",
+                   "evaluate facet MeshExpression on a cell",
+                   "MeshExpression topological dimension permits solely facet integration");
+    }
+
+    if ((cell.local_facet < 0) or (mesh_tdim == _mesh_function->dim()))
+    {
+      values[0] = (*_mesh_function)[cell.index];
+    }
+    else
+    {
+      const unsigned int facet_idx =
+          Cell(*_mesh_function->mesh(), cell.index).entities(_mesh_function->dim())[cell.local_facet];
+      values[0] = (*_mesh_function)[facet_idx];
+    }
   }
   else
   {
-    const unsigned int facet_idx =
-        Cell(*_mesh_function->mesh(), cell.index).entities(_mesh_function->dim())[cell.local_facet];
-    values[0] = (*_mesh_function)[facet_idx];
+    dolfin_assert(_mesh_value_collection);
+    dolfin_assert(_mesh_value_collection->mesh());
+    const std::size_t mesh_tdim = _mesh_value_collection->mesh()->topology().dim();
+
+    dolfin_assert(_mesh_value_collection->dim() >= mesh_tdim - 1);
+
+    if ((cell.local_facet < 0) and ((mesh_tdim - 1) == _mesh_value_collection->dim()))
+    {
+      dolfin_error("MeshExpression::eval",
+                   "evaluate facet MeshExpression on a cell",
+                   "MeshExpression topological dimension permits solely facet integration");
+    }
+
+    if ((cell.local_facet < 0) or (mesh_tdim == _mesh_value_collection->dim()))
+    {
+      values[0] = _mesh_value_collection->get_value(cell.index, 0);
+    }
+    else
+    {
+      values[0] = _mesh_value_collection->get_value(cell.index, (std::size_t) cell.local_facet);
+    }
   }
+
 }
 //-----------------------------------------------------------------------------

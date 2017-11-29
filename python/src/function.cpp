@@ -180,7 +180,8 @@ namespace dolfin_wrappers
     // dolfin:MeshExpression
     py::class_<dolfin::MeshExpression, std::shared_ptr<dolfin::MeshExpression>,
         dolfin::Expression>(m, "MeshExpression", "An Expression whose values are piecewise constant defined on the MeshFunction topology dimension entities")
-        .def(py::init<std::shared_ptr<dolfin::MeshFunction<double>>>());
+        .def(py::init<std::shared_ptr<dolfin::MeshFunction<double>>>())
+        .def(py::init<std::shared_ptr<dolfin::MeshValueCollection<double>>>());
 
     // dolfin::Constant
     py::class_<dolfin::Constant, std::shared_ptr<dolfin::Constant>, dolfin::Expression>
