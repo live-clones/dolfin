@@ -44,7 +44,7 @@ void UnitSphereMesh::build(Mesh& mesh, std::size_t nrefine, std::size_t degree)
   dolfin_assert(degree > 0 and degree < 3);
 
   Mesh base_mesh(MPI_COMM_SELF);
-  editor.open(base_mesh, tdim, gdim, 1);
+  editor.open(base_mesh, CellType::tetrahedron, tdim, gdim, 1);
 
   editor.init_vertices_global(13, 13);
 
@@ -103,7 +103,7 @@ void UnitSphereMesh::build(Mesh& mesh, std::size_t nrefine, std::size_t degree)
   // Copy over all points from base mesh to mesh
 
   MeshEditor editor2;
-  editor2.open(mesh, tdim, gdim, degree);
+  editor2.open(mesh, CellType::tetrahedron, tdim, gdim, degree);
   editor2.init_vertices_global(base_mesh.num_vertices(), base_mesh.num_vertices());
   for (VertexIterator v(base_mesh); !v.end(); ++v)
     editor2.add_vertex(v->index(), v->point());
