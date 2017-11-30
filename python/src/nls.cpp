@@ -104,7 +104,8 @@ namespace dolfin_wrappers
       .def("solve", &dolfin::NewtonSolver::solve)
       .def("converged", &PyPublicNewtonSolver::converged)
       .def("solver_setup", &PyPublicNewtonSolver::solver_setup)
-      .def("update_solution", &PyPublicNewtonSolver::update_solution);
+      .def("update_solution", &PyPublicNewtonSolver::update_solution)
+      .def("linear_solver", &dolfin::NewtonSolver::linear_solver, py::return_value_policy::reference);
 
 #ifdef HAS_PETSC
     // dolfin::PETScSNESSolver

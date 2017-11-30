@@ -67,7 +67,7 @@ void MeshExpression::eval_mesh_function(Eigen::Ref<Eigen::VectorXd> values,
   const std::size_t mesh_tdim = _mesh_function->mesh()->topology().dim();
 
   dolfin_assert(_mesh_function->dim() >= mesh_tdim - 1);
-
+  
   if ((cell.local_facet < 0) and ((mesh_tdim - 1) == _mesh_function->dim()))
   {
     dolfin_error("MeshExpression::eval",
