@@ -132,3 +132,31 @@ def test_matrix_assemble(dim):
             range(loc_range[0], loc_range[1])] = uu.vector().get_local()
 
     assert np.sum(np.absolute(mat.array() - vec_mat)) < eps
+
+
+@pytest.mark.xfail(raises=RuntimeError)
+def test_mixed_real_assembly():
+    mesh = UnitSquareMesh(2, 2)
+    P1 = FiniteElement('P', mesh.ufl_cell(), 1)
+    R = FiniteElement('Real', mesh.ufl_cell(), 0)
+    W = FunctionSpace(mesh, P1*R)
+
+    u, c = TrialFunctions(W)
+    v, d = TestFunctions(W)
+
+    correct_vector = np.array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  0.])
+
+    assert np.isclose(assemble(u*dP).array(),  correct_vector).all()
+
+    correct_matrix = array([[ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
+                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
+                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
+                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
+                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
+                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
+                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
+                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
+                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
+                            [ 1. ,  1. ,  1. ,  1. ,  1. ,  1. ,  1. ,  1. ,  1. ,  0. ]])
+
+    assert np.isclose(assemble(u*d*dP + v*c*dP).array(),  correct_matrix).all()
