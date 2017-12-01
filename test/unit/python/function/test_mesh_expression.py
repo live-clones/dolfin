@@ -19,12 +19,11 @@
 
 import pytest
 from dolfin import *
-from dolfin.mesh.meshfunction import _meshfunction_types
 from math import sin, cos, exp, tan
 from numpy import array, zeros, float_
 import numpy as np
 
-from dolfin_utils.test import fixture, skip_in_parallel, skip_if_pybind11, skip_if_not_pybind11
+from dolfin_utils.test import fixture, skip_in_parallel, skip_if_pybind11, skip_if_not_pybind11, has_pybind11
 
 
 meshes = [UnitIntervalMesh(4), 
@@ -35,8 +34,14 @@ meshes = [UnitIntervalMesh(4),
           UnitCubeMesh(4, 4, 4),
           UnitHexMesh.create(4, 4, 4)]
 
+if has_pybind11():
+    from dolfin.mesh.meshfunction import _meshfunction_types
+    meshfunction_types = set(_meshfunction_types.keys())
+else:
+    meshfunction_types = {"double", "size_t", "int", "bool"}
+
 supported_dtypes = {"double"}
-unsupported_dtypes = list(set(_meshfunction_types.keys()) - supported_dtypes)
+unsupported_dtypes = list(meshfunction_types - supported_dtypes)
 
 
 @skip_if_not_pybind11
@@ -73,8 +78,8 @@ def test_mesh_expressions_cell(mesh):
     solve(a == L_me_mvc, u_me_mvc, bc)
 
     for j in range(u_sym.vector().local_size()):
-        assert(near(u_sym.vector()[j], u_me_cf.vector()[j]))
-        assert(near(u_sym.vector()[j], u_me_mvc.vector()[j]))
+        assert(near(u_sym.vector()[j], u_me_cf.vector()[j], 1e-12))
+        assert(near(u_sym.vector()[j], u_me_mvc.vector()[j], 1e-12))
 
 
 @skip_if_not_pybind11
@@ -128,8 +133,8 @@ def test_mesh_expressions_facet(mesh):
     solve(a == L_me_mvc, u_me_mvc, bc)
 
     for j in range(u_sym.vector().local_size()):
-        assert(near(u_sym.vector()[j], u_me_ff.vector()[j]))
-        assert(near(u_sym.vector()[j], u_me_mvc.vector()[j]))
+        assert(near(u_sym.vector()[j], u_me_ff.vector()[j], 1e-12))
+        assert(near(u_sym.vector()[j], u_me_mvc.vector()[j], 1e-12))
 
 
 @skip_if_not_pybind11
