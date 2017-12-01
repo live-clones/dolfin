@@ -459,7 +459,7 @@ void SystemAssembler::cell_wise_assembly(
           if (tensor_required)
           {
             // Update to current cell
-            cell->get_cell_data(ufc_cell);
+            cell->get_cell_data(ufc_cell, local_facet);
             ufc[form]->update(*cell, coordinate_dofs, ufc_cell,
                               exterior_facet_integrals[form]->enabled_coefficients());
 
