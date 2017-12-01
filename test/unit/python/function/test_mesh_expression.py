@@ -41,7 +41,7 @@ else:
     meshfunction_types = {"double", "size_t", "int", "bool"}
 
 supported_dtypes = {"double"}
-unsupported_dtypes = list(meshfunction_types - supported_dtypes)
+unsupported_dtypes = sorted(list(meshfunction_types - supported_dtypes))
 
 
 @skip_if_not_pybind11
