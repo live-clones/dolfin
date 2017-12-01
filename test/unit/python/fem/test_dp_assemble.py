@@ -135,7 +135,7 @@ def test_matrix_assemble(dim):
 
 
 @pytest.mark.xfail(raises=RuntimeError)
-def test_mixed_real_assembly():
+def test_mixed_real_assembly_2D():
     mesh = UnitSquareMesh(2, 2)
     P1 = FiniteElement('P', mesh.ufl_cell(), 1)
     R = FiniteElement('Real', mesh.ufl_cell(), 0)
@@ -144,19 +144,11 @@ def test_mixed_real_assembly():
     u, c = TrialFunctions(W)
     v, d = TestFunctions(W)
 
-    correct_vector = np.array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  0.])
+    form1 = u*dP
+    form2 = u*d*dP + v*c*dP
 
-    assert np.isclose(assemble(u*dP).array(),  correct_vector).all()
+    form1_l2_norm = 3.0
+    form2_frobenius_norm = 4.2426406871192848
 
-    correct_matrix = array([[ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
-                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
-                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
-                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
-                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
-                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
-                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
-                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
-                            [ 0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  0. ,  1. ],
-                            [ 1. ,  1. ,  1. ,  1. ,  1. ,  1. ,  1. ,  1. ,  1. ,  0. ]])
-
-    assert np.isclose(assemble(u*d*dP + v*c*dP).array(),  correct_matrix).all()
+    assert round(assemble(form1).norm("l2") - form1_l2_norm, 10) == 0
+    assert round(assemble(form2).norm("frobenius") - form2_frobenius_norm, 10) == 0
