@@ -84,12 +84,12 @@ namespace dolfin_wrappers
                   std::shared_ptr<dolfin::GenericVector> udot)
       { PYBIND11_OVERLOAD_NAME(void, dolfin::CVode, "derivs", derivs,
                                 t, u, udot);}
-      int Jacobian( std::shared_ptr<dolfin::GenericVector> v,
+      int jacobian( std::shared_ptr<dolfin::GenericVector> v,
                     std::shared_ptr<dolfin::GenericVector> Jv,
                     double t,
                     std::shared_ptr<dolfin::GenericVector> y,
                     std::shared_ptr<dolfin::GenericVector> fy)
-      { PYBIND11_OVERLOAD_NAME(int, dolfin::CVode, "Jacobian", Jacobian,
+      { PYBIND11_OVERLOAD_NAME(int, dolfin::CVode, "jacobian", jacobian,
                                 v, Jv, t, y, fy);}
       int psolve( double tn,
                   std::shared_ptr<dolfin::GenericVector> u,
@@ -117,11 +117,11 @@ namespace dolfin_wrappers
         std::shared_ptr<dolfin::GenericVector>,
         std::shared_ptr<dolfin::GenericVector>))
         &dolfin::CVode::derivs)
-      .def("Jacobian", (int (dolfin::CVode::*)(std::shared_ptr<dolfin::GenericVector>,
+      .def("jacobian", (int (dolfin::CVode::*)(std::shared_ptr<dolfin::GenericVector>,
         std::shared_ptr<dolfin::GenericVector>, double,
         std::shared_ptr<dolfin::GenericVector>,
         std::shared_ptr<dolfin::GenericVector>))
-        &dolfin::CVode::Jacobian)
+        &dolfin::CVode::jacobian)
       .def("psolve", (int (dolfin::CVode::*)(double,
         std::shared_ptr<dolfin::GenericVector>,
         std::shared_ptr<dolfin::GenericVector>,

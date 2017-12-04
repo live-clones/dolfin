@@ -96,9 +96,9 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
     dolfin_assert(flag == CV_SUCCESS);
 
     /* Call CVBandPreInit to initialize band preconditioner */
-    flag = CVSpilsSetPreconditioner(cvode_mem, NULL, CVode::PrecSolve);
+    flag = CVSpilsSetPreconditioner(cvode_mem, NULL, CVode::prec_solve);
     dolfin_assert(flag == CV_SUCCESS);
-    flag = CVSpilsSetJacTimes(cvode_mem, NULL, fJac);
+    flag = CVSpilsSetJacTimes(cvode_mem, NULL, f_jac);
     dolfin_assert(flag == CV_SUCCESS);
   }
 
@@ -135,7 +135,7 @@ void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                "This function should be overloaded");
 }
 //-----------------------------------------------------------------------------
-int CVode::Jacobian(std::shared_ptr<GenericVector> v,
+int CVode::jacobian(std::shared_ptr<GenericVector> v,
                           std::shared_ptr<GenericVector> Jv,
                           double t, std::shared_ptr<GenericVector> y,
                           std::shared_ptr<GenericVector> fy)
@@ -146,7 +146,7 @@ int CVode::Jacobian(std::shared_ptr<GenericVector> v,
   return 0;
 }
 //-----------------------------------------------------------------------------
-int CVode::JacobianSetup(double t,
+int CVode::jacobian_setup(double t,
                           std::shared_ptr<GenericVector> Jv,
                           std::shared_ptr<GenericVector> y)
 {
@@ -167,7 +167,7 @@ int CVode::psolve(double tn, std::shared_ptr<GenericVector>u,
 }
 
 //-----------------------------------------------------------------------------
-int CVode::fJacSetup(double t, N_Vector y, N_Vector fy, void *user_data)
+int CVode::f_jac_setup(double t, N_Vector y, N_Vector fy, void *user_data)
 {
 
   CVode* cv = static_cast<CVode*>(user_data);
@@ -175,11 +175,11 @@ int CVode::fJacSetup(double t, N_Vector y, N_Vector fy, void *user_data)
   auto yvec = static_cast<const SUNDIALSNVector*>(y->content)->vec();
   auto fyvec = static_cast<SUNDIALSNVector*>(fy->content)->vec();
   
-  cv->JacobianSetup(t, yvec, fyvec);
+  cv->jacobian_setup(t, yvec, fyvec);
   return 0;
 }
 //-----------------------------------------------------------------------------
-int CVode::fJac(N_Vector v, N_Vector Jv, double t, N_Vector y, N_Vector fy, void* user_data, N_Vector tmp)
+int CVode::f_jac(N_Vector v, N_Vector Jv, double t, N_Vector y, N_Vector fy, void* user_data, N_Vector tmp)
 {
 
   CVode* cv = static_cast<CVode*>(user_data);
@@ -191,7 +191,7 @@ int CVode::fJac(N_Vector v, N_Vector Jv, double t, N_Vector y, N_Vector fy, void
   auto fyvec = static_cast<SUNDIALSNVector*>(fy->content)->vec();
   auto tmpvec = static_cast<SUNDIALSNVector*>(tmp->content)->vec();
 
-  cv->Jacobian(vvec,Jvvec,t,yvec,fyvec);
+  cv->jacobian(vvec,Jvvec,t,yvec,fyvec);
   return 0;
 }
 //-----------------------------------------------------------------------------
@@ -212,7 +212,7 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 
 /* Preconditioner solve routine */
 /* TODO: Create as virtual function */
-int CVode::PrecSolve(double tn, N_Vector u, N_Vector fu, N_Vector r, N_Vector z,
+int CVode::prec_solve(double tn, N_Vector u, N_Vector fu, N_Vector r, N_Vector z,
                   double gamma, double delta, int lr, void *user_data)
 { 
 
