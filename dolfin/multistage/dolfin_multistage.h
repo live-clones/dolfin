@@ -6,6 +6,5 @@
 #include <dolfin/multistage/MultiStageScheme.h>
 #include <dolfin/multistage/RKSolver.h>
 #include <dolfin/multistage/PointIntegralSolver.h>
-#include <dolfin/multistage/CVode.h>
 
 #endif
