@@ -62,13 +62,9 @@ TH = P2 * P1
 W  = MultiMeshFunctionSpace(multimesh, TH)
 
 # Define trial and test functions and right-hand side
-u = TrialFunction(W)
-v = TestFunction(W)
-f = Constant((0, 0))
-
-# Define trial and test functions and right-hand side
 (u, p) = TrialFunctions(W)
 (v, q) = TestFunctions(W)
+f = Constant((0, 0)) 
 
 # Define facet normal and mesh size
 n = FacetNormal(multimesh)
