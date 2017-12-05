@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Chris Richardson
+// Copyright (C) 2017 Chris Richardson and Chris Hadjigeorgiou
 //
 // This file is part of DOLFIN.
 //
@@ -43,9 +43,10 @@
 
 using namespace dolfin;
 
-/// Constructor
+//-----------------------------------------------------------------------------
 CVode::CVode(int cv_lmm, int cv_iter) : t(0.0)
 {
+  // FIXME: rename and move
   this->cv_lmm = cv_lmm;
   this->cv_iter = cv_iter;
 
@@ -58,20 +59,18 @@ CVode::CVode(int cv_lmm, int cv_iter) : t(0.0)
   int flag = CVodeSetUserData(cvode_mem, (void *)this);
   dolfin_assert(flag == 0);
 }
-
-/// Destructor
+//-----------------------------------------------------------------------------
 CVode::~CVode()
 {
   CVodeFree(&cvode_mem);
 }
-
 //-----------------------------------------------------------------------------
 void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, long int mxsteps)
 {
   dolfin_assert(cvode_mem);
 
+  // FIXME: what is this for?
   auto fu = std::shared_ptr<GenericVector>();
-  int NEQ = 20*20;
 
   // Make a sundials n_vector sharing data with u0
   _u = std::make_shared<SUNDIALSNVector>(u0);
@@ -87,7 +86,6 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
 
   CVodeSetMaxNumSteps(cvode_mem, mxsteps);
 
-
   if(cv_iter == CV_NEWTON)
   {
     dolfin_debug("Initialising Newtonian solver");
@@ -95,7 +93,7 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
     flag = CVSpilsSetLinearSolver(cvode_mem,ls.get());
     dolfin_assert(flag == CV_SUCCESS);
 
-    /* Call CVBandPreInit to initialize band preconditioner */
+    // Call CVBandPreInit to initialize band preconditioner
     flag = CVSpilsSetPreconditioner(cvode_mem, NULL, CVode::prec_solve);
     dolfin_assert(flag == CV_SUCCESS);
     flag = CVSpilsSetJacTimes(cvode_mem, NULL, f_jac);
@@ -111,7 +109,7 @@ double CVode::step(double dt)
   std::cout << "t_in = " << t << ", dt = " << dt << " " << ((CVodeMem) cvode_mem)->cv_h << std::endl;
   int flag = ::CVode(cvode_mem, tout, _u->nvector(), &t, CV_NORMAL);
   dolfin_assert((flag == CV_SUCCESS) || (flag == CV_TSTOP_RETURN) || (flag == CV_ROOT_RETURN));
-  
+
   std::cout << "t_out = " << t;
 
   return t;
@@ -136,9 +134,9 @@ void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
 }
 //-----------------------------------------------------------------------------
 int CVode::jacobian(std::shared_ptr<GenericVector> v,
-                          std::shared_ptr<GenericVector> Jv,
-                          double t, std::shared_ptr<GenericVector> y,
-                          std::shared_ptr<GenericVector> fy)
+                    std::shared_ptr<GenericVector> Jv,
+                    double t, std::shared_ptr<GenericVector> y,
+                    std::shared_ptr<GenericVector> fy)
 {
   dolfin_error("CVode.cpp",
 	       "Jacobian function",
@@ -156,14 +154,15 @@ int CVode::jacobian_setup(double t,
   return 0;
 }
 
-    /// Overloaded preconditioner solver function
+//-----------------------------------------------------------------------------
 int CVode::psolve(double tn, std::shared_ptr<GenericVector>u,
-                          std::shared_ptr<GenericVector> fu,
-   		                    std::shared_ptr<GenericVector> r,
-                          std::shared_ptr<GenericVector> z,
-                          double gamma, double delta, int lr)
+                  std::shared_ptr<GenericVector> fu,
+                  std::shared_ptr<GenericVector> r,
+                  std::shared_ptr<GenericVector> z,
+                  double gamma, double delta, int lr)
 {
-  return 0; 
+  /// Overloaded preconditioner solver function
+  return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -174,7 +173,7 @@ int CVode::f_jac_setup(double t, N_Vector y, N_Vector fy, void *user_data)
 
   auto yvec = static_cast<const SUNDIALSNVector*>(y->content)->vec();
   auto fyvec = static_cast<SUNDIALSNVector*>(fy->content)->vec();
-  
+
   cv->jacobian_setup(t, yvec, fyvec);
   return 0;
 }
@@ -191,7 +190,7 @@ int CVode::f_jac(N_Vector v, N_Vector Jv, double t, N_Vector y, N_Vector fy, voi
   auto fyvec = static_cast<SUNDIALSNVector*>(fy->content)->vec();
   auto tmpvec = static_cast<SUNDIALSNVector*>(tmp->content)->vec();
 
-  cv->jacobian(vvec,Jvvec,t,yvec,fyvec);
+  cv->jacobian(vvec, Jvvec, t, yvec, fyvec);
   return 0;
 }
 //-----------------------------------------------------------------------------
@@ -210,11 +209,12 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   return 0;
 }
 
-/* Preconditioner solve routine */
-/* TODO: Create as virtual function */
+//--------------------------------------------------------------------------
 int CVode::prec_solve(double tn, N_Vector u, N_Vector fu, N_Vector r, N_Vector z,
                   double gamma, double delta, int lr, void *user_data)
-{ 
+{
+  // Preconditioner solve routine
+  // TODO: Create as virtual function
 
   CVode* cv = static_cast<CVode*>(user_data);
 

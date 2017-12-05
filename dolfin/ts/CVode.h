@@ -43,7 +43,7 @@ namespace dolfin
 
     /// Constructor
     CVode(int cv_lmm, int cv_iter);
-    
+
     /// Destructor
     virtual ~CVode();
 
@@ -81,16 +81,20 @@ namespace dolfin
                           std::shared_ptr<GenericVector> z,
                           double gamma, double delta, int lr);
 
+    /// FIXME: document
     std::map<std::string,double> statistics();
 
   private:
     // Internal callback from CVode to get time derivatives - passed on to derivs (above)
     static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 
+    // FIXME: document
     static int f_jac_setup(double t, N_Vector y, N_Vector fy, void *user_data);
 
+    // FIXME: document
     static int f_jac(N_Vector u, N_Vector fu, double t, N_Vector y, N_Vector fy, void* , N_Vector tmp);
 
+    // FIXME: document
     static int prec_solve(double, N_Vector, N_Vector, N_Vector, N_Vector, double, double, int, void*);
 
     // Vector of values - wrapper around dolfin::GenericVector
@@ -100,7 +104,10 @@ namespace dolfin
     std::unique_ptr<_generic_SUNLinearSolver> ls;
 
     // Current time
+    // FIXME - add underscore
     double t;
+
+    // FIXME - what are these? Rename with _
     int cv_lmm, cv_iter;
 
     // Pointer to CVode memory struct
