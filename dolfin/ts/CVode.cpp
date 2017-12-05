@@ -44,60 +44,59 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-CVode::CVode(LMM cv_lmm, ITER cv_iter) : ls(NULL), t(0.0)
+CVode::CVode(LMM cv_lmm, ITER cv_iter) : _ls(NULL), _t(0.0)
 {
   // FIXME: rename and move - do we even need to keep them?
   _cv_lmm = cv_lmm;
   _cv_iter = cv_iter;
 
   // Create CVode memory block
-  cvode_mem = CVodeCreate(_cv_lmm, _cv_iter);
-  dolfin_assert(cvode_mem);
+  _cvode_mem = CVodeCreate(_cv_lmm, _cv_iter);
+  dolfin_assert(_cvode_mem);
 
   // Point user_data back to this object
   // (for use in "f" below)
-  int flag = CVodeSetUserData(cvode_mem, (void *)this);
+  int flag = CVodeSetUserData(_cvode_mem, (void *)this);
   dolfin_assert(flag == 0);
 }
 //-----------------------------------------------------------------------------
 CVode::~CVode()
 {
-  CVodeFree(&cvode_mem);
-  if (ls)
-    SUNLinSolFree(ls);
+  CVodeFree(&_cvode_mem);
+  if (_ls)
+    SUNLinSolFree(_ls);
 }
 //-----------------------------------------------------------------------------
 void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, long int mxsteps)
 {
-  dolfin_assert(cvode_mem);
-
-  // FIXME: what is this for?
-  auto fu = std::shared_ptr<GenericVector>();
+  dolfin_assert(_cvode_mem);
 
   // Make a sundials n_vector sharing data with u0
   _u = std::make_shared<SUNDIALSNVector>(u0);
 
   // Initialise
-  std::cout << "Initialising with t = " << t << "\n";
+  std::cout << "Initialising with t = " << _t << "\n";
 
-  int flag = CVodeInit(cvode_mem, f, t, _u->nvector());
+  int flag = CVodeInit(_cvode_mem, f, _t, _u->nvector());
   dolfin_assert(flag == CV_SUCCESS);
 
-  flag = CVodeSStolerances(cvode_mem, rtol, atol);
+  flag = CVodeSStolerances(_cvode_mem, rtol, atol);
   dolfin_assert(flag == CV_SUCCESS);
 
-  CVodeSetMaxNumSteps(cvode_mem, mxsteps);
+  CVodeSetMaxNumSteps(_cvode_mem, mxsteps);
 
   if (_cv_iter == CV_NEWTON)
   {
     dolfin_debug("Initialising Newton solver");
-    ls = SUNSPGMR(_u->nvector(), PREC_LEFT, 0);
-    flag = CVSpilsSetLinearSolver(cvode_mem, ls);
+    _ls = SUNSPGMR(_u->nvector(), PREC_LEFT, 0);
+    flag = CVSpilsSetLinearSolver(_cvode_mem, _ls);
     dolfin_assert(flag == CV_SUCCESS);
 
-    flag = CVSpilsSetPreconditioner(cvode_mem, NULL, prec_solve);
+    flag = CVSpilsSetPreconditioner(_cvode_mem, NULL, prec_solve);
     dolfin_assert(flag == CV_SUCCESS);
-    flag = CVSpilsSetJacTimes(cvode_mem, NULL, f_jac);
+
+    // Set the Jacobian function to be called by CVode solver
+    flag = CVSpilsSetJacTimes(_cvode_mem, NULL, f_jac);
     dolfin_assert(flag == CV_SUCCESS);
   }
 
@@ -105,25 +104,23 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
 //-----------------------------------------------------------------------------
 double CVode::step(double dt)
 {
-
-  double tout = t + dt;
-  std::cout << "t_in = " << t << ", dt = " << dt << " " << ((CVodeMem) cvode_mem)->cv_h;
-  int flag = ::CVode(cvode_mem, tout, _u->nvector(), &t, CV_NORMAL);
+  double tout = _t + dt;
+  std::cout << "t_in = " << _t << ", dt = " << dt << " " << ((CVodeMem) _cvode_mem)->cv_h;
+  int flag = ::CVode(_cvode_mem, tout, _u->nvector(), &_t, CV_NORMAL);
   dolfin_assert((flag == CV_SUCCESS) || (flag == CV_TSTOP_RETURN) || (flag == CV_ROOT_RETURN));
 
-  std::cout << " " << flag << " -  t_out = " << t << std::endl;
-
-  return t;
+  std::cout << " " << flag << " -  t_out = " << _t << std::endl;
+  return _t;
 }
 //-----------------------------------------------------------------------------
 double CVode::get_time() const
 {
-  return t;
+  return _t;
 }
 //-----------------------------------------------------------------------------
 void CVode::set_time(double t0)
 {
-  t = t0;
+  _t = t0;
 }
 //-----------------------------------------------------------------------------
 void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
@@ -140,8 +137,8 @@ int CVode::jacobian(std::shared_ptr<GenericVector> v,
                     std::shared_ptr<GenericVector> fy)
 {
   dolfin_error("CVode.cpp",
-  	       "compute Jacobian function",
-	       "This function should be overloaded");
+      	       "compute Jacobian function",
+	             "This function should be overloaded");
   return 0;
 }
 //-----------------------------------------------------------------------------
@@ -150,8 +147,8 @@ int CVode::jacobian_setup(double t,
                           std::shared_ptr<GenericVector> y)
 {
   dolfin_error("CVode.cpp",
-	       "Jacobian setup function",
-	       "This function should be overloaded");
+      	       "Jacobian setup function",
+	             "This function should be overloaded");
   return 0;
 }
 
@@ -235,7 +232,7 @@ int CVode::prec_solve(double tn, N_Vector u, N_Vector fu, N_Vector r, N_Vector z
 std::map<std::string, double> CVode::statistics()
 {
   std::map<std::string, double> stats;
-  auto cv = static_cast<const CVodeMem>(cvode_mem);
+  auto cv = static_cast<const CVodeMem>(_cvode_mem);
 
   stats["Steps"] = cv->cv_nst;
   stats["RHSEvals"] = cv->cv_nfe;

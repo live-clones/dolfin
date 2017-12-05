@@ -112,7 +112,7 @@ from .cpp.io import X3DOM, X3DOMParameters
 
 if has_sundials():
     from .cpp.la import SUNDIALSNVector
-    from .cpp.multistage import CVode
+    from .cpp.ts import CVode
 
 # Import Python modules
 from . import io
