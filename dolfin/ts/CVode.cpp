@@ -44,7 +44,7 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-CVode::CVode(LMM cv_lmm, ITER cv_iter) : t(0.0)
+CVode::CVode(LMM cv_lmm, ITER cv_iter) : ls(NULL), t(0.0)
 {
   // FIXME: rename and move - do we even need to keep them?
   _cv_lmm = cv_lmm;
@@ -63,6 +63,8 @@ CVode::CVode(LMM cv_lmm, ITER cv_iter) : t(0.0)
 CVode::~CVode()
 {
   CVodeFree(&cvode_mem);
+  if (ls)
+    SUNLinSolFree(ls);
 }
 //-----------------------------------------------------------------------------
 void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, long int mxsteps)
@@ -88,13 +90,12 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
 
   if (_cv_iter == CV_NEWTON)
   {
-    dolfin_debug("Initialising Newtonian solver");
-    ls = std::unique_ptr<_generic_SUNLinearSolver>(SUNSPGMR(_u->nvector(), PREC_LEFT, 0));
-    flag = CVSpilsSetLinearSolver(cvode_mem,ls.get());
+    dolfin_debug("Initialising Newton solver");
+    ls = SUNSPGMR(_u->nvector(), PREC_LEFT, 0);
+    flag = CVSpilsSetLinearSolver(cvode_mem, ls);
     dolfin_assert(flag == CV_SUCCESS);
 
-    // FIXME: adjust comment? Call CVBandPreInit to initialize band preconditioner
-    flag = CVSpilsSetPreconditioner(cvode_mem, NULL, CVode::prec_solve);
+    flag = CVSpilsSetPreconditioner(cvode_mem, NULL, prec_solve);
     dolfin_assert(flag == CV_SUCCESS);
     flag = CVSpilsSetJacTimes(cvode_mem, NULL, f_jac);
     dolfin_assert(flag == CV_SUCCESS);
@@ -106,11 +107,11 @@ double CVode::step(double dt)
 {
 
   double tout = t + dt;
-  std::cout << "t_in = " << t << ", dt = " << dt << " " << ((CVodeMem) cvode_mem)->cv_h << std::endl;
+  std::cout << "t_in = " << t << ", dt = " << dt << " " << ((CVodeMem) cvode_mem)->cv_h;
   int flag = ::CVode(cvode_mem, tout, _u->nvector(), &t, CV_NORMAL);
   dolfin_assert((flag == CV_SUCCESS) || (flag == CV_TSTOP_RETURN) || (flag == CV_ROOT_RETURN));
 
-  std::cout << "t_out = " << t;
+  std::cout << " " << flag << " -  t_out = " << t << std::endl;
 
   return t;
 }
@@ -225,7 +226,8 @@ int CVode::prec_solve(double tn, N_Vector u, N_Vector fu, N_Vector r, N_Vector z
   auto zvec = static_cast<SUNDIALSNVector*>(z->content)->vec();
 
   cv->psolve(tn, uvec, udotvec, rvec, zvec, gamma, delta, lr);
-  return(0);
+
+  return 0;
 }
 
 

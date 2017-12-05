@@ -102,7 +102,7 @@ namespace dolfin
     std::shared_ptr<SUNDIALSNVector> _u;
 
     // SUNDIALS Linear Solver
-    std::unique_ptr<_generic_SUNLinearSolver> ls;
+    SUNLinearSolver ls;
 
     // Current time
     // FIXME - add underscore
