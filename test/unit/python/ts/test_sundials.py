@@ -7,7 +7,7 @@ class MyCVode(CVode):
     # Overload the derivs method
     def derivs(self, t, u, udot):
         udot[:] = -u[:]
-    def Jacobian(self, u, udot, t, y, fy):
+    def jacobian(self, u, udot, t, y, fy):
         return 0
     def psolve(self, t, u, udot, r, z, gamma, x, y):
         return 0
