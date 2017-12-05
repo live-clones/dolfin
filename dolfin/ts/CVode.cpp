@@ -71,7 +71,6 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
   dolfin_assert(cvode_mem);
 
   auto fu = std::shared_ptr<GenericVector>();
-  int NEQ = 20*20;
 
   // Make a sundials n_vector sharing data with u0
   _u = std::make_shared<SUNDIALSNVector>(u0);
