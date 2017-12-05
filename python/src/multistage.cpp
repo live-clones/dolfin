@@ -25,7 +25,7 @@
 #include <dolfin/function/Constant.h>
 #include <dolfin/function/Function.h>
 #include <dolfin/la/GenericVector.h>
-#include <dolfin/multistage/CVode.h>
+#include <dolfin/ts/CVode.h>
 #include <dolfin/multistage/MultiStageScheme.h>
 #include <dolfin/multistage/PointIntegralSolver.h>
 #include <dolfin/multistage/RKSolver.h>
@@ -105,7 +105,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::CVode, PyCVode, std::shared_ptr<dolfin::CVode>>cvode(m,"CVode");
     cvode
       .def(py::init<int, int>())
-      .def("init", &dolfin::CVode::init, py::arg("u0"), py::arg("atol"), 
+      .def("init", &dolfin::CVode::init, py::arg("u0"), py::arg("atol"),
         py::arg("rtol"), py::arg("mxsteps")=0)
       .def("set_time", &dolfin::CVode::set_time, py::arg("t0"))
       .def("get_time", &dolfin::CVode::get_time)
@@ -131,7 +131,7 @@ namespace dolfin_wrappers
         &dolfin::CVode::psolve);
     py::enum_<dolfin::CVode::LMM>(cvode,"LMM")
       .value("CV_BDF", dolfin::CVode::LMM::cv_bdf)
-      .value("CV_ADAMS", dolfin::CVode::LMM::cv_adams); 
+      .value("CV_ADAMS", dolfin::CVode::LMM::cv_adams);
     py::enum_<dolfin::CVode::ITER>(cvode,"ITER")
       .value("CV_FUNCTIONAL", dolfin::CVode::ITER::cv_functional)
       .value("CV_NEWTON", dolfin::CVode::ITER::cv_newton);

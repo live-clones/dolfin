@@ -44,14 +44,14 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-CVode::CVode(int cv_lmm, int cv_iter) : t(0.0)
+CVode::CVode(LMM cv_lmm, ITER cv_iter) : t(0.0)
 {
-  // FIXME: rename and move
-  this->cv_lmm = cv_lmm;
-  this->cv_iter = cv_iter;
+  // FIXME: rename and move - do we even need to keep them?
+  _cv_lmm = cv_lmm;
+  _cv_iter = cv_iter;
 
   // Create CVode memory block
-  cvode_mem = CVodeCreate(cv_lmm, cv_iter);
+  cvode_mem = CVodeCreate(_cv_lmm, _cv_iter);
   dolfin_assert(cvode_mem);
 
   // Point user_data back to this object
@@ -86,14 +86,14 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
 
   CVodeSetMaxNumSteps(cvode_mem, mxsteps);
 
-  if(cv_iter == CV_NEWTON)
+  if (_cv_iter == CV_NEWTON)
   {
     dolfin_debug("Initialising Newtonian solver");
     ls = std::unique_ptr<_generic_SUNLinearSolver>(SUNSPGMR(_u->nvector(), PREC_LEFT, 0));
     flag = CVSpilsSetLinearSolver(cvode_mem,ls.get());
     dolfin_assert(flag == CV_SUCCESS);
 
-    // Call CVBandPreInit to initialize band preconditioner
+    // FIXME: adjust comment? Call CVBandPreInit to initialize band preconditioner
     flag = CVSpilsSetPreconditioner(cvode_mem, NULL, CVode::prec_solve);
     dolfin_assert(flag == CV_SUCCESS);
     flag = CVSpilsSetJacTimes(cvode_mem, NULL, f_jac);
@@ -139,7 +139,7 @@ int CVode::jacobian(std::shared_ptr<GenericVector> v,
                     std::shared_ptr<GenericVector> fy)
 {
   dolfin_error("CVode.cpp",
-	       "Jacobian function",
+  	       "compute Jacobian function",
 	       "This function should be overloaded");
   return 0;
 }
@@ -191,6 +191,7 @@ int CVode::f_jac(N_Vector v, N_Vector Jv, double t, N_Vector y, N_Vector fy, voi
   auto tmpvec = static_cast<SUNDIALSNVector*>(tmp->content)->vec();
 
   cv->jacobian(vvec, Jvvec, t, yvec, fyvec);
+
   return 0;
 }
 //-----------------------------------------------------------------------------

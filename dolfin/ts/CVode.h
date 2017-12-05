@@ -42,7 +42,7 @@ namespace dolfin
     enum ITER { cv_functional = CV_FUNCTIONAL, cv_newton = CV_NEWTON };
 
     /// Constructor
-    CVode(int cv_lmm, int cv_iter);
+    CVode(LMM cv_lmm, ITER cv_iter);
 
     /// Destructor
     virtual ~CVode();
@@ -64,12 +64,13 @@ namespace dolfin
     virtual void derivs(double t, std::shared_ptr<GenericVector> u,
                         std::shared_ptr<GenericVector> udot);
 
-    /// Overloaded Jabocian function
+    /// Overloaded Jacobian function
     virtual int jacobian(std::shared_ptr<GenericVector> u,
                           std::shared_ptr<GenericVector> Ju,
    		          double t, std::shared_ptr<GenericVector> y,
                           std::shared_ptr<GenericVector> fy);
 
+    /// Document
     virtual int jacobian_setup(double t,
                           std::shared_ptr<GenericVector> Jv,
                           std::shared_ptr<GenericVector> y);
@@ -107,8 +108,9 @@ namespace dolfin
     // FIXME - add underscore
     double t;
 
-    // FIXME - what are these? Rename with _
-    int cv_lmm, cv_iter;
+    // FIXME - what are these?
+    LMM _cv_lmm;
+    ITER _cv_iter;
 
     // Pointer to CVode memory struct
     void *cvode_mem;
