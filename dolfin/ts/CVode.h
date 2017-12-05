@@ -102,18 +102,18 @@ namespace dolfin
     std::shared_ptr<SUNDIALSNVector> _u;
 
     // SUNDIALS Linear Solver
-    std::unique_ptr<_generic_SUNLinearSolver> ls;
+    std::unique_ptr<_generic_SUNLinearSolver> _ls;
 
     // Current time
     // FIXME - add underscore
-    double t;
+    double _t;
 
-    // FIXME - what are these?
+    // 
     LMM _cv_lmm;
     ITER _cv_iter;
 
     // Pointer to CVode memory struct
-    void *cvode_mem;
+    void* _cvode_mem;
 
   };
 
