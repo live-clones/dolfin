@@ -30,9 +30,9 @@ meshes = [UnitIntervalMesh(4),
           UnitSquareMesh(4, 4, 'left/right'),
           UnitSquareMesh(4, 4, 'right/left'),
           UnitSquareMesh(4, 4, 'crossed'),
-          UnitQuadMesh.create(4, 4),
+          UnitSquareMesh.create(4, 4, CellType.Type_quadrilateral),
           UnitCubeMesh(4, 4, 4),
-          UnitHexMesh.create(4, 4, 4)]
+          UnitCubeMesh.create(4, 4, 4, CellType.Type_hexahedron)]
 
 if has_pybind11():
     from dolfin.mesh.meshfunction import _meshfunction_types
@@ -47,7 +47,7 @@ unsupported_dtypes = sorted(list(meshfunction_types - supported_dtypes))
 @skip_if_not_pybind11
 @pytest.mark.parametrize("mesh", meshes)
 def test_mesh_expressions_cell(mesh):
-    cf = CellFunction("double", mesh, 0.0)
+    cf = MeshFunction("double", mesh, mesh.topology().dim(), 0.0)
     mvc = MeshValueCollection("double", mesh, mesh.topology().dim())
 
     for c in cells(mesh):
@@ -91,9 +91,9 @@ def test_mesh_expressions_facet(mesh):
     u, v = TrialFunction(V), TestFunction(V)
     a = dot(grad(u), grad(v))*dx
 
-    ff_d = FacetFunction("double", mesh, 0.0)
+    ff_d = MeshFunction("double", mesh, mesh.topology().dim()-1, 0.0)
     mvc = MeshValueCollection("double", mesh, mesh.topology().dim() - 1)
-    ff_i = FacetFunction("size_t", mesh, 0)
+    ff_i = MeshFunction("size_t", mesh, mesh.topology().dim()-1, 0)
 
     ds = Measure("ds", subdomain_data=ff_i)
     L_sym = Constant(0.0)*v*ds
@@ -142,8 +142,8 @@ def test_mesh_expressions_facet(mesh):
 @pytest.mark.parametrize("dtype", unsupported_dtypes)
 def test_mesh_expressions_unsupported_type(mesh, dtype):
 
-    ff = FacetFunction(dtype, mesh, 0)
-    cf = CellFunction(dtype, mesh, 0)
+    ff = MeshFunction(dtype, mesh, mesh.topology().dim()-1, 0)
+    cf = MeshFunction(dtype, mesh, mesh.topology().dim(), 0)
 
     with pytest.raises(TypeError):
         MeshExpression(cf)
