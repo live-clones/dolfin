@@ -30,11 +30,33 @@
 
 namespace dolfin
 {
+
+  /// The MeshExpression class is an Expression which yields piecewise
+  /// constant values defined on the entity topology of a MeshFunction
+  /// or MeshValueCollection.
+  /// This is useful, for example, in the case that a boundary condition
+  /// has facet-dependent values defined on each facet in the mesh. Or,
+  /// for example, in the case that each cell in a mesh has piecewise
+  /// constant material data associated with it. These values may be
+  /// straightforwardly read in from file via the MeshFunction or
+  /// MeshValueCollection interface.
+
   class MeshExpression : public Expression
   {
   public:
+
+    /// Create a MeshExpression where the facet or cell values are stored in
+    /// a (_MeshFunction_)
+    ///
+    /// @param    mesh_function (_MeshFunction_)
+    ///         The entity values.
     explicit MeshExpression(std::shared_ptr<MeshFunction<double>> mesh_function);
 
+    /// Create a MeshExpression where the facet or cell values are stored in
+    /// a (_MeshValueCollection_)
+    ///
+    /// @param    mesh_value_collection (_MeshValueCollection_)
+    ///         The entity values.
     explicit MeshExpression(std::shared_ptr<MeshValueCollection<double>> mesh_value_collection);
 
     virtual void eval(Eigen::Ref<Eigen::VectorXd> values,
