@@ -19,7 +19,7 @@
 // Modified by Benjamin Kehlet 2016
 //
 // First added:  2013-08-05
-// Last changed: 2017-11-24
+// Last changed: 2017-12-06
 
 #include <cmath>
 #include <dolfin/log/log.h>
@@ -764,7 +764,7 @@ void MultiMesh::_build_quadrature_rules_cut_cells(std::size_t quadrature_order)
       const Cell cut_cell(*(_meshes[cut_part]), cut_cell_index);
 
       // Compute quadrature rule for the cell itself.
-      auto qr = sq.compute_quadrature_rule(cut_cell, quadrature_order);
+      auto qr = sq.compute_quadrature_rule(cut_cell);
 
       // Get the quadrature rule for the overlapping part
       const auto& qr_overlap = _quadrature_rules_overlap[cut_part][cut_cell_index];
@@ -1076,9 +1076,7 @@ MultiMesh::_add_quadrature_rule(quadrature_rule& qr,
                                 double factor) const
 {
   // Compute quadrature rule for simplex
-  const auto dqr = sq.compute_quadrature_rule(simplex,
-						 gdim,
-						 quadrature_order);
+  const auto dqr = sq.compute_quadrature_rule(simplex, gdim);
   // Add quadrature rule
   const std::size_t num_points = _add_quadrature_rule(qr, dqr, gdim, factor);
 
