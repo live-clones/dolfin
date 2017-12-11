@@ -209,7 +209,7 @@ def test_UnitHexMesh():
 def test_RefineUnitIntervalMesh():
     """Refine mesh of unit interval."""
     mesh = UnitIntervalMesh(20)
-    cell_markers = CellFunction("bool", mesh)
+    cell_markers = MeshFunction("bool", mesh, mesh.topology().dim(), False)
     cell_markers[0] = (MPI.rank(mesh.mpi_comm()) == 0)
     mesh2 = refine(mesh, cell_markers)
     assert mesh2.num_entities_global(0) == 22
@@ -303,7 +303,7 @@ def test_SubsetIterators(mesh):
         return x[0] >= 0.5
     sd1 = AutoSubDomain(inside1)
     sd2 = AutoSubDomain(inside2)
-    cf = CellFunction('size_t', mesh)
+    cf = MeshFunction('size_t', mesh, mesh.topology().dim())
     cf.set_all(0)
     sd1.mark(cf, 1)
     sd2.mark(cf, 2)
@@ -651,3 +651,27 @@ def test_mesh_topology_lifetime():
     assert sys.getrefcount(mesh) == rc + 1
     del topology
     assert sys.getrefcount(mesh) == rc
+
+
+@skip_if_not_pybind11
+def test_mesh_connectivity_lifetime():
+    """Check that lifetime of MeshConnectivity is bound to
+    underlying mesh topology object"""
+    mesh = UnitSquareMesh(4, 4)
+    mesh.init(1, 2)
+    topology = mesh.topology()
+
+    # Refcount checks on the MeshConnectivity object
+    rc = sys.getrefcount(topology)
+    connectivity = topology(1, 2)
+    assert sys.getrefcount(topology) == rc + 1
+    del connectivity
+    assert sys.getrefcount(topology) == rc
+
+    # Refcount checks on the returned connectivities array
+    conn = topology(1, 2)
+    rc = sys.getrefcount(conn)
+    cells = conn(0)
+    assert sys.getrefcount(conn) == rc + 1
+    del cells
+    assert sys.getrefcount(conn) == rc

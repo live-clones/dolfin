@@ -1,7 +1,12 @@
 Change log
 ==========
 
-2017.2.0 (unreleased)
+2018.1.0.dev0
+-------------
+
+- No changes.
+
+2017.2.0 (2017-12-05)
 ---------------------
 
 - Remove ``UnitQuadMesh`` and ``UnitHexMesh``. Now use ``UnitSquareMesh`` and
@@ -49,6 +54,8 @@ Change log
   and ``MaxCellEdgeLength``
 - Deprecate subclassing of ``Expression`` in Python; new Python class
   ``UserExpression`` introduced for user overloads
+- Deprecate ``VertexFunction``, ``EdgeFunction``, ``FaceFunction``,
+  ``FacetFunction``, ``CellFunction``; use ``MeshFunction`` instead
 
 
 2017.1.0 (2017-05-09)
