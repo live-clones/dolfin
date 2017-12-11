@@ -153,6 +153,15 @@ namespace dolfin
     ///         List of covered cell indices for given part
     const std::vector<unsigned int>& covered_cells(std::size_t part) const;
 
+    /// Mark a set of cells as covered in the mesh.
+    ///
+    /// *Arguments*
+    ///     part (std::size_t)
+    ///         The part number
+    ///     cells (std::vector<unsigned int>)
+    ///         The cells to be covered
+    void mark_covered(std::size_t part, const std::vector<unsigned int> cells);
+
     /// Return the collision map for cut cells of the given part
     ///
     /// *Arguments*

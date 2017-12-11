@@ -541,6 +541,7 @@ namespace dolfin_wrappers
       .def("cut_cells", &dolfin::MultiMesh::cut_cells)
       .def("uncut_cells", &dolfin::MultiMesh::uncut_cells)
       .def("covered_cells", &dolfin::MultiMesh::covered_cells)
+      .def("mark_covered", &dolfin::MultiMesh::mark_covered)
       .def("quadrature_rules_cut_cells",
 	   static_cast<const dolfin::MultiMesh::quadrature_rule(dolfin::MultiMesh::*)(std::size_t, unsigned int) const>(&dolfin::MultiMesh::quadrature_rules_cut_cells));
   }
