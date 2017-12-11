@@ -533,8 +533,8 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
   // Case 3: qo = q0o*q1o < 0.
   //
   //   --> points on different sides
+  //   --> check if the segment intersects the triangle
   //   --> compute intersection point with plane
-  //   --> project to 2D and check if point is inside triangle
   //
   // Note that the computation in Case 3 may be sensitive to rounding
   // errors if both points are almost in the plane. If this happens
@@ -604,7 +604,13 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
 
   // Case 3: points on different sides (main case)
 
-  // Compute intersection point
+  if (orient3d(p0, p1, q0, q1)*orient3d(p0, p1, q0, p2) < 0 ||
+      orient3d(p1, p2, q0, q1)*orient3d(p1, p2, q0, p0) < 0 ||
+      orient3d(p2, p0, q0, q1)*orient3d(p2, p0, q0, p1) < 0)
+    return std::vector<Point>();
+
+  // The plane and the segment intersects.
+  // Now compute intersection point
   const double ratio = std::abs(q0o) / (std::abs(q0o) + std::abs(q1o));
 
   // Check that the ratio is between 0 and 1
@@ -613,14 +619,7 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
 		 "compute intersection between triangle and segment in 3d",
 		 "Scaling ratio gives infeasible intersection point between triangle plane and segment (Case 3)");
 
-  const Point x = q0 + ratio * (q1 - q0);
-
-  // Project point to major axis plane and check if inside triangle
-  const Point X = GeometryTools::project_to_plane_3d(x, major_axis);
-  if (CollisionPredicates::collides_triangle_point_2d(P0, P1, P2, X))
-    return std::vector<Point>(1, x);
-
-  return std::vector<Point>();
+  return std::vector<Point>{q0 + ratio*(q1 - q0)};
 }
 //-----------------------------------------------------------------------------
 std::vector<Point>
