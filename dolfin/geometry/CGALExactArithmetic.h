@@ -44,6 +44,7 @@
 #include "Point.h"
 #include "predicates.h"
 #include <dolfin/log/log.h>
+#include <dolfin/log/LogStream.h>
 #include <dolfin/math/basic.h>
 #include <vector>
 #include <algorithm>
@@ -1058,9 +1059,12 @@ namespace dolfin
   // Computes the volume of the convex hull of the given points
   inline double cgal_polyhedron_volume(const std::vector<Point>& ch)
   {
+    if (ch.size() < 4)
+      return 0;
+
     std::vector<Point_3> exact_points;
     exact_points.reserve(ch.size());
-    for (const Point p : ch)
+    for (const Point& p : ch)
     {
       exact_points.push_back(Point_3(p.x(), p.y(), p.z()));
     }
