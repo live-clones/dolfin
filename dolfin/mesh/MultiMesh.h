@@ -160,7 +160,7 @@ namespace dolfin
     ///         The part number
     ///     cells (std::vector<unsigned int>)
     ///         The cells to be covered
-    void mark_covered(std::size_t part, const std::vector<unsigned int> cells);
+    void mark_covered(std::size_t part, const std::vector<unsigned int>& cells);
 
     /// Return the collision map for cut cells of the given part
     ///
