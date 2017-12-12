@@ -295,6 +295,25 @@ namespace dolfin_wrappers
     py::class_<dolfin::MultiMeshDirichletBC, std::shared_ptr<dolfin::MultiMeshDirichletBC>>
       (m, "MultiMeshDirichletBC", "DOLFIN MultiMeshDirichletBC object")
       .def(py::init<const dolfin::MultiMeshDirichletBC&>())
+      // Need to handle FunctionSpace and SubDomain coming from the Python layer
+      // Probably better to make Python class for it similar to DirichletBC
+      .def(py::init([](std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V,
+                       py::object g, std::shared_ptr<const dolfin::SubDomain> subdomain,
+                       std::string method, bool check_midpoint,
+                       bool exclude_overlapped_boundaries)
+                    {
+                      std::shared_ptr<const dolfin::GenericFunction> _g;
+                      if (py::hasattr(g, "_cpp_object"))
+                        _g = g.attr("_cpp_object").cast<std::shared_ptr<dolfin::GenericFunction>>();
+                      else
+                        _g = g.cast<std::shared_ptr<dolfin::GenericFunction>>();
+
+                      return dolfin::MultiMeshDirichletBC(V, _g, subdomain, method,
+                                                 check_midpoint, exclude_overlapped_boundaries);
+                    }), py::arg("V"), py::arg("g"), py::arg("subdomain"),
+                        py::arg("method")="topological",
+                        py::arg("check_midpoint")=true,
+                        py::arg("exclude_overlapped_boundaries")=true)
       .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>,
            std::shared_ptr<const dolfin::GenericFunction>,
            std::shared_ptr<const dolfin::SubDomain>, std::string, bool, bool>(),
