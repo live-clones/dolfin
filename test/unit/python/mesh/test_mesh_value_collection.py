@@ -96,7 +96,7 @@ def test_assign_2D_vertices():
 def test_mesh_function_assign_2D_cells():
     mesh = UnitSquareMesh(3, 3)
     ncells = mesh.num_cells()
-    f = CellFunction("int", mesh)
+    f = MeshFunction("int", mesh, mesh.topology().dim())
     for cell in cells(mesh):
         f[cell] = ncells - cell.index()
 
@@ -114,7 +114,7 @@ def test_mesh_function_assign_2D_cells():
 
     h = MeshValueCollection("int", mesh, 2)
     global_indices = mesh.topology().global_indices(2)
-    ncells_global = mesh.size_global(2)
+    ncells_global = mesh.num_entities_global(2)
     for cell in cells(mesh):
         if global_indices[cell.index()] in [5, 8, 10]:
             continue
@@ -135,7 +135,7 @@ def test_mesh_function_assign_2D_cells():
 def test_mesh_function_assign_2D_facets():
     mesh = UnitSquareMesh(3, 3)
     mesh.init(1)
-    f = FacetFunction("int", mesh, 25)
+    f = MeshFunction("int", mesh, mesh.topology().dim()-1, 25)
     for cell in cells(mesh):
         for i, facet in enumerate(facets(cell)):
             assert 25 == f[facet]
@@ -158,7 +158,7 @@ def test_mesh_function_assign_2D_facets():
 def test_mesh_function_assign_2D_vertices():
     mesh = UnitSquareMesh(3, 3)
     mesh.init(0)
-    f = VertexFunction("int", mesh, 25)
+    f = MeshFunction("int", mesh, 0, 25)
     g = MeshValueCollection("int", mesh, 0)
     g.assign(f)
     assert mesh.num_vertices() == f.size()

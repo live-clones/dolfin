@@ -17,7 +17,6 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from distutils.version import StrictVersion
 
 import dolfin
 import dolfin.cpp as cpp
@@ -214,14 +213,6 @@ def mplot_function(ax, f, **kwargs):
         if mode == "glyphs":
             args = X + U + [C]
             if gdim == 3:
-                # 3d quiver plot works only since matplotlib 1.4
-                import matplotlib
-                if StrictVersion(matplotlib.__version__) < '1.4':
-                    cpp.warning('Matplotlib version %s does not support 3d '
-                                'quiver plot. Continuing without plotting...'
-                                % matplotlib.__version__)
-                    return
-
                 length = kwargs.pop("length", 0.1)
                 return ax.quiver(*args, length=length, **kwargs)
             else:
@@ -436,6 +427,7 @@ def plot(object, *args, **kwargs):
                          "piecewise linears.")
             object = project(object, mesh=mesh)
             mesh = object.function_space().mesh()
+            object = object._cpp_object
         except Exception as e:
             msg = "Don't know how to plot given object:\n  %s\n" \
                   "and projection failed:\n  %s" % (str(object), str(e))

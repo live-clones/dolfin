@@ -31,6 +31,8 @@ del sys
 # del sys
 
 # Import cpp modules
+from .cpp import __version__
+
 from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          has_hdf5_parallel, has_mpi, has_mpi4py,
                          has_petsc, has_petsc4py, has_parmetis,
@@ -61,7 +63,7 @@ from .cpp.geometry import (BoundingBoxTree,
                            MeshPointIntersection,
                            intersect)
 from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh,
-                             UnitDiscMesh, UnitQuadMesh, UnitHexMesh,
+                             UnitDiscMesh,
                              UnitTriangleMesh, UnitCubeMesh,
                              UnitSquareMesh, UnitIntervalMesh,
                              SphericalShellMesh)
@@ -152,9 +154,7 @@ from .jit.pybind11jit import compile_cpp_code
 from .la import as_backend_type, la_index_dtype
 from .mesh.ale import (compute_vertex_map, compute_edge_map,
                        init_parent_edge_indices)
-from .mesh.meshfunction import (MeshFunction, CellFunction,
-                                FacetFunction, FaceFunction,
-                                EdgeFunction, VertexFunction)
+from .mesh.meshfunction import (MeshFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
 from .mesh.subdomain import CompiledSubDomain
 
@@ -208,6 +208,12 @@ TensorLayout.Sparsity_DENSE = TensorLayout.Sparsity.DENSE
 TensorLayout.Sparsity_SPARSE = TensorLayout.Sparsity.SPARSE
 TensorLayout.Ghosts_GHOSTED = TensorLayout.Ghosts.GHOSTED
 TensorLayout.Ghosts_UNGHOSTED = TensorLayout.Ghosts.UNGHOSTED
+
+CellType.Type_interval = CellType.Type.interval
+CellType.Type_triangle = CellType.Type.triangle
+CellType.Type_tetrahedron = CellType.Type.tetrahedron
+CellType.Type_quadrilateral = CellType.Type.quadrilateral
+CellType.Type_hexahedron = CellType.Type.hexahedron
 
 if has_linear_algebra_backend('PETSc'):
     PETScKrylovSolver.norm_type_default_norm = PETScKrylovSolver.norm_type.default_norm

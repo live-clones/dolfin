@@ -32,7 +32,6 @@
 #include <string>
 #include <utility>
 
-#include <dolfin/ale/MeshDisplacement.h>
 #include <dolfin/common/Hierarchical.h>
 #include <dolfin/common/MPI.h>
 #include <dolfin/common/Variable.h>
@@ -202,17 +201,6 @@ namespace dolfin
     const std::vector<unsigned int>& cells() const
     { return _topology(_topology.dim(), 0)(); }
 
-    /// Get number of local entities of given topological dimension.
-    ///
-    /// @param  dim (std::size_t)
-    ///         Topological dimension.
-    ///
-    /// @return std::size_t
-    ///         Number of local entities of topological dimension d.
-    ///
-    std::size_t size(std::size_t dim) const
-    { return _topology.size(dim); }
-
     /// Get global number of entities of given topological dimension.
     ///
     /// @param dim (std::size_t)
@@ -221,7 +209,7 @@ namespace dolfin
     /// @return std::size_t
     ///         Global number of entities of topological dimension d.
     ///
-    std::size_t size_global(std::size_t dim) const
+    std::size_t num_entities_global(std::size_t dim) const
     { return _topology.size_global(dim); }
 
     /// Get mesh topology.
@@ -412,7 +400,7 @@ namespace dolfin
 
     /// Color the cells of the mesh such that no two neighboring cells
     /// share the same color. A colored mesh keeps a
-    /// CellFunction<std::size_t> named "cell colors" as mesh data which
+    /// MeshFunction<std::size_t> named "cell colors" as mesh data which
     /// holds the colors of the mesh.
     ///
     /// @param coloring_type (std::string)
@@ -426,7 +414,7 @@ namespace dolfin
 
     /// Color the cells of the mesh such that no two neighboring cells
     /// share the same color. A colored mesh keeps a
-    /// CellFunction<std::size_t> named "cell colors" as mesh data which
+    /// MeshFunction<std::size_t> named "cell colors" as mesh data which
     /// holds the colors of the mesh.
     ///
     /// @param coloring_type (std::vector<std::size_t>&)
