@@ -45,7 +45,9 @@ class Form(cpp.fem.Form):
                            mpi_comm=mesh.mpi_comm())
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 
-        function_spaces = [func.function_space()._cpp_object for func in form.arguments()]
+        function_spaces = kwargs.get("function_spaces")
+        if not function_spaces:
+            function_spaces = [func.function_space()._cpp_object for func in form.arguments()]
 
         cpp.fem.Form.__init__(self, ufc_form, function_spaces)
 
