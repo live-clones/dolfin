@@ -55,8 +55,8 @@ namespace dolfin
     /// A simplex is a list of points
     typedef std::vector<Point> Simplex;
 
-    /// A polyhedron is a list of simplices
-    typedef std::vector<Simplex> Polyhedron;
+    /// A polyhedron is a list of simplices and the part numbers
+    typedef std::pair<std::vector<Simplex>, std::set<std::size_t>> Polyhedron;
 
     /// Key to identify polyhedra
     typedef std::vector<std::size_t> IncExcKey;
