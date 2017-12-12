@@ -33,6 +33,7 @@ import ufl
 import dolfin.cpp as cpp
 from dolfin.fem.form import Form
 from dolfin import parameters, MPI
+from dolfin import MultiMeshFunction
 
 __all__ = ["assemble", "assemble_local", "assemble_system", 
            "assemble_multimesh", "SystemAssembler"]
@@ -274,7 +275,6 @@ def assemble_multimesh(form,
         # Extract standard function spaces for all arguments on
         # current part
         function_spaces = [V_multi[i].part(part) for i in range(rank)]
-
         # Wrap standard form
         dolfin_form = _create_dolfin_form(form,
                                           form_compiler_parameters,
@@ -288,7 +288,7 @@ def assemble_multimesh(form,
                 coeff = coefficients[i]
             # Developer note: This may be done more elegantly by modifiying
             # _create_dolfin_form
-            dolfin_form.set_coefficient(i, coeff)
+            dolfin_form.set_coefficient(i, coeff._cpp_object)
             dolfin_form.coefficients[i] = coeff
 
         # Add standard mesh to the standard form and the
