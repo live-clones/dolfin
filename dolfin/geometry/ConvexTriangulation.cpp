@@ -426,7 +426,6 @@ ConvexTriangulation::_triangulate_graham_scan_3d(const std::vector<Point>& input
 					    points[j],
 					    points[k],
 					    polyhedroncenter };
-
 #ifdef DOLFIN_ENABLE_GEOMETRY_DEBUGGING
                 if (cgal_tet_is_degenerate(cand))
                   dolfin_error("ConvexTriangulation.cpp",
@@ -549,11 +548,11 @@ ConvexTriangulation::triangulate_graham_scan_3d(const std::vector<Point>& pm)
 
   const double reference_volume = cgal_polyhedron_volume(pm);
 
-  if (std::abs(volume - reference_volume) > DOLFIN_EPS)
+  if (std::abs(volume - reference_volume) > DOLFIN_EPS_LARGE)
     dolfin_error("ConvexTriangulation.cpp",
 		 "verifying convex triangulation",
-		 "computed volume %f, but reference volume is %f",
-		 volume, reference_volume);
+		 "computed volume %f, but reference volume is %f (diff %e)",
+		 volume, reference_volume, std::abs(reference_volume-volume));
 
 
 #endif
