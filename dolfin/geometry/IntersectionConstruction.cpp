@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2014-02-03
-// Last changed: 2017-11-14
+// Last changed: 2017-12-12
 
 #include <iomanip>
 #include <dolfin/mesh/MeshEntity.h>
@@ -604,22 +604,24 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
 
   // Case 3: points on different sides (main case)
 
+  // Check if segment does not collide with triangle
   if (orient3d(p0, p1, q0, q1)*orient3d(p0, p1, q0, p2) < 0 ||
       orient3d(p1, p2, q0, q1)*orient3d(p1, p2, q0, p0) < 0 ||
       orient3d(p2, p0, q0, q1)*orient3d(p2, p0, q0, p1) < 0)
     return std::vector<Point>();
 
-  // The plane and the segment intersects.
+  // The segment and triangle collide
   // Now compute intersection point
-  const double ratio = std::abs(q0o) / (std::abs(q0o) + std::abs(q1o));
+  const double ratio_0 = std::abs(q0o) / (std::abs(q0o) + std::abs(q1o));
 
-  // Check that the ratio is between 0 and 1
-  if (ratio <= 0.0 or ratio >= 1.0)
-    dolfin_error("IntersectionConstruction.cpp",
-		 "compute intersection between triangle and segment in 3d",
-		 "Scaling ratio gives infeasible intersection point between triangle plane and segment (Case 3)");
-
-  return std::vector<Point>{q0 + ratio*(q1 - q0)};
+  // Check ratio and return intersection point
+  if (ratio_0 < 1.0)
+    return std::vector<Point>{q0 + ratio_0*(q1 - q0)};
+  else
+  {
+    const double ratio_1 = std::abs(q1o) / (std::abs(q0o) + std::abs(q1o));
+    return std::vector<Point>{q1 + ratio_1*(q0 - q1)};
+  }
 }
 //-----------------------------------------------------------------------------
 std::vector<Point>
