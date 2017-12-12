@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2016-11-21
-// Last changed: 2017-10-09
+// Last changed: 2017-12-12
 
 #include <cmath>
 #include "CGALExactArithmetic.h"
@@ -27,92 +27,94 @@ using namespace dolfin;
 
 //-----------------------------------------------------------------------------
 bool GeometryPredicates::is_degenerate(const std::vector<Point>& simplex,
+				       std::size_t tdim,
                                        std::size_t gdim)
 {
-  switch (gdim)
+  if (simplex.size() == tdim + 1)
   {
-  case 2:
-    return is_degenerate_2d(simplex);
-  case 3:
-    return is_degenerate_3d(simplex);
-  default:
-    dolfin_error("GeometryPredicates.cpp",
-		 "is_degenerate",
-		 "Unkonwn dimension (only implemented for dimension 2 and 3");
+    if (tdim == 1)
+    {
+      return _is_degenerate_tdim_1(simplex);
+    }
+    else if (tdim == 2 and gdim == 2)
+    {
+      return _is_degenerate_tdim_2_gdim_2(simplex);
+    }
+    else if (tdim == 2 and gdim == 3)
+    {
+      return _is_degenerate_tdim_2_gdim_3(simplex);
+    }
+    else if (tdim == 3 and gdim == 3)
+    {
+      return _is_degenerate_tdim_3_gdim_3(simplex);
+    }
   }
+  else
+  {
+    dolfin_error("GeometryPredicates.cpp",
+		 "evaluate is_degenerate",
+		 "Input simplex size %d is not consistent with tdim %d", simplex.size(), tdim);
+  }
+
+  dolfin_error("GeometryPredicates.cpp",
+	       "call is_degenerate",
+	       "Not implemented for tdim %d, gdim %d", tdim, gdim);
+
   return false;
 }
 //-----------------------------------------------------------------------------
-bool GeometryPredicates::_is_degenerate_2d(const std::vector<Point>& simplex)
+bool
+GeometryPredicates::_is_degenerate_tdim_1
+(const std::vector<Point>& simplex)
 {
-  if (simplex.size() < 2 or simplex.size() > 3)
-  {
-    info("Degenerate 2D simplex with %d vertices.", simplex.size());
-    return true;
-  }
-
-  switch (simplex.size())
-  {
-  case 2:
-    return simplex[0] == simplex[1];
-  case 3:
-    return orient2d(simplex[0], simplex[1], simplex[2]) == 0.0;
-  }
-
-  // Shouldn't get here
-  dolfin_error("GeometryPredicates.h",
-               "call _is_degenerate_2d",
-               "Only implemented for simplices of tdim 0, 1 and 2, not tdim = %d",
-               simplex.size() - 1);
-
-  return true;
+  return simplex[0] == simplex[1];
 }
-//------------------------------------------------------------------------------
-bool GeometryPredicates::_is_degenerate_3d(const std::vector<Point>& simplex)
+//-----------------------------------------------------------------------------
+bool
+GeometryPredicates::_is_degenerate_tdim_2_gdim_2
+(const std::vector<Point>& simplex)
 {
-  if (simplex.size() < 2 or simplex.size() > 4)
+  return CHECK_CGAL(orient2d(simplex[0], simplex[1], simplex[2]) == 0.0,
+		    is_degenerate_2d(simplex[0], simplex[1], simplex[2]));
+}
+//-----------------------------------------------------------------------------
+bool
+GeometryPredicates::_is_degenerate_tdim_2_gdim_3
+(const std::vector<Point>& simplex)
+{
+  bool degen = true;
+  const double ayz[2] = {simplex[0].y(), simplex[0].z()};
+  const double byz[2] = {simplex[1].y(), simplex[1].z()};
+  const double cyz[2] = {simplex[2].y(), simplex[2].z()};
+  if (_orient2d(ayz, byz, cyz) != 0.0)
+    degen = false;
+  else
   {
-    info("Degenerate 3D simplex with %d vertices.", simplex.size());
-    return true;
-  }
-
-  switch (simplex.size())
-  {
-  case 2:
-    return simplex[0] == simplex[1];
-  case 3:
+    const double azx[2] = {simplex[0].z(), simplex[0].x()};
+    const double bzx[2] = {simplex[1].z(), simplex[1].x()};
+    const double czx[2] = {simplex[2].z(), simplex[2].x()};
+    if (_orient2d(azx, bzx, czx) != 0.0)
+      degen = false;
+    else
     {
-      const double ayz[2] = {simplex[0].y(), simplex[0].z()};
-      const double byz[2] = {simplex[1].y(), simplex[1].z()};
-      const double cyz[2] = {simplex[2].y(), simplex[2].z()};
-      if (_orient2d(ayz, byz, cyz) != 0.0)
-	return false;
-
-      const double azx[2] = {simplex[0].z(), simplex[0].x()};
-      const double bzx[2] = {simplex[1].z(), simplex[1].x()};
-      const double czx[2] = {simplex[2].z(), simplex[2].x()};
-      if (_orient2d(azx, bzx, czx) != 0.0)
-	return false;
-
       const double axy[2] = {simplex[0].x(), simplex[0].y()};
       const double bxy[2] = {simplex[1].x(), simplex[1].y()};
       const double cxy[2] = {simplex[2].x(), simplex[2].y()};
       if (_orient2d(axy, bxy, cxy) != 0.0)
-	return false;
-
-      return true;
+	degen = false;
     }
-  case 4:
-    return orient3d(simplex[0], simplex[1], simplex[2], simplex[3]) == 0.0;
   }
-
-  // Shouldn't get here
-  dolfin_error("GeometryPredicates.h",
-               "call _is_degenerate_3d",
-               "Only implemented for simplices of tdim 0, 1, 2 and 3, not tdim = %d",
-               simplex.size() - 1);
-
-  return true;
+  return CHECK_CGAL(degen,
+		    is_degenerate_3d(simplex[0], simplex[1], simplex[2]));
+}
+//-----------------------------------------------------------------------------
+bool
+GeometryPredicates::_is_degenerate_tdim_3_gdim_3
+(const std::vector<Point>& simplex)
+{
+  return
+    CHECK_CGAL(orient3d(simplex[0], simplex[1], simplex[2], simplex[3]) == 0.0,
+	       is_degenerate_3d(simplex[0], simplex[1], simplex[2], simplex[3]));
 }
 //-----------------------------------------------------------------------------
 bool GeometryPredicates::is_finite(const std::vector<Point>& simplex)
@@ -198,17 +200,5 @@ bool GeometryPredicates::convex_hull_is_degenerate(const std::vector<Point>& poi
                "call convex_hull_is_degenerate",
                "Only fully implemented for gdim == 3, not gdim = %d", gdim);
   return false;
-}
-//-----------------------------------------------------------------------------
-bool GeometryPredicates::is_degenerate_2d(const std::vector<Point>& simplex)
-{
-  return CHECK_CGAL(_is_degenerate_2d(simplex),
-		    cgal_is_degenerate_2d(simplex));
-}
-//-----------------------------------------------------------------------------
-bool GeometryPredicates::is_degenerate_3d(const std::vector<Point>& simplex)
-{
-  return CHECK_CGAL(_is_degenerate_3d(simplex),
-		    cgal_is_degenerate_3d(simplex));
 }
 //-----------------------------------------------------------------------------

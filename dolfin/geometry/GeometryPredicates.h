@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2016-11-21
-// Last changed: 2017-09-22
+// Last changed: 2017-12-12
 
 #ifndef __GEOMETRY_PREDICATES_H
 #define __GEOMETRY_PREDICATES_H
@@ -35,17 +35,10 @@ namespace dolfin
   {
   public:
 
-    /// Check whether simplex is degenerate
+    /// Check whether a single simplex is degenerate
     static bool is_degenerate(const std::vector<Point>& simplex,
+			      std::size_t tdim,
 			      std::size_t gdim);
-
-
-    /// Check whether simplex is degenerate (2D version)
-    static bool is_degenerate_2d(const std::vector<Point>& simplex);
-
-    /// Check whether simplex is degenerate (3D version)
-    static bool is_degenerate_3d(const std::vector<Point>& simplex);
-
 
     /// Check whether simplex is finite (not Inf or NaN)
     static bool is_finite(const std::vector<Point>& simplex);
@@ -59,10 +52,14 @@ namespace dolfin
 
   private:
 
-    // Implementations of is_degenerate
-    static bool _is_degenerate_2d(const std::vector<Point>& simplex);
-    static bool _is_degenerate_3d(const std::vector<Point>& simplex);
+    // Implementation of is_degenerate predicates
+    static bool _is_degenerate_tdim_1(const std::vector<Point>& simplex);
 
+    static bool _is_degenerate_tdim_2_gdim_2(const std::vector<Point>& simplex);
+
+    static bool _is_degenerate_tdim_2_gdim_3(const std::vector<Point>& simplex);
+
+    static bool _is_degenerate_tdim_3_gdim_3(const std::vector<Point>& simplex);
   };
 
 }
