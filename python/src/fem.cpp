@@ -36,7 +36,6 @@
 #include <dolfin/fem/Assembler.h>
 #include <dolfin/fem/MultiMeshAssembler.h>
 #include <dolfin/fem/DirichletBC.h>
-#include <dolfin/fem/MultiMeshDirichletBC.h>
 #include <dolfin/fem/DiscreteOperators.h>
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
@@ -61,6 +60,7 @@
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MultiMesh.h>
+#include <dolfin/fem/MultiMeshDirichletBC.h>
 #include <dolfin/mesh/SubDomain.h>
 
 #include "casters.h"
@@ -292,9 +292,9 @@ namespace dolfin_wrappers
 
 
     // dolfin::MultiMeshDirichletBC
-    py::class_<dolfin::MultiMeshDirichletBC, std::shared_ptr<dolfin::MultiMeshDirichletBC>, dolfin::Variable>
+    py::class_<dolfin::MultiMeshDirichletBC, std::shared_ptr<dolfin::MultiMeshDirichletBC>>
       (m, "MultiMeshDirichletBC", "DOLFIN MultiMeshDirichletBC object")
-      .def(py::init<const dolfin::DirichletBC&>());
+      .def(py::init<const dolfin::MultiMeshDirichletBC&>());
     /*
       .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>,
            std::shared_ptr<const dolfin::GenericFunction>,
