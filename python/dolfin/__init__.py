@@ -50,7 +50,7 @@ from .cpp import MPI
 from .cpp.function import (Expression, Constant, FunctionAXPY,
                            LagrangeInterpolator, FunctionAssigner,
                            assign, MultiMeshFunction)
-from .cpp.fem import (FiniteElement, DofMap, Assembler,
+from .cpp.fem import (FiniteElement, DofMap, Assembler, MultiMeshAssembler,
                       get_coordinates, create_mesh, set_coordinates,
                       vertex_to_dof_map, dof_to_vertex_map,
                       PointSource, DiscreteOperators,
@@ -119,7 +119,7 @@ from .common import timer
 from .common.timer import Timer, timed
 from .common.plotting import plot
 
-from .fem.assembling import (assemble, assemble_system,
+from .fem.assembling import (assemble, assemble_system, assemble_multimesh,
                              SystemAssembler, assemble_local)
 from .fem.form import Form
 from .fem.norms import norm, errornorm
@@ -172,7 +172,7 @@ from ufl import (FiniteElement, TensorElement, VectorElement,
                  split, cross, inner, dot, grad, curl, dx, div,
                  Measure, det, pi, sin, cos, tan, acos, asin, atan,
                  ln, exp, sqrt, bessel_I, bessel_J, bessel_K,
-                 bessel_Y, Dx, ds, dS, dP, dX, dC, interval, triangle,
+                 bessel_Y, Dx, ds, dS, dP, dX, dC, dI, dO, interval, triangle,
                  tetrahedron, quadrilateral, hexahedron, avg, jump,
                  sym, tr, Identity, variable, diff, as_vector,
                  as_tensor, as_matrix, system, outer, dev, skew,

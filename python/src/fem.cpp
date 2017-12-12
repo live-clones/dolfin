@@ -34,11 +34,13 @@
 #include <dolfin/fem/assemble.h>
 #include <dolfin/fem/assemble_local.h>
 #include <dolfin/fem/Assembler.h>
+#include <dolfin/fem/MultiMeshAssembler.h>
 #include <dolfin/fem/DirichletBC.h>
 #include <dolfin/fem/DiscreteOperators.h>
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/Form.h>
+#include <dolfin/fem/MultiMeshForm.h>
 #include <dolfin/fem/LinearVariationalProblem.h>
 #include <dolfin/fem/LinearVariationalSolver.h>
 #include <dolfin/fem/LocalSolver.h>
@@ -50,12 +52,14 @@
 #include <dolfin/fem/SystemAssembler.h>
 #include <dolfin/function/GenericFunction.h>
 #include <dolfin/function/FunctionSpace.h>
+#include <dolfin/function/MultiMeshFunctionSpace.h>
 #include <dolfin/function/Function.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MultiMesh.h>
 #include <dolfin/mesh/SubDomain.h>
 
 #include "casters.h"
@@ -341,6 +345,22 @@ namespace dolfin_wrappers
       .def("set_vertex_domains", &dolfin::Form::set_vertex_domains)
       .def("rank", &dolfin::Form::rank)
       .def("mesh", &dolfin::Form::mesh);
+
+    // dolfin::MultiMeshForm
+    py::class_<dolfin::MultiMeshForm, std::shared_ptr<dolfin::MultiMeshForm>>
+      (m, "MultiMeshForm", "DOLFIN MultiForm object")
+      .def(py::init<std::shared_ptr<const dolfin::MultiMesh>>())
+      .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>>())
+      .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>,
+                    std::shared_ptr<const dolfin::MultiMeshFunctionSpace>>())
+      .def("add", &dolfin::MultiMeshForm::add)
+      .def("build", &dolfin::MultiMeshForm::build);
+
+    // dolfin::MultiMeshAssembler
+    py::class_<dolfin::MultiMeshAssembler, std::shared_ptr<dolfin::MultiMeshAssembler>>
+      (m, "MultiMeshAssembler", "DOLFIN MultiMeshAssembler object")
+      .def(py::init<>())
+      .def("assemble", &dolfin::MultiMeshAssembler::assemble);
 
     // dolfin::PointSource
     py::class_<dolfin::PointSource, std::shared_ptr<dolfin::PointSource>>

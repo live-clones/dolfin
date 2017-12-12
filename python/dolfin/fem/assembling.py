@@ -32,8 +32,10 @@ rely on the dolfin::Form class which is not used on the Python side.
 import ufl
 import dolfin.cpp as cpp
 from dolfin.fem.form import Form
+from dolfin import parameters, MPI
 
-__all__ = ["assemble", "assemble_local", "assemble_system", "SystemAssembler"]
+__all__ = ["assemble", "assemble_local", "assemble_system", 
+           "assemble_multimesh", "SystemAssembler"]
 
 
 def _create_dolfin_form(form, form_compiler_parameters=None,
@@ -211,6 +213,106 @@ def assemble(form, tensor=None, form_compiler_parameters=None,
 
     # Convert to float for scalars
     if dolfin_form.rank() == 0:
+        tensor = tensor.get_scalar_value()
+
+    # Return value
+    return tensor
+
+
+# JIT multimesh assembler
+def assemble_multimesh(form,
+                       tensor=None,
+                       form_compiler_parameters=None,
+                       backend=None):
+    "Assemble the given multimesh form and return the corresponding tensor."
+
+    # The form that comes in is (by construction in function.Argument)
+    # defined on the first part of the multimesh. We now need to create
+    # the DOLFIN Forms with the proper function spaces for each part.
+
+    # FIXME: This code makes a number of assumptions and will need to
+    # be revisited and improved.
+
+    # Warn that we don't use the parameters if we get any
+    if form_compiler_parameters is not None:
+        cpp.warning("Ignoring form_compiler_parameters when passed a dolfin Form!")
+    form_compiler_parameters = None
+
+    # Extract arguments and multimesh function space
+    coefficients = form.coefficients()
+    arguments = form.arguments()
+
+    # Extract rank
+    rank = len(arguments)
+
+    # Extract multimesh function spaces for arguments
+    V_multi = [v._V_multi for v in arguments]
+
+    # Extract number of parts, the multimesh and create the multimesh form
+    num_parts = None
+    if rank > 0:
+        num_parts = V_multi[0].num_parts()
+        multimesh_form = cpp.fem.MultiMeshForm(*V_multi)
+        multimesh = V_multi[0].multimesh()
+    elif len(coefficients) > 0:
+        for coeff in coefficients:
+            # Only create these variables once
+            if isinstance(coeff, MultiMeshFunction):
+                multimesh = coeff.function_space().multimesh()
+                num_parts = coeff.function_space().num_parts()
+                multimesh_form = cpp.fem.MultiMeshForm(multimesh)
+                break
+
+    if not num_parts:
+        # Handle the case Constant(1)*dx(domain=multimesh)
+        multimesh = form.ufl_domains()[0].ufl_cargo()
+        num_parts = multimesh.num_parts()
+        multimesh_form = cpp.fem.MultiMeshForm(multimesh)
+
+    # Build multimesh DOLFIN form
+    for part in range(num_parts):
+        # Extract standard function spaces for all arguments on
+        # current part
+        function_spaces = [V_multi[i].part(part) for i in range(rank)]
+
+        # Wrap standard form
+        dolfin_form = _create_dolfin_form(form,
+                                          form_compiler_parameters,
+                                          function_spaces)
+
+        # Setting coefficients for the multimesh form
+        for i in range(len(coefficients)):
+            if isinstance(coefficients[i], MultiMeshFunction):
+                coeff = coefficients[i].part(part)
+            else:
+                coeff = coefficients[i]
+            # Developer note: This may be done more elegantly by modifiying
+            # _create_dolfin_form
+            dolfin_form.set_coefficient(i, coeff)
+            dolfin_form.coefficients[i] = coeff
+
+        # Add standard mesh to the standard form and the
+        # standard form to the multimesh form
+        dolfin_form.set_mesh(multimesh.part(part))
+        multimesh_form.add(dolfin_form)
+
+    for i, coeff in enumerate(coefficients):
+        if isinstance(coeff, MultiMeshFunction):
+            multimesh_form.set_multimesh_coefficient(i, coeff)
+
+    # Build multimesh form
+    multimesh_form.build()
+
+    # Create tensor
+    comm = MPI.comm_world
+    tensor = _create_tensor(comm, form, rank, backend, tensor)
+
+    # Call C++ assemble function
+    assembler = cpp.fem.MultiMeshAssembler()
+    assembler.assemble(tensor, multimesh_form)
+
+    # Convert to float for scalars
+    if rank == 0:
         tensor = tensor.get_scalar_value()
 
     # Return value
