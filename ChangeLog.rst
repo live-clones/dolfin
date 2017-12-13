@@ -1,9 +1,16 @@
 Change log
 ==========
 
-2017.2.0 (unreleased)
+2018.1.0.dev0
+-------------
+
+- No changes.
+
+2017.2.0 (2017-12-05)
 ---------------------
 
+- Remove ``UnitQuadMesh`` and ``UnitHexMesh``. Now use ``UnitSquareMesh`` and
+  ``UnitCubeMesh`` with cell type qualifiers.
 - Remove ``MeshEditor::open`` without cell type. Now you must explicitly
   specify CellType when opening a ``Mesh`` with ``MeshEditor``.
 - Rename ``Mesh::size_global`` to ``Mesh::num_entities_global``.
@@ -45,6 +52,10 @@ Change log
 - Deprecate ``CellSize`` (equivalent to ``2*Circumradius``)
   in favour of new ``CellDiameter``; add ``MinCellEdgeLength``
   and ``MaxCellEdgeLength``
+- Deprecate subclassing of ``Expression`` in Python; new Python class
+  ``UserExpression`` introduced for user overloads
+- Deprecate ``VertexFunction``, ``EdgeFunction``, ``FaceFunction``,
+  ``FacetFunction``, ``CellFunction``; use ``MeshFunction`` instead
 
 
 2017.1.0 (2017-05-09)

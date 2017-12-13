@@ -92,14 +92,14 @@ namespace dolfin_wrappers
       .def("degree", &dolfin::MeshGeometry::degree, "Degree");
 
     // dolfin::MeshTopology class
-    py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>>
+    py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>, dolfin::Variable>
       (m, "MeshTopology", "DOLFIN MeshTopology object")
       .def("dim", &dolfin::MeshTopology::dim, "Topological dimension")
       .def("init", (void (dolfin::MeshTopology::*)(std::size_t)) &dolfin::MeshTopology::init)
       .def("init", (void (dolfin::MeshTopology::*)(std::size_t, std::size_t, std::size_t))
            &dolfin::MeshTopology::init)
       .def("__call__", (const dolfin::MeshConnectivity& (dolfin::MeshTopology::*)(std::size_t, std::size_t) const)
-           &dolfin::MeshTopology::operator())
+           &dolfin::MeshTopology::operator(), py::return_value_policy::reference_internal)
       .def("size", &dolfin::MeshTopology::size)
       .def("hash", &dolfin::MeshTopology::hash)
       .def("init_global_indices", &dolfin::MeshTopology::init_global_indices)
@@ -112,7 +112,8 @@ namespace dolfin_wrappers
       .def("have_shared_entities", &dolfin::MeshTopology::have_shared_entities)
       .def("shared_entities",
            (std::map<std::int32_t, std::set<unsigned int> >&(dolfin::MeshTopology::*)(unsigned int))
-           &dolfin::MeshTopology::shared_entities);
+           &dolfin::MeshTopology::shared_entities)
+      .def("str", &dolfin::MeshTopology::str);
 
     // dolfin::Mesh
     py::class_<dolfin::Mesh, std::shared_ptr<dolfin::Mesh>, dolfin::Variable>
@@ -184,8 +185,9 @@ namespace dolfin_wrappers
       .def("smooth_boundary", &dolfin::Mesh::smooth_boundary)
       .def("snap_boundary", &dolfin::Mesh::snap_boundary, py::arg("subdomain"),
            py::arg("harmonic_smoothing")=true)
-      .def("topology", (const dolfin::MeshTopology& (dolfin::Mesh::*)() const)
-           &dolfin::Mesh::topology, "Mesh topology")
+      .def("topology", (dolfin::MeshTopology& (dolfin::Mesh::*)())
+           &dolfin::Mesh::topology, "Mesh topology",
+           py::return_value_policy::reference_internal)
       .def("translate", &dolfin::Mesh::translate)
       .def("type", (const dolfin::CellType& (dolfin::Mesh::*)() const) &dolfin::Mesh::type,
            py::return_value_policy::reference)
@@ -222,7 +224,8 @@ namespace dolfin_wrappers
       (m, "MeshConnectivity", "DOLFIN MeshConnectivity object")
       .def("__call__", [](const dolfin::MeshConnectivity& self, std::size_t i)
            {
-             return Eigen::Map<const Eigen::Matrix<unsigned int, Eigen::Dynamic, 1>>(self(i), self.size(i));})
+             return Eigen::Map<const Eigen::Matrix<unsigned int, Eigen::Dynamic, 1>>(self(i), self.size(i));
+           }, py::return_value_policy::reference_internal)
       .def("size", (std::size_t (dolfin::MeshConnectivity::*)() const)
            &dolfin::MeshConnectivity::size)
       .def("size", (std::size_t (dolfin::MeshConnectivity::*)(std::size_t) const)
@@ -400,32 +403,6 @@ namespace dolfin_wrappers
     MESHFUNCTION_MACRO(std::size_t, Sizet);
 #undef MESHFUNCTION_MACRO
 
-#define MESH_ENTITY_FUNCTION_MACRO(TYPE, SCALAR, SCALAR_NAME) \
-    py::class_<dolfin::TYPE<SCALAR>, std::shared_ptr<dolfin::TYPE<SCALAR>>, \
-      dolfin::MeshFunction<SCALAR>>(m, #TYPE""#SCALAR_NAME)
-
-    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, bool, Bool);
-    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, int, Int);
-    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, double, Double);
-    MESH_ENTITY_FUNCTION_MACRO(VertexFunction, std::size_t, Sizet);
-    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, bool, Bool);
-    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, int, Int);
-    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, double, Double);
-    MESH_ENTITY_FUNCTION_MACRO(EdgeFunction, std::size_t, Sizet);
-    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, bool, Bool);
-    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, int, Int);
-    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, double, Double);
-    MESH_ENTITY_FUNCTION_MACRO(FaceFunction, std::size_t, Sizet);
-    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, bool, Bool);
-    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, int, Int);
-    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, double, Double);
-    MESH_ENTITY_FUNCTION_MACRO(FacetFunction, std::size_t, Sizet);
-    MESH_ENTITY_FUNCTION_MACRO(CellFunction, bool, Bool);
-    MESH_ENTITY_FUNCTION_MACRO(CellFunction, int, Int);
-    MESH_ENTITY_FUNCTION_MACRO(CellFunction, double, Double);
-    MESH_ENTITY_FUNCTION_MACRO(CellFunction, std::size_t, Sizet);
-#undef MESH_ENTITY_FUNCTION_MACRO
-
     // dolfin::MeshValueCollection
 #define MESHVALUECOLLECTION_MACRO(SCALAR, SCALAR_NAME) \
     py::class_<dolfin::MeshValueCollection<SCALAR>, \
@@ -541,7 +518,7 @@ namespace dolfin_wrappers
 
     // dolfin::MeshColoring
     py::class_<dolfin::MeshColoring>(m, "MeshColoring")
-      .def_static("cell_colors", (dolfin::CellFunction<std::size_t> (*)(std::shared_ptr<const dolfin::Mesh>, std::vector<std::size_t>))
+      .def_static("cell_colors", (dolfin::MeshFunction<std::size_t> (*)(std::shared_ptr<const dolfin::Mesh>, std::vector<std::size_t>))
                   &dolfin::MeshColoring::cell_colors)
       .def_static("color_cells", &dolfin::MeshColoring::color_cells);
 

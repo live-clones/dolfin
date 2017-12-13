@@ -24,13 +24,20 @@ import numpy
 import six
 from six.moves import range
 
+import sys
+import os
+
+import FIAT
 from dolfin import *
 from dolfin_utils.test import fixture, set_parameters_fixture
 from dolfin_utils.test import skip_in_parallel, xfail_in_parallel
 from dolfin_utils.test import cd_tempdir
-import FIAT
+from dolfin_utils.test import skip_if_not_pybind11
 
-import os
+
+if has_pybind11():
+    CellType.Type_quadrilateral = CellType.Type.quadrilateral
+    CellType.Type_hexahedron = CellType.Type.hexahedron
 
 
 @fixture
@@ -188,13 +195,13 @@ def test_UnitCubeMeshDistributedLocal():
 
 
 def test_UnitQuadMesh():
-    mesh = UnitQuadMesh.create(mpi_comm_world(), 5, 7)
+    mesh = UnitSquareMesh.create(5, 7, CellType.Type_quadrilateral)
     assert mesh.num_entities_global(0) == 48
     assert mesh.num_entities_global(2) == 35
 
 
 def test_UnitHexMesh():
-    mesh = UnitHexMesh.create(mpi_comm_world(), 5, 7, 9)
+    mesh = UnitCubeMesh.create(5, 7, 9, CellType.Type_hexahedron)
     assert mesh.num_entities_global(0) == 480
     assert mesh.num_entities_global(3) == 315
 
@@ -202,7 +209,7 @@ def test_UnitHexMesh():
 def test_RefineUnitIntervalMesh():
     """Refine mesh of unit interval."""
     mesh = UnitIntervalMesh(20)
-    cell_markers = CellFunction("bool", mesh)
+    cell_markers = MeshFunction("bool", mesh, mesh.topology().dim(), False)
     cell_markers[0] = (MPI.rank(mesh.mpi_comm()) == 0)
     mesh2 = refine(mesh, cell_markers)
     assert mesh2.num_entities_global(0) == 22
@@ -296,7 +303,7 @@ def test_SubsetIterators(mesh):
         return x[0] >= 0.5
     sd1 = AutoSubDomain(inside1)
     sd2 = AutoSubDomain(inside2)
-    cf = CellFunction('size_t', mesh)
+    cf = MeshFunction('size_t', mesh, mesh.topology().dim())
     cf.set_all(0)
     sd1.mark(cf, 1)
     sd2.mark(cf, 2)
@@ -473,8 +480,8 @@ mesh_factories = [
     (SphericalShellMesh.create, (mpi_comm_world(), 1,)),
     (SphericalShellMesh.create, (mpi_comm_world(), 2,)),
     (UnitCubeMesh, (2, 2, 2)),
-    (UnitQuadMesh.create, (4, 4)),
-    (UnitHexMesh.create, (2, 2, 2)),
+    (UnitSquareMesh.create, (4, 4, CellType.Type_quadrilateral)),
+    (UnitCubeMesh.create, (2, 2, 2, CellType.Type_hexahedron)),
     # FIXME: Add mechanism for testing meshes coming from IO
 ]
 
@@ -489,8 +496,8 @@ mesh_factories_broken_shared_entities = [
     xfail_in_parallel((SphericalShellMesh.create, (mpi_comm_world(), 1,))),
     xfail_in_parallel((SphericalShellMesh.create, (mpi_comm_world(), 2,))),
     (UnitCubeMesh, (2, 2, 2)),
-    (UnitQuadMesh.create, (4, 4)),
-    (UnitHexMesh.create, (2, 2, 2)),
+    (UnitSquareMesh.create, (4, 4, CellType.Type_quadrilateral)),
+    (UnitCubeMesh.create, (2, 2, 2, CellType.Type_hexahedron)),
 ]
 
 # FIXME: Fix this xfail
@@ -498,10 +505,10 @@ def xfail_ghosted_quads_hexes(mesh_factory, ghost_mode):
     """Xfail when mesh_factory on quads/hexes uses
     shared_vertex mode. Needs implementing.
     """
-    if mesh_factory in [UnitQuadMesh.create, UnitHexMesh.create]:
+    if mesh_factory in [UnitSquareMesh.create, UnitCubeMesh.create]:
         if ghost_mode == 'shared_vertex':
             pytest.xfail(reason="Missing functionality in '{}' with '' "
-                                "mode".format(mesh_factory, ghost_mode))
+                         "mode".format(mesh_factory, ghost_mode))
 
 
 @pytest.mark.parametrize('mesh_factory', mesh_factories_broken_shared_entities)
@@ -603,7 +610,7 @@ def test_mesh_ufc_ordering(mesh_factory, ghost_mode):
 
             # NOTE: DOLFIN UFC noncompliance!
             # DOLFIN has increasing indices only for d-0 incidence
-            # with any d; UFC convention for d-d1 with d>d1 is not
+            # with any d; UFC convention for d-d1 with d>d1>0 is not
             # respected in DOLFIN
             if d1 != 0:
                 continue
@@ -622,3 +629,49 @@ def test_mesh_ufc_ordering(mesh_factory, ghost_mode):
 
                 # Check that d1-subentities of d-entity have increasing indices
                 assert sorted(subentities_indices) == subentities_indices
+
+
+def test_mesh_topology_reference():
+    """Check that Mesh.topology() returns a reference rather
+    than copy"""
+    mesh = UnitSquareMesh(4, 4)
+    assert mesh.topology().id() == mesh.topology().id()
+
+
+# Reference counting does not work like expected with SWIG,
+# SWIG handles the lifetime differently
+@skip_if_not_pybind11
+def test_mesh_topology_lifetime():
+    """Check that lifetime of Mesh.topology() is bound to
+    underlying mesh object"""
+    mesh = UnitSquareMesh(4, 4)
+
+    rc = sys.getrefcount(mesh)
+    topology = mesh.topology()
+    assert sys.getrefcount(mesh) == rc + 1
+    del topology
+    assert sys.getrefcount(mesh) == rc
+
+
+@skip_if_not_pybind11
+def test_mesh_connectivity_lifetime():
+    """Check that lifetime of MeshConnectivity is bound to
+    underlying mesh topology object"""
+    mesh = UnitSquareMesh(4, 4)
+    mesh.init(1, 2)
+    topology = mesh.topology()
+
+    # Refcount checks on the MeshConnectivity object
+    rc = sys.getrefcount(topology)
+    connectivity = topology(1, 2)
+    assert sys.getrefcount(topology) == rc + 1
+    del connectivity
+    assert sys.getrefcount(topology) == rc
+
+    # Refcount checks on the returned connectivities array
+    conn = topology(1, 2)
+    rc = sys.getrefcount(conn)
+    cells = conn(0)
+    assert sys.getrefcount(conn) == rc + 1
+    del cells
+    assert sys.getrefcount(conn) == rc
