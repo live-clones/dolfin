@@ -203,13 +203,21 @@ namespace dolfin
     static void N_VDiv(N_Vector x, N_Vector y, N_Vector z)
     {
       dolfin_debug("N_VDiv");
-      // z = 1/y
-      N_VInv(y, z);
 
-      // z = z*x
       auto vx = static_cast<const SUNDIALSNVector *>(x->content)->vec();
+      auto vy = static_cast<const SUNDIALSNVector *>(y->content)->vec();
       auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
-      *vz *= *vx;
+
+      std::vector<double> xdata;
+      vx->get_local(xdata);
+      std::vector<double> ydata;
+      vy->get_local(ydata);
+      for (unsigned int i = 0; i != xdata.size(); ++i)
+        xdata[i] /= ydata[i];
+
+      vz->set_local(xdata);
+      vz->apply("insert");
+
     }
 
     /// Scales the N_Vector x by the double scalar c and returns the result in z
@@ -289,16 +297,16 @@ namespace dolfin
       auto vy = static_cast<const SUNDIALSNVector *>(y->content)->vec();
       auto vz = static_cast<SUNDIALSNVector *>(z->content)->vec();
 
-      // w = a*x
-      auto w = vx->copy();
-      *w *= a;
+      std::vector<double> xdata;
+      vx->get_local(xdata);
+      std::vector<double> ydata;
+      vy->get_local(ydata);
 
-      // z = b*y
-      *vz = *vy;
-      *vz *= b;
+      for (unsigned int i = 0; i != xdata.size(); ++i)
+        xdata[i] = a*xdata[i] + b*ydata[i];
 
-      // z = a*x + b*y
-      *vz += *w;
+      vz->set_local(xdata);
+      vz->apply("insert");
     }
 
     /// Returns  the  weighted  root-mean-square  norm  of  the N_Vector x with
@@ -341,7 +349,7 @@ namespace dolfin
       return 0.0;
     }
 
-    /// Compares the components of the N_Vector x to the double scalar c and 
+    /// Compares the components of the N_Vector x to the double scalar c and
     /// returns an N_Vector z
     static void N_VCompare(double c, N_Vector x, N_Vector z)
     {
