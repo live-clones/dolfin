@@ -152,13 +152,17 @@ void
 MultiMesh::mark_covered(std::size_t part, const std::vector<unsigned int>& cells)
 {
   dolfin_assert(part < num_parts());
-  for(auto const& cell: cells) {
+  for(auto const& cell: cells)
+  {
+    if (_covered_cels[part].find(cell) != _coverered_cells[part].end())
+    {
       _covered_cells[part].push_back(cell);
       _uncut_cells[part].erase(std::remove(_uncut_cells[part].begin(), _uncut_cells[part].end(), cell), _uncut_cells[part].end());
 
-  // A covered cell is never a cut cell
-  if (_collision_maps_cut_cells[part].find(cell) == _collision_maps_cut_cells[part].end() )
-    _collision_maps_cut_cells[part][cell].clear();
+      // A covered cell is never a cut cell
+      if (_collision_maps_cut_cells[part].find(cell) != _collision_maps_cut_cells[part].end())
+        _collision_maps_cut_cells[part][cell].clear();
+    }
   }
 
 }
