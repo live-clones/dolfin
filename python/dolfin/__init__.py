@@ -49,7 +49,7 @@ from .cpp.ale import ALE
 from .cpp import MPI
 from .cpp.function import (Expression, Constant, FunctionAXPY,
                            LagrangeInterpolator, FunctionAssigner,
-                           assign, MultiMeshFunction, MultiMeshFunctionSpace)
+                           assign)
 from .cpp.fem import (FiniteElement, DofMap, Assembler,
                       get_coordinates, create_mesh, set_coordinates,
                       vertex_to_dof_map, dof_to_vertex_map,
@@ -135,9 +135,11 @@ from .fem.formmanipulations import (derivative, adjoint, increase_order, tear)
 from .fem.adaptivesolving import (AdaptiveLinearVariationalSolver,
                                   AdaptiveNonlinearVariationalSolver)
 
+from .function.multimeshfunctionspace import MultiMeshFunctionSpace
 from .function.functionspace import (FunctionSpace,
                                      VectorFunctionSpace, TensorFunctionSpace)
 from .function.function import Function
+from .function.multimeshfunction import MultiMeshFunction
 from .function.argument import (TestFunction, TrialFunction,
                                 TestFunctions, TrialFunctions)
 from .function.constant import Constant
