@@ -1,7 +1,7 @@
  -*- coding: utf-8 -*-
 """This module handles the MultiMeshFunction class in Python.
 """
-# Copyright (C) 2016 Jørgen Schartum Dokken
+# Copyright (C) 2017 Jørgen Schartum Dokken
 #
 # This file is part of DOLFIN.
 #
@@ -18,8 +18,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 #
-
-__all__ = ["MultiMeshFunction"]
 
 # Import UFL and SWIG-generated extension module (DOLFIN C++)
 import ufl

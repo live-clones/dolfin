@@ -1,32 +1,13 @@
 # -*- coding: utf-8 -*-
-"""
-This module contains functionality for multimesh function spaces in particular
-discrete function spaces defined over meshes in terms of finite
-elements.
-"""
 
 # Copyright (C) 2017 Jørgen S. Dokken
 #
-# This file is part of DOLFIN.
-#
-# DOLFIN is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# DOLFIN is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
+# Distributed under the terms of the GNU Lesser Public License (LGPL),
+# either version 3 of the License, or (at your option) any later
+# version.
 
-__all__ = ["MultiMeshFunctionSpace"]
-
-from dolfin.function.multifunctionspace import MultiMeshFunctionSpace
 import ufl
-
+import dolfin.cpp as cpp
 
 class MultiMeshFunctionSpace(cpp.MultiMeshFunctionSpace):
     def __init__(self, *args, **kwargs):
