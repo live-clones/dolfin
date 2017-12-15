@@ -60,7 +60,7 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
         for part in range(multimesh.num_parts()):
             V_part = FunctionSpace(multimesh.part(part), element)
             V_parts.append(V_part)
-            V.add(V_part._cpp_object)
+            V.add(V_part)
 
         # Build multimesh function space
         V.build()
@@ -96,7 +96,7 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
         for part in range(multimesh.num_parts()):
             V_part = FunctionSpace(multimesh.part(part), element)
             V_parts.append(V_part)
-            V.add(V_part._cpp_object)
+            V.add(V_part)
 
         # Build multimesh function space
         V.build()
