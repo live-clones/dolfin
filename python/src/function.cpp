@@ -438,8 +438,7 @@ namespace dolfin_wrappers
                return;
              }
            });
-
-    py::class_<dolfin::MultiMeshFunction>(m, "MultiMeshFunction")
+    py::class_<dolfin::MultiMeshFunction,  std::shared_ptr<dolfin::MultiMeshFunction>, dolfin::Variable>(m, "MultiMeshFunction")
       .def(py::init<std::shared_ptr<dolfin::MultiMeshFunctionSpace>>())
       .def("vector", static_cast<std::shared_ptr<dolfin::GenericVector>(dolfin::MultiMeshFunction::*)()>(&dolfin::MultiMeshFunction::vector));
 
