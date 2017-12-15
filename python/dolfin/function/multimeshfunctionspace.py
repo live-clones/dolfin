@@ -8,7 +8,7 @@
 
 import ufl
 import dolfin.cpp as cpp
-
+from dolfin.function.functionspace import FunctionSpace
 class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
     def __init__(self, *args, **kwargs):
         """Create multimesh finite element function space.
@@ -44,7 +44,7 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
         else:
             raise NotImplementedError
 
-    def _init_from_ufl(self, mesh, element):
+    def __init_from_ufl(self, multimesh, element):
         self.info = [element]
         if not isinstance(element, ufl.FiniteElementBase):
             cpp.dolfin_error("multimeshfunctionspace.py",
@@ -67,7 +67,7 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
         V._parts = V_parts
         self._cpp_object = V
 
-    def _init_convenience(self, mesh, family, degree):
+    def _init_convenience(self, multimesh, family, degree):
         # Check arguments
         self.info = [familiy, degree]
         if not isinstance(family, string_types):
@@ -93,8 +93,8 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
         V_parts = []
         for part in range(multimesh.num_parts()):
             V_part = FunctionSpace(multimesh.part(part), element)
-            V_parts.append(V_part)
-            V.add(V_part)
+            V_parts.append()
+            V.add(V_part._cpp_object)
 
         # Build multimesh function space
         V.build()
