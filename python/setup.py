@@ -9,16 +9,16 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
-VERSION = "2017.2.0.dev0"
-RESTRICT_REQUIREMENTS = ">=2017.2.0.dev0,<2017.3"
 
-REQUIREMENTS = [
-    "numpy",
-    "pkgconfig",
-    "fenics-ffc{}".format(RESTRICT_REQUIREMENTS),
-    "fenics-ufl{}".format(RESTRICT_REQUIREMENTS),
-    "fenics-dijitso{}".format(RESTRICT_REQUIREMENTS),
-]
+VERSION = "2018.1.0.dev0"
+RESTRICT_REQUIREMENTS = ">=2018.1.0.dev0,<2018.2"
+
+REQUIREMENTS = ["numpy",
+                "pkgconfig",
+                "fenics-ffc{}".format(RESTRICT_REQUIREMENTS),
+                "fenics-ufl{}".format(RESTRICT_REQUIREMENTS),
+                "fenics-dijitso{}".format(RESTRICT_REQUIREMENTS)]
+
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -75,7 +75,7 @@ class CMakeBuild(build_ext):
 setup(name='fenics-dolfin',
       version=VERSION,
       author='FEniCS Project',
-      description='DOLFIN Python interface (via pybind11)',
+      description='DOLFIN Python interface',
       long_description='',
       packages=["dolfin",
                 "dolfin.common",

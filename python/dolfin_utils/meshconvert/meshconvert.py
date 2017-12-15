@@ -39,8 +39,8 @@
 
 from __future__ import print_function
 import getopt
+import subprocess
 import sys
-from instant import get_status_output
 import re
 import warnings
 import os.path
@@ -342,7 +342,12 @@ def gmsh2xml(ifilename, handler):
             _error("DOLFIN must be installed to handle Gmsh boundary regions")
         mesh = Mesh()
         mesh_editor = MeshEditor ()
-        mesh_editor.open( mesh, highest_dim, highest_dim )
+        if (highest_dim == 2):
+            mesh_editor.open(mesh, "triangle", highest_dim, highest_dim)
+        elif (highest_dim == 3):
+            mesh_editor.open(mesh, "tetrahedron", highest_dim, highest_dim)
+        else:
+            raise RuntimeError
         process_facets = True
     else:
         # TODO: Output a warning or an error here
@@ -867,7 +872,7 @@ def diffpack2xml(ifilename, ofilename):
     xml_writer.write_footer_vertices(ofile)
     xml_writer.write_header_cells(ofile, num_cells)
 
-    # Output unique vertex markers as individual MeshFunctions on vertices
+    # Output unique vertex markers as individual VertexFunctions
     unique_vertex_markers.difference_update([0])
     for unique_marker in unique_vertex_markers:
         ofile_marker = open(ofilename.replace(".xml", "") + \
@@ -1280,10 +1285,7 @@ def exodus2xml(ifilename,ofilename):
 
     name = ifilename.split(".")[0]
     netcdffilename = name +".ncdf"
-    status, output = get_status_output('ncdump '+ifilename + ' > '+netcdffilename)
-    if status != 0:
-        raise IOError("Something wrong while executing ncdump. Is ncdump "\
-              "installed on the system?")
+    subprocess.run(['ncdump', ifilename, ' > ', netcdffilename], check=True)
     netcdf2xml(netcdffilename, ofilename)
 
 
@@ -1294,7 +1296,8 @@ def _error(message):
     sys.exit(2)
 
 def convert2xml(ifilename, ofilename, iformat=None):
-    """ Convert a file to the DOLFIN XML format.
+    """Convert a file to the DOLFIN XML format.
+
     """
     convert(ifilename, XmlHandler(ofilename), iformat=iformat)
 
