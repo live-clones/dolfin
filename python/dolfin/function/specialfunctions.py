@@ -34,8 +34,7 @@ __all__ = ["MeshCoordinates", "FacetArea", "FacetNormal",
 
 def _mesh2domain(mesh):
     "Deprecation mechanism for symbolic geometry."
-
-    # Handle MultiMesh
+    # Handle multimesh
     if isinstance(mesh, cpp.mesh.MultiMesh):
         mesh = mesh.part(0)
 

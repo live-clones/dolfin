@@ -34,11 +34,13 @@
 #include <dolfin/fem/assemble.h>
 #include <dolfin/fem/assemble_local.h>
 #include <dolfin/fem/Assembler.h>
+#include <dolfin/fem/MultiMeshAssembler.h>
 #include <dolfin/fem/DirichletBC.h>
 #include <dolfin/fem/DiscreteOperators.h>
 #include <dolfin/fem/DofMap.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/Form.h>
+#include <dolfin/fem/MultiMeshForm.h>
 #include <dolfin/fem/LinearVariationalProblem.h>
 #include <dolfin/fem/LinearVariationalSolver.h>
 #include <dolfin/fem/LocalSolver.h>
@@ -50,12 +52,15 @@
 #include <dolfin/fem/SystemAssembler.h>
 #include <dolfin/function/GenericFunction.h>
 #include <dolfin/function/FunctionSpace.h>
+#include <dolfin/function/MultiMeshFunctionSpace.h>
 #include <dolfin/function/Function.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MultiMesh.h>
+#include <dolfin/fem/MultiMeshDirichletBC.h>
 #include <dolfin/mesh/SubDomain.h>
 
 #include "casters.h"
@@ -285,6 +290,56 @@ namespace dolfin_wrappers
              self.set_value(_u);
            });
 
+
+    // dolfin::MultiMeshDirichletBC
+    py::class_<dolfin::MultiMeshDirichletBC, std::shared_ptr<dolfin::MultiMeshDirichletBC>>
+      (m, "MultiMeshDirichletBC", "DOLFIN MultiMeshDirichletBC object")
+      .def(py::init<const dolfin::MultiMeshDirichletBC&>())
+      // Need to handle FunctionSpace and SubDomain coming from the Python layer
+      // Probably better to make Python class for it similar to DirichletBC
+      .def(py::init([](std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V,
+                       py::object g, std::shared_ptr<const dolfin::SubDomain> subdomain,
+                       std::string method, bool check_midpoint,
+                       bool exclude_overlapped_boundaries)
+                    {
+                      std::shared_ptr<const dolfin::GenericFunction> _g;
+                      if (py::hasattr(g, "_cpp_object"))
+                        _g = g.attr("_cpp_object").cast<std::shared_ptr<dolfin::GenericFunction>>();
+                      else
+                        _g = g.cast<std::shared_ptr<dolfin::GenericFunction>>();
+
+                      return dolfin::MultiMeshDirichletBC(V, _g, subdomain, method,
+                                                 check_midpoint, exclude_overlapped_boundaries);
+                    }), py::arg("V"), py::arg("g"), py::arg("subdomain"),
+                        py::arg("method")="topological",
+                        py::arg("check_midpoint")=true,
+                        py::arg("exclude_overlapped_boundaries")=true)
+      .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>,
+           std::shared_ptr<const dolfin::GenericFunction>,
+           std::shared_ptr<const dolfin::SubDomain>, std::string, bool, bool>(),
+           py::arg("V"), py::arg("g"), py::arg("sub_domain"),
+           py::arg("method")="topological", py::arg("check_midpoint")=true,
+           py::arg("exclude_overlapped_boundaries")=true)
+      .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>,
+           std::shared_ptr<const dolfin::GenericFunction>,
+           std::shared_ptr<const dolfin::MeshFunction<std::size_t>>,
+           std::size_t, std::size_t, std::string>(),
+           py::arg("V"), py::arg("g"), py::arg("sub_domains"),
+           py::arg("sub_domain"), py::arg("part"), py::arg("method")="topological")
+      .def("function_space", &dolfin::MultiMeshDirichletBC::function_space)
+      .def("homogenize", &dolfin::MultiMeshDirichletBC::homogenize)
+      .def("zero", &dolfin::MultiMeshDirichletBC::zero)
+      .def("apply", (void (dolfin::MultiMeshDirichletBC::*)(dolfin::GenericVector&) const)
+           &dolfin::MultiMeshDirichletBC::apply)
+      .def("apply", (void (dolfin::MultiMeshDirichletBC::*)(dolfin::GenericMatrix&) const)
+           &dolfin::MultiMeshDirichletBC::apply)
+      .def("apply", (void (dolfin::MultiMeshDirichletBC::*)(dolfin::GenericMatrix&, dolfin::GenericVector&) const)
+           &dolfin::MultiMeshDirichletBC::apply)
+      .def("apply", (void (dolfin::MultiMeshDirichletBC::*)(dolfin::GenericVector&, const dolfin::GenericVector&) const)
+           &dolfin::MultiMeshDirichletBC::apply)
+      .def("apply", (void (dolfin::MultiMeshDirichletBC::*)(dolfin::GenericMatrix&, dolfin::GenericVector&, const dolfin::GenericVector&) const)
+           &dolfin::MultiMeshDirichletBC::apply);
+
     // dolfin::AssemblerBase
     py::class_<dolfin::AssemblerBase, std::shared_ptr<dolfin::AssemblerBase>>
       (m, "AssemblerBase")
@@ -341,6 +396,22 @@ namespace dolfin_wrappers
       .def("set_vertex_domains", &dolfin::Form::set_vertex_domains)
       .def("rank", &dolfin::Form::rank)
       .def("mesh", &dolfin::Form::mesh);
+
+    // dolfin::MultiMeshForm
+    py::class_<dolfin::MultiMeshForm, std::shared_ptr<dolfin::MultiMeshForm>>
+      (m, "MultiMeshForm", "DOLFIN MultiForm object")
+      .def(py::init<std::shared_ptr<const dolfin::MultiMesh>>())
+      .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>>())
+      .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>,
+                    std::shared_ptr<const dolfin::MultiMeshFunctionSpace>>())
+      .def("add", &dolfin::MultiMeshForm::add)
+      .def("build", &dolfin::MultiMeshForm::build);
+
+    // dolfin::MultiMeshAssembler
+    py::class_<dolfin::MultiMeshAssembler, std::shared_ptr<dolfin::MultiMeshAssembler>>
+      (m, "MultiMeshAssembler", "DOLFIN MultiMeshAssembler object")
+      .def(py::init<>())
+      .def("assemble", &dolfin::MultiMeshAssembler::assemble);
 
     // dolfin::PointSource
     py::class_<dolfin::PointSource, std::shared_ptr<dolfin::PointSource>>

@@ -38,8 +38,10 @@
 #include <dolfin/function/SpecialFunctions.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/GenericDofMap.h>
+#include <dolfin/fem/MultiMeshDofMap.h>
 #include <dolfin/geometry/Point.h>
 #include <dolfin/la/GenericVector.h>
+#include <dolfin/la/GenericMatrix.h>
 #include <dolfin/mesh/Mesh.h>
 
 namespace py = pybind11;
@@ -443,13 +445,23 @@ namespace dolfin_wrappers
       .def("vector", static_cast<std::shared_ptr<dolfin::GenericVector>(dolfin::MultiMeshFunction::*)()>(&dolfin::MultiMeshFunction::vector))
       .def("part", (std::shared_ptr<const dolfin::Function> (dolfin::MultiMeshFunction::*)(std::size_t) const)&dolfin::MultiMeshFunction::part)
       .def("part", (std::shared_ptr<const dolfin::Function> (dolfin::MultiMeshFunction::*)(std::size_t, bool) const)&dolfin::MultiMeshFunction::part);
-    
+
     py::class_<dolfin::MultiMeshFunctionSpace, std::shared_ptr<dolfin::MultiMeshFunctionSpace>>
-      (m, "MultiMeshFunctionSpace")
+      (m, "MultiMeshFunctionSpace", py::dynamic_attr())
       .def(py::init<std::shared_ptr<dolfin::MultiMesh>>())
-      .def("add", &dolfin::MultiMeshFunctionSpace::add)
+      .def("add", [](dolfin::MultiMeshFunctionSpace& self, py::object v0)
+           {
+             auto _v0 = v0.attr("_cpp_object").cast<std::shared_ptr<dolfin::FunctionSpace>>();
+             self.add(_v0);
+             return;
+           })
+      .def("num_parts", &dolfin::MultiMeshFunctionSpace::num_parts)
       .def("build", static_cast<void(dolfin::MultiMeshFunctionSpace::*)()>(&dolfin::MultiMeshFunctionSpace::build))
-      .def("multimesh", &dolfin::MultiMeshFunctionSpace::multimesh);
+      .def("multimesh", &dolfin::MultiMeshFunctionSpace::multimesh)
+      .def("part", &dolfin::MultiMeshFunctionSpace::part)
+      .def("lock_inactive_dofs", &dolfin::MultiMeshFunctionSpace::lock_inactive_dofs)
+      .def("dofmap", &dolfin::MultiMeshFunctionSpace::dofmap)
+      .def("dim", &dolfin::MultiMeshFunctionSpace::dim);
 
     // dolfin::assign interface
     m.def("assign", [](py::object v0, py::object v1)
