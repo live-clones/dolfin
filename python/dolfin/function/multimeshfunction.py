@@ -19,15 +19,14 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Import UFL and SWIG-generated extension module (DOLFIN C++)
 import ufl
 import dolfin.cpp as cpp
 import numpy
 
-from dolfin.function.functionspace import MultiMeshFunctionSpace
+from dolfin.function.multimeshfunctionspace import MultiMeshFunctionSpace
 from dolfin.function.function import Function
 
-class MultiMeshFunction(ufl.Coefficient, cpp.MultiMeshFunction):
+class MultiMeshFunction(ufl.Coefficient):
     """This class represents a multimeshfunction
     :math:`u_h=(u_{h,1}\cross \dots u_{h,N}` in a finite
     element multimeshfunction space
@@ -86,20 +85,25 @@ class MultiMeshFunction(ufl.Coefficient, cpp.MultiMeshFunction):
                 raise RuntimeError("Use 'MultiMeshFunction.copy(deepcopy=True)' for copying.")
             else:
                 raise NotImplementedError
-        elif isinstance(args[0], cpp.MultiMeshFunction):
+        elif isinstance(args[0], cpp.function.MultiMeshFunction):
             raise NotImplementedError
-        elif isinstance(args[0], cpp.MultiMeshFunctionSpace):
+        elif isinstance(args[0], MultiMeshFunctionSpace):
             V = args[0]
             # If initialising from a FunctionSpace
             if len(args) == 1:
                 # If passing only the FunctionSpace
-                self.__init_from_multimeshfunction_space(V)
+                self._cpp_object = cpp.function.Function(V._cpp_object)
+                ufl.Coefficient.__init__(self, V._parts[0].ufl_function_space(),
+                                         count=self.id())
             elif len(args) == 2:
                 other = args[1]
-                if isinstance(other, cpp.MultiMeshFunction):
+                if isinstance(other, cpp.function.MultiMeshFunction):
                     raise NotImplementedError
                 else:
-                    self.__init_from_function_space_and_function(V, other)
+                    self.cpp_object = cpp.function.MultiMeshFunction.__init__(self, V, other)
+                    ufl.Coefficient.__init__(self, V._parts[0].ufl_function_space(),
+                                 count=self.id())
+
             else:
                 raise TypeError("too many arguments")
 
@@ -108,16 +112,6 @@ class MultiMeshFunction(ufl.Coefficient, cpp.MultiMeshFunction):
         else:
             raise TypeError("expected a MultiMeshFunctionSpace or a MultiMeshFunction as argument 1")
 
-
-    def __init_from_multimeshfunction_space(self, V):
-        cpp.MultiMeshFunction.__init__(self, V)
-        ufl.Coefficient.__init__(self, V._parts[0].ufl_function_space(),
-                                 count=self.id())
-
-    def __init_from_function_space_and_function(self, V, other):
-        cpp.MultiMeshFunction.__init__(self, V, other)
-        ufl.Coefficient.__init__(self, V._parts[0].ufl_function_space(),
-                                 count=self.id())
 
     def function_space(self):
         return self._V
@@ -166,7 +160,7 @@ class MultiMeshFunction(ufl.Coefficient, cpp.MultiMeshFunction):
         # Developer note: Interpolate does not set inactive dofs to zero,
         # and should be fixed
         # Check argument
-        if isinstance(v, cpp.GenericFunction):
+        if isinstance(v, cpp.function.GenericFunction):
             for i, vp in enumerate(self.parts(deepcopy=True)):
                 vp.interpolate(v)
                 self.assign_part(i, vp)
