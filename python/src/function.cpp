@@ -444,7 +444,8 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<dolfin::MultiMeshFunctionSpace>>())
       .def("vector", static_cast<std::shared_ptr<dolfin::GenericVector>(dolfin::MultiMeshFunction::*)()>(&dolfin::MultiMeshFunction::vector))
       .def("part", (std::shared_ptr<const dolfin::Function> (dolfin::MultiMeshFunction::*)(std::size_t) const)&dolfin::MultiMeshFunction::part)
-      .def("part", (std::shared_ptr<const dolfin::Function> (dolfin::MultiMeshFunction::*)(std::size_t, bool) const)&dolfin::MultiMeshFunction::part);
+      .def("part", (std::shared_ptr<const dolfin::Function> (dolfin::MultiMeshFunction::*)(std::size_t, bool) const)&dolfin::MultiMeshFunction::part)
+      .def("assign_part", (void (dolfin::MultiMeshFunction::*)(std::size_t, const dolfin::Function)) &dolfin::MultiMeshFunction::assign_part);
 
     py::class_<dolfin::MultiMeshFunctionSpace, std::shared_ptr<dolfin::MultiMeshFunctionSpace>>
       (m, "MultiMeshFunctionSpace", py::dynamic_attr())

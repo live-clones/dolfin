@@ -164,7 +164,7 @@ class MultiMeshFunction(ufl.Coefficient):
         if isinstance(v, ufl.Coefficient):
             for i, vp in enumerate(self.parts(deepcopy=True)):
                 vp.interpolate(v)
-                self.assign_part(i, vp)
+                self._cpp_object.assign_part(i, vp._cpp_object)
 
         elif isinstance(v, MultiMeshFunction):
             # Same multimesh required for interpolation
@@ -173,8 +173,7 @@ class MultiMeshFunction(ufl.Coefficient):
                 raise RuntimeError("MultiMeshFunctions must live on same MultiMesh")
             for i, vp in enumerate(self.parts(deepcopy=True)):
                 vmm = v.part(i, deepcopy=True)
-                vp.interpolate(vmm)
-                self.assign_part(i, vp)
+                self._cpp_object.assign_part(i, vp._cpp_object)
         else:
             raise TypeError("Expected an Expression or a MultiMeshFunction.")
 
