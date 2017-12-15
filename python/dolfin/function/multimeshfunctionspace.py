@@ -9,7 +9,7 @@
 import ufl
 import dolfin.cpp as cpp
 
-class MultiMeshFunctionSpace(cpp.MultiMeshFunctionSpace):
+class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
     def __init__(self, *args, **kwargs):
         """Create multimesh finite element function space.
         

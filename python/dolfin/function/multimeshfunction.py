@@ -1,4 +1,4 @@
- -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """This module handles the MultiMeshFunction class in Python.
 """
 # Copyright (C) 2017 Jørgen Schartum Dokken
@@ -129,7 +129,7 @@ class MultiMeshFunction(ufl.Coefficient, cpp.MultiMeshFunction):
         """
         # Assign a MultiMeshFunction into a MultiMeshFunction
         if isinstance(rhs, MultiMeshFunction):
-s            self.vector()[:]= rhs.vector()[:]
+            self.vector()[:]= rhs.vector()[:]
         else:
             raise TypeError("expected a MultiMeshFunction as argument.")
 
