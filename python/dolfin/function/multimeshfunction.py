@@ -92,9 +92,9 @@ class MultiMeshFunction(ufl.Coefficient):
             # If initialising from a FunctionSpace
             if len(args) == 1:
                 # If passing only the FunctionSpace
-                self._cpp_object = cpp.function.Function(V._cpp_object)
+                self._cpp_object = cpp.function.MultiMeshFunction(V._cpp_object)
                 ufl.Coefficient.__init__(self, V._parts[0].ufl_function_space(),
-                                         count=self.id())
+                                         count=self._cpp_object.id())
             elif len(args) == 2:
                 other = args[1]
                 if isinstance(other, cpp.function.MultiMeshFunction):
@@ -102,7 +102,7 @@ class MultiMeshFunction(ufl.Coefficient):
                 else:
                     self.cpp_object = cpp.function.MultiMeshFunction.__init__(self, V, other)
                     ufl.Coefficient.__init__(self, V._parts[0].ufl_function_space(),
-                                 count=self.id())
+                                 count=self._cpp_object.id())
 
             else:
                 raise TypeError("too many arguments")

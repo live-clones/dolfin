@@ -58,13 +58,13 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
         for part in range(multimesh.num_parts()):
             V_part = FunctionSpace(multimesh.part(part), element)
             V_parts.append(V_part)
-            V.add(V_part)
+            V.add(V_part._cpp_object)
 
         # Build multimesh function space
         V.build()
 
         # Store full function spaces
-        V._parts = V_parts
+        self._parts = V_parts
         self._cpp_object = V
 
     def _init_convenience(self, multimesh, family, degree):
@@ -100,5 +100,5 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
         V.build()
         
         # Store full function spaces
-        V._parts = V_parts
+        self._parts = V_parts
         self._cpp_object = V
