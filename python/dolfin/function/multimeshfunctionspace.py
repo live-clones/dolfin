@@ -9,13 +9,15 @@
 import ufl
 import dolfin.cpp as cpp
 from dolfin.function.functionspace import FunctionSpace
+from six import string_types
+
 class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
     def __init__(self, *args, **kwargs):
         """Create multimesh finite element function space.
         
         *Arguments*
         multimesh
-        a :py:class:`MultiMesh <dolfin.cpp.MultiMesh>`.
+        a :py:class:`MultiMesh <dolfin.cpp.mesh.MultiMesh>`.
         family
         a string specifying the element family,
             see :py:class:`FunctionSpace
@@ -69,7 +71,7 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
 
     def _init_convenience(self, multimesh, family, degree):
         # Check arguments
-        self.info = [familiy, degree]
+        self.info = [family, degree]
         if not isinstance(family, string_types):
             cpp.dolfin_error("multimeshfunctionspace.py",
                              "create function space",
@@ -79,7 +81,7 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
                              "create function space",
                              "Illegal argument for degree, not an integer: "
                              + str(degree))
-        if not isinstance(multimesh, cpp.MultiMesh):
+        if not isinstance(multimesh, cpp.mesh.MultiMesh):
             cpp.dolfin_error("functionspace.py",
                              "create multimesh function space",
                              "Illegal argument, not a multimesh: " + str(multimesh))
@@ -89,11 +91,11 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
         element = ufl.FiniteElement(family, mesh.ufl_cell(), degree)
 
         # Create and add individual function spaces
-        V = cpp.MultiMeshFunctionSpace(multimesh)
+        V = cpp.function.MultiMeshFunctionSpace(multimesh)
         V_parts = []
         for part in range(multimesh.num_parts()):
             V_part = FunctionSpace(multimesh.part(part), element)
-            V_parts.append()
+            V_parts.append(V_part)
             V.add(V_part._cpp_object)
 
         # Build multimesh function space

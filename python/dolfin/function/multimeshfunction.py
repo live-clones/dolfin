@@ -128,15 +128,15 @@ class MultiMeshFunction(ufl.Coefficient):
             raise TypeError("expected a MultiMeshFunction as argument.")
 
     def part(self, i, deepcopy=False):
-        f = Function(super(MultiMeshFunction, self).part(i, deepcopy))
-        f.rename(super(MultiMeshFunction, self).name(), super(MultiMeshFunction, self).label())
+        f = Function(self._cpp_object.part(i, deepcopy))
+        f.rename(self._cpp_object.name(), self._cpp_object.label())
         return f
 
     def parts(self, deepcopy=False):
         """
         Generator for MultiMeshFunction
         """
-        for part in range(self._V.num_parts()):
+        for part in range(self._V._cpp_object.multimesh().num_parts()):
             yield self.part(part, deepcopy)
 
     def interpolate(self, v):
@@ -160,7 +160,7 @@ class MultiMeshFunction(ufl.Coefficient):
         # Developer note: Interpolate does not set inactive dofs to zero,
         # and should be fixed
         # Check argument
-        if isinstance(v, cpp.function.GenericFunction):
+        if isinstance(v, ufl.Coefficient):
             for i, vp in enumerate(self.parts(deepcopy=True)):
                 vp.interpolate(v)
                 self.assign_part(i, vp)

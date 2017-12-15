@@ -440,15 +440,16 @@ namespace dolfin_wrappers
            });
     py::class_<dolfin::MultiMeshFunction,  std::shared_ptr<dolfin::MultiMeshFunction>, dolfin::Variable>(m, "MultiMeshFunction")
       .def(py::init<std::shared_ptr<dolfin::MultiMeshFunctionSpace>>())
-      .def("vector", static_cast<std::shared_ptr<dolfin::GenericVector>(dolfin::MultiMeshFunction::*)()>(&dolfin::MultiMeshFunction::vector));
-
+      .def("vector", static_cast<std::shared_ptr<dolfin::GenericVector>(dolfin::MultiMeshFunction::*)()>(&dolfin::MultiMeshFunction::vector))
+      .def("part", (std::shared_ptr<const dolfin::Function> (dolfin::MultiMeshFunction::*)(std::size_t) const)&dolfin::MultiMeshFunction::part)
+      .def("part", (std::shared_ptr<const dolfin::Function> (dolfin::MultiMeshFunction::*)(std::size_t, bool) const)&dolfin::MultiMeshFunction::part);
+    
     py::class_<dolfin::MultiMeshFunctionSpace, std::shared_ptr<dolfin::MultiMeshFunctionSpace>>
       (m, "MultiMeshFunctionSpace")
       .def(py::init<std::shared_ptr<dolfin::MultiMesh>>())
       .def("add", &dolfin::MultiMeshFunctionSpace::add)
-      .def("build", static_cast<void(dolfin::MultiMeshFunctionSpace::*)()>(&dolfin::MultiMeshFunctionSpace::build));
-
-
+      .def("build", static_cast<void(dolfin::MultiMeshFunctionSpace::*)()>(&dolfin::MultiMeshFunctionSpace::build))
+      .def("multimesh", &dolfin::MultiMeshFunctionSpace::multimesh);
 
     // dolfin::assign interface
     m.def("assign", [](py::object v0, py::object v1)
