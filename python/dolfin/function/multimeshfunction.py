@@ -110,6 +110,7 @@ class MultiMeshFunction(ufl.Coefficient):
             # Keep a reference of the functionspace with additional attributes
             self._V = V
         else:
+            print(type(args[0]))
             raise TypeError("expected a MultiMeshFunctionSpace or a MultiMeshFunction as argument 1")
 
 

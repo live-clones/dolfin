@@ -230,35 +230,3 @@ def TensorFunctionSpace(mesh, family, degree, shape=None, symmetry=None,
     return FunctionSpace(mesh, element, constrained_domain=constrained_domain)
 
 
-def MultiMeshFunctionSpace(multimesh, family, degree=None):
-    """Create multimesh finite element function space.
-    """
-
-    # Check arguments
-    if not isinstance(multimesh, cpp.mesh.MultiMesh):
-        cpp.dolfin_error("functionspace.py",
-                         "create multimesh function space",
-                         "Illegal argument, not a multimesh: " + str(multimesh))
-
-    # Create element if not supplied
-    if isinstance(family, ufl.FiniteElementBase):
-        element = family
-    else:
-        mesh = multimesh.part(0)
-        element = ufl.FiniteElement(family, mesh.ufl_cell(), degree)
-
-    # Create and add individual function spaces
-    V = cpp.function.MultiMeshFunctionSpace(multimesh)
-    V_parts = []
-    for part in range(multimesh.num_parts()):
-        V_part = FunctionSpace(multimesh.part(part), element)
-        V_parts.append(V_part)
-        V.add(V_part)
-
-    # Build multimesh function space
-    V.build()
-
-    # Store full function spaces
-    V._parts = V_parts
-
-    return V
