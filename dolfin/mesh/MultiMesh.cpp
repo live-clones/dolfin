@@ -149,7 +149,7 @@ MultiMesh::covered_cells(std::size_t part) const
 //-----------------------------------------------------------------------------
 const std::map<unsigned int,
                std::vector<std::pair<std::size_t, unsigned int>>>&
-  MultiMesh::collision_map_cut_cells(std::size_t part) const
+MultiMesh::collision_map_cut_cells(std::size_t part) const
 {
   dolfin_assert(part < num_parts());
   return _collision_maps_cut_cells[part];
@@ -173,7 +173,7 @@ MultiMesh::quadrature_rules_cut_cells(std::size_t part,
 }
 //-----------------------------------------------------------------------------
 const std::map<unsigned int, std::vector<MultiMesh::quadrature_rule>>&
-  MultiMesh::quadrature_rules_overlap(std::size_t part) const
+MultiMesh::quadrature_rules_overlap(std::size_t part) const
 {
   dolfin_assert(part < num_parts());
   return _quadrature_rules_overlap[part];
@@ -189,7 +189,7 @@ MultiMesh::quadrature_rules_overlap(std::size_t part,
 }
 //-----------------------------------------------------------------------------
 const std::map<unsigned int, std::vector<MultiMesh::quadrature_rule>>&
-  MultiMesh::quadrature_rules_interface(std::size_t part) const
+MultiMesh::quadrature_rules_interface(std::size_t part) const
 {
   dolfin_assert(part < num_parts());
   return _quadrature_rules_interface[part];
@@ -205,7 +205,7 @@ MultiMesh::quadrature_rules_interface(std::size_t part,
 }
 //-----------------------------------------------------------------------------
 const std::map<unsigned int, std::vector<std::vector<double>>>&
-  MultiMesh::facet_normals(std::size_t part) const
+MultiMesh::facet_normals(std::size_t part) const
 {
   dolfin_assert(part < num_parts());
   return _facet_normals[part];
@@ -692,23 +692,18 @@ void MultiMesh::_build_quadrature_rules_overlap(std::size_t quadrature_order)
         // Compute the intersection (a polyhedron)
 	const std::vector<Point> intersection
 	  = IntersectionConstruction::intersection(cut_cell, cutting_cell);
-        const Polyhedron polyhedron =
-          ConvexTriangulation::triangulate(intersection, gdim, tdim);
+	const std::vector<std::vector<Point>> triangulation
+	  = ConvexTriangulation::triangulate(intersection, gdim, tdim);
+	const Polyhedron polyhedron(triangulation, {cutting_part});
 
-	// dolfin_assert(!ConvexTriangulation::selfintersects(polyhedron));
+	//dolfin_assert(!ConvexTriangulation::selfintersects(polyhedron.first));
 
 	// FIXME: Flip triangles in polyhedron to maximize minimum angle here?
 	// FIXME: only include large polyhedra
 
-	// Store key and polyhedron but only use polyhedron of same tdim
-	Polyhedron polyhedron_same_tdim;
-	for (const Simplex& s: polyhedron)
-	  if (s.size() == tdim + 1)
-	    polyhedron_same_tdim.push_back(s);
-
 	// Note that this can be empty
 	initial_polyhedra.emplace_back(initial_polyhedra.size(),
-				       polyhedron_same_tdim);
+				       polyhedron);
       }
 
       if (cutting_cells.size() > 0)
@@ -866,7 +861,7 @@ void MultiMesh::_build_quadrature_rules_interface(std::size_t quadrature_order)
 
 	// Find and store the cutting cells Tk. These are fed into the
 	// inc exc together with the edge Eij.
-	std::vector<std::pair<std::size_t, Polyhedron> > initial_polygons;
+	std::vector<std::pair<std::size_t, Polyhedron>> initial_polygons;
 
 	// Find and save all cutting cells with part number > i
 	// (this is always true), and part number != j.
@@ -887,8 +882,8 @@ void MultiMesh::_build_quadrature_rules_interface(std::size_t quadrature_order)
 	    Simplex cutting_cell_k_simplex(tdim_bulk + 1);
 	    for (std::size_t i = 0; i < cutting_cell_k_simplex.size(); ++i)
 	      cutting_cell_k_simplex[i] = geometry.point(vertices[i]);
-	    const Polyhedron cutting_cell_k_polyhedron(1, cutting_cell_k_simplex);
-
+	    const Polyhedron cutting_cell_k_polyhedron({cutting_cell_k_simplex},
+						       {cutting_part_k});
 	    initial_polygons.emplace_back(initial_polygons.size(),
 					  cutting_cell_k_polyhedron);
 	  }
@@ -925,17 +920,14 @@ void MultiMesh::_build_quadrature_rules_interface(std::size_t quadrature_order)
 	      _is_overlapped_interface(Eij_part_points, cut_cell_i, facet_normal))
 	    continue;
 
-	  const Polyhedron Eij_part =
-            ConvexTriangulation::triangulate(Eij_part_points, gdim, tdim_interface);
+	  const std::vector<std::vector<Point>> triangulation
+	    = ConvexTriangulation::triangulate(Eij_part_points,
+					       gdim, tdim_interface);
+	  const Polyhedron Eij_part(triangulation, {cutting_part_j});
 
-	  // The intersection should be either empty or one simplex
-	  dolfin_assert(Eij_part.size() <= 1);
-
-	  // Do not include if the point (or line) is degenerate,
-	  // neither here nor below
-	  if (Eij_part[0].size() == tdim_interface + 1)
+	  for (const Simplex& Eij : Eij_part.first)
 	  {
-	    const Simplex& Eij = Eij_part[0];
+	    dolfin_assert(Eij.size() == tdim_interface + 1);
 
 	    // Store the |Eij| and normals
 	    const std::size_t num_pts
@@ -1118,10 +1110,32 @@ void MultiMesh::_add_normal(std::vector<double>& normals,
       normals.push_back(-normal[j]);
 }
 //-----------------------------------------------------------------------------
+bool empty_intersection(const std::set<std::size_t>& A,
+			const std::set<std::size_t>& B)
+{
+  // Check if the two sets A and B have an empty intersection
+
+  std::set<std::size_t>::const_iterator i = A.begin();
+  std::set<std::size_t>::const_iterator j = B.begin();
+
+  while (i != A.end() and j != B.end())
+  {
+    if (*i < *j)
+      ++i;
+    else if (*j < *i)
+      ++j;
+    else
+      return false;
+  }
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
 void MultiMesh::_inclusion_exclusion_overlap
 (std::vector<quadrature_rule>& qr,
  const SimplexQuadrature& sq,
- const std::vector<std::pair<std::size_t, Polyhedron> >& initial_polyhedra,
+ const std::vector<std::pair<std::size_t, Polyhedron>>& initial_polyhedra,
  std::size_t tdim,
  std::size_t gdim,
  std::size_t quadrature_order) const
@@ -1138,7 +1152,7 @@ void MultiMesh::_inclusion_exclusion_overlap
   // Data structure for storing the previous intersections: the key
   // and the intersections.
   const std::size_t N = initial_polyhedra.size();
-  std::vector<std::pair<IncExcKey, Polyhedron> > previous_intersections(N);
+  std::vector<std::pair<IncExcKey, Polyhedron>> previous_intersections(N);
   for (std::size_t i = 0; i < N; ++i)
     previous_intersections[i]
       = std::make_pair(IncExcKey(1, initial_polyhedra[i].first),
@@ -1154,18 +1168,18 @@ void MultiMesh::_inclusion_exclusion_overlap
 
   // Add quadrature rules for stage 0
   for (const std::pair<IncExcKey, Polyhedron>& pol_pair: previous_intersections)
-    for (const Simplex& simplex: pol_pair.second)
-      if (simplex.size() == tdim + 1)
-      {
-	_add_quadrature_rule(qr[pol_pair.first[0]], sq, simplex, gdim,
-			     quadrature_order, 1.);
-      }
+    for (const Simplex& simplex: pol_pair.second.first)
+    {
+      dolfin_assert(simplex.size() == tdim + 1);
+      _add_quadrature_rule(qr[pol_pair.first[0]], sq, simplex, gdim,
+			   quadrature_order, 1.);
+    }
 
   // Add quadrature rules for overlap part
   for (std::size_t stage = 1; stage < N; ++stage)
   {
     // Structure for storing new intersections
-    std::vector<std::pair<IncExcKey, Polyhedron> > new_intersections;
+    std::vector<std::pair<IncExcKey, Polyhedron>> new_intersections;
 
     // Loop over all intersections from the previous stage
     for (const std::pair<IncExcKey, Polyhedron>& previous_polyhedron: previous_intersections)
@@ -1174,8 +1188,10 @@ void MultiMesh::_inclusion_exclusion_overlap
       for (const std::pair<std::size_t, Polyhedron>& initial_polyhedron: initial_polyhedra)
       {
 	// Only check if initial_polyhedron key < previous_polyhedron
-	// key[0]
-	if (initial_polyhedron.first < previous_polyhedron.first[0])
+	// key[0] and that they are from different parts
+	if (initial_polyhedron.first < previous_polyhedron.first[0] and
+	    empty_intersection(initial_polyhedron.second.second,
+			       previous_polyhedron.second.second))
 	{
 	  // We want to save the intersection of the previous
 	  // polyhedron and the initial polyhedron in one single
@@ -1188,49 +1204,38 @@ void MultiMesh::_inclusion_exclusion_overlap
 	  // these to the new_polyhedron
 	  bool any_intersections = false;
 
-	  for (const Simplex& previous_simplex: previous_polyhedron.second)
+	  for (const Simplex& previous_simplex: previous_polyhedron.second.first)
 	  {
-	    for (const Simplex& initial_simplex: initial_polyhedron.second)
+	    dolfin_assert(previous_simplex.size() == tdim + 1);
+	    for (const Simplex& initial_simplex: initial_polyhedron.second.first)
 	    {
+	      dolfin_assert(initial_simplex.size() == tdim + 1);
+
 	      // Compute the intersection (a polyhedron)
 	      // To save all intersections as a single polyhedron,
 	      // we don't call this a polyhedron yet, but rather a
 	      // std::vector<Simplex> since we are still filling
 	      // the polyhedron with simplices
+	      const std::vector<Point> intersection_points
+		= IntersectionConstruction::intersection(initial_simplex,
+							 previous_simplex,
+							 gdim);
+	      Polyhedron intersection;
+	      intersection.first = ConvexTriangulation::triangulate(intersection_points,
+								    gdim, tdim);
 
-	      // Only allow same types for now
-	      if (previous_simplex.size() == tdim + 1 &&
-		  initial_simplex.size() == tdim + 1)
+	      // To save all intersections as a single
+	      // polyhedron, we don't call this a polyhedron
+	      // yet, but rather a std::vector<Simplex> since we
+	      // are still filling the polyhedron with simplices
+
+	      // FIXME: We could add only if area is sufficiently
+	      // large
+	      for (const Simplex& simplex: intersection.first)
 	      {
-		const std::vector<Point> intersection_points
-		  = IntersectionConstruction::intersection(initial_simplex,
-							   previous_simplex,
-							   gdim);
-
-                if (!GeometryPredicates::convex_hull_is_degenerate(intersection_points,
-                                                                   gdim))
-                {
-                  const Polyhedron intersection
-                    = ConvexTriangulation::triangulate(intersection_points,
-                                                       gdim,
-                                                       tdim);
-
-		  // To save all intersections as a single
-		  // polyhedron, we don't call this a polyhedron
-		  // yet, but rather a std::vector<Simplex> since we
-		  // are still filling the polyhedron with simplices
-
-		  // FIXME: We could add only if area is sufficiently
-		  // large
-		  for (const Simplex& simplex: intersection)
-                  {
-		    if (simplex.size() == tdim + 1)
-		    {
-		      new_polyhedron.push_back(simplex);
-		      any_intersections = true;
-		    }
-                  }
-		}
+		dolfin_assert(simplex.size() == tdim + 1);
+		new_polyhedron.first.push_back(simplex);
+		any_intersections = true;
 	      }
 	    }
 	  }
@@ -1245,6 +1250,9 @@ void MultiMesh::_inclusion_exclusion_overlap
 	    // FIXME: Test improve quality
 	    //maximize_minimum_angle(new_polyhedron);
 
+	    // Update cutting parts
+	    new_polyhedron.second.insert(previous_polyhedron.second.second.begin(),
+					 previous_polyhedron.second.second.end());
 	    // Save data
 	    new_intersections.emplace_back(new_keys, new_polyhedron);
 	  }
@@ -1259,12 +1267,12 @@ void MultiMesh::_inclusion_exclusion_overlap
     const double sign = std::pow(-1, stage);
 
     for (const std::pair<IncExcKey, Polyhedron>& polyhedron: new_intersections)
-      for (const Simplex& simplex: polyhedron.second)
-	if (simplex.size() == tdim + 1)
-	{
-	  _add_quadrature_rule(qr[polyhedron.first[0]], sq, simplex, gdim,
-			       quadrature_order, sign);
-	}
+      for (const Simplex& simplex: polyhedron.second.first)
+      {
+	dolfin_assert(simplex.size() == tdim + 1);
+	_add_quadrature_rule(qr[polyhedron.first[0]], sq, simplex, gdim,
+			     quadrature_order, sign);
+      }
 
   } // end loop over stages
 
@@ -1277,7 +1285,7 @@ void MultiMesh::_inclusion_exclusion_interface
  const SimplexQuadrature& sq,
  const Simplex& Eij,
  const Point& facet_normal,
- const std::vector<std::pair<std::size_t, Polyhedron> >& initial_polyhedra,
+ const std::vector<std::pair<std::size_t, Polyhedron>>& initial_polyhedra,
  std::size_t tdim_interface,
  std::size_t gdim,
  std::size_t quadrature_order) const
@@ -1299,7 +1307,7 @@ void MultiMesh::_inclusion_exclusion_interface
   // Data structure for storing the previous intersections: the key
   // and the intersections.
   const std::size_t N = initial_polyhedra.size();
-  std::vector<std::pair<IncExcKey, Polyhedron> > previous_intersections(N);
+  std::vector<std::pair<IncExcKey, Polyhedron>> previous_intersections(N);
   for (std::size_t i = 0; i < N; ++i)
     previous_intersections[i]
       = std::make_pair(IncExcKey(1, initial_polyhedra[i].first),
@@ -1321,25 +1329,24 @@ void MultiMesh::_inclusion_exclusion_interface
 
   for (const std::pair<IncExcKey, Polyhedron>& pol_pair: previous_intersections)
   {
-    for (const Simplex& simplex: pol_pair.second)
+    for (const Simplex& simplex: pol_pair.second.first)
     {
-      if (simplex.size() == tdim_bulk + 1)
-      {
-	const std::vector<Point> Eij_cap_Tk_points
-	  = IntersectionConstruction::intersection(Eij, simplex, gdim);
-	const Polyhedron Eij_cap_Tk
-	  = ConvexTriangulation::triangulate(Eij_cap_Tk_points, gdim, tdim_interface);
+      dolfin_assert(simplex.size() == tdim_bulk + 1);
+      const std::vector<Point> Eij_cap_Tk_points
+	= IntersectionConstruction::intersection(Eij, simplex, gdim);
+      Polyhedron Eij_cap_Tk;
+      Eij_cap_Tk.first
+	= ConvexTriangulation::triangulate(Eij_cap_Tk_points,
+					   gdim, tdim_interface);
 
-	for (const Simplex& s: Eij_cap_Tk)
-	{
-	  if (s.size() == tdim_interface + 1)
-	  {
-	    const std::size_t num_pts
-	      = _add_quadrature_rule(qr_stage0, sq, s, gdim,
-				     quadrature_order, -1.); // Stage 0 is negative
-	    _add_normal(normals_stage0, facet_normal, num_pts, gdim);
-	  }
-	}
+      for (const Simplex& s: Eij_cap_Tk.first)
+      {
+	dolfin_assert(s.size() == tdim_interface + 1);
+	// Stage 0 is negative
+	const std::size_t num_pts
+	  = _add_quadrature_rule(qr_stage0, sq, s, gdim,
+				 quadrature_order, -1.);
+	_add_normal(normals_stage0, facet_normal, num_pts, gdim);
       }
     }
   }
@@ -1353,7 +1360,7 @@ void MultiMesh::_inclusion_exclusion_interface
   for (std::size_t stage = 1; stage < N; ++stage)
   {
     // Data structure for storing new intersections
-    std::vector<std::pair<IncExcKey, Polyhedron> > new_intersections;
+    std::vector<std::pair<IncExcKey, Polyhedron>> new_intersections;
 
     // Loop over all intersections from the previous stage
     for (const std::pair<IncExcKey, Polyhedron>& previous_polyhedron: previous_intersections)
@@ -1363,8 +1370,10 @@ void MultiMesh::_inclusion_exclusion_interface
       {
 
 	// Check if the initial_polyhedron's key < previous_polyhedron
-	// key[0]
-	if (initial_polyhedron.first < previous_polyhedron.first[0])
+	// key[0] and that they are from different parts
+	if (initial_polyhedron.first < previous_polyhedron.first[0] and
+	    empty_intersection(initial_polyhedron.second.second,
+			       previous_polyhedron.second.second))
 	{
 	  // We want to save the intersection of the previous
 	  // polyhedron and the initial polyhedron in one single
@@ -1377,38 +1386,33 @@ void MultiMesh::_inclusion_exclusion_interface
 	  // these to the new_polyhedron
 	  bool any_intersections = false;
 
-	  for (const Simplex& previous_simplex: previous_polyhedron.second)
+	  for (const Simplex& previous_simplex: previous_polyhedron.second.first)
 	  {
-	    for (const Simplex& initial_simplex: initial_polyhedron.second)
+	    dolfin_assert(previous_simplex.size() == tdim_bulk + 1);
+	    for (const Simplex& initial_simplex: initial_polyhedron.second.first)
 	    {
+	      dolfin_assert(initial_simplex.size() == tdim_bulk + 1);
 	      // Compute the intersection (a polyhedron).
-	      // FIXME: Only allow same types for now.
-	      if (previous_simplex.size() == tdim_bulk + 1 &&
-		  initial_simplex.size() == tdim_bulk + 1)
+	      const std::vector<Point> intersection_points
+		= IntersectionConstruction::intersection(initial_simplex,
+							 previous_simplex,
+							 gdim);
+	      Polyhedron intersection;
+	      intersection.first
+		= ConvexTriangulation::triangulate(intersection_points,
+						   gdim, tdim_bulk);
+
+	      // To save all intersections as a single
+	      // polyhedron, we don't call this a polyhedron
+	      // yet, but rather a std::vector<Simplex> since we
+	      // are still filling the polyhedron with simplices
+
+	      // FIXME: We could add only if area is sufficiently large
+	      for (const Simplex& simplex: intersection.first)
 	      {
-		const std::vector<Point> intersection_points
-		  = IntersectionConstruction::intersection(initial_simplex,
-							   previous_simplex,
-							   gdim);
-		const Polyhedron intersection
-		  = ConvexTriangulation::triangulate(intersection_points,
-						     gdim,
-						     tdim_bulk);
-
-		// To save all intersections as a single
-		// polyhedron, we don't call this a polyhedron
-		// yet, but rather a std::vector<Simplex> since we
-		// are still filling the polyhedron with simplices
-
-		// FIXME: We could add only if area is sufficiently large
-		for (const Simplex& simplex: intersection)
-		{
-		  if (simplex.size() == tdim_bulk + 1)
-		  {
-		    new_polyhedron.push_back(simplex);
-		    any_intersections = true;
-		  }
-		}
+		dolfin_assert(simplex.size() == tdim_bulk + 1);
+		new_polyhedron.first.push_back(simplex);
+		any_intersections = true;
 	      }
 	    }
 	  }
@@ -1422,6 +1426,9 @@ void MultiMesh::_inclusion_exclusion_interface
 
 	    // FIXME: Test improve quality by edge flips
 
+	    // Update cutting parts
+	    new_polyhedron.second.insert(previous_polyhedron.second.second.begin(),
+					 previous_polyhedron.second.second.end());
 	    // Save data
 	    new_intersections.emplace_back(new_keys, new_polyhedron);
 	  }
@@ -1439,26 +1446,22 @@ void MultiMesh::_inclusion_exclusion_interface
 
     for (const std::pair<IncExcKey, Polyhedron>& polyhedron: new_intersections)
     {
-      for (const Simplex& simplex: polyhedron.second)
+      for (const Simplex& simplex: polyhedron.second.first)
       {
-	if (simplex.size() == tdim_bulk + 1)
+	dolfin_assert(simplex.size() == tdim_bulk + 1);
+	const std::vector<Point> Eij_cap_Tk_points
+	  = IntersectionConstruction::intersection(Eij, simplex, gdim);
+	Polyhedron Eij_cap_Tk;
+	Eij_cap_Tk.first
+	  = ConvexTriangulation::triangulate(Eij_cap_Tk_points,
+					     gdim, tdim_interface);
+	for (const Simplex& s: Eij_cap_Tk.first)
 	{
-	  const std::vector<Point> Eij_cap_Tk_points
-	    = IntersectionConstruction::intersection(Eij, simplex, gdim);
-	  const Polyhedron Eij_cap_Tk
-	    = ConvexTriangulation::triangulate(Eij_cap_Tk_points,
-					       gdim,
-					       tdim_interface);
-	  for (const Simplex& s: Eij_cap_Tk)
-	  {
-	    if (s.size() == tdim_interface + 1)
-	    {
-	      const std::size_t num_pts
-		= _add_quadrature_rule(qr_stage, sq, s, gdim,
-				       quadrature_order, sign);
-	      _add_normal(normals_stage, facet_normal, num_pts, gdim);
-	    }
-	  }
+	  dolfin_assert(s.size() == tdim_interface + 1);
+	  const std::size_t num_pts
+	    = _add_quadrature_rule(qr_stage, sq, s, gdim,
+				   quadrature_order, sign);
+	  _add_normal(normals_stage, facet_normal, num_pts, gdim);
 	}
       }
     }
