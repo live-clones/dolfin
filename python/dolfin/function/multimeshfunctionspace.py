@@ -104,3 +104,36 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
         # Store full function spaces
         self._parts = V_parts
         self._cpp_object = V
+
+    # Return dimension of the multimesh function space
+    def dim(self):
+        return self._cpp_object.dim()
+
+    # Return the corresponding multimesh
+    def multimesh(self):
+        return self._cpp_object.multimesh()
+
+    # Return dofmap for the mulitmesh function space
+    def dofmap(self):
+        return self._cpp_object.dofmap()
+
+    # Return the number of function spaces (parts) of the multimesh function space
+    def num_parts(self):
+        return self._cpp_object.num_parts()
+
+    # Return function space (part) number i
+    def part(self, i):
+        return self._cpp_object.part(i)
+
+    # Return a common view of the multimesh function spaces (dofs global to
+    # the collection of parts).
+    def view(self, i):
+        return self._cpp_object.view(i)
+
+    # Add a functionspace
+    def add(self, function_space):
+        self._cpp_object.add(function_space.cpp_object)
+
+    # Build multimesh function space
+    def build(self):
+        self._cpp_object.build()
