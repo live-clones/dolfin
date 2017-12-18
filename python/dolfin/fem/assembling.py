@@ -298,7 +298,7 @@ def assemble_multimesh(form,
 
     for i, coeff in enumerate(coefficients):
         if isinstance(coeff, MultiMeshFunction):
-            multimesh_form.set_multimesh_coefficient(i, coeff)
+            multimesh_form.set_multimesh_coefficient(i, coeff._cpp_object)
 
     # Build multimesh form
     multimesh_form.build()

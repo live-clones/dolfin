@@ -23,6 +23,8 @@ class Form(cpp.fem.Form):
         self.subdomains, = list(sd.values())  # Assuming single domain
         domain, = list(sd.keys())  # Assuming single domain
         mesh = domain.ufl_cargo()
+        if isinstance(mesh, cpp.mesh.MultiMesh):
+            mesh = mesh.part(0)
 
         # Having a mesh in the form is a requirement
         if mesh is None:
@@ -55,10 +57,10 @@ class Form(cpp.fem.Form):
         self.coefficients = []
         for i in range(self.num_coefficients()):
             j = self.original_coefficient_position(i)
-            self.coefficients.append(original_coefficients[j].cpp_object())
+            self.coefficients.append(original_coefficients[j]._cpp_object)
 
         # Type checking coefficients
-        if not all(isinstance(c, (cpp.function.GenericFunction))
+        if not all(isinstance(c, (cpp.function.GenericFunction, cpp.function.MultiMeshFunction))
                    for c in self.coefficients):
             coefficient_error = "Error while extracting coefficients. "
             raise TypeError(coefficient_error +

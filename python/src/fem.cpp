@@ -55,6 +55,7 @@
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/MultiMeshFunctionSpace.h>
 #include <dolfin/function/Function.h>
+#include <dolfin/function/MultiMeshFunction.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/GenericTensor.h>
@@ -412,7 +413,9 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>,
                     std::shared_ptr<const dolfin::MultiMeshFunctionSpace>>())
       .def("add", &dolfin::MultiMeshForm::add)
-      .def("build", &dolfin::MultiMeshForm::build);
+      .def("build", &dolfin::MultiMeshForm::build)
+      .def("set_multimesh_coefficient",  &dolfin::MultiMeshForm::set_multimesh_coefficient);
+;
 
     // dolfin::MultiMeshAssembler
     py::class_<dolfin::MultiMeshAssembler, std::shared_ptr<dolfin::MultiMeshAssembler>>
