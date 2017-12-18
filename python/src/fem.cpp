@@ -38,6 +38,7 @@
 #include <dolfin/fem/DirichletBC.h>
 #include <dolfin/fem/DiscreteOperators.h>
 #include <dolfin/fem/DofMap.h>
+#include <dolfin/fem/MultiMeshDofMap.h>
 #include <dolfin/fem/FiniteElement.h>
 #include <dolfin/fem/Form.h>
 #include <dolfin/fem/MultiMeshForm.h>
@@ -235,6 +236,12 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const ufc::dofmap>, const dolfin::Mesh&, std::shared_ptr<const dolfin::SubDomain>>())
       .def("ownership_range", &dolfin::DofMap::ownership_range)
       .def("cell_dofs", &dolfin::DofMap::cell_dofs);
+
+    // dolfin::MultiMeshDofMap
+    py::class_<dolfin::MultiMeshDofMap, std::shared_ptr<dolfin::MultiMeshDofMap>>
+      (m, "MultiMeshDofMap", "DOLFIN MultiMeshDofMap object")
+      .def(py::init())
+      .def("inactive_dofs", &dolfin::MultiMeshDofMap::inactive_dofs);
 
     // dolfin::SparsityPatternBuilder
     py::class_<dolfin::SparsityPatternBuilder>(m, "SparsityPatternBuilder")
