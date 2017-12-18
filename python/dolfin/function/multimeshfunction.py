@@ -113,6 +113,8 @@ class MultiMeshFunction(ufl.Coefficient):
             print(type(args[0]))
             raise TypeError("expected a MultiMeshFunctionSpace or a MultiMeshFunction as argument 1")
 
+    def vector(self):
+        return self._cpp_object.vector()
 
     def function_space(self):
         return self._V
@@ -124,7 +126,7 @@ class MultiMeshFunction(ufl.Coefficient):
         """
         # Assign a MultiMeshFunction into a MultiMeshFunction
         if isinstance(rhs, MultiMeshFunction):
-            self.vector()[:]= rhs.vector()[:]
+            self._cpp_object.vector()[:]= rhs.vector()[:]
         else:
             raise TypeError("expected a MultiMeshFunction as argument.")
 
@@ -176,8 +178,7 @@ class MultiMeshFunction(ufl.Coefficient):
                 self._cpp_object.assign_part(i, vp._cpp_object)
         else:
             raise TypeError("Expected an Expression or a MultiMeshFunction.")
-
         # Set inactive dofs to zero
         for part in range(self._V.num_parts()):
             dofs = self._V.dofmap().inactive_dofs(self._V.multimesh(),part)
-            self.vector()[dofs]=0
+            self._cpp_object.vector()[dofs]=0

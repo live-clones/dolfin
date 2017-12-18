@@ -531,7 +531,7 @@ namespace dolfin_wrappers
                   &dolfin::MeshTransformation::rotate);
 
     py::class_<dolfin::MultiMesh, std::shared_ptr<dolfin::MultiMesh>,
-	       dolfin::Variable>(m, "MultiMesh")
+	       dolfin::Variable>(m, "MultiMesh", py::dynamic_attr())
       .def(py::init<>())
       .def("add", &dolfin::MultiMesh::add)
       .def("build", &dolfin::MultiMesh::build, py::arg("quadrature_order") = 2)
