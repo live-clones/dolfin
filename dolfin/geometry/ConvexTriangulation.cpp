@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2016-06-01
-// Last changed: 2017-11-13
+// Last changed: 2017-12-12
 
 #include <algorithm>
 #include <tuple>
@@ -262,6 +262,7 @@ ConvexTriangulation::_triangulate_graham_scan_2d(const std::vector<Point>& input
   dolfin_assert(GeometryPredicates::is_finite(input_points));
 
   // Make sure the input points are unique
+  const std::size_t tdim = 2;
   const std::size_t gdim = 2;
   std::vector<Point> points = unique_points(input_points, gdim, DOLFIN_EPS);
 
@@ -270,8 +271,9 @@ ConvexTriangulation::_triangulate_graham_scan_2d(const std::vector<Point>& input
 
   if (points.size() == 3)
   {
+    const std::size_t tdim = 2;
     std::vector<std::vector<Point>> triangulation;
-    if (!GeometryPredicates::is_degenerate_2d(points))
+    if (!GeometryPredicates::is_degenerate(points, tdim, gdim))
       triangulation.push_back(points);
     return triangulation;
   }
@@ -312,7 +314,7 @@ ConvexTriangulation::_triangulate_graham_scan_2d(const std::vector<Point>& input
     const std::vector<Point> tri {{ points[0],
 	  points[order[m].second],
 	  points[order[m + 1].second] }};
-    if (!GeometryPredicates::is_degenerate_2d(tri))
+    if (!GeometryPredicates::is_degenerate(tri, tdim, gdim))
       triangulation.push_back(tri);
   }
 
@@ -330,6 +332,7 @@ ConvexTriangulation::_triangulate_graham_scan_3d(const std::vector<Point>& input
 
   // Make sure the input points are unique. We assume this has
   // negligble effect on volume
+  const std::size_t tdim = 3;
   const std::size_t gdim = 3;
   std::vector<Point> points = unique_points(input_points, gdim, DOLFIN_EPS);
 
@@ -343,7 +346,7 @@ ConvexTriangulation::_triangulate_graham_scan_3d(const std::vector<Point>& input
   else if (points.size() == 4)
   {
     // Single tetrahedron
-    if (!GeometryPredicates::is_degenerate_3d(points))
+    if (!GeometryPredicates::is_degenerate(points, tdim, gdim))
       triangulation.push_back(points);
     return triangulation;
   }
@@ -438,7 +441,7 @@ ConvexTriangulation::_triangulate_graham_scan_3d(const std::vector<Point>& input
                 //for (auto p : cand)
                 //  std::cout << " " << p;
                 //std::cout << std::endl;
-		if (!GeometryPredicates::is_degenerate_3d(cand))
+		if (!GeometryPredicates::is_degenerate(cand, tdim, gdim))
 		  triangulation.push_back(cand);
 	      }
 	      else // At least four coplanar points
@@ -470,7 +473,7 @@ ConvexTriangulation::_triangulate_graham_scan_3d(const std::vector<Point>& input
 			coplanar_center,
 			coplanar_points[edge.first],
 			coplanar_points[edge.second] }};
-		  if (!GeometryPredicates::is_degenerate_3d(cand))
+		  if (!GeometryPredicates::is_degenerate(cand, tdim, gdim))
 		  {
 		    triangulation.push_back(cand);
 

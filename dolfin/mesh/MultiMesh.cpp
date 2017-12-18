@@ -19,7 +19,7 @@
 // Modified by Benjamin Kehlet 2016
 //
 // First added:  2013-08-05
-// Last changed: 2017-12-06
+// Last changed: 2017-12-12
 
 #include <cmath>
 #include <dolfin/log/log.h>
@@ -1050,13 +1050,14 @@ MultiMesh::_is_overlapped_interface(std::vector<Point> simplex,
       return false;
   }
   // Identify a facet being cut, if any
-  std::size_t tdim = cut_cell.dim();
+  const std::size_t tdim = cut_cell.dim();
+  const std::size_t gdim = cut_cell.mesh().geometry().dim();
   const unsigned int* facet_indices = cut_cell.entities(tdim - 1);
   for (std::size_t j = 0; j < cut_cell.num_entities(tdim - 1); j++)
   {
     Facet facet_j(cut_cell.mesh(), facet_indices[j]);
     simplex.push_back(facet_j.midpoint());
-    if (GeometryPredicates::is_degenerate(simplex, tdim))
+    if (GeometryPredicates::is_degenerate(simplex, tdim, gdim))
     {
       // then we have found the right facet
       simplex.pop_back();
