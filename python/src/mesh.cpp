@@ -68,8 +68,21 @@ namespace dolfin_wrappers
             return std::shared_ptr<const dolfin::SubDomain>(p);
           });
 
+    // dolfin::CellType trampoline class for user overloading from
+    // Python
+    class PyCellType : public dolfin::CellType
+    {
+      using dolfin::CellType::CellType;
+      dolfin::Point normal(const dolfin::Cell& cell, std::size_t facet) const override
+      {
+	PYBIND11_OVERLOAD(dolfin::Point, dolfin::CellType,
+			  normal, cell, facet);}
+     };
+
     // dolfin::CellType
-    py::class_<dolfin::CellType> celltype(m, "CellType");
+    py::class_<dolfin::CellType, PyCellType>
+      celltype(m, "CellType");
+    celltype.def("normal", (dolfin::Point (dolfin::CellType::*)(const dolfin::Cell&, std::size_t) const) &dolfin::CellType::normal);
 
     // dolfin::CellType enums
     py::enum_<dolfin::CellType::Type>(celltype, "Type")
@@ -259,7 +272,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::Vertex, std::shared_ptr<dolfin::Vertex>, dolfin::MeshEntity>
       (m, "Vertex", "DOLFIN Vertex object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
-      .def("point", &dolfin::Vertex::point);
+      .def("point", &dolfin::Vertex::point)
+      .def("x", (double (dolfin::Vertex::*)(std::size_t) const) &dolfin::Vertex::x );
 
     // dolfin::Edge
     py::class_<dolfin::Edge, std::shared_ptr<dolfin::Edge>, dolfin::MeshEntity>
@@ -281,8 +295,8 @@ namespace dolfin_wrappers
       (m, "Facet", "DOLFIN Facet object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
       .def("exterior", &dolfin::Facet::exterior)
-      .def("normal", (dolfin::Point (dolfin::Facet::*)() const)  &dolfin::Facet::normal);
-
+      .def("normal", (dolfin::Point (dolfin::Facet::*)() const)  &dolfin::Facet::normal)
+      .def("normal", (double (dolfin::Facet::*)(std::size_t) const) &dolfin::Facet::normal);
     // dolfin::Cell
     py::class_<dolfin::Cell, std::shared_ptr<dolfin::Cell>, dolfin::MeshEntity>
       (m, "Cell", "DOLFIN Cell object")
