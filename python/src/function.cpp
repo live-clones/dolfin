@@ -34,6 +34,7 @@
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/function/MultiMeshFunction.h>
 #include <dolfin/function/MultiMeshFunctionSpace.h>
+#include <dolfin/function/MultiMeshSubSpace.h>
 #include <dolfin/function/LagrangeInterpolator.h>
 #include <dolfin/function/SpecialFunctions.h>
 #include <dolfin/fem/FiniteElement.h>
@@ -493,5 +494,22 @@ namespace dolfin_wrappers
                return;
              }
            });
-  }
+
+    py::class_<dolfin::MultiMeshSubSpace, std::shared_ptr<dolfin::MultiMeshSubSpace>, dolfin::MultiMeshFunctionSpace>(m, "MultiMeshSubSpace")
+      .def(py::init<dolfin::MultiMeshFunctionSpace&, std::size_t, std::size_t>())
+      .def(py::init<dolfin::MultiMeshFunctionSpace&, std::vector<std::size_t>>())
+      .def(py::init([](py::object function_space, std::size_t i)
+		    {
+		      if (py::isinstance<dolfin::MultiMeshFunctionSpace>(function_space))
+			{
+			  auto f_s = function_space.attr("_cpp_object").cast<dolfin::MultiMeshFunctionSpace>();
+			  return dolfin::MultiMeshSubSpace(f_s, i);
+			}
+		      else
+			{
+			  throw py::type_error("Can only create subspace from MultiMeshFunctionSpace");
+			}
+		    }
+		    ));
+      }
 }

@@ -100,7 +100,7 @@ class MultiMeshFunction(ufl.Coefficient):
                 if isinstance(other, cpp.function.MultiMeshFunction):
                     raise NotImplementedError
                 else:
-                    self.cpp_object = cpp.function.MultiMeshFunction.__init__(self, V, other)
+                    self._cpp_object = cpp.function.MultiMeshFunction.__init__(self, V, other)
                     ufl.Coefficient.__init__(self, V._parts[0].ufl_function_space(),
                                  count=self._cpp_object.id())
 

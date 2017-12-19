@@ -134,6 +134,4 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
     def add(self, function_space):
         self._cpp_object.add(function_space.cpp_object)
 
-    # Build multimesh function space
-    def build(self):
-        self._cpp_object.build()
+
