@@ -557,6 +557,10 @@ namespace dolfin_wrappers
       .def("covered_cells", &dolfin::MultiMesh::covered_cells)
       .def("mark_covered", &dolfin::MultiMesh::mark_covered)
       .def("compute_area", &dolfin::MultiMesh::compute_area)
+      .def("quadrature_rules_interface",
+	   (const std::map<unsigned int, std::vector<dolfin::MultiMesh::quadrature_rule> >&(dolfin::MultiMesh::*)(std::size_t) const)(&dolfin::MultiMesh::quadrature_rules_interface))
+      .def("quadrature_rules_interface",
+	   static_cast<const std::vector<dolfin::MultiMesh::quadrature_rule>(dolfin::MultiMesh::*)(std::size_t, unsigned int) const>(&dolfin::MultiMesh::quadrature_rules_interface))
       .def("quadrature_rules_cut_cells",
 	   static_cast<const dolfin::MultiMesh::quadrature_rule(dolfin::MultiMesh::*)(std::size_t, unsigned int) const>(&dolfin::MultiMesh::quadrature_rules_cut_cells));
   }
