@@ -142,6 +142,10 @@ class MultiMeshFunction(ufl.Coefficient):
         for part in range(self._V._cpp_object.multimesh().num_parts()):
             yield self.part(part, deepcopy)
 
+    def assign_part(self, part, function):
+        self._cpp_object.assign_part(part, function._cpp_object)
+
+
     def interpolate(self, v):
         """
         Interpolate function.
