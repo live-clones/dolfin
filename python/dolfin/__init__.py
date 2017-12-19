@@ -37,7 +37,8 @@ from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          has_hdf5_parallel, has_mpi, has_mpi4py,
                          has_petsc, has_petsc4py, has_parmetis,
                          has_slepc, has_slepc4py, git_commit_hash,
-                         DOLFIN_EPS, DOLFIN_PI, TimingClear, TimingType,
+                         DOLFIN_EPS, DOLFIN_PI,  DOLFIN_EPS_LARGE,
+                         TimingClear, TimingType,
                          timing, timings, list_timings, dump_timings_to_xml,
                          SubSystemsManager)
 
