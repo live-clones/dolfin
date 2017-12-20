@@ -119,6 +119,9 @@ class MultiMeshFunction(ufl.Coefficient):
     def function_space(self):
         return self._V
 
+    def num_parts(self):
+        return self._V.num_parts()
+
     def assign(self, rhs):
         """
         Parameters: 
