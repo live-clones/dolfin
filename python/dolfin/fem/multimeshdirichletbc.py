@@ -51,7 +51,8 @@ class MultiMeshDirichletBC(cpp.fem.MultiMeshDirichletBC):
         if  len(args) >=3 and isinstance(args[2], types.FunctionType):
             raise NotImplementedError("User-specified subdomains not implemented")
         if isinstance(args[2], cpp.mesh.SubDomain):
-            raise NotImplementedError("User-specified subdomains not implemented")
+            self.sub_domain = args[2]
+            args = args[:2] + (self.sub_domain,) + args[3:]
         elif isinstance(args[2], str):
             raise NotImplementedError("User-specified subdomains not implemented")
         elif isinstance(args[2], cpp.mesh.MeshFunctionSizet):
