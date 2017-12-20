@@ -193,6 +193,7 @@ namespace dolfin_wrappers
            &dolfin::Mesh::rotate)
       .def("rotate", (void (dolfin::Mesh::*)(double, std::size_t)) &dolfin::Mesh::rotate,
                       py::arg("angle"), py::arg("axis")=2)
+      .def("scale", &dolfin::Mesh::scale)
       .def("num_entities_global", &dolfin::Mesh::num_entities_global)
       .def("smooth", &dolfin::Mesh::smooth, py::arg("num_iterations")=1)
       .def("smooth_boundary", &dolfin::Mesh::smooth_boundary)
@@ -540,6 +541,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshTransformation>(m, "MeshTransformation")
       .def_static("translate", &dolfin::MeshTransformation::translate)
       .def_static("rescale", &dolfin::MeshTransformation::rescale)
+      .def_static("scale", &dolfin::MeshTransformation::scale)
       .def_static("rotate", (void (*)(dolfin::Mesh&, double, std::size_t)) &dolfin::MeshTransformation::rotate)
       .def_static("rotate", (void (*)(dolfin::Mesh&, double, std::size_t, const dolfin::Point&))
                   &dolfin::MeshTransformation::rotate);
