@@ -154,7 +154,7 @@ MultiMesh::mark_covered(std::size_t part, const std::vector<unsigned int>& cells
   dolfin_assert(part < num_parts());
   for(auto const& cell: cells)
   {
-    if (std::find(_covered_cells[part].begin(),  _covered_cells[part].end(), cell) != _covered_cells[part].end())
+    if (std::find(_covered_cells[part].begin(),  _covered_cells[part].end(), cell) == _covered_cells[part].end())
     {
       _covered_cells[part].push_back(cell);
       _uncut_cells[part].erase(std::remove(_uncut_cells[part].begin(), _uncut_cells[part].end(), cell), _uncut_cells[part].end());
