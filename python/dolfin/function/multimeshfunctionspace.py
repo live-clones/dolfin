@@ -11,7 +11,7 @@ import dolfin.cpp as cpp
 from dolfin.function.functionspace import FunctionSpace
 from six import string_types
 
-class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
+class MultiMeshFunctionSpace(object):
     def __init__(self, *args, **kwargs):
         """Create multimesh finite element function space.
         
@@ -135,3 +135,5 @@ class MultiMeshFunctionSpace(cpp.function.MultiMeshFunctionSpace):
         self._cpp_object.add(function_space.cpp_object)
 
 
+    def lock_inactive_dofs(self, A, b):
+        self._cpp_object.lock_inactive_dofs(A,b)

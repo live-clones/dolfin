@@ -247,7 +247,7 @@ def assemble_multimesh(form,
     rank = len(arguments)
 
     # Extract multimesh function spaces for arguments
-    V_multi = [v._V_multi._cpp_object for v in arguments]
+    V_multi = [v._V_multi for v in arguments]
 
     # Extract number of parts, the multimesh and create the multimesh form
     num_parts = None
