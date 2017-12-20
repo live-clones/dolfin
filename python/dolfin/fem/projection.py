@@ -28,7 +28,9 @@ import dolfin.cpp as cpp
 import dolfin
 from dolfin.function.argument import TestFunction, TrialFunction
 from dolfin.function.function import Function
-from dolfin.fem.assembling import assemble_system
+from dolfin.function.multimeshfunction import MultiMeshFunction
+from dolfin.fem.assembling import assemble_system, assemble_multimesh
+from dolfin.function.multimeshfunctionspace import MultiMeshFunctionSpace
 from dolfin.function.functionspace import (FunctionSpace,
                                            VectorFunctionSpace, TensorFunctionSpace)
 
@@ -92,7 +94,29 @@ def project(v, V=None, bcs=None, mesh=None,
             # Otherwise try extracting function space from expression
             V = _extract_function_space(v, mesh)
 
-    # Check arguments
+
+    # Projection into a MultiMeshFunctionSpace
+    if isinstance(V, MultiMeshFunctionSpace):
+
+        # Create the measuresum of uncut and cut-cells
+        dX = ufl.dx() + ufl.dC()
+
+        # Define variational problem for projection
+        w = TestFunction(V)
+        Pv = TrialFunction(V)
+        a = ufl.inner(w, Pv)*dX
+        L = ufl.inner(w, v)*dX
+
+        # Assemble linear system
+        A = assemble_multimesh(a, form_compiler_parameters=form_compiler_parameters)
+        b = assemble_multimesh(L, form_compiler_parameters=form_compiler_parameters)
+
+        # Solve linear system for projection
+        if function is None:
+            function = MultiMeshFunction(V)
+        cpp.la.solve(A, function.vector(), b, solver_type, preconditioner_type)
+
+        return function
 
     # Ensure we have a mesh and attach to measure
     if mesh is None:

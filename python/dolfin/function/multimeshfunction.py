@@ -25,6 +25,7 @@ import numpy
 
 from dolfin.function.multimeshfunctionspace import MultiMeshFunctionSpace
 from dolfin.function.function import Function
+from dolfin.function.expression import Expression
 
 class MultiMeshFunction(ufl.Coefficient):
     """This class represents a multimeshfunction
@@ -110,7 +111,6 @@ class MultiMeshFunction(ufl.Coefficient):
             # Keep a reference of the functionspace with additional attributes
             self._V = V
         else:
-            print(type(args[0]))
             raise TypeError("expected a MultiMeshFunctionSpace or a MultiMeshFunction as argument 1")
 
     def vector(self):
@@ -167,19 +167,21 @@ class MultiMeshFunction(ufl.Coefficient):
         # Developer note: Interpolate does not set inactive dofs to zero,
         # and should be fixed
         # Check argument
-        if isinstance(v, ufl.Coefficient):
-            for i, vp in enumerate(self.parts(deepcopy=True)):
-                vp.interpolate(v)
-                self._cpp_object.assign_part(i, vp._cpp_object)
-
-        elif isinstance(v, MultiMeshFunction):
+        if isinstance(v, MultiMeshFunction):
             # Same multimesh required for interpolation
             # Developer note: Is this test necessary?
             if  self._V.multimesh().id() != v._V.multimesh().id():
                 raise RuntimeError("MultiMeshFunctions must live on same MultiMesh")
             for i, vp in enumerate(self.parts(deepcopy=True)):
-                vmm = v.part(i, deepcopy=True)
+                vm = v.part(i, deepcopy=True)
+                vp.interpolate(vm)
                 self._cpp_object.assign_part(i, vp._cpp_object)
+
+        elif (isinstance(v, ufl.Coefficient)):
+            for i, vp in enumerate(self.parts(deepcopy=True)):
+                vp.interpolate(v)
+                self._cpp_object.assign_part(i, vp._cpp_object)
+
         else:
             raise TypeError("Expected an Expression or a MultiMeshFunction.")
         # Set inactive dofs to zero

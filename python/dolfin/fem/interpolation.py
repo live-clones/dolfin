@@ -24,6 +24,7 @@ finite element space.
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 from dolfin.function.function import Function
+from dolfin.function.expression import Expression
 from dolfin.function.multimeshfunction import MultiMeshFunction
 from dolfin.function.multimeshfunctionspace import MultiMeshFunctionSpace
 
