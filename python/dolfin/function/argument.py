@@ -20,7 +20,9 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import ufl
+import dolfin.cpp as cpp
 from .functionspace import FunctionSpace
+from .multimeshfunctionspace import MultiMeshFunctionSpace
 
 __all__ = ["TestFunction", "TrialFunction", "Argument",
            "TestFunctions", "TrialFunctions"]
@@ -45,12 +47,17 @@ class Argument(ufl.Argument):
     def __init__(self, V, number, part=None):
 
         # Check argument
-        if not isinstance(V, FunctionSpace):
+        if not isinstance(V, (FunctionSpace, MultiMeshFunctionSpace)):
             if isinstance(V, (ufl.FiniteElementBase, ufl.FunctionSpace)):
                 raise TypeError(_ufl_dolfin_difference_message)
             else:
                 raise TypeError("Illegal argument for creation of Argument, not a FunctionSpace: " + str(V))
             raise TypeError("Illegal argument for creation of Argument, not a FunctionSpace: " + str(V))
+
+        # Handle MultiMesh
+        if isinstance(V, MultiMeshFunctionSpace):
+            self._V_multi = V._cpp_object
+            V = V._parts[0]
 
         # Initialize UFL Argument
         ufl.Argument.__init__(self, V.ufl_function_space(), number, part)

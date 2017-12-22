@@ -22,6 +22,7 @@
 // Last changed: 2017-12-12
 
 #include <cmath>
+#include <algorithm>
 #include <dolfin/log/log.h>
 #include <dolfin/common/NoDeleter.h>
 #include <dolfin/geometry/BoundingBoxTree.h>
@@ -145,6 +146,25 @@ MultiMesh::covered_cells(std::size_t part) const
 {
   dolfin_assert(part < num_parts());
   return _covered_cells[part];
+}
+//-----------------------------------------------------------------------------
+void
+MultiMesh::mark_covered(std::size_t part, const std::vector<unsigned int>& cells)
+{
+  dolfin_assert(part < num_parts());
+  for(auto const& cell: cells)
+  {
+    if (std::find(_covered_cells[part].begin(),  _covered_cells[part].end(), cell) == _covered_cells[part].end())
+    {
+      _covered_cells[part].push_back(cell);
+      _uncut_cells[part].erase(std::remove(_uncut_cells[part].begin(), _uncut_cells[part].end(), cell), _uncut_cells[part].end());
+
+      // A covered cell is never a cut cell
+      if (_collision_maps_cut_cells[part].find(cell) != _collision_maps_cut_cells[part].end())
+        _collision_maps_cut_cells[part][cell].clear();
+    }
+  }
+
 }
 //-----------------------------------------------------------------------------
 const std::map<unsigned int,

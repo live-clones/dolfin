@@ -25,7 +25,6 @@ from dolfin import *
 
 from dolfin_utils.test import skip_in_parallel, skip_if_pybind11
 
-@skip_if_pybind11
 @skip_in_parallel
 def test_multimesh_function():
 
@@ -49,8 +48,8 @@ def test_multimesh_function():
 
     TrialFunction(V)
     TestFunction(V)
-    Function(V)
+    MultiMeshFunction(V)
 
     TrialFunction(W)
     TestFunction(W)
-    Function(W)
+    MultiMeshFunction(W)

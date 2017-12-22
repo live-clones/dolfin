@@ -37,7 +37,8 @@ from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          has_hdf5_parallel, has_mpi, has_mpi4py,
                          has_petsc, has_petsc4py, has_parmetis,
                          has_slepc, has_slepc4py, git_commit_hash,
-                         DOLFIN_EPS, DOLFIN_PI, TimingClear, TimingType,
+                         DOLFIN_EPS, DOLFIN_PI,  DOLFIN_EPS_LARGE,
+                         TimingClear, TimingType,
                          timing, timings, list_timings, dump_timings_to_xml,
                          SubSystemsManager)
 
@@ -48,15 +49,16 @@ if has_hdf5():
 from .cpp.ale import ALE
 from .cpp import MPI
 from .cpp.function import (Expression, Constant, FunctionAXPY,
-                           LagrangeInterpolator, FunctionAssigner,
-                           assign, MultiMeshFunction, MultiMeshFunctionSpace)
-from .cpp.fem import (FiniteElement, DofMap, Assembler,
+                           LagrangeInterpolator, FunctionAssigner, assign,
+                           MultiMeshSubSpace)
+from .cpp.fem import (FiniteElement, DofMap, Assembler, MultiMeshAssembler,
                       get_coordinates, create_mesh, set_coordinates,
                       vertex_to_dof_map, dof_to_vertex_map,
                       PointSource, DiscreteOperators,
                       LinearVariationalSolver,
                       NonlinearVariationalSolver,
-                      SparsityPatternBuilder)
+                      SparsityPatternBuilder,
+                      MultiMeshDirichletBC)
 
 from .cpp.geometry import (BoundingBoxTree,
                            Point,
@@ -119,11 +121,12 @@ from .common import timer
 from .common.timer import Timer, timed
 from .common.plotting import plot
 
-from .fem.assembling import (assemble, assemble_system,
+from .fem.assembling import (assemble, assemble_system, assemble_multimesh,
                              SystemAssembler, assemble_local)
 from .fem.form import Form
 from .fem.norms import norm, errornorm
 from .fem.dirichletbc import DirichletBC, AutoSubDomain
+from .fem.multimeshdirichletbc import MultiMeshDirichletBC
 from .fem.interpolation import interpolate
 from .fem.projection import project
 from .fem.solvers import LocalSolver
@@ -135,9 +138,12 @@ from .fem.formmanipulations import (derivative, adjoint, increase_order, tear)
 from .fem.adaptivesolving import (AdaptiveLinearVariationalSolver,
                                   AdaptiveNonlinearVariationalSolver)
 
+from .function.multimeshfunctionspace import MultiMeshFunctionSpace
 from .function.functionspace import (FunctionSpace,
-                                     VectorFunctionSpace, TensorFunctionSpace)
+                                     VectorFunctionSpace, 
+                                     TensorFunctionSpace)
 from .function.function import Function
+from .function.multimeshfunction import MultiMeshFunction
 from .function.argument import (TestFunction, TrialFunction,
                                 TestFunctions, TrialFunctions)
 from .function.constant import Constant
@@ -170,7 +176,7 @@ from ufl import (FiniteElement, TensorElement, VectorElement,
                  split, cross, inner, dot, grad, curl, dx, div,
                  Measure, det, pi, sin, cos, tan, acos, asin, atan,
                  ln, exp, sqrt, bessel_I, bessel_J, bessel_K,
-                 bessel_Y, Dx, ds, dS, dP, dX, dC, interval, triangle,
+                 bessel_Y, Dx, ds, dS, dP, dX, dC, dI, dO, interval, triangle,
                  tetrahedron, quadrilateral, hexahedron, avg, jump,
                  sym, tr, Identity, variable, diff, as_vector,
                  as_tensor, as_matrix, system, outer, dev, skew,

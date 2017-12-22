@@ -228,3 +228,5 @@ def TensorFunctionSpace(mesh, family, degree, shape=None, symmetry=None,
 
     # Return (Py)DOLFIN FunctionSpace
     return FunctionSpace(mesh, element, constrained_domain=constrained_domain)
+
+
