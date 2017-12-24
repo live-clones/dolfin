@@ -408,6 +408,10 @@ namespace dolfin_wrappers
       .def("mesh", &dolfin::MeshFunction<SCALAR>::mesh) \
       .def("set_values", &dolfin::MeshFunction<SCALAR>::set_values) \
       .def("set_all", &dolfin::MeshFunction<SCALAR>::set_all) \
+      .def("set_value", (void (dolfin::MeshFunction<SCALAR>::*)(std::size_t, const SCALAR&)) \
+	   &dolfin::MeshFunction<SCALAR>::set_value) \
+      .def("set_value", (void (dolfin::MeshFunction<SCALAR>::*)(std::size_t, const SCALAR&, const dolfin::Mesh&)) \
+	   &dolfin::MeshFunction<SCALAR>::set_value) \
       .def("where_equal", &dolfin::MeshFunction<SCALAR>::where_equal) \
       .def("array", [](dolfin::MeshFunction<SCALAR>& self) \
            { return Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>(self.values(), self.size()); })
