@@ -119,11 +119,11 @@ def norm(v, norm_type="L2", mesh=None):
         mesh = v.function_space().multimesh()
 
     # Define integration measure and domain
-    multimesh = False
     if isinstance(v, MultiMeshFunction):
         multimesh = True
         dc = ufl.dx(mesh) + ufl.dC(mesh)
     else:
+        multimesh = False
         dc = ufl.dx(mesh)
     # Select norm type
     if isinstance(v, cpp.la.GenericVector):

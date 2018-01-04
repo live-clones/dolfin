@@ -28,8 +28,6 @@ for cell_id in multimesh.cut_cells(0) + multimesh.uncut_cells(0):
         cell_markers[cell_id]= 1
         additional_covered_cells.append(cell_id)
 
-#plot(cell_markers)
-
 # Mark cells as covered
 multimesh.mark_covered(0, additional_covered_cells)
 
@@ -38,7 +36,6 @@ V = MultiMeshFunctionSpace(multimesh, "P", 1)
 u, v = TrialFunction(V), TestFunction(V)
 n = FacetNormal(multimesh)
 h = CellDiameter(multimesh)
-#h = 2 * Circumradius(multimesh)
 
 a = (inner(grad(u), grad(v)) * dX
         - inner(avg(grad(u)), jump(v, n)) * dI
@@ -70,8 +67,8 @@ outfile1 = XDMFFile("output/u1.xdmf")
 outfile0.write(uh.part(0), 0)
 outfile1.write(uh.part(1), 0)
 
-#outfile0.close()
-#outfile1.close()
+outfile0.close()
+outfile1.close()
 
 if __name__ == "__main__":
     from IPython import embed; embed()
