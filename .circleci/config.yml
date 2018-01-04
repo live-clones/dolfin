@@ -11,7 +11,7 @@ jobs:
       - checkout
       - run:
           name: Install/update dependencies  # Install with sudo as tests not run as superuser in circleci/python
-          command: sudo pip3 install pytest pytest-xdist six flake8 --upgrade
+          command: sudo pip3 install flake8 pytest pytest-xdist sphinx sphinx_rtd_theme --upgrade
       - run:
           name: Install FEniCS dependencies
           command: |
@@ -19,52 +19,48 @@ jobs:
             pip3 install git+https://bitbucket.org/fenics-project/fiat.git@"${DEP_BRANCH_NAME}"
             pip3 install git+https://bitbucket.org/fenics-project/ufl.git@"${DEP_BRANCH_NAME}"
             pip3 install git+https://bitbucket.org/fenics-project/dijitso.git@"${DEP_BRANCH_NAME}"
-            pip3 install git+https://bitbucket.org/fenics-project/instant.git@"${DEP_BRANCH_NAME}"
             pip3 install git+https://bitbucket.org/fenics-project/ffc.git@"${DEP_BRANCH_NAME}"
       - run:
           name: Flake8 checks on pybind11 Python code
           command: python3 -m flake8 python/dolfin
       - run:
-          name: Configure DOLFIN
-          command: mkdir -p build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Developer -DDOLFIN_ENABLE_TESTING=ON
+          name: Build DOLFIN C++ documentation
+          command: cd doc && doxygen
       - run:
-          name: Build DOLFIN and install
-          command: cd build && make install -j2
+          name: Configure DOLFIN (C++)
+          command: mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Developer ../
       - run:
-          name: Run C++ unit tests
-          command: cd build && make run_unittests_cpp
+          name: Build DOLFIN and install (C++)
+          command: cd build && make -j2 install
       - run:
-          name: Run Python unit tests (SWIG, serial)
-          command: source /usr/local/share/dolfin/dolfin.conf && python3 -m pytest -n 2 test/unit/python/
+          name: Build and run C++ unit tests (serial)
+          command: cd build && make -j2 unittests && ctest -R unittests
       - run:
-          name: Run Python unit tests (SWIG, MPI)
-          command: source /usr/local/share/dolfin/dolfin.conf && mpirun -n 3 python3 -m pytest test/unit/python/
-      - run:
-          name: Run Python regression tests (SWIG, serial)
-          command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_regressiontests_py
-      - run:
-          name: Run Python regression tests (SWIG, MPI)
-          command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_regressiontests_py_mpi
-      - run:
-          name: Run C++ regressions tests (serial)
-          command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_regressiontests_cpp
+          name: Build and run C++ regressions tests (serial)
+          command: cd build && make -j2 demos && ctest -j2 -R demo -R serial
       - run:
           name: Run C++ regression tests (MPI)
-          command: source /usr/local/share/dolfin/dolfin.conf && cd build && make run_regressiontests_cpp_mpi
+          command: cd build && make -j2 demos && ctest -R demo -R mpi
       - run:
-          name: Build Python/pybind11 interface
+          name: Build Python interface
           command: |
-            rm -rf /usr/local/lib/python3/dist-packages/dolfin
-            rm -rf /usr/local/lib/python3/dist-packages/dolfin_utils
-            rm -rf /usr/local/lib/python3/dist-packages/fenics
             cd python
             pip3 -v install . --user
       - run:
-          name: Run unit tests (pybind11, serial)
-          command: python3 -m pytest -n 2 test/unit/python/
+          name: Build DOLFIN Python documentation
+          command: cd python/doc && make html
       - run:
-          name: Run unit tests (pybind11, MPI parallel)
-          command: mpirun -n 3 python3 -m pytest test/unit/python/
+          name: Run Python unit tests (serial)
+          command: python3 -m pytest -n 2 python/test/unit/
       - run:
-          name: Run Python regression tests (pybind11, serial)
-          command: cd build && make run_regressiontests_py
+          name: Run Python unit tests (MPI)
+          command: mpirun -n 3 python3 -m pytest python/test/unit/
+      - run:
+          name: Generate Python demo (regression) programs
+          command: python3 python/demo/generate-demo-files.py
+      - run:
+          name: Run Python regression tests (serial)
+          command: python3 -m pytest -v -n2 python/demo/test.py
+      - run:
+          name: Run Python regression tests (MPI)
+          command: python3 -m pytest -v python/demo/test.py --mpiexec=mpiexec --num-proc=3

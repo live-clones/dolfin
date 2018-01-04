@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
+
 import pytest
 import os
 import shutil
@@ -27,8 +27,6 @@ import gc
 import platform
 import decorator
 
-from instant import get_status_output
-#from dolfin import MPI, mpi_comm_world, parameters
 from dolfin import  parameters
 from dolfin import *
 
