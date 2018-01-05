@@ -68,8 +68,21 @@ namespace dolfin_wrappers
             return std::shared_ptr<const dolfin::SubDomain>(p);
           });
 
+    // dolfin::CellType trampoline class for user overloading from
+    // Python
+    class PyCellType : public dolfin::CellType
+    {
+      using dolfin::CellType::CellType;
+      dolfin::Point normal(const dolfin::Cell& cell, std::size_t facet) const override
+      {
+	PYBIND11_OVERLOAD(dolfin::Point, dolfin::CellType,
+			  normal, cell, facet);}
+     };
+
     // dolfin::CellType
-    py::class_<dolfin::CellType> celltype(m, "CellType");
+    py::class_<dolfin::CellType, PyCellType>
+      celltype(m, "CellType");
+    celltype.def("normal", (dolfin::Point (dolfin::CellType::*)(const dolfin::Cell&, std::size_t) const) &dolfin::CellType::normal);
 
     // dolfin::CellType enums
     py::enum_<dolfin::CellType::Type>(celltype, "Type")
@@ -180,6 +193,7 @@ namespace dolfin_wrappers
            &dolfin::Mesh::rotate)
       .def("rotate", (void (dolfin::Mesh::*)(double, std::size_t)) &dolfin::Mesh::rotate,
                       py::arg("angle"), py::arg("axis")=2)
+      .def("scale", &dolfin::Mesh::scale)
       .def("num_entities_global", &dolfin::Mesh::num_entities_global)
       .def("smooth", &dolfin::Mesh::smooth, py::arg("num_iterations")=1)
       .def("smooth_boundary", &dolfin::Mesh::smooth_boundary)
@@ -259,7 +273,8 @@ namespace dolfin_wrappers
     py::class_<dolfin::Vertex, std::shared_ptr<dolfin::Vertex>, dolfin::MeshEntity>
       (m, "Vertex", "DOLFIN Vertex object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
-      .def("point", &dolfin::Vertex::point);
+      .def("point", &dolfin::Vertex::point)
+      .def("x", (double (dolfin::Vertex::*)(std::size_t) const) &dolfin::Vertex::x );
 
     // dolfin::Edge
     py::class_<dolfin::Edge, std::shared_ptr<dolfin::Edge>, dolfin::MeshEntity>
@@ -281,8 +296,8 @@ namespace dolfin_wrappers
       (m, "Facet", "DOLFIN Facet object")
       .def(py::init<const dolfin::Mesh&, std::size_t>())
       .def("exterior", &dolfin::Facet::exterior)
-      .def("normal", (dolfin::Point (dolfin::Facet::*)() const)  &dolfin::Facet::normal);
-
+      .def("normal", (dolfin::Point (dolfin::Facet::*)() const)  &dolfin::Facet::normal)
+      .def("normal", (double (dolfin::Facet::*)(std::size_t) const) &dolfin::Facet::normal);
     // dolfin::Cell
     py::class_<dolfin::Cell, std::shared_ptr<dolfin::Cell>, dolfin::MeshEntity>
       (m, "Cell", "DOLFIN Cell object")
@@ -393,6 +408,10 @@ namespace dolfin_wrappers
       .def("mesh", &dolfin::MeshFunction<SCALAR>::mesh) \
       .def("set_values", &dolfin::MeshFunction<SCALAR>::set_values) \
       .def("set_all", &dolfin::MeshFunction<SCALAR>::set_all) \
+      .def("set_value", (void (dolfin::MeshFunction<SCALAR>::*)(std::size_t, const SCALAR&)) \
+	   &dolfin::MeshFunction<SCALAR>::set_value) \
+      .def("set_value", (void (dolfin::MeshFunction<SCALAR>::*)(std::size_t, const SCALAR&, const dolfin::Mesh&)) \
+	   &dolfin::MeshFunction<SCALAR>::set_value) \
       .def("where_equal", &dolfin::MeshFunction<SCALAR>::where_equal) \
       .def("array", [](dolfin::MeshFunction<SCALAR>& self) \
            { return Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>(self.values(), self.size()); })
@@ -526,12 +545,13 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshTransformation>(m, "MeshTransformation")
       .def_static("translate", &dolfin::MeshTransformation::translate)
       .def_static("rescale", &dolfin::MeshTransformation::rescale)
+      .def_static("scale", &dolfin::MeshTransformation::scale)
       .def_static("rotate", (void (*)(dolfin::Mesh&, double, std::size_t)) &dolfin::MeshTransformation::rotate)
       .def_static("rotate", (void (*)(dolfin::Mesh&, double, std::size_t, const dolfin::Point&))
                   &dolfin::MeshTransformation::rotate);
 
     py::class_<dolfin::MultiMesh, std::shared_ptr<dolfin::MultiMesh>,
-	       dolfin::Variable>(m, "MultiMesh")
+	       dolfin::Variable>(m, "MultiMesh", py::dynamic_attr())
       .def(py::init<>())
       .def("add", &dolfin::MultiMesh::add)
       .def("build", &dolfin::MultiMesh::build, py::arg("quadrature_order") = 2)
@@ -541,6 +561,12 @@ namespace dolfin_wrappers
       .def("cut_cells", &dolfin::MultiMesh::cut_cells)
       .def("uncut_cells", &dolfin::MultiMesh::uncut_cells)
       .def("covered_cells", &dolfin::MultiMesh::covered_cells)
+      .def("mark_covered", &dolfin::MultiMesh::mark_covered)
+      .def("compute_area", &dolfin::MultiMesh::compute_area)
+      .def("quadrature_rules_interface",
+	   (const std::map<unsigned int, std::vector<dolfin::MultiMesh::quadrature_rule> >&(dolfin::MultiMesh::*)(std::size_t) const)(&dolfin::MultiMesh::quadrature_rules_interface))
+      .def("quadrature_rules_interface",
+	   static_cast<const std::vector<dolfin::MultiMesh::quadrature_rule>(dolfin::MultiMesh::*)(std::size_t, unsigned int) const>(&dolfin::MultiMesh::quadrature_rules_interface))
       .def("quadrature_rules_cut_cells",
 	   static_cast<const dolfin::MultiMesh::quadrature_rule(dolfin::MultiMesh::*)(std::size_t, unsigned int) const>(&dolfin::MultiMesh::quadrature_rules_cut_cells));
   }

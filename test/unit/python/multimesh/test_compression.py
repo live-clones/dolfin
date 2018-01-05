@@ -76,7 +76,6 @@ def volume_area(multimesh):
     return volume, area
 
 @skip_in_parallel
-@skip_if_pybind11
 def test_compression_2d():
     # Reference volume and area
     multimesh = build_multimesh_2d(False, False)

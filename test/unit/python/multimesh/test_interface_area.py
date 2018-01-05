@@ -82,7 +82,6 @@ def create_multimesh_with_meshes_on_diagonal(width, offset, Nx):
     return relative_error < tol
 
 @skip_in_parallel
-@skip_if_pybind11
 def test_meshes_on_diagonal():
     "Place meshes on the diagonal inside a background mesh and check the interface area"
 
@@ -105,7 +104,6 @@ def test_meshes_on_diagonal():
     #     assert(create_multimesh_with_meshes_on_diagonal(width, offset, Nx))
 
 @skip_in_parallel
-@skip_if_pybind11
 def test_meshes_with_boundary_edge_overlap_2d():
     # start with boundary of mesh 1 overlapping edges of mesg 0
     mesh0 = UnitSquareMesh(4,4)

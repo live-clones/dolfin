@@ -39,7 +39,7 @@ def compute_volume(multimesh):
     # Create and evaluate volume functional
     v = TestFunction(V)
     M = v*dX
-    v1 = sum(assemble(M).array())
+    v1 = sum(assemble(M).get_local())
 
     # Alternative volume computation
     dXmm = dx(domain=multimesh) + dC(domain=multimesh)
@@ -53,7 +53,6 @@ def compute_volume(multimesh):
     return v0
 
 @skip_in_parallel
-@skip_if_pybind11
 def test_volume_2d():
     "Integrate volume of union of 2D meshes"
 
@@ -100,7 +99,6 @@ def test_volume_2d():
     assert abs(exact_volume - approximative_volume) / exact_volume < DOLFIN_EPS_LARGE
 
 @skip_in_parallel
-@skip_if_pybind11
 def test_volume_2d_4_meshes():
     "Test with four meshes that previously failed"
 
@@ -156,7 +154,6 @@ def test_volume_2d_4_meshes():
     assert abs(exact_volume - approximate_volume) < DOLFIN_EPS_LARGE
     
 @skip_in_parallel
-@skip_if_pybind11
 def test_volume_2d_six_meshes():
     "Integrate volume of six 2D meshes"
 

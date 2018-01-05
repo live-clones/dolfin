@@ -25,13 +25,16 @@
 
 from math import sqrt
 import ufl
-from ufl import (grad, div, curl)
+from ufl import (grad, div, curl, FiniteElement, VectorElement, TensorElement, dx)
 import dolfin.cpp as cpp
-from dolfin.fem.assembling import assemble
+from dolfin.fem.assembling import assemble, assemble_multimesh
 from dolfin.fem.interpolation import interpolate
 from dolfin.function.functionspace import (FunctionSpace,
-                                           VectorFunctionSpace, TensorFunctionSpace)
+                                           VectorFunctionSpace,
+                                           TensorFunctionSpace)
 from dolfin.function.function import Function
+from dolfin.function.multimeshfunction import MultiMeshFunction
+from dolfin.function.multimeshfunctionspace import MultiMeshFunctionSpace
 
 
 __all__ = ["norm", "errornorm"]
@@ -112,36 +115,46 @@ def norm(v, norm_type="L2", mesh=None):
     # Get mesh from function
     if isinstance(v, cpp.function.Function) and mesh is None:
         mesh = v.function_space().mesh()
+    elif isinstance(v, MultiMeshFunction) and mesh is None:
+        mesh = v.function_space().multimesh()
 
     # Define integration measure and domain
-    dx = ufl.dx(mesh)
-
+    if isinstance(v, MultiMeshFunction):
+        multimesh = True
+        dc = ufl.dx(mesh) + ufl.dC(mesh)
+    else:
+        multimesh = False
+        dc = ufl.dx(mesh)
     # Select norm type
     if isinstance(v, cpp.la.GenericVector):
         return v.norm(norm_type.lower())
 
     elif isinstance(v, ufl.Coefficient):
         if norm_type.lower() == "l2":
-            M = v**2 * dx
+            M = v**2 * dc
         elif norm_type.lower() == "h1":
-            M = (v**2 + grad(v)**2) * dx
+            M = (v**2 + grad(v)**2) * dc
         elif norm_type.lower() == "h10":
-            M = grad(v)**2 * dx
+            M = grad(v)**2 * dc
         elif norm_type.lower() == "hdiv":
-            M = (v**2 + div(v)**2) * dx
+            M = (v**2 + div(v)**2) * dc
         elif norm_type.lower() == "hdiv0":
-            M = div(v)**2 * dx
+            M = div(v)**2 * dc
         elif norm_type.lower() == "hcurl":
-            M = (v**2 + curl(v)**2) * dx
+            M = (v**2 + curl(v)**2) * dc
         elif norm_type.lower() == "hcurl0":
-            M = curl(v)**2 * dx
+            M = curl(v)**2 * dc
         else:
             raise ValueError("Unknown norm type {}".format(str(norm_type)))
     else:
         raise TypeError("Do not know how to compute norm of {}".format(str(v)))
 
     # Assemble value and return
-    return sqrt(assemble(M))
+    if multimesh:
+        r = assemble_multimesh(M, form_compiler_parameters={"representation": "quadrature"})
+    else:
+        r = assemble(M)
+    return sqrt(r)
 
 
 def errornorm(u, uh, norm_type="l2", degree_rise=3, mesh=None):
@@ -204,11 +217,15 @@ def errornorm(u, uh, norm_type="l2", degree_rise=3, mesh=None):
     #                      "compute error norm",
     #                      "Expecting a Function for uh")
 
+    multimesh = False
     # Get mesh
     if isinstance(u, cpp.function.Function) and mesh is None:
         mesh = u.function_space().mesh()
     if isinstance(uh, cpp.function.Function) and mesh is None:
         mesh = uh.function_space().mesh()
+    if isinstance(uh, MultiMeshFunction) and mesh is None:
+        mesh = uh.function_space().multimesh()
+        multimesh = True
     if hasattr(uh, "_cpp_object") and mesh is None:
         mesh = uh._cpp_object.function_space().mesh()
     if hasattr(u, "_cpp_object") and mesh is None:
@@ -236,21 +253,37 @@ def errornorm(u, uh, norm_type="l2", degree_rise=3, mesh=None):
         cpp.warning("Degree of exact solution may be inadequate for accurate result in errornorm.")
 
     # Create function space
-    if rank == 0:
-        V = FunctionSpace(mesh, "Discontinuous Lagrange", degree)
-    elif rank == 1:
-        V = VectorFunctionSpace(mesh, "Discontinuous Lagrange", degree,
-                                dim=shape[0])
-    elif rank > 1:
-        V = TensorFunctionSpace(mesh, "Discontinuous Lagrange", degree,
-                                shape=shape)
+    if multimesh:
+        if rank == 0:
+            element = FiniteElement("Discontinuous Lagrange", mesh.ufl_cell(),
+                                    degree)
+        elif rank == 1:
+            element = VectorElement("Discontinuous Lagrange", mesh.ufl_cell(),
+                                    degree)
+        elif rank == 2:
+            element = TensorElement("Discontinuous Lagrange", mesh.ufl_cell(),
+                                    degree)
+        V = MultiMeshFunctionSpace(mesh, element)
+    else:
+        if rank == 0:
+            V = FunctionSpace(mesh, "Discontinuous Lagrange", degree)
+        elif rank == 1:
+            V = VectorFunctionSpace(mesh, "Discontinuous Lagrange", degree,
+                                    dim=shape[0])
+        elif rank > 1:
+            V = TensorFunctionSpace(mesh, "Discontinuous Lagrange", degree,
+                                    shape=shape)
 
     # Interpolate functions into finite element space
     pi_u = interpolate(u, V)
     pi_uh = interpolate(uh, V)
 
     # Compute the difference
-    e = Function(V)
+    if multimesh:
+        e = MultiMeshFunction(V)
+    else:
+        e = Function(V)
+
     e.assign(pi_u)
     e.vector().axpy(-1.0, pi_uh.vector())
 
