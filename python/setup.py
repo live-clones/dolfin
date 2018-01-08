@@ -9,6 +9,20 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
+if sys.version_info < (3, 5):
+    print("Python 3.5 or higher required, please upgrade.")
+    sys.exit(1)
+
+VERSION = "2018.1.0.dev0"
+RESTRICT_REQUIREMENTS = ">=2018.1.0.dev0,<2018.2"
+
+REQUIREMENTS = [
+    "numpy",
+    "pkgconfig",
+    "fenics-ffc{}".format(RESTRICT_REQUIREMENTS),
+    "fenics-ufl{}".format(RESTRICT_REQUIREMENTS),
+    "fenics-dijitso{}".format(RESTRICT_REQUIREMENTS),
+]
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -62,10 +76,10 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 
-setup(name='dolfin',
-      version='0.0.1',
+setup(name='fenics-dolfin',
+      version=VERSION,
       author='FEniCS Project',
-      description='DOLFIN Python interface (via pybind11)',
+      description='DOLFIN Python interface',
       long_description='',
       packages=["dolfin",
                 "dolfin.common",
@@ -82,9 +96,5 @@ setup(name='dolfin',
       package_dir={'dolfin' : 'dolfin', 'dolfin_test' : 'dolfin_test'},
       ext_modules=[CMakeExtension('dolfin.cpp')],
       cmdclass=dict(build_ext=CMakeBuild),
-      install_requires=["numpy",
-                        "pkgconfig",
-                        "fenics-ffc",
-                        "fenics-ufl",
-                        "fenics-dijitso"],
+      install_requires=REQUIREMENTS,
       zip_safe=False)
