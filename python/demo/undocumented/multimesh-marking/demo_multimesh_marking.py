@@ -70,5 +70,3 @@ outfile1.write(uh.part(1), 0)
 outfile0.close()
 outfile1.close()
 
-if __name__ == "__main__":
-    from IPython import embed; embed()

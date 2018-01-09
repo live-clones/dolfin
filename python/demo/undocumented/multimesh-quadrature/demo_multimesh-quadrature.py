@@ -88,60 +88,60 @@ num_frames = 3
 
 # Iterate over quadrature compression on/off
 for compress in [True, False]:
-	print("Compression:", compress)
+    print("Compression:", compress)
+    # Create and load meshes
+    mesh = RectangleMesh(Point(-R, -R), Point(R, R), N, N)
+    import pdb; pdb.set_trace()
+    propeller = Mesh("../propeller_2d_coarse.xml.gz")
 
-	# Create and load meshes
-	mesh = RectangleMesh(Point(-R, -R), Point(R, R), N, N)
-	propeller = Mesh("../propeller_2d_coarse.xml.gz")
+    # Iterate over frames (rotations of the propeller)
+    for frame in range(num_frames):
+        print("Frame %d out of %d..." % (frame + 1, num_frames))
 
-	# Iterate over frames (rotations of the propeller)
-	for frame in range(num_frames):
-	    print("Frame %d out of %d..." % (frame + 1, num_frames))
+        # Rotate propeller
+        propeller.rotate(dv)
 
-	    # Rotate propeller
-	    propeller.rotate(dv)
+        # Build multimesh
+        multimesh = MultiMesh()
+        multimesh.parameters["compress_volume_quadrature"] = compress
+        multimesh.add(mesh)
+        multimesh.add(propeller)
+        multimesh.build()
 
-	    # Build multimesh
-	    multimesh = MultiMesh()
-	    multimesh.parameters["compress_volume_quadrature"] = compress
-	    multimesh.add(mesh)
-	    multimesh.add(propeller)
-	    multimesh.build()
+        # Extract data
+        cut_cells = multimesh.cut_cells(0)
+        uncut_cells = multimesh.uncut_cells(0)
+        covered_cells = multimesh.covered_cells(0)
 
-	    # Extract data
-	    cut_cells = multimesh.cut_cells(0)
-	    uncut_cells = multimesh.uncut_cells(0)
-	    covered_cells = multimesh.covered_cells(0)
+        # Clear plot
+        clear_plot()
 
-	    # Clear plot
-	    clear_plot()
+        # Plot cells in background mesh
+        for c in cut_cells:
+            plot_triangle(c, mesh, yellow)
+        for c in uncut_cells:
+            plot_triangle(c, mesh, blue)
+        for c in covered_cells:
+            plot_triangle(c, mesh, white, alpha_line=0.1)
 
-	    # Plot cells in background mesh
-	    for c in cut_cells:
-	        plot_triangle(c, mesh, yellow)
-	    for c in uncut_cells:
-	        plot_triangle(c, mesh, blue)
-	    for c in covered_cells:
-	        plot_triangle(c, mesh, white, alpha_line=0.1)
+        # Plot propeller mesh
+        for c in range(propeller.num_cells()):
+            plot_triangle(c, propeller, color=white, alpha_fill=0.25)
 
-	    # Plot propeller mesh
-	    for c in range(propeller.num_cells()):
-	        plot_triangle(c, propeller, color=white, alpha_fill=0.25)
+        # Plot quadrature points
+        for c in cut_cells:
+            points, weights = multimesh.quadrature_rules_cut_cells(0, c)
+            for i in range(len(weights)):
+                w = weights[i]
+                x = points[2*i]
+                y = points[2*i + 1]
+                if w > 0:
+                    plot_point_red(x, y)
+                else:
+                    plot_point_black(x, y)
 
-	    # Plot quadrature points
-	    for c in cut_cells:
-	        points, weights = multimesh.quadrature_rules_cut_cells(0, c)
-	        for i in range(len(weights)):
-	            w = weights[i]
-	            x = points[2*i]
-	            y = points[2*i + 1]
-	            if w > 0:
-	                plot_point_red(x, y)
-	            else:
-	                plot_point_black(x, y)
-
-	    # Save plot
-	    save_plot(frame, compress)
+	# Save plot
+        save_plot(frame, compress)
 
 # Show last frame
 show_plot()

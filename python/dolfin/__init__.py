@@ -138,7 +138,9 @@ from .fem.formmanipulations import (derivative, adjoint, increase_order, tear)
 from .fem.adaptivesolving import (AdaptiveLinearVariationalSolver,
                                   AdaptiveNonlinearVariationalSolver)
 
-from .function.multimeshfunctionspace import MultiMeshFunctionSpace
+from .function.multimeshfunctionspace import (MultiMeshFunctionSpace,
+                                              MultiMeshVectorFunctionSpace,
+                                              MultiMeshTensorFunctionSpace)
 from .function.functionspace import (FunctionSpace,
                                      VectorFunctionSpace, 
                                      TensorFunctionSpace)

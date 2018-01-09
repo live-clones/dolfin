@@ -23,9 +23,6 @@
 
 from dolfin import *
 
-if has_pybind11():
-    print("Not supported in pybind11")
-    exit()
 
 class InflowBoundary(SubDomain):
     def inside(self, x, on_boundary):
@@ -39,7 +36,7 @@ class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and (near(x[1], 0.0) or near(x[1], 1.0))
 
-if MPI.size(mpi_comm_world()) > 1:
+if MPI.size(MPI.comm_world) > 1:
     info("Sorry, this demo does not (yet) run in parallel.")
     exit(0)
 

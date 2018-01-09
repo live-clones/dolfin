@@ -63,12 +63,10 @@ def interpolate(v, V):
 
     if isinstance(V, MultiMeshFunctionSpace):
         Pv = MultiMeshFunction(V)
-        Pv.interpolate(v)
-        return Pv
+    else:
+        Pv = Function(V)
 
     # Compute interpolation
-    Pv = Function(V)
-
     if hasattr(v, "_cpp_object"):
         Pv.interpolate(v._cpp_object)
     else:

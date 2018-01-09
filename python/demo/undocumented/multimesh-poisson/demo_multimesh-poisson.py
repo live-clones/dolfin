@@ -93,7 +93,7 @@ def solve_poisson(t, x1, y1, x2, y2):
 
     return u
 
-if MPI.size(mpi_comm_world()) > 1:
+if MPI.size(MPI.comm_world) > 1:
     info("Sorry, this demo does not (yet) run in parallel.")
     exit(0)
 

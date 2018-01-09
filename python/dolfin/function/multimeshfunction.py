@@ -180,9 +180,15 @@ class MultiMeshFunction(ufl.Coefficient):
                 vp.interpolate(vm)
                 self._cpp_object.assign_part(i, vp._cpp_object)
 
-        elif (isinstance(v, ufl.Coefficient)):
+        elif (isinstance(v, (ufl.Coefficient, cpp.function.Expression))):
             for i, vp in enumerate(self.parts(deepcopy=True)):
                 vp.interpolate(v)
+                self._cpp_object.assign_part(i, vp._cpp_object)
+
+        elif isinstance(v, cpp.function.MultiMeshFunction):
+            for i, vp in enumerate(self.parts(deepcopy=True)):
+                vm = v.part(i)
+                vp.interpolate(vm)
                 self._cpp_object.assign_part(i, vp._cpp_object)
 
         else:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2017 Jørgen S. Dokken
+# Copyright (C) 2018 Jørgen S. Dokken
 #
 # Distributed under the terms of the GNU Lesser Public License (LGPL),
 # either version 3 of the License, or (at your option) any later
@@ -137,3 +137,28 @@ class MultiMeshFunctionSpace(object):
 
     def lock_inactive_dofs(self, A, b):
         self._cpp_object.lock_inactive_dofs(A,b)
+
+def MultiMeshVectorFunctionSpace(multimesh, family, degree, dim=None,
+                                 form_degree=None):
+    """Create finite element MultiMesh function space."""
+
+    # Create UFL element
+    mesh = multimesh.part(0)
+    element = ufl.VectorElement(family, mesh.ufl_cell(), degree,
+                                form_degree=form_degree, dim=dim)
+
+    # Return (Py)DOLFIN FunctionSpace
+    return MultiMeshFunctionSpace(multimesh, element)
+
+
+def MultiMeshTensorFunctionSpace(multimesh, family, degree, shape=None,
+                                 symmetry=None):
+    """Create finite element MultiMesh function space."""
+
+    # Create UFL element
+    mesh = multimesh.part(0)
+    element = ufl.TensorElement(family, mesh.ufl_cell(), degree,
+                                shape, symmetry)
+
+    # Return (Py)DOLFIN FunctionSpace
+    return MultiMeshFunctionSpace(mesh, element)
