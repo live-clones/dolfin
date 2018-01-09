@@ -19,18 +19,14 @@ class MyCVode(CVode):
 def test_sundials():
 
     if has_sundials():
-
-        d = open("data.txt", "w")
-        phi = Vector(mpi_comm_world(), 10)
+        phi = Vector(MPI.comm_world, 10)
         phi[:] = 1.0
-        cv = MyCVode(CVode.cv_bdf, CVode.cv_newton)
-        cv.init(phi, 1e-6, 1e-6)
+
+        cv = MyCVode(CVode.LMM.CV_BDF, CVode.ITER.CV_NEWTON)
+        cv.init(phi, 1e-7, 1e-7)
 
         nstep = 200
         dt = 0.01
         for i in range(nstep):
             t = cv.step(dt)
-            print(cv.statistics())
-            d.write("%f %f %f\n"%(t, phi[0][0], exp(-t)))
-#            assert (exp(-t)-phi[0])<1e-3
-        d.close()
+            assert (exp(-t) - phi[0]) < 1e-6
