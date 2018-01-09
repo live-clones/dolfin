@@ -37,27 +37,25 @@ namespace dolfin_wrappers
   {
 
     #ifdef HAS_SUNDIALS
-    //CVode trampoline class for allowing overloading of virtual functions
+    // CVode trampoline class for allowing overloading of virtual functions
     class PyCVode : public dolfin::CVode
     {
     public:
       using dolfin::CVode::CVode;
 
-      double step(double tout)
-      { PYBIND11_OVERLOAD_NAME(double, dolfin::CVode, "step", step,
-                                tout);}
-
-      void derivs(double t, std::shared_ptr<dolfin::GenericVector> u,
+      void derivs(double t, std::shared_ptr<const dolfin::GenericVector> u,
                   std::shared_ptr<dolfin::GenericVector> udot)
       { PYBIND11_OVERLOAD_NAME(void, dolfin::CVode, "derivs", derivs,
                                 t, u, udot);}
-      int jacobian( std::shared_ptr<dolfin::GenericVector> v,
+
+      int jacobian( std::shared_ptr<const dolfin::GenericVector> v,
                     std::shared_ptr<dolfin::GenericVector> Jv,
                     double t,
-                    std::shared_ptr<dolfin::GenericVector> y,
-                    std::shared_ptr<dolfin::GenericVector> fy)
+                    std::shared_ptr<const dolfin::GenericVector> y,
+                    std::shared_ptr<const dolfin::GenericVector> fy)
       { PYBIND11_OVERLOAD_NAME(int, dolfin::CVode, "jacobian", jacobian,
                                 v, Jv, t, y, fy);}
+
       int psolve( double tn,
                   std::shared_ptr<dolfin::GenericVector> u,
                   std::shared_ptr<dolfin::GenericVector> fu,
@@ -77,31 +75,19 @@ namespace dolfin_wrappers
       .def("set_time", &dolfin::CVode::set_time, py::arg("t0"))
       .def("get_time", &dolfin::CVode::get_time)
       .def("step", &dolfin::CVode::step, py::arg("dt"))
-//      .def("step", (double (dolfin::CVode::*)(double))
-//        &dolfin::CVode::step)
       .def("statistics", &dolfin::CVode::statistics)
-      .def("derivs", (void (dolfin::CVode::*)(double,
-        std::shared_ptr<dolfin::GenericVector>,
-        std::shared_ptr<dolfin::GenericVector>))
-        &dolfin::CVode::derivs)
-      .def("jacobian", (int (dolfin::CVode::*)(std::shared_ptr<dolfin::GenericVector>,
-        std::shared_ptr<dolfin::GenericVector>, double,
-        std::shared_ptr<dolfin::GenericVector>,
-        std::shared_ptr<dolfin::GenericVector>))
-        &dolfin::CVode::jacobian)
-      .def("psolve", (int (dolfin::CVode::*)(double,
-        std::shared_ptr<dolfin::GenericVector>,
-        std::shared_ptr<dolfin::GenericVector>,
-        std::shared_ptr<dolfin::GenericVector>,
-        std::shared_ptr<dolfin::GenericVector>,
-        double, double, int))
-        &dolfin::CVode::psolve);
+      .def("derivs", &dolfin::CVode::derivs)
+      .def("jacobian", &dolfin::CVode::jacobian)
+      .def("psolve", &dolfin::CVode::psolve);
+
     py::enum_<dolfin::CVode::LMM>(cvode,"LMM")
       .value("CV_BDF", dolfin::CVode::LMM::cv_bdf)
       .value("CV_ADAMS", dolfin::CVode::LMM::cv_adams);
+
     py::enum_<dolfin::CVode::ITER>(cvode,"ITER")
       .value("CV_FUNCTIONAL", dolfin::CVode::ITER::cv_functional)
       .value("CV_NEWTON", dolfin::CVode::ITER::cv_newton);
+
     #endif
 
   }

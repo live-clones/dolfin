@@ -44,14 +44,10 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-CVode::CVode(LMM cv_lmm, ITER cv_iter) : _ls(NULL), _t(0.0)
+CVode::CVode(LMM cv_lmm, ITER cv_iter) : _ls(NULL), _t(0.0), _cv_iter(cv_iter)
 {
-  // FIXME: rename and move - do we even need to keep them?
-  _cv_lmm = cv_lmm;
-  _cv_iter = cv_iter;
-
   // Create CVode memory block
-  _cvode_mem = CVodeCreate(_cv_lmm, _cv_iter);
+  _cvode_mem = CVodeCreate(cv_lmm, cv_iter);
   dolfin_assert(_cvode_mem);
 
   // Point user_data back to this object
@@ -123,7 +119,7 @@ void CVode::set_time(double t0)
   _t = t0;
 }
 //-----------------------------------------------------------------------------
-void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
+void CVode::derivs(double t, std::shared_ptr<const GenericVector> u,
                    std::shared_ptr<GenericVector> udot)
 {
   dolfin_error("CVode.cpp",
@@ -131,10 +127,10 @@ void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                "This function should be overloaded");
 }
 //-----------------------------------------------------------------------------
-int CVode::jacobian(std::shared_ptr<GenericVector> v,
+int CVode::jacobian(std::shared_ptr<const GenericVector> v,
                     std::shared_ptr<GenericVector> Jv,
-                    double t, std::shared_ptr<GenericVector> y,
-                    std::shared_ptr<GenericVector> fy)
+                    double t, std::shared_ptr<const GenericVector> y,
+                    std::shared_ptr<const GenericVector> fy)
 {
   dolfin_error("CVode.cpp",
       	       "compute Jacobian function",
