@@ -91,7 +91,6 @@ for compress in [True, False]:
     print("Compression:", compress)
     # Create and load meshes
     mesh = RectangleMesh(Point(-R, -R), Point(R, R), N, N)
-    import pdb; pdb.set_trace()
     propeller = Mesh("../propeller_2d_coarse.xml.gz")
 
     # Iterate over frames (rotations of the propeller)
