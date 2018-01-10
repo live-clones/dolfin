@@ -140,7 +140,7 @@ class BaseExpression(ufl.Coefficient):
         if values is not None:
             if not isinstance(values, numpy.ndarray):
                 raise TypeError("expected a NumPy array for 'values'")
-            if len(values) != value_size or not numpy.issubdtype(values.dtype, 'd'):
+            if len(values) != value_size or not numpy.issubdtype(values.dtype, np.float64):
                 raise TypeError("expected a double NumPy array of length"
                                 " %d for return values." % value_size)
             values_provided = True
