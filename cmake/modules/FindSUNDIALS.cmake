@@ -82,11 +82,13 @@ if (MPI_CXX_FOUND)
 #include \"cvode/cvode.h\"
 
 int main() {
-#ifdef SUNDIALS_PACKAGE_VERSION
+#ifdef SUNDIALS_VERSION
+  std::cout << SUNDIALS_VERSION;
+#elif defined(SUNDIALS_PACKAGE_VERSION)
   std::cout << SUNDIALS_PACKAGE_VERSION;
 #else
-std::cout << SUNDIALS_VERSION_MAJOR << \".\"
-<< SUNDIALS_VERSION_MINOR;
+  std::cout << SUNDIALS_VERSION_MAJOR << \".\"
+  << SUNDIALS_VERSION_MINOR;
 #endif
   return 0;
 }
@@ -99,7 +101,7 @@ std::cout << SUNDIALS_VERSION_MAJOR << \".\"
       ${SUNDIALS_CONFIG_TEST_VERSION_CPP}
       CMAKE_FLAGS
         "-DINCLUDE_DIRECTORIES:STRING=${CMAKE_REQUIRED_INCLUDES}"
-	"-DLINK_LIBRARIES:STRING=${CMAKE_REQUIRED_LIBRARIES}"
+      	"-DLINK_LIBRARIES:STRING=${CMAKE_REQUIRED_LIBRARIES}"
       COMPILE_OUTPUT_VARIABLE SUNDIALS_CONFIG_TEST_VERSION_COMPILE_OUTPUT
       RUN_OUTPUT_VARIABLE SUNDIALS_CONFIG_TEST_VERSION_OUTPUT
       )
@@ -110,9 +112,12 @@ std::cout << SUNDIALS_VERSION_MAJOR << \".\"
     endif()
 
     if (SUNDIALS_FIND_VERSION)
+      string(REPLACE "." ";" VERSION_LIST ${SUNDIALS_VERSION})
+      list(GET VERSION_LIST 0 SUNDIALS_VERSION_MAJOR)
+      list(GET VERSION_LIST 1 SUNDIALS_VERSION_MINOR)
       # Check if version found is >= required version
-      if (NOT "${SUNDIALS_VERSION}" VERSION_LESS "${SUNDIALS_FIND_VERSION}")
-	set(SUNDIALS_VERSION_OK TRUE)
+      if (NOT "${SUNDIALS_VERSION_MAJOR}" VERSION_LESS "3")
+      	set(SUNDIALS_VERSION_OK TRUE)
       endif()
     else()
       # No specific version requested
@@ -125,6 +130,7 @@ std::cout << SUNDIALS_VERSION_MAJOR << \".\"
     file(WRITE ${SUNDIALS_TEST_LIB_CPP} "
 #define MPICH_IGNORE_CXX_SEEK 1
 #define NEQ 10
+#include <iostream>
 #include <nvector/nvector_serial.h>
 #include <cvode/cvode.h>
 
