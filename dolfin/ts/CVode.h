@@ -76,9 +76,9 @@ namespace dolfin
                                std::shared_ptr<GenericVector> y);
 
     /// Overloaded reconditioner solver function
-    virtual int psolve(double tn, std::shared_ptr<GenericVector>u,
-                       std::shared_ptr<GenericVector> fu,
-                       std::shared_ptr<GenericVector> r,
+    virtual int psolve(double tn, std::shared_ptr<const GenericVector>y,
+                       std::shared_ptr<const GenericVector> fy,
+                       std::shared_ptr<const GenericVector> r,
                        std::shared_ptr<GenericVector> z,
                        double gamma, double delta, int lr);
 

@@ -8,9 +8,10 @@ class MyCVode(CVode):
     def derivs(self, t, u, udot):
         udot[:] = -u[:]
 
-    def jacobian(self, u, udot, t, y, fy):
-        udot[:] = u[:]
+    def jacobian(self, v, Jv, t, y, fy):
+        Jv[:] = v[:]
         return 0
+
     def psolve(self, t, u, udot, r, z, gamma, x, y):
         z[:] = r[:]
         return 0

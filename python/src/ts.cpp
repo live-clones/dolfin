@@ -46,24 +46,24 @@ namespace dolfin_wrappers
       void derivs(double t, std::shared_ptr<const dolfin::GenericVector> u,
                   std::shared_ptr<dolfin::GenericVector> udot)
       { PYBIND11_OVERLOAD_NAME(void, dolfin::CVode, "derivs", derivs,
-                                t, u, udot);}
+                                t, u, udot); }
 
-      int jacobian( std::shared_ptr<const dolfin::GenericVector> v,
-                    std::shared_ptr<dolfin::GenericVector> Jv,
-                    double t,
-                    std::shared_ptr<const dolfin::GenericVector> y,
-                    std::shared_ptr<const dolfin::GenericVector> fy)
+      int jacobian(std::shared_ptr<const dolfin::GenericVector> v,
+                   std::shared_ptr<dolfin::GenericVector> Jv,
+                   double t,
+                   std::shared_ptr<const dolfin::GenericVector> y,
+                   std::shared_ptr<const dolfin::GenericVector> fy)
       { PYBIND11_OVERLOAD_NAME(int, dolfin::CVode, "jacobian", jacobian,
-                                v, Jv, t, y, fy);}
+                                v, Jv, t, y, fy); }
 
-      int psolve( double tn,
-                  std::shared_ptr<dolfin::GenericVector> u,
-                  std::shared_ptr<dolfin::GenericVector> fu,
-                  std::shared_ptr<dolfin::GenericVector> r,
-                  std::shared_ptr<dolfin::GenericVector> z,
-                  double gamma, double delta, int lr)
+      int psolve(double t,
+                 std::shared_ptr<const dolfin::GenericVector> y,
+                 std::shared_ptr<const dolfin::GenericVector> fy,
+                 std::shared_ptr<const dolfin::GenericVector> r,
+                 std::shared_ptr<dolfin::GenericVector> z,
+                 double gamma, double delta, int lr)
       { PYBIND11_OVERLOAD_NAME(int, dolfin::CVode, "psolve", psolve,
-                                tn, u, fu, r, z, gamma, delta, lr);}
+                               t, y, fy, r, z, gamma, delta, lr); }
     };
 
     py::class_<dolfin::CVode, PyCVode, std::shared_ptr<dolfin::CVode>>cvode(m,"CVode");
