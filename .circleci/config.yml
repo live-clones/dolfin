@@ -38,7 +38,7 @@ jobs:
           command: cd doc && doxygen
       - run:
           name: Configure DOLFIN (C++)
-          command: mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Developer ../
+          command: export SUNDIALS_DIR=/usr/local && mkdir -p build && cd build && cmake -DDOLFIN_ENABLE_SUNDIALS=true -DCMAKE_BUILD_TYPE=Developer ../
       - run:
           name: Build DOLFIN and install (C++)
           command: cd build && make -j2 install
