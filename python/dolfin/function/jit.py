@@ -43,7 +43,7 @@ def jit_generate(class_data, module_name, signature, parameters):
         elif hasattr(value, "_cpp_object"):
             members += "      std::shared_ptr<dolfin::GenericFunction> generic_function_{key};\n".format(key=k)
 
-            value_shape =  tuple(value._cpp_object.value_shape)
+            value_shape = tuple(value._cpp_object.value_shape)
             value_size = value._cpp_object.value_size()
 
             value_shape_str = ", ".join((str(p) for p in value_shape))
