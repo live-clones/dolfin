@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2016-06-01
-// Last changed: 2017-12-12
+// Last changed: 2018-01-16
 
 #include <algorithm>
 #include <tuple>
@@ -220,9 +220,22 @@ ConvexTriangulation::_triangulate_1d(const std::vector<Point>& p,
 
   const std::vector<Point> unique_p = unique_points(p, gdim, DOLFIN_EPS);
 
-  if (unique_p.size() > 2)
+  if (unique_p.size() == 2)
   {
-    // Make sure the points are approximately collinear
+    // Return the point list. Since it is unique it is also
+    // non-degenerate
+    std::vector<std::vector<Point>> t { unique_p };
+    return t;
+  }
+  else if (unique_p.size() < 2)
+  {
+    // Return empty if 0 or 1 point
+    return std::vector<std::vector<Point>>();
+  }
+  else
+  {
+    // Here unique_p.size() > 2. Make sure the points are
+    // approximately collinear
     bool collinear = true;
     for (std::size_t i = 2; i < unique_p.size(); ++i)
     {
@@ -243,16 +256,8 @@ ConvexTriangulation::_triangulate_1d(const std::vector<Point>& p,
     average /= unique_p.size();
     std::vector<std::vector<Point>> t {{ average }};
     return t;
-
-    dolfin_error("ConvexTriangulation.cpp",
-  		 "triangulate convex polyhedron",
-  		 "A convex polyhedron of topological dimension 1 can not have more than 2 points");
   }
 
-  // Return the point list. Since it is unique it is also
-  // non-degenerate
-  std::vector<std::vector<Point>> t { unique_p };
-  return t;
 }
 
 //------------------------------------------------------------------------------
