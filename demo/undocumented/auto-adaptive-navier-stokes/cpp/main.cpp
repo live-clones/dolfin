@@ -55,6 +55,12 @@ class Pressure : public Expression
 
 int main()
 {
+  if (dolfin::MPI::size(MPI_COMM_WORLD) > 1)
+  {
+    std::cout << "This demo does not work in parallel" << std::endl;
+    return 0;
+  }
+
   parameters["allow_extrapolation"] = true;
   parameters["refinement_algorithm"] = "plaza_with_parent_facets";
 
@@ -68,7 +74,7 @@ int main()
   // Define boundary condition
   auto u0 = std::make_shared<Constant>(0.0, 0.0);
   Noslip noslip;
-  auto noslip_markers = std::make_shared<FacetFunction<std::size_t>>(mesh, 1);
+  auto noslip_markers = std::make_shared<MeshFunction<std::size_t>>(mesh, mesh->topology().dim()-1, 1);
   noslip.mark(*noslip_markers, 0);
   auto W0 = W->sub(0);
   auto bc = std::make_shared<DirichletBC>(W0, u0, noslip_markers, 0);
@@ -90,7 +96,7 @@ int main()
   auto M = std::make_shared<AdaptiveNavierStokes::GoalFunctional>(mesh);
   M->w = w;
   Outflow outflow;
-  auto outflow_markers = std::make_shared<FacetFunction<std::size_t>>(mesh, 1);
+  auto outflow_markers = std::make_shared<MeshFunction<std::size_t>>(mesh, mesh->topology().dim()-1, 1);
   outflow.mark(*outflow_markers, 0);
   M->ds = outflow_markers;
 

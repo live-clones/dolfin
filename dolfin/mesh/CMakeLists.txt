@@ -53,6 +53,7 @@ set(HEADERS
 set(SOURCES
   BoundaryComputation.cpp
   BoundaryMesh.cpp
+  Cell.cpp
   CellType.cpp
   DistributedMeshTools.cpp
   DynamicMeshEditor.cpp
