@@ -426,10 +426,8 @@ def test_generic_function_attributes(mesh, V):
 
     # Test non-scalar GenericFunction
     f2 = Function(W)
-    e2.t = f2
-
     with pytest.raises(RuntimeError):
-        e2(0, 0)
+        e2.t = f2
 
     # Test user_parameters assignment
     assert "value" in te.user_parameters
