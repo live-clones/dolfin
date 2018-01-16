@@ -156,8 +156,8 @@ def compile_class(cpp_data):
     property_str = ''
     for k, v in properties.items():
         property_str += str(k)
-        if hasattr(v, '_cpp_object') and isinstance(v._cpp_object, cpp.function.GenericFunction):
-            property_str += '*'
+        if isinstance(getattr(v, '_cpp_object', None), cpp.function.GenericFunction):
+            property_str += '(vs={})'.format(v._cpp_object.value_shape)
 
     hash_str = str(statements) + str(property_str)
     module_hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
