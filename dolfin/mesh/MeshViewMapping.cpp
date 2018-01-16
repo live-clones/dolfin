@@ -34,7 +34,7 @@ Mesh MeshViewMapping::create_from_marker(const MeshFunction<std::size_t>& marker
 
   // Get indices of marked entities - each of these will represent a Cell in "new_mesh"
   std::vector<std::size_t> indices;
-  for (std::size_t idx = 0; idx < mesh->size(tdim); ++idx)
+  for (std::size_t idx = 0; idx < mesh->num_entities(tdim); ++idx)
   {
     if (marker[idx] == tag)
       indices.push_back(idx);
