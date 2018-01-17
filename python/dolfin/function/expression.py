@@ -220,6 +220,8 @@ class BaseExpression(ufl.Coefficient):
     def compute_vertex_values(self, mesh):
         return self._cpp_object.compute_vertex_values(mesh)
 
+    def rename(self, name, label):
+        return self._cpp_object.rename(name, label)
 
 class UserExpression(BaseExpression):
     """Base class for user-defined Python Expression classes, where the

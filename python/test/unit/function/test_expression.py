@@ -541,3 +541,8 @@ def test_doc_string_python_expressions(mesh):
 
     assert id(f3._mesh) == id(square)
     assert id(f3._domain) == id(cell_data)
+
+def test_rename():
+    c1 = Expression("1", degree=2)
+    c1.rename("constant1","")
+    assert(c1.name()=="constant1")
