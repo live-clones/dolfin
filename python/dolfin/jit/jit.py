@@ -118,7 +118,7 @@ const double pi = DOLFIN_PI;
 """ % "\n".join("using std::%s;" % mf for mf in _cpp_math_builtins)
 
 
-def compile_class(cpp_data):
+def compile_class(cpp_data, mpi_comm=MPI.comm_world):
     """Compile a user C(++) string or set of statements to a Python object
 
     cpp_data is a dict containing:
@@ -163,7 +163,8 @@ def compile_class(cpp_data):
 
     try:
         module, signature = dijitso_jit(cpp_data, module_name, params,
-                                        generate=cpp_data['jit_generate'])
+                                        generate=cpp_data['jit_generate'],
+                                        mpi_comm=mpi_comm)
         submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
     except Exception:
         raise RuntimeError("Unable to compile C++ code with dijitso")
