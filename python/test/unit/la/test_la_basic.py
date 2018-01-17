@@ -338,3 +338,11 @@ class TestBasicLaOperations:
 
         with pytest.raises(AttributeError):
             no_attribute()
+
+    def test_vector_negation(self):
+        V = FunctionSpace(UnitSquareMesh(10,10), "CG",1)
+        u = TestFunction(V)
+        v = Function(V)
+        b = u*v*dx
+        B = assemble(b)
+        assert((-B == -1*B).all())

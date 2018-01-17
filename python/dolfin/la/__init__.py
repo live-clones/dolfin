@@ -80,6 +80,15 @@ cpp.la.GenericVector.__eq__ = __eq__
 del __eq__
 
 
+def __neg__(self):
+    ret = self.copy()
+    ret *= -1
+    return ret
+
+cpp.la.GenericVector.__neg__ = __neg__
+del __neg__
+
+
 def __iter__(self):
     for i in range(self.local_size()):
         yield self[i]
