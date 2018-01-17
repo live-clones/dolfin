@@ -303,7 +303,6 @@ class CompiledExpression(BaseExpression):
         domain = kwargs.pop("domain", None)
         name = kwargs.pop("name", None)
         label = kwargs.pop("label", None)
-        # mpi_comm = kwargs.pop("mpi_comm", None)
 
         if not isinstance(cpp_module, cpp.function.Expression):
             raise RuntimeError("Must supply compiled C++ Expression module to CompiledExpression")
@@ -362,8 +361,6 @@ class Expression(BaseExpression):
         domain = kwargs.pop("domain", None)
         name = kwargs.pop("name", None)
         label = kwargs.pop("label", None)
-        # FIXME: feed mpi_comm through to JIT
-        # mpi_comm = kwargs.pop("mpi_comm", None)
 
         if not isinstance(cpp_code, (str, tuple, list)):
             raise RuntimeError("Must supply C++ code to Expression. You may want to use UserExpression")
