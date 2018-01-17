@@ -44,7 +44,7 @@ namespace dolfin
   /// the entity within that topological dimension.
 
 
-  class MeshViewMapping;
+  class MeshView;
 
   class MeshTopology : public Variable
   {
@@ -176,9 +176,15 @@ namespace dolfin
       std::vector<std::vector<std::size_t>>>> coloring;
 
     // Mapping to another Mesh, if any
-    std::shared_ptr<MeshViewMapping> mapping;
+    std::shared_ptr<MeshView> mapping() const
+    { return _mapping; }
 
   private:
+
+    friend class MeshView;
+
+    // Mapping to another Mesh, if any
+    std::shared_ptr<MeshView> _mapping;
 
     // Number of mesh entities for each topological dimension
     std::vector<unsigned int> num_entities;

@@ -20,13 +20,13 @@
 #include "MeshFunction.h"
 #include "MeshEntityIterator.h"
 
-#include "MeshViewMapping.h"
+#include "MeshView.h"
 
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-Mesh MeshViewMapping::create_from_marker(const MeshFunction<std::size_t>& marker,
-                                         std::size_t tag)
+Mesh MeshView::create(const MeshFunction<std::size_t>& marker,
+                      std::size_t tag)
 {
   // Get original Mesh and tdim of marker
   std::shared_ptr<const Mesh> mesh = marker.mesh();
@@ -223,7 +223,7 @@ Mesh MeshViewMapping::create_from_marker(const MeshFunction<std::size_t>& marker
     new_topo.set_global_index(0, i, vertex_global_index[i]);
 
   // Store relationship between meshes
-  new_topo.mapping = std::make_shared<MeshViewMapping>(mesh, vertex_fwd_map, indices);
+  new_topo._mapping = std::make_shared<MeshView>(mesh, vertex_fwd_map, indices);
 
   return new_mesh;
 }

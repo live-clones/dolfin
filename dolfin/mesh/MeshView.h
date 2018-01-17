@@ -16,8 +16,8 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef __MESH_VIEW_MAPPING_H
-#define __MESH_VIEW_MAPPING_H
+#ifndef __MESH_VIEW_H
+#define __MESH_VIEW_H
 
 namespace dolfin
 {
@@ -25,7 +25,7 @@ namespace dolfin
   class Mesh;
   template <typename T> class MeshFunction;
 
-  class MeshViewMapping
+  class MeshView
   {
     /// Mapping from a child Mesh to a parent Mesh for vertices
     /// and cells, using local indexing
@@ -33,9 +33,9 @@ namespace dolfin
   public:
 
     /// Constructor
-    MeshViewMapping(std::shared_ptr<const Mesh> parent_mesh,
-                    std::vector<std::size_t>& vertex_map,
-                    std::vector<std::size_t>& cell_map)
+    MeshView(std::shared_ptr<const Mesh> parent_mesh,
+             std::vector<std::size_t>& vertex_map,
+             std::vector<std::size_t>& cell_map)
       : _mesh(parent_mesh), _vertex_map(vertex_map), _cell_map(cell_map)
     {
       // Do nothing
@@ -53,7 +53,7 @@ namespace dolfin
       return _vertex_map;
     }
 
-    /// map to cells of parent mesh
+    /// Map to cells of parent mesh
     const std::vector<std::size_t>& cell_map() const
     {
       return _cell_map;
@@ -62,7 +62,7 @@ namespace dolfin
     /// Create a new Mesh based on the Meshfunction marker, where it has a value equal
     /// to tag, setting the MeshViewMapping in MeshTopology accordingly.
     /// FIXME: this could be a free function
-    static Mesh create_from_marker(const MeshFunction<std::size_t>& marker, std::size_t tag);
+    static Mesh create(const MeshFunction<std::size_t>& marker, std::size_t tag);
 
   private:
 
