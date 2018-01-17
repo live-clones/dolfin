@@ -35,7 +35,7 @@ multimesh.mark_covered(0, additional_covered_cells)
 V = MultiMeshFunctionSpace(multimesh, "P", 1)
 u, v = TrialFunction(V), TestFunction(V)
 n = FacetNormal(multimesh)
-h = CellDiameter(multimesh)
+h = 2*Circumradius(multimesh)
 
 a = (inner(grad(u), grad(v)) * dX
         - inner(avg(grad(u)), jump(v, n)) * dI
@@ -64,8 +64,8 @@ solve(A, x, b)
 outfile0 = XDMFFile("output/u0.xdmf")
 outfile1 = XDMFFile("output/u1.xdmf")
 
-outfile0.write(uh.part(0), 0)
-outfile1.write(uh.part(1), 0)
+outfile0.write(uh.part(0), 0.0)
+outfile1.write(uh.part(1), 0.0)
 
 outfile0.close()
 outfile1.close()
