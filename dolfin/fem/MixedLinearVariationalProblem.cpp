@@ -136,7 +136,8 @@ MixedLinearVariationalProblem::test_space() const
   std::vector<std::shared_ptr<const FunctionSpace>> test_spaces;
   for (size_t i=0; i<_l.size(); ++i)
   {
-    dolfin_assert(_l[i]);
+    for (size_t j=0; j<_l[i].size(); ++j)
+      dolfin_assert(_l[i][j]);
     test_spaces.push_back(_l[i][0]->function_space(0));
     // TODO : Check if all have the same FS
   }
@@ -153,7 +154,8 @@ MixedLinearVariationalProblem::trial_space(int i) const
 std::shared_ptr<const FunctionSpace>
 MixedLinearVariationalProblem::test_space(int i) const
 {
-  dolfin_assert(_l[i]);
+  for (size_t j=0; j<_l[i].size(); ++j)
+    dolfin_assert(_l[i][j]);
   // FIXME
   return _l[i][0]->function_space(0);
 }
