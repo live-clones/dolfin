@@ -46,13 +46,13 @@ MixedLinearVariationalProblem::MixedLinearVariationalProblem(
 #endif
 {
   // Initialize each sub vectors
-  for (int i=0; i<u.size(); ++i)
+  for (size_t i=0; i<u.size(); ++i)
       _bcs.push_back( std::vector<std::shared_ptr<const DirichletBC>>() );
   
   // Sort conditions from the function space
-  for (int i=0; i<bcs.size(); ++i)
+  for (size_t i=0; i<bcs.size(); ++i)
   {
-      for (int j=0; j<_u.size(); ++j)
+      for (size_t j=0; j<_u.size(); ++j)
       {
 	  if (_u[j]->in(*bcs[i]->function_space()))
 	      _bcs[j].push_back(bcs[i]);
@@ -122,7 +122,7 @@ std::vector<std::shared_ptr<const FunctionSpace>>
 MixedLinearVariationalProblem::trial_space() const
 {
   std::vector<std::shared_ptr<const FunctionSpace>> trial_spaces;
-  for (int i=0; i<_u.size(); ++i)
+  for (size_t i=0; i<_u.size(); ++i)
   {
     dolfin_assert(_u[i]);
     trial_spaces.push_back(_u[i]->function_space());
@@ -134,7 +134,7 @@ std::vector<std::shared_ptr<const FunctionSpace>>
 MixedLinearVariationalProblem::test_space() const
 {
   std::vector<std::shared_ptr<const FunctionSpace>> test_spaces;
-  for (int i=0; i<_l.size(); ++i)
+  for (size_t i=0; i<_l.size(); ++i)
   {
     dolfin_assert(_l[i]);
     test_spaces.push_back(_l[i][0]->function_space(0));
@@ -163,7 +163,7 @@ void
 MixedLinearVariationalProblem::check_forms() const
 {
   // Check rank of bilinear form a
-  for (int i=0; i<_a.size(); ++i)
+  for (size_t i=0; i<_a.size(); ++i)
   {
     for(int j=0; j<_a[i].size(); ++j)
     {

@@ -55,9 +55,9 @@ void MixedLinearVariationalSolver::solve()
   // Get parameters
   std::string solver_type   = parameters["linear_solver"];
   const std::string pc_type = parameters["preconditioner"];
-  const bool print_rhs      = parameters["print_rhs"];
+  // const bool print_rhs      = parameters["print_rhs"];
   const bool symmetric      = parameters["symmetric"];
-  const bool print_matrix   = parameters["print_matrix"];
+  // const bool print_matrix   = parameters["print_matrix"];
 
   // Get problem data
   dolfin_assert(_problem);
@@ -70,7 +70,7 @@ void MixedLinearVariationalSolver::solve()
   std::vector<std::shared_ptr<GenericMatrix>> As;
   std::vector<std::shared_ptr<GenericVector>> bs;
   std::vector<std::shared_ptr<GenericVector>> us;
-  for (int i=0; i<u.size(); ++i)
+  for (size_t i=0; i<u.size(); ++i)
   {
     dolfin_assert(L[i]);
     dolfin_assert(u[i]);
@@ -84,7 +84,7 @@ void MixedLinearVariationalSolver::solve()
     bs.push_back(b);
 
     // Create lhs matrices
-    for (int j=0; j<u.size(); ++j)
+    for (size_t j=0; j<u.size(); ++j)
     {
       bool has_ufc_form = false;
       for(int k=0; k<a[i*u.size() + j].size(); ++k)
@@ -100,7 +100,9 @@ void MixedLinearVariationalSolver::solve()
 	As.push_back(A);
       }
       else
+      {
 	As.push_back(NULL);
+      }
     }
   }
 
@@ -108,7 +110,7 @@ void MixedLinearVariationalSolver::solve()
   if (symmetric)
   {
     // Check that rhs (L) is not empty
-    for (int i=0; i<L.size(); ++i)
+    for (size_t i=0; i<L.size(); ++i)
     {
       for (int j=0; j<L[i].size(); ++j)
       {
@@ -132,9 +134,9 @@ void MixedLinearVariationalSolver::solve()
   else
   {
     // Assemble linear system
-    for (int i=0; i<u.size(); ++i)
+    for (size_t i=0; i<u.size(); ++i)
     {
-      for (int j=0; j<u.size(); ++j)
+      for (size_t j=0; j<u.size(); ++j)
       {
 	// Block-by-block assembly
 	for(int k=0; k<a[i*u.size() + j].size(); ++k)
@@ -174,7 +176,7 @@ void MixedLinearVariationalSolver::solve()
     }
 
     // Apply boundary conditions
-    for (int s=0; s<u.size(); ++s) //Number of blocks/subdomains
+    for (size_t s=0; s<u.size(); ++s) //Number of blocks/subdomains
     {
       for (std::size_t i = 0; i < bcs[s].size(); i++)
       {
