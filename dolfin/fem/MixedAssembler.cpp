@@ -124,7 +124,8 @@ void MixedAssembler::assemble_cells(
 
   // Collect pointers to dof maps / id of the involved meshes
   std::vector<const GenericDofMap*> dofmaps;
-  std::vector<int> mesh_id(form_rank);
+  // std::vector<int> mesh_id(form_rank);
+  std::vector<unsigned> mesh_id(form_rank);
   for (std::size_t i = 0; i < form_rank; ++i)
   {
     mesh_id[i] = a.function_space(i)->mesh()->id();
@@ -170,9 +171,9 @@ void MixedAssembler::assemble_cells(
 
     // Get local-to-global dof maps for cell
     bool empty_dofmap = false;
-    int cell_index;
+    int cell_index = 0;
 
-    for (std::size_t i = 0; i < form_rank; ++i)
+    for (size_t i = 0; i < form_rank; ++i)
     {
       cell_index = cell->index();
       // Access to cell index in the parent mesh
