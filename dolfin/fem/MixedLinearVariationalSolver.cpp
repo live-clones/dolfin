@@ -72,7 +72,8 @@ void MixedLinearVariationalSolver::solve()
   std::vector<std::shared_ptr<GenericVector>> us;
   for (size_t i=0; i<u.size(); ++i)
   {
-    dolfin_assert(L[i]);
+    for(size_t j=0; j<L[i].size(); ++j)
+      dolfin_assert(L[i][j]);
     dolfin_assert(u[i]);
 
     dolfin_assert(u[i]->vector());
