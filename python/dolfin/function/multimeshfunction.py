@@ -197,3 +197,50 @@ class MultiMeshFunction(ufl.Coefficient):
         for part in range(self._V.num_parts()):
             dofs = self._V.dofmap().inactive_dofs(self._V.multimesh(),part)
             self._cpp_object.vector()[dofs]=0
+
+    def sub(self, i, deepcopy=False):
+        """
+        Return a sub function
+        The sub functions are numbered from i = 0..N-1, where N is the
+        total number of sub spaces,
+
+        *Arguments*
+            i : int
+                The number of the  sub function
+        """
+        if not isinstance(i, int):
+            raise TypeError("expects an 'int' as first argument")
+        num_sub_spaces = self.function_space().info[0].num_sub_elements()
+        if num_sub_spaces == 1:
+            raise RuntimeError("No subfunctions to extract")
+        if not i < num_sub_spaces:
+            raise RuntimeError("Can only extract subfunctions with i = 0..%d"
+                               % num_sub_spaces)
+        if deepcopy:
+            sub_space = MultiMeshFunctionSpace(self.function_space().multimesh()
+                                               ,self.function_space()
+                                               .info[0].sub_elements()[i])
+            mmf = MultiMeshFunction(sub_space)
+            for j in range(self.num_parts()):
+                mmf.assign_part(j, self.part(j).sub(i))
+            return mmf
+        else:
+            raise NotImplementedError
+
+    def split(self, deepcopy=False):
+        """Extract any sub functions.
+
+        A sub function can be extracted from a discrete function that
+        is in a mixed, vector, or tensor MultiMeshFunctionSpace. The sub
+        function resides in the subspace of the mixed space.
+
+        *Arguments*
+            deepcopy
+                Copy sub function vector instead of sharing
+
+        """
+
+        num_sub_spaces = self.function_space().info[0].num_sub_elements()
+        if num_sub_spaces == 1:
+            raise RuntimeError("No subfunctions to extract")
+        return tuple(self.sub(i, deepcopy) for i in range(num_sub_spaces))
