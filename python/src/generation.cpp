@@ -143,6 +143,14 @@ namespace dolfin_wrappers
       .def(py::init([](const MPICommWrapper comm, const dolfin::Point& p0, const dolfin::Point& p1,
                        std::size_t nx, std::size_t ny, std::size_t nz)
                     { return std::unique_ptr<dolfin::BoxMesh>(new dolfin::BoxMesh(comm.get(), p0, p1, nx, ny, nz)); }),
-           py::arg("comm"), py::arg("p0"), py::arg("p1"), py::arg("nx"), py::arg("ny"), py::arg("nz"));
+           py::arg("comm"), py::arg("p0"), py::arg("p1"), py::arg("nx"), py::arg("ny"), py::arg("nz"))
+      .def_static("create", [](std::array<dolfin::Point, 2> p, std::array<std::size_t, 3> n,
+                               dolfin::CellType::Type cell_type)
+                  { return dolfin::BoxMesh::create(p, n, cell_type); },
+                  py::arg("p"), py::arg("n"), py::arg("cell_type"))
+      .def_static("create", [](const MPICommWrapper comm, std::array<dolfin::Point, 2> p,
+                               std::array<std::size_t, 3> n, dolfin::CellType::Type cell_type)
+                  { return dolfin::BoxMesh::create(comm.get(), p, n, cell_type); },
+                  py::arg("comm"), py::arg("p"), py::arg("n"), py::arg("cell_type"));
   }
 }
