@@ -134,6 +134,7 @@ void MixedAssembler::assemble_cells(
 
   // Vector to hold dof map for a cell
   std::vector<ArrayView<const dolfin::la_index>> dofs(form_rank);
+  std::vector<std::vector<dolfin::la_index>> dmaps(form_rank);
   
   // Cell integral
   ufc::cell_integral* integral = ufc.default_cell_integral.get();
@@ -183,8 +184,16 @@ void MixedAssembler::assemble_cells(
 	  cell_index = mapping->cell_map()[cell->index()];
       }
 
+#if 0 // OLD VERSION
       auto dmap = dofmaps[i]->cell_dofs(cell_index);
       dofs[i] = ArrayView<const dolfin::la_index>(dmap.size(), dmap.data());
+#else
+      std::vector<std::size_t> indices = {size_t(cell_index)};
+      dmaps[i] = dofmaps[i]->entity_closure_dofs(*(a.function_space(i)->mesh()), mesh.topology().dim(), indices);
+      // Transform into an Eigen::map -> Needed ?
+      auto dmap = Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>>(&dmaps[i][0], dmaps[i].size());
+      dofs[i] = ArrayView<const dolfin::la_index>(dmap.size(), dmap.data());
+#endif
       empty_dofmap = empty_dofmap || dofs[i].size() == 0;
     }
 
