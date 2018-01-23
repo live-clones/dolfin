@@ -75,6 +75,7 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 
   // Create vector to point to dofs
   std::vector<ArrayView<const dolfin::la_index>> dofs(rank);
+  std::vector<std::vector<dolfin::la_index>> dmaps(rank);
 
   // Build sparsity pattern for reals (globally supported basis members)
   // NOTE: It is very important that this is done before other integrals
@@ -108,19 +109,42 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
       // Otherwise, the non-zero entries are not the right ones. This cause a PETSc error when add_local (applied to an entry which is supposed to be zero)
       if(mapping && rank > 1) // Only if we have a matrix AND if the considered mesh comes from a parent mesh
       {
+#if 0 // OLD VERSION
 	auto dmap0 = dofmaps[0]->cell_dofs(cell->index());
 	auto dmap1 = dofmaps[1]->cell_dofs(cell->index());
-
+#else
+	std::vector<std::size_t> indices = {std::size_t(cell->index())};
+        dmaps[1] = dofmaps[1]->entity_closure_dofs(mesh, mesh.topology().dim(), indices);
+	// Transform into an Eigen::map -> Needed ?
+	auto dmap1 = Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>>(&dmaps[1][0], dmaps[1].size());
+#endif
 	int max_rows = dofmaps[0]->index_map()->local_range().second; // nb test functions
 	int max_cols = dofmaps[1]->index_map()->local_range().second; // nb trial function
 	if(max_rows > max_cols) // Test functions in mesh while trial functions in the submesh
 	{
+#if 0  // OLD VERSION
 	  auto dmap0 = dofmaps[0]->cell_dofs(mapping->cell_map()[cell->index()]);
 	  dofs[0].set(dmap0.size(), dmap0.data());
+#else
+	  std::vector<std::size_t> indices = {std::size_t(mapping->cell_map()[cell->index()])};
+	  dmaps[0] = dofmaps[0]->entity_closure_dofs(*(mapping->mesh()), mesh.topology().dim(), indices);
+	  // Transform into an Eigen::map -> Needed ?
+	  auto dmap0 = Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>>(&dmaps[0][0], dmaps[0].size());
+	  dofs[0].set(dmap0.size(), dmap0.data());
+#endif
 	}
 	else
+	{
+#if 0  // OLD VERSION
+	  auto dmap0 = dofmaps[0]->cell_dofs(cell->index());
+#else
+	  std::vector<std::size_t> indices = {std::size_t(cell->index())};
+	  dmaps[0] = dofmaps[0]->entity_closure_dofs(mesh, mesh.topology().dim(), indices);
+	  // Transform into an Eigen::map -> Needed ?
+	  auto dmap0 = Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>>(&dmaps[0][0], dmaps[0].size());
 	  dofs[0].set(dmap0.size(), dmap0.data());
-
+#endif
+	}
 	// No changes for dofs[1]
 	dofs[1].set(dmap1.size(), dmap1.data());
       }

@@ -67,7 +67,8 @@ MixedLinearVariationalProblem::MixedLinearVariationalProblem(
 		   "Number of blocks in rhs, lhs, solution are inconsistent");
   
   // Check forms
-  check_forms();
+  // FIXME
+  // check_forms();
 }
 //-----------------------------------------------------------------------------
 MixedLinearVariationalProblem::form_list_type
