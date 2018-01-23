@@ -96,7 +96,8 @@ from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar,
                      KrylovSolver, TensorLayout, LinearOperator,
                      BlockMatrix, BlockVector)
 from .cpp.la import GenericVector  # Remove when pybind11 transition complete
-from .cpp.log import (info, Table, set_log_level, get_log_level, LogLevel)
+from .cpp.log import (info, Table, set_log_level, get_log_level, LogLevel,
+                      Progress)
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        MeshColoring, CellType, Cell, Facet, Face,
@@ -182,5 +183,6 @@ from ufl import (FiniteElement, TensorElement, VectorElement,
                  tetrahedron, quadrilateral, hexahedron, avg, jump,
                  sym, tr, Identity, variable, diff, as_vector,
                  as_tensor, as_matrix, system, outer, dev, skew,
-                 elem_mult, elem_div, elem_pow, elem_op, erf)
+                 elem_mult, elem_div, elem_pow, elem_op, erf, inv)
 from ufl.formoperators import action
+from ufl.log import info_blue
