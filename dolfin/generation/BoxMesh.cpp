@@ -62,9 +62,9 @@ void BoxMesh::build_tet(Mesh& mesh, const std::array<Point,2 >& p,
   // Extract data
   const Point& p0 = p[0];
   const Point& p1 = p[1];
-  std::size_t nx = n[0];
-  std::size_t ny = n[1];
-  std::size_t nz = n[2];
+  const std::size_t nx = n[0];
+  const std::size_t ny = n[1];
+  const std::size_t nz = n[2];
 
   // Extract minimum and maximum coordinates
   const double x0 = std::min(p0.x(), p1.x());
@@ -169,7 +169,8 @@ void BoxMesh::build_tet(Mesh& mesh, const std::array<Point,2 >& p,
   }
 }
 //-----------------------------------------------------------------------------
-void BoxMesh::build_hex(Mesh& mesh, std::array<std::size_t, 3> n)
+void BoxMesh::build_hex(Mesh& mesh, const std::array<Point, 2>& p,
+                        std::array<std::size_t, 3> n)
 {
   // Receive mesh according to parallel policy
   if (MPI::is_receiver(mesh.mpi_comm()))
@@ -178,9 +179,20 @@ void BoxMesh::build_hex(Mesh& mesh, std::array<std::size_t, 3> n)
     return;
   }
 
+  // Extract data
+  const Point& p0 = p[0];
+  const Point& p1 = p[1];
   const std::size_t nx = n[0];
   const std::size_t ny = n[1];
   const std::size_t nz = n[2];
+
+  // Extract minimum and maximum coordinates
+  const double x0 = std::min(p0.x(), p1.x());
+  const double x1 = std::max(p0.x(), p1.x());
+  const double y0 = std::min(p0.y(), p1.y());
+  const double y1 = std::max(p0.y(), p1.y());
+  const double z0 = std::min(p0.z(), p1.z());
+  const double z1 = std::max(p0.z(), p1.z());
 
   MeshEditor editor;
   editor.open(mesh, CellType::Type::hexahedron, 3, 3);
@@ -193,12 +205,12 @@ void BoxMesh::build_hex(Mesh& mesh, std::array<std::size_t, 3> n)
   // Storage for vertices
   std::vector<double> x(3);
 
-  const double a = 0.0;
-  const double b = 1.0;
-  const double c = 0.0;
-  const double d = 1.0;
-  const double e = 0.0;
-  const double f = 1.0;
+  const double a = x0;
+  const double b = x1;
+  const double c = y0;
+  const double d = y1;
+  const double e = z0;
+  const double f = z1;
 
   // Create main vertices:
   std::size_t vertex = 0;
