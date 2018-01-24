@@ -186,6 +186,7 @@ namespace dolfin_wrappers
       .def("num_faces", &dolfin::Mesh::num_faces, "Number of faces")
       .def("num_facets", &dolfin::Mesh::num_facets, "Number of facets")
       .def("num_cells", &dolfin::Mesh::num_cells, "Number of cells")
+      .def("order", &dolfin::Mesh::order)
       .def("ordered", &dolfin::Mesh::ordered)
       .def("rmax", &dolfin::Mesh::rmax)
       .def("rmin", &dolfin::Mesh::rmin)
