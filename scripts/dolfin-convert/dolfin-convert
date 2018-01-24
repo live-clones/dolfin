@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (C) 2006 Anders Logg
 #
@@ -26,6 +26,7 @@
 # Modified by Gideon Simpson (Exodus II function)
 # Modified by Arve Knudsen (move logic into module meshconvert)
 # Modified by Kent-Andre Mardal (Star-CD function)
+# Modified by Filip Gokstorp (update for python3)
 #
 # Script for converting between various data formats
 
@@ -33,7 +34,6 @@ from __future__ import print_function
 import getopt
 import sys
 import os
-from dolfin_utils.commands import getoutput
 import re
 import warnings
 import os.path
