@@ -38,6 +38,6 @@
 #include <dolfin/mesh/MultiMesh.h>
 #include <dolfin/mesh/MeshHierarchy.h>
 #include <dolfin/mesh/MeshPartitioning.h>
-#include <dolfin/mesh/MeshViewMapping.h>
+#include <dolfin/mesh/MeshView.h>
 
 #endif
