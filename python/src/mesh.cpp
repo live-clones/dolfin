@@ -534,6 +534,7 @@ namespace dolfin_wrappers
     // dolfin::PeriodicBoundaryComputation
     py::class_<dolfin::PeriodicBoundaryComputation>
       (m, "PeriodicBoundaryComputation")
+      .def(py::init<>())
       .def_static("compute_periodic_pairs", &dolfin::PeriodicBoundaryComputation::compute_periodic_pairs)
       .def_static("masters_slaves", &dolfin::PeriodicBoundaryComputation::masters_slaves);
 

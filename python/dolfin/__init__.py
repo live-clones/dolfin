@@ -185,4 +185,4 @@ from ufl import (FiniteElement, TensorElement, VectorElement,
                  as_tensor, as_matrix, system, outer, dev, skew,
                  elem_mult, elem_div, elem_pow, elem_op, erf, inv)
 from ufl.formoperators import action
-from ufl.log import info_blue
+from ufl.log import info_blue, info_red
