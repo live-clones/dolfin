@@ -96,6 +96,7 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshView, std::shared_ptr<dolfin::MeshView>>
       (m, "MeshView", "DOLFIN MeshView object")
       .def("mesh", &dolfin::MeshView::mesh)
+      .def("create", &dolfin::MeshView::create)
       .def("cell_map", &dolfin::MeshView::cell_map)
       .def("vertex_map", &dolfin::MeshView::vertex_map);
 
