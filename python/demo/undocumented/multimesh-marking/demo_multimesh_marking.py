@@ -1,16 +1,12 @@
 from dolfin import *
-from mshr import Circle, generate_mesh
 
 # Generate meshes
 background_mesh = UnitSquareMesh(16, 16)
-
+annulus_mesh = Mesh("../donut.xml.gz")
 
 center = Point(0.5, 0.5)
 r_outer = 0.41
 r_inner = 0.2
-
-annulus = Circle(center, 0.41) - Circle(center, 0.2)
-annulus_mesh = generate_mesh(annulus, 10)
 
 # Build the multimesh
 multimesh = MultiMesh()
