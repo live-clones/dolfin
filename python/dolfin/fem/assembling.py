@@ -32,10 +32,10 @@ rely on the dolfin::Form class which is not used on the Python side.
 import ufl
 import dolfin.cpp as cpp
 from dolfin.fem.form import Form
-from dolfin import parameters, MPI
+from dolfin import MPI
 from dolfin.function.multimeshfunction import MultiMeshFunction
 
-__all__ = ["assemble", "assemble_local", "assemble_system", 
+__all__ = ["assemble", "assemble_local", "assemble_system",
            "assemble_multimesh", "SystemAssembler"]
 
 

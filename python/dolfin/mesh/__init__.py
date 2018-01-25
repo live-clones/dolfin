@@ -56,6 +56,7 @@ cpp.mesh.Mesh._repr_svg_ = _repr_svg_
 # Clean-up
 del ufl_cell, ufl_coordinate_element, ufl_domain, geometric_dimension, _repr_html_, _repr_svg_
 
+
 # Extend cpp.mesh.MultiMesh class
 def MultiMesh_ufl_domain(self):
     """Returns the ufl domain corresponding to the mesh."""
@@ -64,11 +65,14 @@ def MultiMesh_ufl_domain(self):
         self._ufl_domain = ufl.Mesh(self.ufl_coordinate_element(), ufl_id=self.ufl_id(), cargo=self)
     return self._ufl_domain
 
+
 def MultiMesh_mpi_comm(self):
     return self.part(0).mpi_comm()
 
+
 def MultiMesh_type(self):
     return self.part(0).type()
+
 
 def MultiMesh_ufl_cell(self):
     """Returns the ufl cell of the mesh."""
@@ -76,15 +80,18 @@ def MultiMesh_ufl_cell(self):
     cellname = self.type().description(False)
     return ufl.Cell(cellname, geometric_dimension=gdim)
 
+
 def MultiMesh_ufl_coordinate_element(self):
     "Return the finite element of the coordinate vector field of this domain."
     cell = self.ufl_cell()
     degree = self.part(0).geometry().degree()
     return ufl.VectorElement("Lagrange", cell, degree, dim=cell.geometric_dimension())
 
+
 def MultiMesh_ufl_id(self):
     "Returns an id that UFL can use to decide if two objects are the same."
     return self.id()
+
 
 cpp.mesh.MultiMesh.ufl_domain = MultiMesh_ufl_domain
 cpp.mesh.MultiMesh.mpi_comm = MultiMesh_mpi_comm
@@ -93,4 +100,4 @@ cpp.mesh.MultiMesh.ufl_cell = MultiMesh_ufl_cell
 cpp.mesh.MultiMesh.ufl_coordinate_element = MultiMesh_ufl_coordinate_element
 cpp.mesh.MultiMesh.ufl_id = MultiMesh_ufl_id
 
-del  MultiMesh_mpi_comm, MultiMesh_type, MultiMesh_ufl_cell, MultiMesh_ufl_coordinate_element
+del MultiMesh_mpi_comm, MultiMesh_type, MultiMesh_ufl_cell, MultiMesh_ufl_coordinate_element

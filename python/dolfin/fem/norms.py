@@ -26,7 +26,7 @@
 from math import sqrt
 import ufl
 import functools
-from ufl import (grad, div, curl, dx)
+from ufl import (grad, div, curl)
 import dolfin.cpp as cpp
 from dolfin.fem.assembling import assemble, assemble_multimesh
 from dolfin.fem.interpolation import interpolate
@@ -262,11 +262,9 @@ def errornorm(u, uh, norm_type="l2", degree_rise=3, mesh=None):
     if rank == 0:
         V = function_space(mesh, "Discontinuous Lagrange", degree)
     elif rank == 1:
-        V = vector_space(mesh, "Discontinuous Lagrange", degree,
-                                dim=shape[0])
+        V = vector_space(mesh, "Discontinuous Lagrange", degree, dim=shape[0])
     elif rank > 1:
-        V = tensor_space(mesh, "Discontinuous Lagrange", degree,
-                                shape=shape)
+        V = tensor_space(mesh, "Discontinuous Lagrange", degree, shape=shape)
 
     # Interpolate functions into finite element space
     pi_u = interpolate(u, V)

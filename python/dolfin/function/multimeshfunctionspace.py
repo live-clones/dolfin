@@ -11,10 +11,11 @@ import dolfin.cpp as cpp
 from dolfin.function.functionspace import FunctionSpace
 from six import string_types
 
+
 class MultiMeshFunctionSpace(object):
     def __init__(self, *args, **kwargs):
         """Create multimesh finite element function space.
-        
+
         *Arguments*
         multimesh
         a :py:class:`MultiMesh <dolfin.cpp.mesh.MultiMesh>`.
@@ -23,25 +24,25 @@ class MultiMeshFunctionSpace(object):
             see :py:class:`FunctionSpace
         <dolfin.functions.functionspace.FunctionSpace>`
         for alternatives.
-        
-            This argument may also be a `FiniteElement`, in
+
+        This argument may also be a `FiniteElement`, in
         which case the `degree` argument should not be
         specified.
         degree
         the degree of the element.
-        
+
         *Example of usage*
-        
+
         .. code-block:: python
-        
+
         V = MultiMeshFunctionSpace(mesh, "CG", 1)
-        
+
         element = FiniteElement("Lagrange", triangle, 1)
         V = MultiMeshFunctionSpace(mesh, element)
         """
-        if len(args)==2:
+        if len(args) == 2:
             self.__init_from_ufl(*args, **kwargs)
-        elif len(args)==3:
+        elif len(args) == 3:
             self._init_convenience(*args, **kwargs)
         else:
             raise NotImplementedError
@@ -51,8 +52,7 @@ class MultiMeshFunctionSpace(object):
         if not isinstance(element, ufl.FiniteElementBase):
             cpp.dolfin_error("multimeshfunctionspace.py",
                              "create function space",
-                             "Illegal argument, not a finite element: "
-                             + str(element))
+                             "Illegal argument, not a finite element: " + str(element))
 
         # Create and add individual function spaces
         V = cpp.function.MultiMeshFunctionSpace(multimesh)
@@ -79,8 +79,7 @@ class MultiMeshFunctionSpace(object):
         if not isinstance(degree, int):
             cpp.dolfin_error("multimeshfunctionspace.py",
                              "create function space",
-                             "Illegal argument for degree, not an integer: "
-                             + str(degree))
+                             "Illegal argument for degree, not an integer: " + str(degree))
         if not isinstance(multimesh, cpp.mesh.MultiMesh):
             cpp.dolfin_error("functionspace.py",
                              "create multimesh function space",
@@ -100,7 +99,7 @@ class MultiMeshFunctionSpace(object):
 
         # Build multimesh function space
         V.build()
-        
+
         # Store full function spaces
         self._parts = V_parts
         self._cpp_object = V
@@ -134,9 +133,9 @@ class MultiMeshFunctionSpace(object):
     def add(self, function_space):
         self._cpp_object.add(function_space.cpp_object)
 
-
     def lock_inactive_dofs(self, A, b):
-        self._cpp_object.lock_inactive_dofs(A,b)
+        self._cpp_object.lock_inactive_dofs(A, b)
+
 
 def MultiMeshVectorFunctionSpace(multimesh, family, degree, dim=None,
                                  form_degree=None):

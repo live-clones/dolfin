@@ -21,11 +21,10 @@
 
 import ufl
 import dolfin.cpp as cpp
-import numpy
 
 from dolfin.function.multimeshfunctionspace import MultiMeshFunctionSpace
 from dolfin.function.function import Function
-from dolfin.function.expression import Expression
+
 
 class MultiMeshFunction(ufl.Coefficient):
     """This class represents a multimeshfunction
@@ -44,10 +43,10 @@ class MultiMeshFunction(ufl.Coefficient):
     *Arguments*
         There is a maximum of two arguments. The first argument must be a
         :py:class:`MultiMeshFunctionSpace
-	 <dolfin.cpp.function.MultiMeshFunctionSpace>`.
+         <dolfin.cpp.function.MultiMeshFunctionSpace>`.
 
-	The second argument must be a GenericVector and is intended for library
-	use only.
+        The second argument must be a GenericVector and is intended for library
+        use only.
 
     *Examples*
         Create a MultiMeshFunction:
@@ -102,8 +101,9 @@ class MultiMeshFunction(ufl.Coefficient):
                     raise NotImplementedError
                 else:
                     self._cpp_object = cpp.function.MultiMeshFunction.__init__(self, V, other)
-                    ufl.Coefficient.__init__(self, V._parts[0].ufl_function_space(),
-                                 count=self._cpp_object.id())
+                    ufl.Coefficient.__init__(self, V._parts[0]
+                                             .ufl_function_space(),
+                                             count=self._cpp_object.id())
 
             else:
                 raise TypeError("too many arguments")
@@ -124,12 +124,12 @@ class MultiMeshFunction(ufl.Coefficient):
 
     def assign(self, rhs):
         """
-        Parameters: 
+        Parameters:
             rhs: A dolfin.MultiMeshFunction
         """
         # Assign a MultiMeshFunction into a MultiMeshFunction
         if isinstance(rhs, MultiMeshFunction):
-            self._cpp_object.vector()[:]= rhs.vector()[:]
+            self._cpp_object.vector()[:] = rhs.vector()[:]
         else:
             raise TypeError("expected a MultiMeshFunction as argument.")
 
@@ -147,7 +147,6 @@ class MultiMeshFunction(ufl.Coefficient):
 
     def assign_part(self, part, function):
         self._cpp_object.assign_part(part, function._cpp_object)
-
 
     def interpolate(self, v):
         """
@@ -173,7 +172,7 @@ class MultiMeshFunction(ufl.Coefficient):
         if isinstance(v, MultiMeshFunction):
             # Same multimesh required for interpolation
             # Developer note: Is this test necessary?
-            if  self._V.multimesh().id() != v._V.multimesh().id():
+            if self._V.multimesh().id() != v._V.multimesh().id():
                 raise RuntimeError("MultiMeshFunctions must live on same MultiMesh")
             for i, vp in enumerate(self.parts(deepcopy=True)):
                 vm = v.part(i, deepcopy=True)
@@ -195,8 +194,8 @@ class MultiMeshFunction(ufl.Coefficient):
             raise TypeError("Expected an Expression or a MultiMeshFunction.")
         # Set inactive dofs to zero
         for part in range(self._V.num_parts()):
-            dofs = self._V.dofmap().inactive_dofs(self._V.multimesh(),part)
-            self._cpp_object.vector()[dofs]=0
+            dofs = self._V.dofmap().inactive_dofs(self._V.multimesh(), part)
+            self._cpp_object.vector()[dofs] = 0
 
     def sub(self, i, deepcopy=False):
         """
@@ -217,8 +216,9 @@ class MultiMeshFunction(ufl.Coefficient):
             raise RuntimeError("Can only extract subfunctions with i = 0..%d"
                                % num_sub_spaces)
         if deepcopy:
-            sub_space = MultiMeshFunctionSpace(self.function_space().multimesh()
-                                               ,self.function_space()
+            sub_space = MultiMeshFunctionSpace(self.function_space()
+                                               .multimesh(),
+                                               self.function_space()
                                                .info[0].sub_elements()[i])
             mmf = MultiMeshFunction(sub_space)
             for j in range(self.num_parts()):

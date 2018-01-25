@@ -94,7 +94,6 @@ def project(v, V=None, bcs=None, mesh=None,
             # Otherwise try extracting function space from expression
             V = _extract_function_space(v, mesh)
 
-
     # Projection into a MultiMeshFunctionSpace
     if isinstance(V, MultiMeshFunctionSpace):
 
@@ -104,8 +103,8 @@ def project(v, V=None, bcs=None, mesh=None,
         # Define variational problem for projection
         w = TestFunction(V)
         Pv = TrialFunction(V)
-        a = ufl.inner(w, Pv)*dX
-        L = ufl.inner(w, v)*dX
+        a = ufl.inner(w, Pv) * dX
+        L = ufl.inner(w, v) * dX
 
         # Assemble linear system
         A = assemble_multimesh(a, form_compiler_parameters=form_compiler_parameters)

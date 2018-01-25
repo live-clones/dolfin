@@ -223,6 +223,7 @@ class BaseExpression(ufl.Coefficient):
     def rename(self, name, label):
         return self._cpp_object.rename(name, label)
 
+
 class UserExpression(BaseExpression):
     """Base class for user-defined Python Expression classes, where the
     user overloads eval or eval_cell

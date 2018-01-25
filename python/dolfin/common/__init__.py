@@ -1,5 +1,6 @@
 import dolfin.cpp as cpp
 
+
 def to_dict(self):
     """Convert the Parameters to a dict"""
     ret = {}
@@ -10,16 +11,19 @@ def to_dict(self):
             ret[key] = value
     return ret
 
+
 cpp.parameter.Parameters.to_dict = to_dict
 del to_dict
 
 
 def _add(self, incr):
     for j in range(incr):
-        self._increment(1);
+        self._increment(1)
+
 
 def _set(self, value):
     self._assign(value)
+
 
 def __iadd__(self, other):
     """ Add value to Progress """

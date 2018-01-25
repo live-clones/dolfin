@@ -85,6 +85,7 @@ def __neg__(self):
     ret *= -1
     return ret
 
+
 cpp.la.GenericVector.__neg__ = __neg__
 del __neg__
 

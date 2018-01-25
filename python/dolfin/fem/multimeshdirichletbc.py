@@ -7,8 +7,11 @@
 import types
 import ufl
 import dolfin.cpp as cpp
+from dolfin.function.constant import Constant
 from dolfin.function.multimeshfunctionspace import MultiMeshFunctionSpace
 from dolfin import MultiMeshSubSpace
+from dolfin.fem.projection import project
+
 
 class MultiMeshDirichletBC(cpp.fem.MultiMeshDirichletBC):
     # Arguments:
@@ -28,11 +31,11 @@ class MultiMeshDirichletBC(cpp.fem.MultiMeshDirichletBC):
             # Check if we have an UFL-expression or a concrete type
             if not hasattr(args[1], "_cpp_object"):
                 if isinstance(args[1], ufl.classes.Expr):
-                    expr = project(args[1], args[0]) # Should be interpolation
+                    expr = project(args[1], args[0])  # Should be interpolation
                 else:
                     expr = Constant(args[1])
-                args = args[:1] + (exp,1) + args[2:]
-        if isinstance(args[1], (float,int)):
+            args = args[:1] + (expr, 1) + args[2:]
+        if isinstance(args[1], (float, int)):
             u = cpp.function.Constant(float(args[1]))
         elif isinstance(args[1], ufl.Coefficient):
             u = args[1]._cpp_object
@@ -46,9 +49,9 @@ class MultiMeshDirichletBC(cpp.fem.MultiMeshDirichletBC):
 
         else:
             args = args[:1] + (u,) + args[2:]
-            args = (args[0]._cpp_object,)+args[1:]
+            args = (args[0]._cpp_object,) + args[1:]
 
-        if  len(args) >=3 and isinstance(args[2], types.FunctionType):
+        if len(args) >= 3 and isinstance(args[2], types.FunctionType):
             raise NotImplementedError("User-specified subdomains not implemented")
         if isinstance(args[2], cpp.mesh.SubDomain):
             self.sub_domain = args[2]
@@ -74,4 +77,3 @@ class MultiMeshDirichletBC(cpp.fem.MultiMeshDirichletBC):
             raise RuntimeError("Invalid keyword arguments", kwargs)
 
         super().__init__(*args)
-
