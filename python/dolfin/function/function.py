@@ -298,7 +298,7 @@ class Function(ufl.Coefficient):
             if not isinstance(values, np.ndarray):
                 raise TypeError("expected a NumPy array for 'values'")
             if len(values) != value_size or \
-               not np.issubdtype(values.dtype, numpy.float64):
+               not np.issubdtype(values.dtype, np.float64):
                 raise TypeError("expected a double NumPy array of length"
                                 " %d for return values." % value_size)
             values_provided = True
