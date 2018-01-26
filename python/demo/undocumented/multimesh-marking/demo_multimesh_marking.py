@@ -1,5 +1,9 @@
 from dolfin import *
 
+if MPI.size(MPI.comm_world) > 1:
+    info("Sorry, this demo does not (yet) run in parallel.")
+    exit(0)
+
 # Generate meshes
 background_mesh = UnitSquareMesh(16, 16)
 annulus_mesh = Mesh("../donut.xml.gz")

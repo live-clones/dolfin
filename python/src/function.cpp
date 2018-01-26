@@ -201,8 +201,6 @@ namespace dolfin_wrappers
       .def("_assign", (const dolfin::Constant& (dolfin::Constant::*)(double))
                        &dolfin::Constant::operator=)
       */
-      .def("eval", (void (dolfin::Constant::*)(Eigen::Ref<Eigen::VectorXd>,
-					       Eigen::Ref<const Eigen::VectorXd>) const override) &dolfin::Constant::eval)
       .def("str", &dolfin::Constant::str);
 
     // dolfin::FacetArea
