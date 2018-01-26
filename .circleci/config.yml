@@ -65,6 +65,8 @@ jobs:
           name: Run Python regression tests (MPI)
           command: python3 -m pytest -v python/demo/test.py --mpiexec=mpiexec --num-proc=3
   pushdoc:
+    docker:
+      - image: circleci/python
     working_directory: /home/fenics/working
     steps:
       - run:
