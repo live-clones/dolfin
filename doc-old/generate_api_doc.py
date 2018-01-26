@@ -53,8 +53,8 @@ def generate_dolfin_doc(input_dir, output_dir, version=None):
     # Try to import DOLFIN Python module
     module_name = "dolfin"
     try:
-        exec("import %s" % module_name)
-        exec("module = %s" % module_name)
+        import dolfin
+        module = dolfin
     except Exception as what:
         raise ImportError(dolfin_import_error_msg % (module_name, what))
 
