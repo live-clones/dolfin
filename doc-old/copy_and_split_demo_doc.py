@@ -26,6 +26,14 @@ from __future__ import print_function
 import sys, os, shutil
 import subprocess
 
+see_rtd = """
+Collection of documented demos
+==============================
+
+See `DOLFIN Read the Docs page
+<http://fenics.readthedocs.io/projects/dolfin/en/2017.2.0/demos.html>`_.
+"""
+
 index_template = """
 Collection of documented demos
 ==============================
@@ -100,6 +108,7 @@ def generate_main_index_file(output_dir, language):
     filename = os.path.join(output_dir, "index.rst")
     file = open(filename, "w")
     text = index_template % (language, run_instructions[language])
+    text = see_rtd
     file.write(text)
     file.close()
 
