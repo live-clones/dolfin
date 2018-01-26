@@ -40,14 +40,20 @@ jobs:
       - run:
           name: Build DOLFIN Python documentation
           command: cd python/doc && make html
+      - persist_to_workspace:
+          root: /home/fenics/working
+          paths:
+            - python/doc/build/html/
   pushdoc:
     docker:
       - image: circleci/python
-    working_directory: /home/fenics/working
+    working_directory: /tmp
     steps:
+      - attach_workspace:
+          at: /tmp
       - run:
           name: Push Python API doc to fenicsproject.org
-          command: cd python/doc/build/html && scp -r * jan@fenicsproject.org:/var/www/vhosts/fenicsproject.org/olddocs/dolfin/dev/python/
+          command: cd /tmp/python/doc/build/html && scp -r * jan@fenicsproject.org:/var/www/vhosts/fenicsproject.org/olddocs/dolfin/dev/python/
 workflows:
   version: 2
   build-and-pushdoc:
