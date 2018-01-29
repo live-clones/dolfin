@@ -16,7 +16,7 @@ jobs:
             pip3 install --user git+https://bitbucket.org/fenics-project/ffc.git@"${DEP_BRANCH_NAME}"
       - run:
           name: Configure DOLFIN (C++)
-          command: mkdir -p build && cd /tmp/build && cmake -DCMAKE_BUILD_TYPE=Developer /tmp/src
+          command: mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Developer ../
       - run:
           name: Build DOLFIN (C++)
           command: cd build && make -j2
