@@ -93,4 +93,3 @@ workflows:
             branches:
               only:
                 - master
-                - jan/push-doc-to-www
