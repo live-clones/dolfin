@@ -36,6 +36,9 @@ jobs:
           name: Build DOLFIN C++ documentation
           command: cd doc && doxygen
       - run:
+          name: Install (already built) C++ DOLFIN
+          command: cd build && make install
+      - run:
           name: Build and run C++ unit tests (serial)
           command: cd build && make -j2 unittests && ctest -R unittests
       - run:
