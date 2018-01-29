@@ -40,7 +40,7 @@ def interpolate(v, V):
             an :py:class:`Expression <dolfin.functions.expression.Expression>`
         V
             a :py:class:`FunctionSpace (standard, mixed, etc.)
-            <dolfin.functions.functionspace.FunctionSpace>'
+            <dolfin.functions.functionspace.FunctionSpace>`
             or a :py:class:`MultiMeshFunctionSpace
             <dolfin.function.MultiMeshFunctionSpace>`.
 

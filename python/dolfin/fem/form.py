@@ -48,6 +48,8 @@ class Form(cpp.fem.Form):
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 
         function_spaces = kwargs.get("function_spaces")
+
+        # Extraction of functionspaces contained in a MultiMeshFunctionSpace
         if not function_spaces:
             function_spaces = [func.function_space()._cpp_object for func in form.arguments()]
 

@@ -34,7 +34,7 @@ class MultiMeshDirichletBC(cpp.fem.MultiMeshDirichletBC):
                     expr = project(args[1], args[0])  # Should be interpolation
                 else:
                     expr = Constant(args[1])
-            args = args[:1] + (expr, 1) + args[2:]
+                args = args[:1] + (expr, 1) + args[2:]
         if isinstance(args[1], (float, int)):
             u = cpp.function.Constant(float(args[1]))
         elif isinstance(args[1], ufl.Coefficient):
