@@ -23,8 +23,8 @@ jobs:
       - persist_to_workspace:
           root: /
           paths:
-            - /root/.local
-            - /tmp/build
+            - root/.local
+            - tmp/build
   testcpp:
     docker:
       - image: quay.io/fenicsproject/dev-env:latest
@@ -73,7 +73,7 @@ jobs:
       - persist_to_workspace:
           root: /
           paths:
-            - /tmp/src/python/doc/build/html/
+            - tmp/src/python/doc/build/html/
       - run:
           name: Run Python unit tests (serial)
           command: python3 -m pytest -n 2 python/test/unit/
