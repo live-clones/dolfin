@@ -43,6 +43,7 @@ generated_rst_files
 mock_cpp_modules.py
 doxygen
 doc/source/demos
+doc/source/_build
 doc/html
 doc/latex
 
