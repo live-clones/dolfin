@@ -68,19 +68,8 @@ namespace dolfin_wrappers
             return std::shared_ptr<const dolfin::SubDomain>(p);
           });
 
-    // dolfin::CellType trampoline class for user overloading from
-    // Python
-    class PyCellType : public dolfin::CellType
-    {
-      using dolfin::CellType::CellType;
-      dolfin::Point normal(const dolfin::Cell& cell, std::size_t facet) const override
-      {
-	PYBIND11_OVERLOAD(dolfin::Point, dolfin::CellType,
-			  normal, cell, facet);}
-     };
-
     // dolfin::CellType
-    py::class_<dolfin::CellType, PyCellType>
+    py::class_<dolfin::CellType>
       celltype(m, "CellType");
     celltype.def("normal", (dolfin::Point (dolfin::CellType::*)(const dolfin::Cell&, std::size_t) const) &dolfin::CellType::normal);
 
