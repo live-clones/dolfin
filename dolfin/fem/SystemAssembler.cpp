@@ -596,7 +596,8 @@ void SystemAssembler::cell_wise_assembly(
     // If RHS has not been integrated, still want to add BC terms
     if (!integrate_rhs)
     {
-      cell_dofs[1][0] = dofmaps[1][0]->cell_dofs(cell->index());
+      auto dmap = dofmaps[1][0]->cell_dofs(cell->index());
+      cell_dofs[1][0].set(dmap.size(), dmap.data());
       std::fill(data.Ae[1].begin(), data.Ae[1].end(), 0.0);
     }
 
