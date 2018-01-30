@@ -62,6 +62,11 @@ endif()
 
 # Target libraries
 %(target_libraries)s
+
+# Test targets
+set(test_parameters -np 3 "./${PROJECT_NAME}")
+add_test(NAME ${PROJECT_NAME}_mpi COMMAND "mpirun" ${test_parameters})
+add_test(NAME ${PROJECT_NAME}_serial COMMAND ${PROJECT_NAME})
 """
 
 executable_str = "add_executable(%s %s)"
