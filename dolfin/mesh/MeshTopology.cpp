@@ -23,6 +23,7 @@
 #include <dolfin/log/log.h>
 #include <dolfin/common/utils.h>
 #include "MeshConnectivity.h"
+#include "MeshView.h"
 #include "MeshTopology.h"
 
 using namespace dolfin;
@@ -54,6 +55,7 @@ MeshTopology& MeshTopology::operator= (const MeshTopology& topology)
 {
   // Public data
   coloring = topology.coloring;
+  _mapping = topology._mapping;
 
   // Private data
   num_entities = topology.num_entities;
