@@ -28,7 +28,7 @@ int main()
   // Create mesh and function space
   auto mesh = std::make_shared<UnitCubeMesh>(32, 32, 32);
 
-  FacetFunction<std::size_t> marker(mesh, 0);
+  MeshFunction<std::size_t> marker(mesh, mesh->topology().dim() - 1, 0);
   for (FacetIterator facet(*mesh); !facet.end(); ++facet)
   {
       auto x = facet->midpoint().coordinates();
@@ -36,8 +36,8 @@ int main()
   }
   
   std::vector<std::size_t> vertex_map,cell_map;
-  auto mapping = std::make_shared<MeshViewMapping>(mesh,vertex_map,cell_map);
-  auto submesh = std::make_shared<Mesh>(mapping->create_from_marker(marker, 1));
+  auto mapping = std::make_shared<MeshView>(mesh,vertex_map,cell_map);
+  auto submesh = std::make_shared<Mesh>(mapping->create(marker, 1));
 
   // Function spaces associated with each of the function spaces
   auto V1 = std::make_shared<MeshView_3D2D::Form_a00::TestSpace>(mesh); // 3D

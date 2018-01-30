@@ -46,7 +46,7 @@ int main()
   auto mesh = std::make_shared<UnitCubeMesh>(32, 32, 32);
   auto V = std::make_shared<MeshView_3D3D::Form_a::TestSpace>(mesh);
 
-  CellFunction<std::size_t> marker(mesh, 0);
+  MeshFunction<std::size_t> marker(mesh, mesh->topology().dim(), 0);
   for (CellIterator cell(*mesh); !cell.end(); ++cell)
   {
       auto x = cell->midpoint().coordinates();
@@ -54,9 +54,9 @@ int main()
   }
 
   std::vector<std::size_t> vertex_map,cell_map;
-  auto mapping = std::make_shared<MeshViewMapping>(mesh,vertex_map,cell_map);
-  auto submesh1 = std::make_shared<Mesh>(mapping->create_from_marker(marker, 1));
-  auto submesh2 = std::make_shared<Mesh>(mapping->create_from_marker(marker, 0));
+  auto mapping = std::make_shared<MeshView>(mesh,vertex_map,cell_map);
+  auto submesh1 = std::make_shared<Mesh>(mapping->create(marker, 1));
+  auto submesh2 = std::make_shared<Mesh>(mapping->create(marker, 0));
 
   // Function spaces associated with each of the function spaces
   auto V1 = std::make_shared<MeshView_3D3D::Form_a00::TestSpace>(submesh1);
