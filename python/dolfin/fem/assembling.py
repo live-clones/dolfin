@@ -342,13 +342,24 @@ class SystemAssembler(cpp.fem.SystemAssembler):
            bcs (_DirichletBC_)
               A list or a single DirichletBC (optional)
         """
-        # Create dolfin Form objects referencing all data needed by
-        # assembler
-        A_dolfin_form = _create_dolfin_form(A_form, form_compiler_parameters)
-        b_dolfin_form = _create_dolfin_form(b_form, form_compiler_parameters)
+        # Create dolfin Form objects referencing all data needed by assembler
+        if hasattr(A_form, '__iter__'):
+            A_dolfin_form = []
+            for af in A_form:
+                if af is None:
+                    A_dolfin_form.append(af)
+                else:
+                    A_dolfin_form.append(_create_dolfin_form(af, form_compiler_parameters))
+        else:
+            A_dolfin_form = _create_dolfin_form(A_form, form_compiler_parameters)
 
+        if hasattr(b_form, '__iter__'):
+            b_dolfin_form = [ _create_dolfin_form(bf, form_compiler_parameters) for bf in b_form ]
+        else:
+            b_dolfin_form = _create_dolfin_form(b_form, form_compiler_parameters)
         # Check bcs
-        bcs = _wrap_in_list(bcs, 'bcs', cpp.fem.DirichletBC)
+        if not isinstance(bcs, list):
+            bcs = _wrap_in_list(bcs, 'bcs', cpp.fem.DirichletBC)
 
         # Call C++ assemble function
         cpp.fem.SystemAssembler.__init__(self, A_dolfin_form, b_dolfin_form,

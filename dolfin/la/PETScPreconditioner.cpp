@@ -238,7 +238,7 @@ void PETScPreconditioner::set_fieldsplit(
     // Create IndexSet
     IS is;
     ierr = ISCreateGeneral(solver.mpi_comm(), fields[i].size(), fields[i].data(),
-                           PETSC_USE_POINTER, &is);
+                           PETSC_COPY_VALUES, &is);
     if (ierr != 0) petsc_error(ierr, __FILE__, "ISCreateGeneral");
 
     // Add split
