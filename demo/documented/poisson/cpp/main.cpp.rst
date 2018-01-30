@@ -144,7 +144,8 @@ the form file) defined relative to this mesh, we do as follows
    int main()
    {
      // Create mesh and function space
-     auto mesh = std::make_shared<Mesh>(UnitSquareMesh::create({{32, 32}}));
+     auto mesh = std::make_shared<Mesh>(
+       UnitSquareMesh::create({{32, 32}}, CellType::Type::triangle));
      auto V = std::make_shared<Poisson::FunctionSpace>(mesh);
 
 Now, the Dirichlet boundary condition (:math:`u = 0`) can be created
@@ -195,20 +196,15 @@ call the ``solve`` function with the arguments ``a == L``, ``u`` and
      solve(a == L, u, bc);
 
 The function ``u`` will be modified during the call to solve. A
-:cpp:class:`Function` can be manipulated in various ways, in
-particular, it can be plotted and saved to file. Here, we output the
-solution to a ``VTK`` file (using the suffix ``.pvd``) for later
-visualization and also plot it using the ``plot`` command:
+:cpp:class:`Function` can be saved to a file. Here, we output the
+solution to a ``VTK`` file (specified using the suffix ``.pvd``) for
+visualisation in an external program such as Paraview.
 
 .. code-block:: cpp
 
      // Save solution in VTK format
      File file("poisson.pvd");
      file << u;
-
-     // Plot solution
-     plot(u);
-     interactive();
 
      return 0;
    }

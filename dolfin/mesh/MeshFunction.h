@@ -579,7 +579,7 @@ namespace dolfin
 
     }
     _mesh->init(dim);
-    init(_mesh, dim, _mesh->size(dim));
+    init(_mesh, dim, _mesh->num_entities(dim));
   }
   //---------------------------------------------------------------------------
   template <typename T>
@@ -601,7 +601,7 @@ namespace dolfin
   {
     dolfin_assert(mesh);
     mesh->init(dim);
-    init(mesh, dim, mesh->size(dim));
+    init(mesh, dim, mesh->num_entities(dim));
   }
   //---------------------------------------------------------------------------
   template <typename T>
@@ -612,7 +612,7 @@ namespace dolfin
 
     // Initialize mesh for entities of given dimension
     mesh->init(dim);
-    dolfin_assert(mesh->size(dim) == size);
+    dolfin_assert(mesh->num_entities(dim) == size);
 
     // Initialize data
     if (_size != size)
@@ -652,7 +652,7 @@ namespace dolfin
     std::size_t n = std::count(_values.get(), _values.get() + _size, value);
     std::vector<std::size_t> indices;
     indices.reserve(n);
-    for (int i = 0; i < size(); ++i)
+    for (std::size_t i = 0; i < size(); ++i)
     {
       if (_values[i] == value)
         indices.push_back(i);

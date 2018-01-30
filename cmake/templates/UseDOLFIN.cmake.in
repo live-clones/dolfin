@@ -34,16 +34,6 @@ if (NOT DOLFIN_USE_FILE_INCLUDED)
   find_package(Boost 1.48 QUIET REQUIRED COMPONENTS
     @DOLFIN_BOOST_COMPONENTS_PUBLIC@)
 
-  # Need to get VTK config because VTK uses advanced VTK features
-  # which mean it's not enough to just link to the DOLFIN target. See
-  # http://www.vtk.org/pipermail/vtk-developers/2013-October/014402.html
-  if (@VTK_FOUND@)
-    find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} NO_MODULE QUIET)
-    if (VTK_FOUND)
-      include(${VTK_USE_FILE})
-    endif()
-  endif()
-
   if (@PETSC_FOUND@)
     if (NOT PETSC::petsc)
       set(DOLFIN_SKIP_BUILD_TESTS TRUE)
@@ -59,17 +49,13 @@ if (NOT DOLFIN_USE_FILE_INCLUDED)
     endif()
   endif()
 
-  # Add compiler definitions needed to use DOLFIN
-  add_definitions(${DOLFIN_CXX_DEFINITIONS})
-
-  # Add compiler flags needed to use DOLFIN
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${DOLFIN_LINK_FLAGS}")
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DOLFIN_LINK_FLAGS}")
-  set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${DOLFIN_LINK_FLAGS}")
-
   # Add include directories needed to use DOLFIN
   include_directories(${DOLFIN_INCLUDE_DIRS})
-  include_directories(SYSTEM ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
+
+  # Add compiler flags needed to use DOLFIN
+  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
+  #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${DOLFIN_LINK_FLAGS}")
+  #set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DOLFIN_LINK_FLAGS}")
+  #set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${DOLFIN_LINK_FLAGS}")
 
 endif()

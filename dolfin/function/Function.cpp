@@ -295,8 +295,13 @@ void Function::eval(Array<double>& values, const Array<double>& x) const
   // If not found, use the closest cell
   if (id == std::numeric_limits<unsigned int>::max())
   {
-    if (_allow_extrapolation)
-      id = mesh.bounding_box_tree()->compute_closest_entity(point).first;
+    // Check if the closest cell is within DOLFIN_EPS. This we can
+    // allow without _allow_extrapolation
+    std::pair<unsigned int, double> close
+      = mesh.bounding_box_tree()->compute_closest_entity(point);
+
+    if (_allow_extrapolation or close.second < DOLFIN_EPS)
+      id = close.first;
     else
     {
       dolfin_error("Function.cpp",
@@ -359,19 +364,19 @@ void Function::eval(Array<double>& values, const Array<double>& x,
 }
 //-----------------------------------------------------------------------------
 void Function::eval(Eigen::Ref<Eigen::VectorXd> values,
-                    const Eigen::Ref<Eigen::VectorXd> x) const
+                    Eigen::Ref<const Eigen::VectorXd> x) const
 {
   Array<double> _values(values.size(), values.data());
-  const Array<double> _x(x.size(), const_cast<double*>(values.data()));
+  const Array<double> _x(x.size(), const_cast<double*>(x.data()));
   eval(_values, _x);
 }
 //-----------------------------------------------------------------------------
 void Function::eval(Eigen::Ref<Eigen::VectorXd> values,
-                    const Eigen::Ref<Eigen::VectorXd> x,
+                    Eigen::Ref<const Eigen::VectorXd> x,
                     const Cell& dolfin_cell, const ufc::cell& ufc_cell) const
 {
   Array<double> _values(values.size(), values.data());
-  const Array<double> _x(x.size(), const_cast<double*>(values.data()));
+  const Array<double> _x(x.size(), const_cast<double*>(x.data()));
   eval(_values, _x, dolfin_cell, ufc_cell);
 }
 //-----------------------------------------------------------------------------
@@ -403,6 +408,16 @@ std::size_t Function::value_dimension(std::size_t i) const
   return _function_space->element()->value_dimension(i);
 }
 //-----------------------------------------------------------------------------
+std::vector<std::size_t> Function::value_shape() const
+{
+  dolfin_assert(_function_space);
+  dolfin_assert(_function_space->element());
+  std::vector<std::size_t> _shape(this->value_rank(), 1);
+  for (std::size_t i = 0; i < _shape.size(); ++i)
+    _shape[i] = this->value_dimension(i);
+  return _shape;
+}
+//-----------------------------------------------------------------------------
 void Function::eval(Array<double>& values, const Array<double>& x,
                     const ufc::cell& ufc_cell) const
 {
@@ -423,11 +438,11 @@ void Function::eval(Array<double>& values, const Array<double>& x,
 }
 //-----------------------------------------------------------------------------
 void Function::eval(Eigen::Ref<Eigen::VectorXd> values,
-                    const Eigen::Ref<Eigen::VectorXd> x,
+                    Eigen::Ref<const Eigen::VectorXd> x,
                     const ufc::cell& ufc_cell) const
 {
   Array<double> _values(values.size(), values.data());
-  Array<double> _x(x.size(), const_cast<double*>(values.data()));
+  Array<double> _x(x.size(), const_cast<double*>(x.data()));
   eval(_values, _x, ufc_cell);
 }
 //-----------------------------------------------------------------------------
@@ -560,14 +575,15 @@ void Function::init_vector()
 
   DefaultFactory factory;
 
+  MPI_Comm comm = _function_space->mesh()->mpi_comm();
+
   // Create layout for initialising tensor
   std::shared_ptr<TensorLayout> tensor_layout;
-  tensor_layout = factory.create_layout(1);
+  tensor_layout = factory.create_layout(comm, 1);
   dolfin_assert(tensor_layout);
   dolfin_assert(!tensor_layout->sparsity_pattern());
   dolfin_assert(_function_space->mesh());
-  tensor_layout->init(_function_space->mesh()->mpi_comm(), {index_map},
-                      TensorLayout::Ghosts::GHOSTED);
+  tensor_layout->init({index_map}, TensorLayout::Ghosts::GHOSTED);
 
   // Create vector of dofs
   if (!_vector)
