@@ -182,10 +182,34 @@ def test_UnitQuadMesh():
     assert mesh.num_entities_global(2) == 35
 
 
+def test_RectangleMeshQuadCreateDistributed():
+    mesh = RectangleMesh.create(MPI.comm_world, [Point(0, 0), Point(1, 1)], [5, 7], CellType.Type.quadrilateral)
+    assert mesh.num_entities_global(0) == 48
+    assert mesh.num_entities_global(2) == 35
+
+
+def test_RectangleMeshQuadCreateDistributedLocal():
+    mesh = RectangleMesh.create(MPI.comm_self, [Point(0, 0), Point(1, 1)], [5, 7], CellType.Type.quadrilateral)
+    assert mesh.num_entities(0) == 48
+    assert mesh.num_entities(2) == 35
+
+
 def test_UnitHexMesh():
     mesh = UnitCubeMesh.create(5, 7, 9, CellType.Type.hexahedron)
     assert mesh.num_entities_global(0) == 480
     assert mesh.num_entities_global(3) == 315
+
+
+def test_BoxMeshHexCreateDistributed():
+    mesh = BoxMesh.create(MPI.comm_world, [Point(0, 0, 0), Point(1, 1, 1)], [5, 7, 9], CellType.Type.hexahedron)
+    assert mesh.num_entities_global(0) == 480
+    assert mesh.num_entities_global(3) == 315
+
+
+def test_BoxMeshHexCreateDistributedLocal():
+    mesh = BoxMesh.create(MPI.comm_self, [Point(0, 0, 0), Point(1, 1, 1)], [5, 7, 9], CellType.Type.hexahedron)
+    assert mesh.num_entities(0) == 480
+    assert mesh.num_entities(3) == 315
 
 
 def test_RefineUnitIntervalMesh():
