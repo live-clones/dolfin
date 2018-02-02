@@ -3,12 +3,12 @@ from dolfin import *
 #Create mesh and define function space
 mesh = UnitSquareMesh(32, 32)
 
-marker = CellFunction("size_t", mesh, 0)
+marker = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
 for c in cells(mesh):
     marker[c] = c.midpoint().x() < 0.5
 
-submesh1 = MeshViewMapping.create_from_marker(marker, 1)
-submesh2 = MeshViewMapping.create_from_marker(marker, 0)
+submesh1 = MeshView.create(marker, 1)
+submesh2 = MeshView.create(marker, 0)
 
 # Define Dirichlet boundary
 def boundarySub1(x):

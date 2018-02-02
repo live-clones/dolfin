@@ -144,7 +144,7 @@ from .fem.projection import project
 from .fem.solvers import LocalSolver
 from .fem.solving import (solve, LinearVariationalProblem,
                           NonlinearVariationalProblem)
-from .fem.formmanipulations import (derivative, adjoint, increase_order, tear)
+from .fem.formmanipulations import (derivative, adjoint, increase_order, tear, extract_blocks)
 
 # Need to be careful with other to avoid circular dependency
 from .fem.adaptivesolving import (AdaptiveLinearVariationalSolver,
