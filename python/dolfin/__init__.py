@@ -135,7 +135,7 @@ from .fem.formmanipulations import (derivative, adjoint, increase_order, tear)
 from .fem.adaptivesolving import (AdaptiveLinearVariationalSolver,
                                   AdaptiveNonlinearVariationalSolver)
 
-from .function.functionspace import (FunctionSpace,
+from .function.functionspace import (FunctionSpace, FunctionSpaceProduct,
                                      VectorFunctionSpace, TensorFunctionSpace)
 from .function.function import Function
 from .function.argument import (TestFunction, TrialFunction,
