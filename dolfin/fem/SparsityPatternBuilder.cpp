@@ -97,7 +97,7 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
   if (cells)
   {
     Progress p("Building sparsity pattern over cells", mesh.num_cells());
-    auto mapping = mesh.topology().mapping;
+    auto mapping = mesh.topology().mapping();
 
     for (CellIterator cell(mesh); !cell.end(); ++cell)
     {

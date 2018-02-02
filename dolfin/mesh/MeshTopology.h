@@ -28,7 +28,7 @@
 
 #include <dolfin/common/Variable.h>
 #include "MeshConnectivity.h"
-#include "MeshViewMapping.h"
+#include "MeshView.h"
 
 namespace dolfin
 {
@@ -45,7 +45,9 @@ namespace dolfin
   /// the entity within that topological dimension.
 
 
-  class MeshView;
+  // NOTE : Forward declaration not sufficient to use the mapping() function
+  // Need to include mesh view to use auto mapping = mesh.topology().mapping()
+  // class MeshView;
 
   class MeshTopology : public Variable
   {

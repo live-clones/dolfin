@@ -3,11 +3,11 @@ from dolfin import *
 # Create mesh and define function space
 mesh = UnitCubeMesh(32, 32, 32)
 
-marker = EdgeFunction("size_t", mesh, 0)
+marker = MeshFunction("size_t", mesh, mesh.topology().dim()-2, 0)
 for e in edges(mesh):
     marker[e] = 0.5 - DOLFIN_EPS < e.midpoint().z() < 0.5 + DOLFIN_EPS and 0.5 - DOLFIN_EPS < e.midpoint().y() < 0.5 + DOLFIN_EPS
 
-submesh = MeshViewMapping.create_from_marker(marker, 1)
+submesh = MeshView.create(marker, 1)
 
 W1 = FunctionSpace(mesh, "Lagrange", 1) ## 3D
 W2 = FunctionSpace(submesh, "Lagrange", 1) ## 1D
