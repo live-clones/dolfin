@@ -21,8 +21,6 @@ VariationalProblem/Solver classes as well as the solve function.
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-import ufl
-
 import dolfin.cpp as cpp
 from dolfin.function.function import Function
 
@@ -35,7 +33,7 @@ import dolfin.fem.formmanipulations as formmanipulations
 from dolfin.fem.formmanipulations import derivative
 
 import dolfin.la.solver
-from dolfin.fem.problem import LinearVariationalProblem, NonlinearVariationalProblem
+from dolfin.fem.problem import LinearVariationalProblem, NonlinearVariationalProblem, MixedLinearVariationalProblem
 
 from dolfin.fem.formmanipulations import extract_blocks
 import six
@@ -84,50 +82,10 @@ class LocalSolver(cpp.fem.LocalSolver):
             # Initialize C++ base class
             cpp.fem.LocalSolver.__init__(self, a, L, solver_type)
 
-class MixedLinearVariationalProblem(cpp.MixedLinearVariationalProblem):
-
-    # Reuse C++ doc-string
-    __doc__ = cpp.MixedLinearVariationalProblem.__doc__
-
-    def __init__(self, a, L, u, bcs=None,
-                 form_compiler_parameters=None):
-
-        # Extract and check arguments (u is a list of Function)
-        u_comps = [_extract_u(u[i]) for i in range(len(u))]
-        bcs = _extract_bcs(bcs)
-
-        # Store form compiler parameters
-        form_compiler_parameters = form_compiler_parameters or {}
-        self.form_compiler_parameters = form_compiler_parameters
-
-        # Check number of blocks in lhs, rhs are consistent
-        assert(len(a) == len(u)*len(u))
-        assert(len(L) == len(u))
-
-        # Create list of forms/blocks
-        a_list = list()
-        L_list = list()
-        for Li in L:
-            # Wrap forms (and check if linear form L is empty)
-            if Li.empty():
-                L_list.append(cpp.Form(1, 0))
-            else:
-                L_list.append(Form(Li, form_compiler_parameters=form_compiler_parameters))
-
-        for ai in a:
-            if ai == None:
-                a_list.append(cpp.Form(2, 0))
-            else:
-                a_list.append(Form(ai, form_compiler_parameters=form_compiler_parameters))
-
-        # Initialize C++ base class
-        cpp.MixedLinearVariationalProblem.__init__(self, a_list, L_list, u_comps, bcs)
-
 # FIXME: The import here are here to avoid a circular dependency
 # (ugly, should fix)
 # Solver classes are imported directly
-from dolfin.cpp.fem import LinearVariationalSolver, NonlinearVariationalSolver  # noqa
-from dolfin.cpp.fem import MixedLinearVariationalSolver
+from dolfin.cpp.fem import LinearVariationalSolver, NonlinearVariationalSolver, MixedLinearVariationalSolver  # noqa
 from dolfin.fem.adaptivesolving import AdaptiveLinearVariationalSolver  # noqa
 from dolfin.fem.adaptivesolving import AdaptiveNonlinearVariationalSolver  # noqa
 

@@ -161,7 +161,7 @@ void MixedAssembler::assemble_cells(
     dolfin_assert(!cell->is_ghost());
 
     // Collect mapping of the integration domain mesh
-    auto mapping = mesh.topology().mapping;
+    auto mapping = mesh.topology().mapping();
 
     // Update to current cell
     cell->get_cell_data(ufc_cell);

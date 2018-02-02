@@ -44,6 +44,8 @@
 #include <dolfin/fem/MultiMeshForm.h>
 #include <dolfin/fem/LinearVariationalProblem.h>
 #include <dolfin/fem/LinearVariationalSolver.h>
+#include <dolfin/fem/MixedLinearVariationalProblem.h>
+#include <dolfin/fem/MixedLinearVariationalSolver.h>
 #include <dolfin/fem/LocalSolver.h>
 #include <dolfin/fem/NonlinearVariationalProblem.h>
 #include <dolfin/fem/NonlinearVariationalSolver.h>
@@ -433,8 +435,9 @@ namespace dolfin_wrappers
     // dolfin::Form
     py::class_<dolfin::Form, std::shared_ptr<dolfin::Form>>
       (m, "Form", "DOLFIN Form object")
+      .def(py::init<std::size_t, std::size_t>())
       .def(py::init<std::shared_ptr<const ufc::form>,
-                    std::vector<std::shared_ptr<const dolfin::FunctionSpace>>>())
+	   std::vector<std::shared_ptr<const dolfin::FunctionSpace>>>())
       .def(py::init<std::size_t, std::size_t>())
       .def("num_coefficients", &dolfin::Form::num_coefficients, "Return number of coefficients in form")
       .def("original_coefficient_position", &dolfin::Form::original_coefficient_position)
@@ -550,6 +553,26 @@ namespace dolfin_wrappers
                dolfin::Variable>(m, "LinearVariationalSolver")
       .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>())
       .def("solve", &dolfin::LinearVariationalSolver::solve);
+
+    // dolfin::MixedLinearVariationalProblem
+    py::class_<dolfin::MixedLinearVariationalProblem,
+               std::shared_ptr<dolfin::MixedLinearVariationalProblem>>
+      (m, "MixedLinearVariationalProblem")
+      .def(py::init<std::vector<std::vector<std::shared_ptr<const dolfin::Form>>>,
+           std::vector<std::vector<std::shared_ptr<const dolfin::Form>>>,
+           std::vector<std::shared_ptr<dolfin::Function>>,
+           std::vector<std::shared_ptr<const dolfin::DirichletBC>>>())
+      .def("bcs", (std::vector<std::shared_ptr<const dolfin::DirichletBC>>
+		   (dolfin::MixedLinearVariationalProblem::*)(int) const) &dolfin::MixedLinearVariationalProblem::bcs)
+      .def("bcs", (std::vector<std::vector<std::shared_ptr<const dolfin::DirichletBC>>>
+		   (dolfin::MixedLinearVariationalProblem::*)() const) &dolfin::MixedLinearVariationalProblem::bcs);
+
+    // dolfin::MixedLinearVariationalSolver
+    py::class_<dolfin::MixedLinearVariationalSolver,
+               std::shared_ptr<dolfin::MixedLinearVariationalSolver>,
+               dolfin::Variable>(m, "MixedLinearVariationalSolver")
+      .def(py::init<std::shared_ptr<dolfin::MixedLinearVariationalProblem>>())
+      .def("solve", &dolfin::MixedLinearVariationalSolver::solve);
 
     // dolfin::NonlinearVariationalProblem
     py::class_<dolfin::NonlinearVariationalProblem,
