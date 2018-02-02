@@ -154,8 +154,10 @@ from .function.multimeshfunctionspace import (MultiMeshFunctionSpace,
                                               MultiMeshVectorFunctionSpace,
                                               MultiMeshTensorFunctionSpace)
 from .function.functionspace import (FunctionSpace,
+                                     FunctionSpaceProduct,
                                      VectorFunctionSpace, 
                                      TensorFunctionSpace)
+
 from .function.function import Function
 from .function.multimeshfunction import MultiMeshFunction
 from .function.argument import (TestFunction, TrialFunction,

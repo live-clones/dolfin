@@ -20,10 +20,11 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import ufl
-from .functionspace import FunctionSpace
+from .functionspace import FunctionSpace, FunctionSpaceProduct
 from .multimeshfunctionspace import MultiMeshFunctionSpace
 
-__all__ = ["TestFunction", "TrialFunction", "Argument",
+
+__all__ = ["TestFunction", "TrialFunction", "Argument", "ArgumentProduct",
            "TestFunctions", "TrialFunctions"]
 
 # --- Subclassing of ufl.{Basis, Trial, Test}Function ---
@@ -86,8 +87,10 @@ def TestFunction(V, part=None):
 
     This is the overloaded PyDOLFIN variant.
     """
-    return Argument(V, 0, part)
-
+    if isinstance(V, FunctionSpaceProduct):
+        return ArgumentProduct(V, 0)
+    else:
+        return Argument(V, 0, part)
 
 def TrialFunction(V, part=None):
     """UFL value: Create a trial function argument to a form.
@@ -95,7 +98,10 @@ def TrialFunction(V, part=None):
     This is the overloaded PyDOLFIN variant.
 
     """
-    return Argument(V, 1, part)
+    if isinstance(V, FunctionSpaceProduct):
+        return ArgumentProduct(V, 1)
+    else:
+        return Argument(V, 1, part)
 
 
 # --- TestFunctions and TrialFunctions ---
@@ -130,3 +136,22 @@ def TrialFunctions(V):
 
     """
     return ufl.split(TrialFunction(V))
+
+def ArgumentProduct(V, number):
+    """UFL value: Create an Argument in a mixed space, and return a
+    tuple with the function components corresponding to the
+    subelements.
+
+    This is the overloaded PyDOLFIN variant.
+
+    """
+    if not isinstance(V, FunctionSpaceProduct):
+        error("ArgumentProduct should be used with FunctionSpaceProduct")
+
+    subspaces = V.sub_spaces()
+    arguments = list()
+    i=0
+    for s in subspaces:
+        arguments.append(Argument(s, number, i))
+        i = i+1
+    return tuple(arguments)
