@@ -155,3 +155,11 @@ def ArgumentProduct(V, number):
         arguments.append(Argument(s, number, i))
         i = i+1
     return tuple(arguments)
+
+## New function to define the view of an argument
+def View(argument, function_space):
+    assert isinstance(function_space, FunctionSpace)
+    assert isinstance(argument, Argument)
+    argument_view = Argument(function_space, argument.number(), argument.part())
+    argument_view.set_view(argument.function_space())
+    return argument_view;

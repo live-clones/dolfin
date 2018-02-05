@@ -235,7 +235,7 @@ def assemble_mixed(form,
     tensor = _create_tensor(comm, form, dolfin_form.rank(), backend, tensor)
 
     # Call C++ assemble function
-    assembler = cpp.MixedAssembler()
+    assembler = cpp.fem.MixedAssembler()
     assembler.add_values = add_values
     assembler.finalize_tensor = finalize_tensor
     assembler.keep_diagonal = keep_diagonal

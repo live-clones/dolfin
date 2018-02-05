@@ -161,7 +161,8 @@ from .function.functionspace import (FunctionSpace,
 from .function.function import Function
 from .function.multimeshfunction import MultiMeshFunction
 from .function.argument import (TestFunction, TrialFunction,
-                                TestFunctions, TrialFunctions)
+                                TestFunctions, TrialFunctions,
+                                View)
 from .function.constant import Constant
 from .function.specialfunctions import (MeshCoordinates, FacetArea, FacetNormal,
                                         CellVolume, SpatialCoordinate, CellNormal,
