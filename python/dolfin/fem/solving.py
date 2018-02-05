@@ -244,9 +244,7 @@ def _solve_varproblem(*args, **kwargs):
     # Solve linear variational problem
     if isinstance(eq.lhs, ufl.Form) and isinstance(eq.rhs, ufl.Form):
 
-        lhs_sd = eq.lhs.subdomain_data()
-        rhs_sd = eq.rhs.subdomain_data()
-        if len(lhs_sd) > 1 or len(rhs_sd) > 1:
+        if u.num_sub_spaces() > 0:
             # Extract blocks from the variational formulation
             eq_lsh_forms = extract_blocks(eq.lhs)
             eq_rsh_forms = extract_blocks(eq.rhs)

@@ -43,7 +43,7 @@ class Form(cpp.fem.Form):
                            mpi_comm=mesh.mpi_comm())
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 
-        ##function_spaces = [func.function_space()._cpp_object for func in form.arguments()]
+        ## function_spaces = [func.function_space()._cpp_object for func in form.arguments()]
         function_spaces = [func.ufl_function_space()._cpp_object for func in form.arguments()]
 
         cpp.fem.Form.__init__(self, ufc_form, function_spaces)
@@ -66,10 +66,10 @@ class Form(cpp.fem.Form):
             if isinstance(self.coefficients[i], cpp.function.GenericFunction):
                 self.set_coefficient(i, self.coefficients[i])
 
-        # Attach mesh (because function spaces and coefficients may be
-        # empty lists)
-        if not function_spaces:
-            self.set_mesh(mesh)
+        # Attach mesh :
+        # - because function spaces and coefficients may be empty lists
+        # - because function spaces can be built from different meshes
+        self.set_mesh(mesh)
 
         # Attach subdomains to C++ Form if we have them
         subdomains = self.subdomains.get("cell")
