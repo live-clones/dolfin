@@ -70,13 +70,13 @@ namespace dolfin
     // removed. Avoid using.
     static Mesh create(std::size_t nx, std::size_t ny, std::size_t nz,
                        CellType::Type cell_type)
-    { return create({nx, ny, nz}, cell_type); }
+    { return create({{nx, ny, nz}}, cell_type); }
 
     // Temporary - part of pybind11 transition and will be
     // removed. Avoid using.
     static Mesh create(MPI_Comm comm, std::size_t nx, std::size_t ny, std::size_t nz,
                        CellType::Type cell_type)
-    { return create({nx, ny, nz}, cell_type); }
+    { return create({{nx, ny, nz}}, cell_type); }
 
     /// Create a uniform finite element _Mesh_ over the unit cube
     /// [0,1] x [0,1] x [0,1].
