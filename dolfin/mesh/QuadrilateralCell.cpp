@@ -272,8 +272,63 @@ double QuadrilateralCell::facet_area(const Cell& cell, std::size_t facet) const
 void QuadrilateralCell::order(Cell& cell,
                  const std::vector<std::int64_t>& local_to_global_vertex_indices) const
 {
-  // Not implemented
-  // FIXME - probably not appropriate for quad cells.
+  // Sort i - j for i > j: 1 - 0, 2 - 0, 2 - 1
+
+  // Get mesh topology
+  const MeshTopology& topology = cell.mesh().topology();
+
+  // Sort local vertices on edges in ascending order, connectivity 1 - 0
+  if (!topology(1, 0).empty())
+  {
+    dolfin_assert(!topology(2, 1).empty());
+
+    // Get edge indices (local)
+    const unsigned int* cell_edges = cell.entities(1);
+
+    // Sort vertices on each edge
+    for (std::size_t i = 0; i < 4; i++)
+    {
+      unsigned int* edge_vertices = const_cast<unsigned int*>(topology(1, 0)(cell_edges[i]));
+      sort_entities(2, edge_vertices, local_to_global_vertex_indices);
+    }
+  }
+
+  // Sort local vertices on cell in ascending order, connectivity 2 - 0
+  if (!topology(2, 0).empty())
+  {
+    unsigned int* cell_vertices = const_cast<unsigned int*>(cell.entities(0));
+    sort_entities(4, cell_vertices, local_to_global_vertex_indices);
+  }
+
+  // Sort local edges on cell after non-incident vertex, connectivity 2 - 1
+  if (!topology(2, 1).empty())
+  {
+    dolfin_assert(!topology(2, 1).empty());
+
+    // Get cell vertex and edge indices (local)
+    const unsigned int* cell_vertices = cell.entities(0);
+    unsigned int* cell_edges = const_cast<unsigned int*>(cell.entities(1));
+
+    // Loop over vertices on cell
+    for (std::size_t i = 0; i < 4; i++)
+    {
+      // Loop over edges on cell
+      for (std::size_t j = i; j < 4; j++)
+      {
+        const unsigned int* edge_vertices = topology(1, 0)(cell_edges[j]);
+
+        // Check if the ith vertex of the cell is non-incident with edge j
+        if (std::count(edge_vertices, edge_vertices + 2, cell_vertices[i]) == 0)
+        {
+          // Swap edge numbers
+          std::size_t tmp = cell_edges[i];
+          cell_edges[i] = cell_edges[j];
+          cell_edges[j] = tmp;
+          break;
+        }
+      }
+    }
+  }
 }
 //-----------------------------------------------------------------------------
 bool QuadrilateralCell::collides(const Cell& cell, const Point& point) const
