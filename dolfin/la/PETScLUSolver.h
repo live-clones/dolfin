@@ -21,9 +21,9 @@
 #ifdef HAS_PETSC
 
 #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 8 && PETSC_VERSION_RELEASE == 1
-#define MATSOLVERTYPE MatSolverPackage
-#else
-#define MATSOLVERTYPE MatSolverType
+#define MatSolverType MatSolverPackage
+#define PCFactorGetMatSolverType PCFactorGetMatSolverPackage
+#define PCFactorSetMatSolverType PCFactorSetMatSolverPackage
 #endif
 
 
@@ -129,11 +129,11 @@ namespace dolfin
 
     // FIXME: Remove
     // Available LU solvers
-    static std::map<std::string, const MATSOLVERTYPE> lumethods;
+    static std::map<std::string, const MatSolverType> lumethods;
 
     // Select LU solver type
-    static const MATSOLVERTYPE select_solver(MPI_Comm comm,
-                                                std::string method);
+    static const MatSolverType select_solver(MPI_Comm comm,
+                                             std::string method);
 
     PETScKrylovSolver _solver;
 
