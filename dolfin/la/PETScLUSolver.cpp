@@ -36,21 +36,25 @@ using namespace dolfin;
 // Functions in anonymous namespace (local scope)
 namespace
 {
-  const MatSolverPackage get_solver_package_type(KSP ksp)
+  const MatSolverType get_solver_package_type(KSP ksp)
   {
     PetscErrorCode ierr;
-    const MatSolverPackage solver_type;
+#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 8 && PETSC_VERSION_RELEASE == 1
+    const MatSolverType solver_type;
+#else
+    MatSolverType solver_type = 0;
+#endif
     PC pc;
     ierr = KSPGetPC(ksp, &pc);
     if (ierr != 0) dolfin::PETScObject::petsc_error(ierr, __FILE__, "KSPGetPC");
 
-    ierr = PCFactorGetMatSolverPackage(pc, &solver_type);
-    if (ierr != 0) dolfin::PETScObject::petsc_error(ierr, __FILE__, "PCFactorGetMatSolverPackage");
+    ierr = PCFactorGetMatSolverType(pc, &solver_type);
+    if (ierr != 0) dolfin::PETScObject::petsc_error(ierr, __FILE__, "PCFactorGetMatSolverType");
 
     return solver_type;
   }
   //---------------------------------------------------------------------------
-  std::map<const MatSolverPackage, bool> methods_cholesky
+  std::map<const MatSolverType, bool> methods_cholesky
   = { {MATSOLVERUMFPACK,      false},
       {MATSOLVERMUMPS,        true},
       {MATSOLVERPASTIX,       true},
@@ -59,7 +63,7 @@ namespace
       {MATSOLVERPETSC,        true} };
 
   //---------------------------------------------------------------------------
-  bool solver_has_cholesky(const MatSolverPackage package)
+  bool solver_has_cholesky(const MatSolverType package)
   {
     auto it = methods_cholesky.find(package);
     dolfin_assert(it != methods_cholesky.end());
@@ -89,7 +93,7 @@ namespace
 //-----------------------------------------------------------------------------
 
 // List of available LU solvers
-std::map<std::string, const MatSolverPackage> PETScLUSolver::lumethods
+std::map<std::string, const MatSolverType> PETScLUSolver::lumethods
 = { {"default", ""},
 #if PETSC_HAVE_UMFPACK || PETSC_HAVE_SUITESPARSE
     {"umfpack",      MATSOLVERUMFPACK},
@@ -161,7 +165,7 @@ PETScLUSolver::PETScLUSolver(MPI_Comm comm,
   parameters = default_parameters();
 
   // Select solver package
-  const MatSolverPackage solver_package = select_solver(comm, method);
+  const MatSolverType solver_package = select_solver(comm, method);
 
   // Get KSP pointer
   KSP ksp = _solver.ksp();
@@ -188,8 +192,8 @@ PETScLUSolver::PETScLUSolver(MPI_Comm comm,
   }
 
   // Set LU solver package
-  ierr = PCFactorSetMatSolverPackage(pc, solver_package);
-  if (ierr != 0) PETScObject::petsc_error(ierr, __FILE__, "PCFactorSetMatSolverPackage");
+  ierr = PCFactorSetMatSolverType(pc, solver_package);
+  if (ierr != 0) PETScObject::petsc_error(ierr, __FILE__, "PCFactorSetMatSolverType");
 
   // Set operator
   if (A)
@@ -241,7 +245,7 @@ std::size_t PETScLUSolver::solve(GenericVector& x, const GenericVector& b,
     dolfin_assert(_A);
     PETScBaseMatrix A(_A);
 
-    const MatSolverPackage solver_type = get_solver_package_type(_solver.ksp());
+    const MatSolverType solver_type = get_solver_package_type(_solver.ksp());
     log(PROGRESS,"Solving linear system of size %ld x %ld (PETSc LU solver, %s).",
         A.size(0), A.size(1), solver_type);
   }
@@ -306,8 +310,8 @@ KSP PETScLUSolver::ksp() const
   return _solver.ksp();
 }
 //-----------------------------------------------------------------------------
-const MatSolverPackage PETScLUSolver::select_solver(MPI_Comm comm,
-                                                    std::string method)
+const MatSolverType PETScLUSolver::select_solver(MPI_Comm comm,
+                                                 std::string method)
 {
   // Check package string
   if (lumethods.count(method) == 0)

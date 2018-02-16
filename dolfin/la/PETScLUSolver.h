@@ -20,11 +20,10 @@
 
 #ifdef HAS_PETSC
 
-// Temporary fix for PETSc master
-#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR >= 8 && PETSC_VERSION_SUBMINOR >= 3 && PETSC_VERSION_RELEASE == 0
-#define MatSolverPackage MatSolverType
-#define PCFactorSetMatSolverPackage PCFactorSetMatSolverType
-#define PCFactorGetMatSolverPackage PCFactorGetMatSolverType
+#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 8 && PETSC_VERSION_RELEASE == 1
+#define MatSolverType MatSolverPackage
+#define PCFactorGetMatSolverType PCFactorGetMatSolverPackage
+#define PCFactorSetMatSolverType PCFactorSetMatSolverPackage
 #endif
 
 
@@ -130,11 +129,11 @@ namespace dolfin
 
     // FIXME: Remove
     // Available LU solvers
-    static std::map<std::string, const MatSolverPackage> lumethods;
+    static std::map<std::string, const MatSolverType> lumethods;
 
     // Select LU solver type
-    static const MatSolverPackage select_solver(MPI_Comm comm,
-                                                std::string method);
+    static const MatSolverType select_solver(MPI_Comm comm,
+                                             std::string method);
 
     PETScKrylovSolver _solver;
 
