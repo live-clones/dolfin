@@ -56,6 +56,42 @@ namespace dolfin
     static std::shared_ptr<GenericMatrix>
       build_gradient(const FunctionSpace& V0, const FunctionSpace& V1);
 
+  private:
+
+    class UFCGradient : public ufc::function
+    {
+
+      public:
+
+        UFCGradient(const ufc::finite_element* element);
+
+        virtual ~UFCGradient();
+
+        virtual void evaluate(double* values,
+                              const double* x,
+                              const ufc::cell& c) const;
+
+        void update(std::size_t i,
+                    const double* coordinate_dofs,
+                    int cell_orientation,
+                    const ufc::coordinate_mapping* cm=nullptr);
+
+        void operator++(int);
+
+      private:
+
+        const ufc::finite_element* _element;
+
+        std::size_t _i;
+
+        const double* _coordinate_dofs;
+
+        int _cell_orientation;
+
+        const ufc::coordinate_mapping* _cm;
+
+    };
+
   };
 }
 

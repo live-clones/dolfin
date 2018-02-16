@@ -17,16 +17,16 @@
 
 #include <vector>
 #include <dolfin/common/ArrayView.h>
+#include <dolfin/common/Timer.h>
 #include <dolfin/fem/GenericDofMap.h>
+#include <dolfin/fem/SparsityPatternBuilder.h>
 #include <dolfin/function/FunctionSpace.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/Matrix.h>
-#include <dolfin/la/PETScMatrix.h>
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/la/TensorLayout.h>
-#include <dolfin/mesh/Edge.h>
+#include <dolfin/log/Progress.h>
 #include <dolfin/mesh/Mesh.h>
-#include <dolfin/mesh/Vertex.h>
 #include "DiscreteOperators.h"
 
 using namespace dolfin;
@@ -36,9 +36,6 @@ std::shared_ptr<GenericMatrix>
 DiscreteOperators::build_gradient(const FunctionSpace& V0,
                                   const FunctionSpace& V1)
 {
-  // TODO: This function would be significantly simplified if it was
-  // easier to build matrix sparsity patterns.
-
   // Get mesh
   dolfin_assert(V0.mesh());
   const Mesh& mesh = *(V0.mesh());
@@ -52,33 +49,10 @@ DiscreteOperators::build_gradient(const FunctionSpace& V0,
                  "function spaces do not share the same mesh");
   }
 
-  // Check that V0 is a (lowest-order) edge basis
-  mesh.init(1);
-  if (V0.dim() != mesh.num_entities_global(1))
-  {
-    dolfin_error("DiscreteGradient.cpp",
-                 "compute discrete gradient operator",
-                 "function spaces is not a lowest-order edge space");
-  }
+  // FIXME: Add checks on finite elements
 
-  // Check that V1 is a linear nodal basis
-  if (V1.dim() != mesh.num_entities_global(0))
-  {
-    dolfin_error("DiscreteGradient.cpp",
-                 "compute discrete gradient operator",
-                 "function space is not a linear nodal function space");
-  }
-
-  // Build maps from entities to local dof indices
-  const std::vector<dolfin::la_index> edge_to_dof = V0.dofmap()->dofs(mesh, 1);
-  const std::vector<dolfin::la_index> vertex_to_dof
-    = V1.dofmap()->dofs(mesh, 0);
-
-  // Build maps from local dof numbering to global
-  std::vector<std::size_t> local_to_global_map0;
-  std::vector<std::size_t> local_to_global_map1;
-  V0.dofmap()->tabulate_local_to_global_dofs(local_to_global_map0);
-  V1.dofmap()->tabulate_local_to_global_dofs(local_to_global_map1);
+  // Start timer
+  Timer t0("Assemble cells");
 
   // Declare matrix
   auto A = std::make_shared<Matrix>();
@@ -89,78 +63,122 @@ DiscreteOperators::build_gradient(const FunctionSpace& V0,
   dolfin_assert(tensor_layout);
 
   // Copy index maps from dofmaps
-  std::vector<std::shared_ptr<const IndexMap> > index_maps
+  std::vector<std::shared_ptr<const IndexMap>> index_maps
     = {V0.dofmap()->index_map(), V1.dofmap()->index_map()};
   std::vector<std::pair<std::size_t, std::size_t>> local_range
-    = { V0.dofmap()->ownership_range(), V1.dofmap()->ownership_range()};
+    = {V0.dofmap()->ownership_range(), V1.dofmap()->ownership_range()};
 
   // Initialise tensor layout
   tensor_layout->init(index_maps, TensorLayout::Ghosts::UNGHOSTED);
 
-  // Initialize edge -> vertex connections
-  mesh.init(1, 0);
-
-  SparsityPattern& pattern = *tensor_layout->sparsity_pattern();
-  pattern.init(index_maps);
-
-    // Build sparsity pattern
+  // Build sparsity pattern (like for cell integral)
   if (tensor_layout->sparsity_pattern())
   {
-    for (EdgeIterator edge(mesh); !edge.end(); ++edge)
-    {
-      // Row index (global indices)
-      const std::size_t row = local_to_global_map0[edge_to_dof[edge->index()]];
-
-      if (row >= local_range[0].first and row < local_range[0].second)
-      {
-        // Column indices (global indices)
-        const Vertex v0(mesh, edge->entities(0)[0]);
-        const Vertex v1(mesh, edge->entities(0)[1]);
-        std::size_t col0 = local_to_global_map1[vertex_to_dof[v0.index()]];
-        std::size_t col1 = local_to_global_map1[vertex_to_dof[v1.index()]];
-
-        pattern.insert_global(row, col0);
-        pattern.insert_global(row, col1);
-      }
-    }
-    pattern.apply();
+    SparsityPattern& pattern = *tensor_layout->sparsity_pattern();
+    SparsityPatternBuilder::build(pattern, mesh,
+                                 {V0.dofmap().get(), V1.dofmap().get()},
+                                 true, false, false, false, false);
   }
 
   // Initialise matrix
+  Timer t1("Init matrix");
   A->init(*tensor_layout);
+  t1.stop();
 
-  // Build discrete gradient operator/matrix
-  for (EdgeIterator edge(mesh); !edge.end(); ++edge)
+  const GenericDofMap& dofmap0 = *V0.dofmap();
+  const GenericDofMap& dofmap1 = *V1.dofmap();
+  const ufc::finite_element& element0 = *V0.element()->ufc_element();
+  const ufc::finite_element& element1 = *V1.element()->ufc_element();
+
+  // Create data structures for local assembly data
+  ufc::cell ufc_cell;
+  std::vector<double> coordinate_dofs;
+  ArrayView<const dolfin::la_index> dofs0;
+  ArrayView<const dolfin::la_index> dofs1;
+  std::vector<double> values(dofmap0.max_element_dofs()
+    * dofmap1.max_element_dofs());
+  std::vector<double> column_values(dofmap0.max_element_dofs());
+  UFCGradient ufc_gradient(&element1);
+
+  // Assemble over cells
+  Progress p("Assembling discrete gradient matrix", mesh.num_cells());
+  for (CellIterator cell(mesh); !cell.end(); ++cell)
   {
-    dolfin::la_index row;
-    dolfin::la_index cols[2];
-    double values[2];
+    // Check that cell is not a ghost
+    dolfin_assert(!cell->is_ghost());
 
-    row = local_to_global_map0[edge_to_dof[edge->index()]];
+    // Update to current cell
+    cell->get_cell_data(ufc_cell);
+    cell->get_coordinate_dofs(coordinate_dofs);
+    ufc_gradient.update(0, coordinate_dofs.data(), ufc_cell.orientation);
 
-    Vertex v0(mesh, edge->entities(0)[0]);
-    Vertex v1(mesh, edge->entities(0)[1]);
+    // Get local-to-global dof maps for cell
+    auto dmap0 = dofmap0.cell_dofs(cell->index());
+    auto dmap1 = dofmap1.cell_dofs(cell->index());
+    dofs0 = ArrayView<const dolfin::la_index>(dmap0.size(), dmap0.data());
+    dofs1 = ArrayView<const dolfin::la_index>(dmap1.size(), dmap1.data());
 
-    cols[0] = local_to_global_map1[vertex_to_dof[v0.index()]];
-    cols[1] = local_to_global_map1[vertex_to_dof[v1.index()]];
-    if (v1.global_index() < v0.global_index())
+    // Skip if at least one dofmap is empty
+    if (dofs0.size() == 0 or dofs1.size() == 0)
+      continue;
+
+    // Tabulate dofs on gradients
+    for (std::size_t j = 0; j < dofs1.size(); ++j)
     {
-      values[0] =  1.0;
-      values[1] = -1.0;
-    }
-    else
-    {
-      values[0] = -1.0;
-      values[1] =  1.0;
+      element0.evaluate_dofs(column_values.data(), ufc_gradient,
+                             coordinate_dofs.data(), ufc_cell.orientation,
+                             ufc_cell);
+      for (std::size_t i = 0; i < dofs0.size(); ++i)
+        values[j + i*dofs1.size()] = column_values[i];
+      ufc_gradient++;
     }
 
     // Set values in matrix
-    A->set(values, 1, &row, 2, cols);
+    A->set_local(values.data(),
+                 dofs0.size(), dofs0.data(),
+                 dofs1.size(), dofs1.data());
+
+    p++;
   }
 
   // Finalise matrix
   A->apply("insert");
 
   return A;
+}
+//-----------------------------------------------------------------------------
+DiscreteOperators::UFCGradient::UFCGradient(const ufc::finite_element* element)
+  : _element(element)
+{
+  // Do nothing
+}
+//-----------------------------------------------------------------------------
+DiscreteOperators::UFCGradient::~UFCGradient()
+{
+  // Do nothing
+}
+//-----------------------------------------------------------------------------
+void DiscreteOperators::UFCGradient::evaluate(double* values,
+                                              const double* x,
+                                              const ufc::cell& c) const
+{
+  _element->evaluate_basis_derivatives(_i, 1, values, x, _coordinate_dofs,
+                                       _cell_orientation, _cm);
+}
+//-----------------------------------------------------------------------------
+void DiscreteOperators::UFCGradient::update(std::size_t i,
+                                            const double* coordinate_dofs,
+                                            int cell_orientation,
+                                            const ufc::coordinate_mapping* cm)
+{
+  _i = i;
+  _coordinate_dofs = coordinate_dofs;
+  _cell_orientation = cell_orientation;
+  _cm = cm;
+}
+//-----------------------------------------------------------------------------
+void DiscreteOperators::UFCGradient::operator++(int)
+{
+  _i++;
 }
 //-----------------------------------------------------------------------------

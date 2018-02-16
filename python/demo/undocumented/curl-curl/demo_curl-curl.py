@@ -74,8 +74,11 @@ parameters["linear_algebra_backend"] = "PETSc";
 mesh = Mesh("../sphere.xml.gz")
 mesh = refine(mesh)
 
+degree = 2
+
 # Define function spaces
-V = FunctionSpace(mesh, "Nedelec 1st kind H(curl)", 1)
+#V = FunctionSpace(mesh, "Nedelec 1st kind H(curl)", degree)
+V = FunctionSpace(mesh, "Nedelec 2nd kind H(curl)", degree - 1)
 
 # Define test and trial functions
 v = TestFunction(V)
@@ -117,7 +120,7 @@ pc.setType("hypre")
 pc.setHYPREType("ams")
 
 # Build discrete gradient
-P1 = FunctionSpace(mesh, "Lagrange", 1)
+P1 = FunctionSpace(mesh, "Lagrange", degree)
 G = DiscreteOperators.build_gradient(V, P1)
 
 # Attach discrete gradient to preconditioner
@@ -155,7 +158,7 @@ ksp.solve(as_backend_type(b).vec(), as_backend_type(T.vector()).vec())
 ksp.view()
 
 # Test and trial functions for density equation
-W = VectorFunctionSpace(mesh, "Lagrange", 1)
+W = VectorFunctionSpace(mesh, "Lagrange", degree)
 v = TestFunction(W)
 u = TrialFunction(W)
 
