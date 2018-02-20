@@ -105,7 +105,7 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        MeshTransformation, SubsetIterator, MultiMesh)
 
 from .cpp.nls import (NonlinearProblem, NewtonSolver, OptimisationProblem)
-from .cpp.refinement import refine
+from .cpp.refinement import refine, p_refine
 from .cpp.parameter import Parameters, parameters
 from .cpp.io import X3DOM, X3DOMParameters
 

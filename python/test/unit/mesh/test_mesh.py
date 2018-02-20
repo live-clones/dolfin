@@ -238,6 +238,18 @@ def test_RefineUnitCubeMesh():
     assert mesh.num_entities_global(3) == 15120
 
 
+def test_P_RefineUnitSquareMesh():
+    mesh = UnitSquareMesh(5, 7)
+    mesh = p_refine(mesh)
+    assert mesh.geometry().degree() == 2
+
+
+def test_P_RefineUnitCubeMesh():
+    mesh = UnitCubeMesh(5, 7, 9)
+    mesh = p_refine(mesh)
+    assert mesh.geometry().degree() == 2
+
+
 def test_BoundaryComputation():
     """Compute boundary of mesh."""
     mesh = UnitCubeMesh(2, 2, 2)
