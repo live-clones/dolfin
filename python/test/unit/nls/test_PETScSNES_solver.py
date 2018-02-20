@@ -252,3 +252,10 @@ def test_snes_solver_bound_vectors(F, u, bcs, J,
     u.interpolate(Constant(-1000.0))
     solver.solve()
     assert u.vector().min() >= 0
+
+
+@skip_if_not_PETSc
+def test_snes_set_from_options():
+    solver = PETScSNESSolver()
+    PETScOptions.set("snes_atol", 1e-12)
+    solver.set_from_options()

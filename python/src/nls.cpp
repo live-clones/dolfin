@@ -115,7 +115,8 @@ namespace dolfin_wrappers
       .def("snes", &dolfin::PETScSNESSolver::snes)
       .def("solve", (std::pair<std::size_t, bool> (dolfin::PETScSNESSolver::*)(dolfin::NonlinearProblem&,
                                                                                dolfin::GenericVector&))
-           &dolfin::PETScSNESSolver::solve);
+           &dolfin::PETScSNESSolver::solve)
+      .def("set_from_options", &dolfin::PETScSNESSolver::set_from_options);
 
     // dolfin::TAOLinearBoundSolver
     py::class_<dolfin::TAOLinearBoundSolver, std::shared_ptr<dolfin::TAOLinearBoundSolver>, dolfin::Variable>
