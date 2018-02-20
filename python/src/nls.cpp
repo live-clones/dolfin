@@ -22,6 +22,8 @@
 
 #include <dolfin/common/Variable.h>
 #include <dolfin/parameter/Parameters.h>
+#include <dolfin/la/GenericLinearAlgebraFactory.h>
+#include <dolfin/la/GenericLinearSolver.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/PETScObject.h>
@@ -96,11 +98,15 @@ namespace dolfin_wrappers
                dolfin::Variable>(m, "NewtonSolver")
       .def(py::init<>())
       .def(py::init([](const MPICommWrapper comm)
-          { return std::unique_ptr<dolfin::NewtonSolver>(new dolfin::NewtonSolver(comm.get())); }))
+          { return std::unique_ptr<PyNewtonSolver>(new PyNewtonSolver(comm.get())); }))
+      .def(py::init([](const MPICommWrapper comm, std::shared_ptr<dolfin::GenericLinearSolver> solver,
+                       dolfin::GenericLinearAlgebraFactory& factory)
+          { return std::unique_ptr<PyNewtonSolver>(new PyNewtonSolver(comm.get(), solver, factory)); }))
       .def("solve", &dolfin::NewtonSolver::solve)
       .def("converged", &PyPublicNewtonSolver::converged)
       .def("solver_setup", &PyPublicNewtonSolver::solver_setup)
-      .def("update_solution", &PyPublicNewtonSolver::update_solution);
+      .def("update_solution", &PyPublicNewtonSolver::update_solution)
+      .def("linear_solver", &dolfin::NewtonSolver::linear_solver, py::return_value_policy::reference);
 
 #ifdef HAS_PETSC
     // dolfin::PETScSNESSolver

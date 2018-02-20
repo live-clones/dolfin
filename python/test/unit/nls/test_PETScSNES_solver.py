@@ -200,7 +200,23 @@ def test_preconditioner_interface(V, parameter_backend):
             assert getattr(self, "_solver_setup_called", False)
             assert getattr(self, "_update_solution_called", False)
 
-    for solverclass in [NewtonSolver, MyNewtonSolver, PETScSNESSolver]:
+    class MyPETScNewtonSolver(MyNewtonSolver):
+        def __init__(self):
+            self.petsc_solver = PETScKrylovSolver()
+            NewtonSolver.__init__(self, V.mesh().mpi_comm(),
+                self.petsc_solver, PETScFactory.instance())
+        def update_solution(self, x, dx, rp, p, i):
+            self._update_solution_called = True
+            assert isinstance(x, cpp.la.GenericVector)
+            assert isinstance(dx, cpp.la.GenericVector)
+            assert isinstance(rp, float)
+            assert isinstance(p, NonlinearProblem)
+            assert isinstance(i, numbers.Integral)
+            assert self.linear_solver() is self.petsc_solver
+            super().update_solution(x, dx, rp, p, i)
+
+
+    for solverclass in [NewtonSolver, MyNewtonSolver, MyPETScNewtonSolver, PETScSNESSolver]:
         problem = Problem(V)
         x = problem.u.vector()
 
