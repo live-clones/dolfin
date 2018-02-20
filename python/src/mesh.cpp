@@ -97,7 +97,8 @@ namespace dolfin_wrappers
         assert(b.shape.size() == 1);
         assert(b.shape[0] <= 3);
         self.set(local_index, x.data());
-      });
+      })
+      .def("num_entity_coordinates", &dolfin::MeshGeometry::num_entity_coordinates);
 
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>, dolfin::Variable>
