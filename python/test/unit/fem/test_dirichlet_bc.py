@@ -262,4 +262,4 @@ def test_get_value():
 
     assert bc.value() == boundary_constant.cpp_object()
     for j in range(vspace_dim):
-        assert bc.value().values()[j] == float(boundary_constant.values()[j])
+        assert bc.value().values()[j] == boundary_constant.values()[j]
