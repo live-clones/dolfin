@@ -207,11 +207,6 @@ def test_preconditioner_interface(V, parameter_backend):
                 self.petsc_solver, PETScFactory.instance())
         def update_solution(self, x, dx, rp, p, i):
             self._update_solution_called = True
-            assert isinstance(x, cpp.la.GenericVector)
-            assert isinstance(dx, cpp.la.GenericVector)
-            assert isinstance(rp, float)
-            assert isinstance(p, NonlinearProblem)
-            assert isinstance(i, numbers.Integral)
             assert self.linear_solver() is self.petsc_solver
             super().update_solution(x, dx, rp, p, i)
 
