@@ -134,7 +134,7 @@ int CVode::jacobian(std::shared_ptr<const GenericVector> v,
 {
   dolfin_error("CVode.cpp",
       	       "compute Jacobian function",
-	             "This function should be overloaded");
+               "This function should be overloaded");
   return 0;
 }
 //-----------------------------------------------------------------------------
@@ -143,15 +143,15 @@ int CVode::jacobian_setup(double t,
                           std::shared_ptr<GenericVector> y)
 {
   dolfin_error("CVode.cpp",
-      	       "Jacobian setup function",
-	             "This function should be overloaded");
+      	       "set up Jacobian function",
+               "This function should be overloaded");
   return 0;
 }
 
 //-----------------------------------------------------------------------------
-int CVode::psolve(double tn, std::shared_ptr<GenericVector>u,
-                  std::shared_ptr<GenericVector> fu,
-                  std::shared_ptr<GenericVector> r,
+int CVode::psolve(double t, std::shared_ptr<const GenericVector>y,
+                  std::shared_ptr<const GenericVector> fy,
+                  std::shared_ptr<const GenericVector> r,
                   std::shared_ptr<GenericVector> z,
                   double gamma, double delta, int lr)
 {
@@ -205,25 +205,23 @@ int CVode::f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 }
 
 //--------------------------------------------------------------------------
-int CVode::prec_solve(double tn, N_Vector u, N_Vector fu, N_Vector r, N_Vector z,
-                  double gamma, double delta, int lr, void *user_data)
+int CVode::prec_solve(double t, N_Vector y, N_Vector fy, N_Vector r, N_Vector z,
+                      double gamma, double delta, int lr, void *user_data)
 {
   // Preconditioner solve routine
   // TODO: Create as virtual function
 
   CVode* cv = static_cast<CVode*>(user_data);
 
-  auto uvec = static_cast<const SUNDIALSNVector*>(u->content)->vec();
-  auto udotvec = static_cast<SUNDIALSNVector*>(fu->content)->vec();
+  auto yvec = static_cast<const SUNDIALSNVector*>(y->content)->vec();
+  auto fyvec = static_cast<const SUNDIALSNVector*>(fy->content)->vec();
   auto rvec = static_cast<const SUNDIALSNVector*>(r->content)->vec();
   auto zvec = static_cast<SUNDIALSNVector*>(z->content)->vec();
 
-  cv->psolve(tn, uvec, udotvec, rvec, zvec, gamma, delta, lr);
+  cv->psolve(t, yvec, fyvec, rvec, zvec, gamma, delta, lr);
 
   return 0;
 }
-
-
 //-----------------------------------------------------------------------------
 std::map<std::string, double> CVode::statistics()
 {
