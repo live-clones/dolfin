@@ -102,51 +102,74 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
     for (CellIterator cell(mesh); !cell.end(); ++cell)
     {
       // Tabulate dofs for each dimension and get local dimensions
-
-      // FIXME/Mixed-domains/Note : the PETSc matrices are row-oriented [primary_dim member of SparsityPattern is always 0 = test functions/rows]
-      // If the test function are defined of a (parent) mesh whose nb dofs is larger than the integration domain (mesh) => (nb rows > nb cols) :
-      // dofs[0] should be defined from the cell indices in the parent mesh instead of the submesh (integration domain)
-      // Otherwise, the non-zero entries are not the right ones. This cause a PETSc error when add_local (applied to an entry which is supposed to be zero)
-      if(mapping && rank > 1) // Only if we have a matrix AND if the considered mesh comes from a parent mesh
+      if(mapping && rank > 1) // Only if we have a matrix AND if the considered mesh is a MeshView
       {
-#if 0 // OLD VERSION
-	auto dmap0 = dofmaps[0]->cell_dofs(cell->index());
-	auto dmap1 = dofmaps[1]->cell_dofs(cell->index());
-#else
-	std::vector<std::size_t> indices = {std::size_t(cell->index())};
-        dmaps[1] = dofmaps[1]->entity_closure_dofs(mesh, mesh.topology().dim(), indices);
-	// Transform into an Eigen::map -> Needed ?
-	auto dmap1 = Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>>(&dmaps[1][0], dmaps[1].size());
-#endif
+	// Differenciate the off-diag blocks
 	int max_rows = dofmaps[0]->index_map()->local_range().second; // nb test functions
 	int max_cols = dofmaps[1]->index_map()->local_range().second; // nb trial function
+
+	std::vector<std::size_t> cell_index;
+	int codim = mapping->mesh()->topology().dim() - mesh.topology().dim();
+	if(codim == 1)
+	{
+	  const std::size_t D = mapping->mesh()->topology().dim();
+	  mapping->mesh()->init(D);
+	  mapping->mesh()->init(D - 1, D);
+
+	  Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
+	  Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[0]);
+	  cell_index.push_back(mesh_cell.index());
+
+	  // Add other contributions
+	  for(int i=1; i<mesh_facet.num_entities(D); ++i)
+	  {
+	    Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[i]);
+	    cell_index.push_back(mesh_cell.index());
+	  }
+	}
+	else if(codim == 2)
+	{
+	  std::cout << "[SparsityBuilder] codim 2 - Not implemented" << std::endl;
+	}
+
 	if(max_rows > max_cols) // Test functions in mesh while trial functions in the submesh
 	{
-#if 0  // OLD VERSION
-	  auto dmap0 = dofmaps[0]->cell_dofs(mapping->cell_map()[cell->index()]);
+	  auto dmap1 = dofmaps[1]->cell_dofs(cell->index());
+	  dofs[1].set(dmap1.size(), dmap1.data());
+
+	  for(int i=0; i<cell_index.size(); ++i)
+	  {
+	    auto dmap0 = dofmaps[0]->cell_dofs(cell_index[i]);
+	    dofs[0].set(dmap0.size(), dmap0.data());
+
+	    sparsity_pattern.insert_local(dofs);
+	  }
+	  p++;
+	}
+	else if(max_rows < max_cols)
+	{
+	  auto dmap0 = dofmaps[0]->cell_dofs(cell->index());
 	  dofs[0].set(dmap0.size(), dmap0.data());
-#else
-	  std::vector<std::size_t> indices = {std::size_t(mapping->cell_map()[cell->index()])};
-	  dmaps[0] = dofmaps[0]->entity_closure_dofs(*(mapping->mesh()), mesh.topology().dim(), indices);
-	  // Transform into an Eigen::map -> Needed ?
-	  auto dmap0 = Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>>(&dmaps[0][0], dmaps[0].size());
-	  dofs[0].set(dmap0.size(), dmap0.data());
-#endif
+
+	  for(int i=0; i<cell_index.size(); ++i)
+	  {
+	    auto dmap1 = dofmaps[1]->cell_dofs(cell_index[i]);
+	    dofs[1].set(dmap1.size(), dmap1.data());
+
+	    sparsity_pattern.insert_local(dofs);
+	  }
+	  p++;
 	}
 	else
 	{
-#if 0  // OLD VERSION
 	  auto dmap0 = dofmaps[0]->cell_dofs(cell->index());
-#else
-	  std::vector<std::size_t> indices = {std::size_t(cell->index())};
-	  dmaps[0] = dofmaps[0]->entity_closure_dofs(mesh, mesh.topology().dim(), indices);
-	  // Transform into an Eigen::map -> Needed ?
-	  auto dmap0 = Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>>(&dmaps[0][0], dmaps[0].size());
 	  dofs[0].set(dmap0.size(), dmap0.data());
-#endif
+	  auto dmap1 = dofmaps[1]->cell_dofs(cell->index());
+	  dofs[1].set(dmap1.size(), dmap1.data());
+
+	  sparsity_pattern.insert_local(dofs);
+	  p++;
 	}
-	// No changes for dofs[1]
-	dofs[1].set(dmap1.size(), dmap1.data());
       }
       else
       {
@@ -155,11 +178,9 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 	  auto dmap = dofmaps[i]->cell_dofs(cell->index());
 	  dofs[i].set(dmap.size(), dmap.data());
 	}
+	sparsity_pattern.insert_local(dofs);
+	p++;
       }
-
-      // Insert non-zeroes in sparsity pattern
-      sparsity_pattern.insert_local(dofs);
-      p++;
     }
   }
 

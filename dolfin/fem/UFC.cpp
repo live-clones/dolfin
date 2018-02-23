@@ -113,11 +113,30 @@ void UFC::init(const Form& a)
   // Get maximum local dimensions
   std::vector<std::size_t> max_element_dofs;
   std::vector<std::size_t> max_macro_element_dofs;
+  std::vector<std::size_t> mixed_element_dofs;
   for (std::size_t i = 0; i < form.rank(); i++)
   {
     dolfin_assert(V[i]->dofmap());
     max_element_dofs.push_back(V[i]->dofmap()->max_element_dofs());
     max_macro_element_dofs.push_back(2*V[i]->dofmap()->max_element_dofs());
+
+    // Start work on mixed-dimensional problems... (In progress)
+    if(V[i]->mesh()->id() != dolfin_form.mesh()->id()) // submesh
+    {
+      int nb_entities = 1;
+      auto mapping = dolfin_form.mesh()->topology().mapping();
+      if(mapping)
+      {
+	int codim = mapping->mesh()->topology().dim() - dolfin_form.mesh()->topology().dim();
+	if(codim == 1)
+	  nb_entities = 2;
+	else if(codim == 2)
+	  std::cout << "[UFC::init] - codim 2 - Not implemented" << std::endl;
+      }
+      mixed_element_dofs.push_back(nb_entities*V[i]->dofmap()->max_element_dofs());
+    }
+    else
+      mixed_element_dofs.push_back(V[i]->dofmap()->max_element_dofs());
   }
 
   // Initialize local tensor
@@ -132,6 +151,12 @@ void UFC::init(const Form& a)
   for (std::size_t i = 0; i < form.rank(); i++)
     num_entries *= max_macro_element_dofs[i];
   macro_A.resize(num_entries);
+
+  // Initialize local tensor for mixed-dimension
+  num_entries = 1;
+  for (std::size_t i = 0; i < form.rank(); i++)
+    num_entries *= mixed_element_dofs[i];
+  mixed_A.resize(num_entries);
 
   // Initialize coefficients
   _w.resize(form.num_coefficients());
