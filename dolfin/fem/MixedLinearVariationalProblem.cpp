@@ -29,21 +29,12 @@
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
-#if 0
-MixedLinearVariationalProblem::MixedLinearVariationalProblem(
-  std::vector<std::shared_ptr<const Form>> a,
-  std::vector<std::shared_ptr<const Form>> L,
-  std::vector<std::shared_ptr<Function>> u,
-  std::vector<std::shared_ptr<const DirichletBC>> bcs)
-  : Hierarchical<MixedLinearVariationalProblem>(*this), _a(a), _l(L), _u(u)
-#else
 MixedLinearVariationalProblem::MixedLinearVariationalProblem(
   MixedLinearVariationalProblem::form_list_type a,
   MixedLinearVariationalProblem::form_list_type L,
   std::vector<std::shared_ptr<Function>> u,
   std::vector<std::shared_ptr<const DirichletBC>> bcs)
-  : Hierarchical<MixedLinearVariationalProblem>(*this), _a(a), _l(L), _u(u)  
-#endif
+  : Hierarchical<MixedLinearVariationalProblem>(*this), _a(a), _l(L), _u(u)
 {
   // Initialize each sub vectors
   for (size_t i=0; i<u.size(); ++i)
@@ -54,8 +45,8 @@ MixedLinearVariationalProblem::MixedLinearVariationalProblem(
   {
       for (size_t j=0; j<_u.size(); ++j)
       {
-	  if (_u[j]->in(*bcs[i]->function_space()))
-	      _bcs[j].push_back(bcs[i]);
+	if (_u[j]->in(*bcs[i]->function_space()))
+	  _bcs[j].push_back(bcs[i]);
       }
       
   }

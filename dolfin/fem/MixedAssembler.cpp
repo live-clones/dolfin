@@ -40,6 +40,8 @@
 #include "AssemblerBase.h"
 #include "MixedAssembler.h"
 
+#include <dolfin/mesh/MultiMesh.h>
+
 #include <dolfin/la/GenericMatrix.h>
 
 using namespace dolfin;
@@ -124,8 +126,8 @@ void MixedAssembler::assemble_cells(
 
   // Collect pointers to dof maps / id of the involved meshes
   std::vector<const GenericDofMap*> dofmaps;
-  // std::vector<int> mesh_id(form_rank);
   std::vector<unsigned> mesh_id(form_rank);
+
   for (std::size_t i = 0; i < form_rank; ++i)
   {
     mesh_id[i] = a.function_space(i)->mesh()->id();
@@ -133,8 +135,8 @@ void MixedAssembler::assemble_cells(
   }
 
   // Vector to hold dof map for a cell
+  std::vector<std::vector<dolfin::la_index>> dofs_tmp(form_rank);
   std::vector<ArrayView<const dolfin::la_index>> dofs(form_rank);
-  std::vector<std::vector<dolfin::la_index>> dmaps(form_rank);
   
   // Cell integral
   ufc::cell_integral* integral = ufc.default_cell_integral.get();
@@ -172,46 +174,76 @@ void MixedAssembler::assemble_cells(
 
     // Get local-to-global dof maps for cell
     bool empty_dofmap = false;
-    int cell_index = 0;
+    std::vector<std::vector<Cell>> mesh_cells(form_rank);
+    std::vector<std::vector<std::size_t>> local_facets(form_rank);
+    std::vector<std::vector<ufc::cell>> ufc_cells(form_rank);
+    std::vector<std::vector<std::vector<double>>> coordinate_dofs_cells(form_rank);
+    std::vector<std::vector<std::size_t>> cell_index(form_rank);
+    std::vector<double> macro_coordinate_dofs;
+    int codim = 0;
+
+    ufc::interface_integral* interface_integral = ufc.default_interface_integral.get();
 
     for (size_t i = 0; i < form_rank; ++i)
     {
-      cell_index = cell->index();
+      cell_index[i].push_back(cell->index());
       // Access to cell index in the parent mesh
       if (mesh_id[i] != mesh.id() && mapping)
       {
 	if(mapping->mesh()->id() == mesh_id[i])
-	  cell_index = mapping->cell_map()[cell->index()];
+	{
+	  codim = mapping->mesh()->topology().dim() - mesh.topology().dim();
+	  if(codim == 1)
+	  {
+	    const std::size_t D = mapping->mesh()->topology().dim();
+	    mapping->mesh()->init(D);
+	    mapping->mesh()->init(D - 1, D);
+
+	    Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
+	    for(int j=0; j<mesh_facet.num_entities(D);j++)
+	    {
+	      Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[j]);
+
+	      if(j==0)
+		cell_index[i][0] = mesh_cell.index();
+	      else
+		cell_index[i].push_back(mesh_cell.index());
+	    }
+	  }
+	  else if (codim == 2)
+	  {
+	    std::cout << "[MixedAssembler] codim 2 - Not implemented" << std::endl;
+	  }
+	}
       }
 
-#if 0 // OLD VERSION
-      auto dmap = dofmaps[i]->cell_dofs(cell_index);
-      dofs[i] = ArrayView<const dolfin::la_index>(dmap.size(), dmap.data());
-#else
-      std::vector<std::size_t> indices = {size_t(cell_index)};
-      dmaps[i] = dofmaps[i]->entity_closure_dofs(*(a.function_space(i)->mesh()), mesh.topology().dim(), indices);
-      // Transform into an Eigen::map -> Needed ?
-      auto dmap = Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>>(&dmaps[i][0], dmaps[i].size());
-      dofs[i] = ArrayView<const dolfin::la_index>(dmap.size(), dmap.data());
-#endif
+      // Store all the contributions (all dofs involved)
+      int offset = 0;
+      for(int j=0; j<cell_index[i].size(); j++)
+      {
+	auto dmap = dofmaps[i]->cell_dofs(cell_index[i][j]);
+	std::size_t current_size = dofs_tmp[i].size();
+	dofs_tmp[i].resize(current_size + dmap.size());
+	std::copy(dmap.data(), dmap.data() + dmap.size(), dofs_tmp[i].begin() + offset);
+	offset += dmap.size();
+      }
+      dofs[i].set(dofs_tmp[i].size(), dofs_tmp[i].data());
       empty_dofmap = empty_dofmap || dofs[i].size() == 0;
+      dofs_tmp[i].clear();
     }
 
-    // Skip if at least one dofmap is empty
     if (empty_dofmap)
       continue;
 
-    // Tabulate cell tensor
-    integral->tabulate_tensor(ufc.A.data(), ufc.w(),
-                              coordinate_dofs.data(),
-                              ufc_cell.orientation);
+    integral->tabulate_tensor(ufc.mixed_A.data(),
+			      ufc.w(),
+			      coordinate_dofs.data(),
+			      ufc_cell.orientation);
 
-    // Add entries to global tensor. Either store values cell-by-cell
-    // (currently only available for functionals)
     if (is_cell_functional)
-      (*values)[cell_index] = ufc.A[0];
+      (*values)[cell->index()] = ufc.mixed_A[0];
     else
-      A.add_local(ufc.A.data(), dofs);
+      A.add_local(ufc.mixed_A.data(), dofs);
 
     p++;
   }

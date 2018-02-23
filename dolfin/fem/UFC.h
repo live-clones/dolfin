@@ -307,6 +307,9 @@ namespace dolfin
     /// Local tensor for macro element
     std::vector<double> macro_A;
 
+    /// Local tensor for mixed element
+    std::vector<double> mixed_A;
+
   private:
 
     // Coefficients (std::vector<double*> is used to interface with
