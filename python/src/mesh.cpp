@@ -91,13 +91,6 @@ namespace dolfin_wrappers
       .def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension")
       .def("degree", &dolfin::MeshGeometry::degree, "Degree")
       .def("get_entity_index", &dolfin::MeshGeometry::get_entity_index)
-      .def("set", [](dolfin::MeshGeometry& self, std::size_t local_index, py::array_t<double> x)
-      {
-        auto b = x.request();
-        assert(b.shape.size() == 1);
-        assert(b.shape[0] <= 3);
-        self.set(local_index, x.data());
-      })
       .def("num_entity_coordinates", &dolfin::MeshGeometry::num_entity_coordinates);
 
     // dolfin::MeshTopology class

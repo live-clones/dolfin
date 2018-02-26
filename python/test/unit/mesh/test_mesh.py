@@ -248,8 +248,8 @@ def test_P_RefineUnitSquareMesh():
         assert mesh.geometry().num_entity_coordinates(d) == coords_per_dim[d]
 
     e_idx = mesh.geometry().get_entity_index(1, 0, 0)
-    coord = (0.1, 0.2)
-    mesh.geometry().set(e_idx, coord)
+    coord = numpy.array((0.1, 0.2), dtype=numpy.double)
+    mesh.coordinates()[e_idx,:] = coord
     assert all(mesh.coordinates()[e_idx,:] == coord)
 
 
@@ -263,8 +263,8 @@ def test_P_RefineUnitCubeMesh():
         assert mesh.geometry().num_entity_coordinates(d) == coords_per_dim[d]
 
     e_idx = mesh.geometry().get_entity_index(1, 0, 0)
-    coord = (0.1, 0.2, 0.3)
-    mesh.geometry().set(e_idx, coord)
+    coord = numpy.array((0.1, 0.2, 0.3), dtype=numpy.double)
+    mesh.coordinates()[e_idx,:] = coord
     assert all(mesh.coordinates()[e_idx,:] == coord)
 
 
