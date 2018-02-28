@@ -128,7 +128,8 @@ namespace dolfin_wrappers
       .def("x", &dolfin::Point::x)
       .def("y", &dolfin::Point::y)
       .def("z", &dolfin::Point::z)
-      .def("distance", &dolfin::Point::distance);
+      .def("distance", &dolfin::Point::distance)
+      .def("dot", &dolfin::Point::dot);
 
     // dolfin::MeshPointIntersection
     py::class_<dolfin::MeshPointIntersection,

@@ -283,7 +283,8 @@ namespace dolfin_wrappers
            {
              auto _u = value.attr("_cpp_object").cast<std::shared_ptr<const dolfin::GenericFunction>>();
              self.set_value(_u);
-           });
+           })
+      .def("value", &dolfin::DirichletBC::value);
 
     // dolfin::AssemblerBase
     py::class_<dolfin::AssemblerBase, std::shared_ptr<dolfin::AssemblerBase>>
