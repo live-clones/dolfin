@@ -118,6 +118,12 @@ class Constant(ufl.Coefficient):
             raise TypeError("Cannot convert nonscalar constant to float.")
         return float(self._cpp_object)
 
+    def __complex__(self):
+        # Overriding UFL operator in this particular case.
+        if self.ufl_shape:
+            raise TypeError("Cannot convert nonscalar constant to float.")
+        return complex(self._cpp_object)
+
     def str(self, verbose):
         return self._cpp_object.str(verbose)
 
