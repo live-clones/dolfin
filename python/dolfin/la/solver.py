@@ -70,3 +70,19 @@ def solve(A, x, b, method="default", preconditioner="default"):
     """
 
     return cpp.la.solve(A, x, b, method, preconditioner)
+
+"""
+ Apply a block preconditioner to nested petsc matrix.
+
+
+"""
+
+def set_fieldsplit(solver, Anest,  split_names):
+    if isinstance(solver,cpp.la.PETScKrylovSolver) and \
+       isinstance(Anest,cpp.la.PETScNestMatrix):
+         n = len(split_names)
+         dofs = []
+         for i in range(n):
+             dofs.append(Anest.get_block_dofs(i))
+         cpp.la.PETScPreconditioner.set_fieldsplit(solver, dofs, split_names)
+

@@ -77,7 +77,8 @@ from .cpp.la import (has_linear_algebra_backend,
 
 if has_linear_algebra_backend('PETSc'):
     from .cpp.la import (PETScVector, PETScMatrix, PETScFactory,
-                         PETScOptions, PETScLUSolver,
+                         PETScNestMatrix,
+                         PETScOptions, PETScLUSolver, 
                          PETScKrylovSolver, PETScPreconditioner)
     from .cpp.fem import PETScDMCollection
     from .cpp.nls import (PETScSNESSolver, PETScTAOSolver, TAOLinearBoundSolver)
@@ -151,7 +152,7 @@ from .function.expression import Expression, UserExpression, CompiledExpression
 
 # experimental
 from .jit.pybind11jit import compile_cpp_code
-
+from .la.solver import set_fieldsplit 
 from .la import as_backend_type, la_index_dtype
 from .mesh.ale import (compute_vertex_map, compute_edge_map,
                        init_parent_edge_indices)
