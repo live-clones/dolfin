@@ -201,18 +201,18 @@ namespace dolfin_wrappers
            })
       .def("parse", [](dolfin::Parameters& self, py::list argv)
            {
-             const int argc = argv.size();
-             if (argc == 0)
+             if (argv.size() == 0)
                argv = py::module::import("sys").attr("argv").cast<py::list>();
 
+             const int argc = argv.size();
+
              std::vector<std::string> a;
-             for (auto q : argv) {
-               std::cout << "pybind11sees: " << q.cast<std::string>() << std::endl;
+             for (auto q : argv)
                a.push_back(q.cast<std::string>());
-             }
+
              char* char_args[argc];
-              for (int j=0; j<argc; ++j)
-                char_args[j] = &(a[j].front());
+             for (int j=0; j<argc; ++j)
+               char_args[j] = &(a[j].front());
 
              self.parse(argc, char_args);
            }, py::arg("argv")=py::list())
