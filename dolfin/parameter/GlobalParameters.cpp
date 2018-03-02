@@ -83,6 +83,9 @@ void GlobalParameters::parse(int argc, char* argv[])
 {
   log(TRACE, "Parsing command-line arguments.");
 
+  for (int i=0; i<argc; ++i)
+    std::cout << argv[i] << std::endl;
+
   // Extract DOLFIN and PETSc arguments
   std::vector<std::string> args_dolfin;
   std::vector<std::string> args_petsc;
