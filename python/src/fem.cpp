@@ -317,11 +317,11 @@ namespace dolfin_wrappers
       .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
            &dolfin::SystemAssembler::assemble);
     // dolfin::MixedAssembler
-    py::class_<dolfin::MixedAssembler,std::shared_ptr<dolfin::MixedAssembler>, dolfin::MixedAssembler>
+    py::class_<dolfin::MixedAssembler, std::shared_ptr<dolfin::MixedAssembler>, dolfin::AssemblerBase>
       (m, "MixedAssembler", "DOLFIN MixedAssembler object")
       .def(py::init<>())
-      .def("assemble",(void (dolfin::MixedAssembler::*)(dolfin::GenericMatrix &, const dolfin::Form&)),
-	   &dolfin::MixedAssembler::assemble);
+      .def("assemble", (void (dolfin::MixedAssembler::*)(dolfin::GenericMatrix&, const dolfin::Form&))
+           &dolfin::MixedAssembler::assemble);
     // dolfin::DiscreteOperators
     py::class_<dolfin::DiscreteOperators> (m, "DiscreteOperators")
       .def_static("build_gradient", &dolfin::DiscreteOperators::build_gradient)
