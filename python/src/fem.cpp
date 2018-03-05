@@ -34,6 +34,7 @@
 #include <dolfin/fem/assemble.h>
 #include <dolfin/fem/assemble_local.h>
 #include <dolfin/fem/Assembler.h>
+#include <dolfin/fem/MixedAssembler.h>
 #include <dolfin/fem/DirichletBC.h>
 #include <dolfin/fem/DiscreteOperators.h>
 #include <dolfin/fem/DofMap.h>
@@ -315,7 +316,12 @@ namespace dolfin_wrappers
            &dolfin::SystemAssembler::assemble)
       .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
            &dolfin::SystemAssembler::assemble);
-
+    // dolfin::MixedAssembler
+    py::class_<dolfin::MixedAssembler,std::shared_ptr<dolfin::MixedAssembler>, dolfin::MixedAssembler>
+      (m, "MixedAssembler", "DOLFIN MixedAssembler object")
+      .def(py::init<>())
+      .def("assemble",(void (dolfin::MixedAssembler::*)(dolfin::GenericMatrix &, const dolfin::Form&)),
+	   &dolfin::MixedAssembler::assemble);
     // dolfin::DiscreteOperators
     py::class_<dolfin::DiscreteOperators> (m, "DiscreteOperators")
       .def_static("build_gradient", &dolfin::DiscreteOperators::build_gradient)
