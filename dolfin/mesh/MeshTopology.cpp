@@ -62,6 +62,7 @@ MeshTopology& MeshTopology::operator= (const MeshTopology& topology)
   _global_indices = topology._global_indices;
   _shared_entities = topology._shared_entities;
   connectivity = topology.connectivity;
+  _cell_owner = topology._cell_owner;
 
   return *this;
 }
