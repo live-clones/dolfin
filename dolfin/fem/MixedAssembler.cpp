@@ -163,6 +163,10 @@ void MixedAssembler::assemble_cells(
     dolfin_assert(!cell->is_ghost());
 
     // Collect mapping of the integration domain mesh
+    // TODO : Instead of having a unique mapping here,
+    // We want a mapping for each function involved
+    // mapping[i] = mapping mesh <-> a.function_space(i)->mesh()
+    // Need a function build_mapping(...)
     auto mapping = mesh.topology().mapping();
 
     // Update to current cell
@@ -182,18 +186,23 @@ void MixedAssembler::assemble_cells(
     std::vector<double> macro_coordinate_dofs;
     int codim = 0;
 
-    ufc::interface_integral* interface_integral = ufc.default_interface_integral.get();
+    // ufc::interface_integral* interface_integral = ufc.default_interface_integral.get();
 
     for (size_t i = 0; i < form_rank; ++i)
     {
       cell_index[i].push_back(cell->index());
       // Access to cell index in the parent mesh
+      // TODO (see previous TODO for mapping def)
+      // use mapping[i] returnd by build_mapping function
+      // (Should do the job without more changes)
       if (mesh_id[i] != mesh.id() && mapping)
       {
 	if(mapping->mesh()->id() == mesh_id[i])
 	{
 	  codim = mapping->mesh()->topology().dim() - mesh.topology().dim();
-	  if(codim == 1)
+	  if(codim == 0)
+	    cell_index[i][0] = mapping->cell_map()[cell->index()];
+	  else if(codim == 1)
 	  {
 	    const std::size_t D = mapping->mesh()->topology().dim();
 	    mapping->mesh()->init(D);

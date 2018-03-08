@@ -110,7 +110,9 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 
 	std::vector<std::size_t> cell_index;
 	int codim = mapping->mesh()->topology().dim() - mesh.topology().dim();
-	if(codim == 1)
+	if(codim == 0)
+	  cell_index.push_back(mapping->cell_map()[cell->index()]);
+	else if(codim == 1)
 	{
 	  const std::size_t D = mapping->mesh()->topology().dim();
 	  mapping->mesh()->init(D);
