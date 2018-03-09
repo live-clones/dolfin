@@ -25,6 +25,7 @@
 
 #include "mpi_casters.h"
 #include "petsc_casters.h"
+#include "slepc_casters.h"
 
 namespace pybind11
 {
