@@ -61,28 +61,22 @@ PETScNestMatrix::PETScNestMatrix
       // If Mat has been initialised, get mpi_comm
       if (petsc_mats[i])
       {
-        if (mpi_comm == MPI_COMM_NULL)
-          mpi_comm = mats[i]->mpi_comm();
-        
-	else if (mpi_comm != mats[i]->mpi_comm()) 
-	// This does not do the correct check we need to compare the comm and the group.
-        {
-	/*
-	MPI_Group basegroup, newgroup;
-	MPI_Comm_group( mpi_comm, &basegroup );
-	MPI_Comm_group( mats[i]->mpi_comm(), &newgroup );
-	int ierrC,ierrG;
-	MPI_Group_compare( basegroup, newgroup, &ierrG );
-	MPI_Comm_compare(mpi_comm,mats[i]->mpi_comm(),&ierrC);
-	if (ierrG > 1 || ierrC>1)
-	*/	
-        dolfin_error("PETScNestMatrix.cpp",
+
+	if (mpi_comm !=MPI_COMM_NULL)
+	  {
+	   int results;
+           MPI_Comm_compare(mpi_comm,mats[i]->mpi_comm(),&results);
+	   if (results>1)	
+        	dolfin_error("PETScNestMatrix.cpp",
                        "construct MatNest",
                        "Constituent matrices have different communicators ");
-        
-	//else
-	//  mpi_comm = mats[i]->mpi_comm();
+ 	   else
+		mpi_comm = mats[i]->mpi_comm();
+  
 	}
+	else
+          mpi_comm = mats[i]->mpi_comm();
+   
 	
       }
     }
