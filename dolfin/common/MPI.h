@@ -88,7 +88,6 @@ namespace dolfin
 
       // Disable copy constructor
       //Comm(const Comm& comm) = delete;
-
       // Disable assignment operator
       //void operator=(Comm const &comm) = delete;
 
@@ -109,7 +108,8 @@ namespace dolfin
       /// with the communicator. This function will also intialise MPI
       /// if it hasn't already been intialised.
       unsigned int size() const;
-
+	  // Comparison of Comm
+	  bool operator==(const MPI_Comm&comm) const;  
       /// Set a barrier (synchronization point)
       void barrier() const;
 
