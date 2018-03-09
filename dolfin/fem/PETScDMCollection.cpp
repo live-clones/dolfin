@@ -332,6 +332,7 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
       exterior_global_indices.insert(exterior_global_indices.end(),
                                      map_it.second.begin(),
                                      map_it.second.end());
+    for (int pad = 0; pad < data_size - map_it.second.size(); pad++) exterior_global_indices.push_back(-1);
     }
     else
     {
@@ -347,7 +348,8 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
         send_found_global_row_indices[rp].insert(
          send_found_global_row_indices[rp].end(),
          map_it.second.begin(), map_it.second.end());
-      }
+        for (int pad = 0; pad < data_size - map_it.second.size(); pad++) send_found_global_row_indices[rp].push_back(-1);
+	}
     }
   }
   std::vector<std::vector<double>> recv_found(mpi_size);
@@ -517,7 +519,16 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
     {
       const unsigned int fine_row = i*data_size + k;
       const std::size_t global_fine_dof = global_row_indices[fine_row];
-      int p = finemap->index_map()->global_index_owner(global_fine_dof/data_size);
+      //int p = finemap->index_map()->global_index_owner(global_fine_dof/data_size);
+      if (global_fine_dof == -1)
+      {
+        // We've reached the end of the fine dofs associated with this point,
+        // short-circuit
+        break;
+	//Add a comment to this line
+      }
+      int p = finemap->index_map()->global_index_owner(global_fine_dof/finemap->index_map()->block_size());
+
 
       // Loop over the coarse dofs and stuff their contributions
       for (unsigned j = 0; j < eldim; j++)
@@ -530,8 +541,9 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
         // Set the value
         values[fine_row][j] = temp_values[data_size*j + k];
 
-        int pc = coarsemap->index_map()->global_index_owner(coarse_dof/data_size);
-        if (p == pc)
+        //int pc = coarsemap->index_map()->global_index_owner(coarse_dof/data_size);
+        int pc = coarsemap->index_map()->global_index_owner(coarse_dof/coarsemap->index_map()->block_size());
+	if (p == pc)
           send_dnnz[p].push_back(global_fine_dof);
         else
           send_onnz[p].push_back(global_fine_dof);
@@ -571,40 +583,41 @@ std::shared_ptr<PETScMatrix> PETScDMCollection::create_transfer_matrix
   Mat I;
 
   // Create and initialise the transfer matrix as MATMPIAIJ/MATSEQAIJ
-  ierr = MatCreate(mpi_comm, &I); CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = MatCreate(mpi_comm, &I); CHKERRABORT(mpi_comm, ierr);
   if (mpi_size > 1)
   {
-    ierr = MatSetType(I, MATMPIAIJ); CHKERRABORT(PETSC_COMM_WORLD, ierr);
-    ierr = MatSetSizes(I, m, n, M, N); CHKERRABORT(PETSC_COMM_WORLD, ierr);
+    ierr = MatSetType(I, MATMPIAIJ); CHKERRABORT(mpi_comm, ierr);
+    ierr = MatSetSizes(I, m, n, M, N); CHKERRABORT(mpi_comm, ierr);
     ierr = MatMPIAIJSetPreallocation(I, PETSC_DEFAULT, dnnz.data(),
                                      PETSC_DEFAULT, onnz.data());
-    CHKERRABORT(PETSC_COMM_WORLD, ierr);
+    CHKERRABORT(mpi_comm, ierr);
   }
   else
   {
-    ierr = MatSetType(I, MATSEQAIJ); CHKERRABORT(PETSC_COMM_WORLD, ierr);
-    ierr = MatSetSizes(I, m, n, M, N); CHKERRABORT(PETSC_COMM_WORLD, ierr);
+    ierr = MatSetType(I, MATSEQAIJ); CHKERRABORT(mpi_comm, ierr);
+    ierr = MatSetSizes(I, m, n, M, N); CHKERRABORT(mpi_comm, ierr);
     ierr = MatSeqAIJSetPreallocation(I, PETSC_DEFAULT, dnnz.data());
-    CHKERRABORT(PETSC_COMM_WORLD, ierr);
+    CHKERRABORT(mpi_comm, ierr);
   }
 
   // Setting transfer matrix values row by row
   for (unsigned int fine_row = 0; fine_row < m_owned; ++fine_row)
   {
     PetscInt fine_dof = global_row_indices[fine_row];
+    if (fine_dof == -1) continue; 
     ierr = MatSetValues(I, 1, &fine_dof, eldim, col_indices[fine_row].data(),
                         values[fine_row].data(), INSERT_VALUES);
-    CHKERRABORT(PETSC_COMM_WORLD, ierr);
+    CHKERRABORT(mpi_comm, ierr);
   }
 
   // Assemble the transfer matrix
-  ierr = MatAssemblyBegin(I, MAT_FINAL_ASSEMBLY); CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  ierr = MatAssemblyEnd(I, MAT_FINAL_ASSEMBLY); CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = MatAssemblyBegin(I, MAT_FINAL_ASSEMBLY); CHKERRABORT(mpi_comm, ierr);
+  ierr = MatAssemblyEnd(I, MAT_FINAL_ASSEMBLY); CHKERRABORT(mpi_comm, ierr);
 
   // create shared pointer and return the pointer to the transfer
   // matrix
   std::shared_ptr<PETScMatrix> ptr = std::make_shared<PETScMatrix>(I);
-  ierr = MatDestroy(&I); CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = MatDestroy(&I); CHKERRABORT(mpi_comm, ierr);
   return ptr;
 }
 //-----------------------------------------------------------------------------

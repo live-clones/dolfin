@@ -83,7 +83,7 @@ unsigned int dolfin::MPI::Comm::size() const
 bool dolfin::MPI::Comm::operator==(const MPI_Comm& comm)const
 {
 #ifdef HAS_MPI
-  if comm!= MPI_COMM_NULL
+  if (comm!= MPI_COMM_NULL)
   {
   	int results; 
     //IDENTICAL is 0; CONGRUENT is 1. SIMILAR is 2. UNEQUAL is 3.
