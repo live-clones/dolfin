@@ -50,6 +50,13 @@ if (PETSC4PY_FOUND)
   target_include_directories(cpp PRIVATE ${PETSC4PY_INCLUDE_DIRS})
   target_compile_definitions(cpp PRIVATE HAS_PYBIND11_PETSC4PY)
 endif()
+# Check for slepc4py
+find_package(SLEPc4py)
+if (SLEPC4PY_FOUND)
+  target_include_directories(cpp PRIVATE ${SLEPC4PY_INCLUDE_DIRS})
+  target_compile_definitions(cpp PRIVATE HAS_PYBIND11_SLEPC4PY)
+endif()
+
 
 # Check for mpi4py
 find_package(MPI4PY)
