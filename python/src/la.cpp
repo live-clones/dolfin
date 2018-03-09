@@ -365,7 +365,8 @@ namespace dolfin_wrappers
              std::size_t num_rows = m_range.second - m_range.first;
              std::size_t num_cols = instance.size(1);
 
-             Eigen::MatrixXd A = Eigen::MatrixXd::Zero(num_rows, num_cols);
+             typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> EigenMatrix;
+             EigenMatrix A = EigenMatrix::Zero(num_rows, num_cols);
              std::vector<std::size_t> columns;
              std::vector<double> values;
              for (std::size_t i = 0; i < num_rows; ++i)
