@@ -26,6 +26,10 @@
 #include <petsc4py/petsc4py.h>
 #endif
 
+#ifdef HAS_PYBIND11_SLEPC4PY
+#include <slepc4py/slepc4py.h>
+#endif
+
 #include "casters.h"
 
 #include <dolfin/common/Array.h>
@@ -1114,7 +1118,9 @@ namespace dolfin_wrappers
              dolfin::PETScVector r, c;
              self.get_eigenpair(lr, lc, r, c, i);
              return py::make_tuple(lr, lc, r, c);
-           });
+           })
+      .def("eps",&dolfin::SLEPcEigenSolver::eps);
+ 
     #endif
 
     // dolfin::VectorSpaceBasis
