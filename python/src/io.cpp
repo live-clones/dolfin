@@ -392,18 +392,18 @@ namespace dolfin_wrappers
       // Check points
       .def("write_checkpoint", [](dolfin::XDMFFile& instance, const dolfin::Function& u,
                                   std::string function_name,
-                                  double time_step, dolfin::XDMFFile::Encoding encoding)
-           { instance.write_checkpoint(u, function_name, time_step, encoding); },
+                                  double time_step, dolfin::XDMFFile::Encoding encoding, bool append)
+           { instance.write_checkpoint(u, function_name, time_step, encoding, append); },
            py::arg("u"), py::arg("function_name"), py::arg("time_step")=0.0,
-           py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
+           py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5, py::arg("append")=false)
       .def("write_checkpoint", [](dolfin::XDMFFile& instance, const py::object u, std::string function_name,
-                                  double time_step, dolfin::XDMFFile::Encoding encoding)
+                                  double time_step, dolfin::XDMFFile::Encoding encoding, bool append)
            {
              auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
-             instance.write_checkpoint(*_u, function_name, time_step, encoding);
+             instance.write_checkpoint(*_u, function_name, time_step, encoding, append);
            },
            py::arg("u"), py::arg("function_name"), py::arg("time_step")=0.0,
-           py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5);
+           py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5, py::arg("append")=false);
 
 
     // XDFMFile::read
