@@ -49,18 +49,11 @@ namespace dolfin
   public:
     /// Create mixed linear variational problem
     /// with a list of boundary conditions
-#if 0
-    MixedLinearVariationalProblem(std::vector<std::shared_ptr<const Form>> a,
-				  std::vector<std::shared_ptr<const Form>> L,
-				  std::vector<std::shared_ptr<Function>> u,
-				  std::vector<std::shared_ptr<const DirichletBC>> bcs);
-#else
     typedef std::vector<std::vector<std::shared_ptr<const Form>>> form_list_type;
     MixedLinearVariationalProblem(form_list_type a,
 				  form_list_type L,
 				  std::vector<std::shared_ptr<Function>> u,
 				  std::vector<std::shared_ptr<const DirichletBC>> bcs);
-#endif
 
     /// Return bilinear form
     form_list_type bilinear_form() const;

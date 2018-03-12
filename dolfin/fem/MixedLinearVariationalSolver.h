@@ -33,18 +33,26 @@ namespace dolfin
 
   // Forward declarations
   class MixedLinearVariationalProblem;
+  class PETScNestMatrix;
 
   /// This class implements a solver for mixed linear variational problems.
 
   class MixedLinearVariationalSolver : public Variable
   {
   public:
+    typedef std::tuple<std::vector<std::shared_ptr<GenericMatrix>>,
+      std::vector<std::shared_ptr<GenericVector>>,
+      std::vector<std::shared_ptr<GenericVector>> > assembled_system_type;
 
     /// Create linear variational solver for given problem
     explicit MixedLinearVariationalSolver(std::shared_ptr<MixedLinearVariationalProblem> problem);
 
+    /// Block-by-block assembly
+    assembled_system_type assemble_system();
+
     /// Solve variational problem
     void solve();
+    void solve(PETScNestMatrix const prec);
 
     /// Default parameter values
     static Parameters default_parameters()
@@ -57,7 +65,6 @@ namespace dolfin
 
       p.add("print_rhs", false);
       p.add("print_matrix", false);
-
       p.add(LUSolver::default_parameters());
       p.add(KrylovSolver::default_parameters());
 

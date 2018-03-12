@@ -68,6 +68,7 @@
 #include <dolfin/fem/MultiMeshDirichletBC.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <dolfin/adaptivity/adapt.h>
+#include <dolfin/la/PETScNestMatrix.h>
 
 #include "casters.h"
 
@@ -572,7 +573,12 @@ namespace dolfin_wrappers
                std::shared_ptr<dolfin::MixedLinearVariationalSolver>,
                dolfin::Variable>(m, "MixedLinearVariationalSolver")
       .def(py::init<std::shared_ptr<dolfin::MixedLinearVariationalProblem>>())
-      .def("solve", &dolfin::MixedLinearVariationalSolver::solve);
+      .def("solve", (void (dolfin::MixedLinearVariationalSolver::*)())&dolfin::MixedLinearVariationalSolver::solve)
+      .def("solve", (void (dolfin::MixedLinearVariationalSolver::*)(dolfin::PETScNestMatrix)) &dolfin::MixedLinearVariationalSolver::solve)
+      .def("assemble_system", (std::tuple<std::vector<std::shared_ptr<dolfin::GenericMatrix>>,
+			       std::vector<std::shared_ptr<dolfin::GenericVector>>,
+			       std::vector<std::shared_ptr<dolfin::GenericVector>> >
+			       (dolfin::MixedLinearVariationalSolver::*)()) &dolfin::MixedLinearVariationalSolver::assemble_system);
 
     // dolfin::NonlinearVariationalProblem
     py::class_<dolfin::NonlinearVariationalProblem,

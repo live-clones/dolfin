@@ -23,12 +23,14 @@
 
 #include <dolfin/common/NoDeleter.h>
 #include <dolfin/function/Function.h>
+#include <dolfin/function/FunctionSpace.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/la/GenericLinearAlgebraFactory.h>
 #include <dolfin/la/LinearSolver.h>
 #include <dolfin/la/PETScNestMatrix.h>
 #include <dolfin/la/PETScKrylovSolver.h>
+#include <dolfin/la/PETScPreconditioner.h>
 #include "MixedAssembler.h"
 #include "SystemAssembler.h"
 #include "assemble.h"
@@ -36,7 +38,9 @@
 #include "Form.h"
 #include "MixedLinearVariationalProblem.h"
 #include "MixedLinearVariationalSolver.h"
+#include "GenericDofMap.h"
 
+#include <dolfin/la/PETScOptions.h>
 using namespace dolfin;
 
 //-----------------------------------------------------------------------------
@@ -47,25 +51,17 @@ MixedLinearVariationalSolver(std::shared_ptr<MixedLinearVariationalProblem> prob
   // Set parameters
   parameters = default_parameters();
 }
-//-----------------------------------------------------------------------------
-void MixedLinearVariationalSolver::solve()
+
+MixedLinearVariationalSolver::assembled_system_type
+MixedLinearVariationalSolver::assemble_system()
 {
-  begin("Solving mixed linear variational problem.");
+  const bool symmetric = parameters["symmetric"];
 
-  // Get parameters
-  std::string solver_type   = parameters["linear_solver"];
-  const std::string pc_type = parameters["preconditioner"];
-  // const bool print_rhs      = parameters["print_rhs"];
-  const bool symmetric      = parameters["symmetric"];
-  // const bool print_matrix   = parameters["print_matrix"];
-
-  // Get problem data
-  dolfin_assert(_problem);
   const auto a = _problem->bilinear_form();
   const auto L = _problem->linear_form();
   auto u = _problem->solution();
   auto bcs = _problem->bcs();
-
+  
   // Create matrices and vectors (for each block)
   std::vector<std::shared_ptr<GenericMatrix>> As;
   std::vector<std::shared_ptr<GenericVector>> bs;
@@ -127,10 +123,6 @@ void MixedLinearVariationalSolver::solve()
     // Assemble linear system and apply boundary conditions
     // FIXME : Update the SystemAssembler
     std::cout << "NOT YET IMPLEMENTED" << std::endl;
-#if 0
-    SystemAssembler assembler(a, L, bcs);
-    assembler.assemble(As,bs);
-#endif
   }
   else
   {
@@ -177,16 +169,42 @@ void MixedLinearVariationalSolver::solve()
     }
 
     // Apply boundary conditions
+    // NOTE : Apply boundary conditions on each block doesn't preserve symmetry
     for (size_t s=0; s<u.size(); ++s) //Number of blocks/subdomains
     {
       for (std::size_t i = 0; i < bcs[s].size(); i++)
       {
-	  dolfin_assert(bcs[s][i]);
-	  // Apply condition to diagonal blocks
-	  bcs[s][i]->apply(*(As[s*u.size() + s]), *(bs[s]));
+	dolfin_assert(bcs[s][i]);
+	// Apply condition to diagonal blocks
+	bcs[s][i]->apply(*(As[s*u.size() + s]), *(bs[s]));
       }
     }
   }
+  return std::make_tuple(As,bs,us);
+}
+//-----------------------------------------------------------------------------
+void MixedLinearVariationalSolver::solve()
+{
+  begin("Solving mixed linear variational problem.");
+
+  // Get parameters
+  std::string solver_type   = parameters["linear_solver"];
+  const std::string pc_type = parameters["preconditioner"];
+  // const bool print_rhs      = parameters["print_rhs"];
+  const bool symmetric      = parameters["symmetric"];
+  // const bool print_matrix   = parameters["print_matrix"];
+
+  // Get problem data
+  dolfin_assert(_problem);
+  const auto a = _problem->bilinear_form();
+  const auto L = _problem->linear_form();
+  auto u = _problem->solution();
+  auto bcs = _problem->bcs();
+
+  auto assembled_system = this->assemble_system();
+  auto As = std::get<0>(assembled_system);
+  auto bs = std::get<1>(assembled_system);
+  auto us = std::get<2>(assembled_system);
 
   // Combine the matrices
   PETScNestMatrix A(As);
@@ -198,11 +216,6 @@ void MixedLinearVariationalSolver::solve()
   // Combine the vectors (solution and rhs)
   A.init_vectors(*x, us);
   A.init_vectors(*b, bs);
-
-  // Solve linear system
-  // NOTE : Direct solvers cannot be used with PETScNestMatrix.
-  // (For now,) we force the use of a krylov solver
-  // (options given by the user for linear_solver are not taken into account)
 
   // Get list of available preconditioners
   std::map<std::string, std::string>
@@ -231,5 +244,75 @@ void MixedLinearVariationalSolver::solve()
   solver.solve(*x,*b);
 
   end();
+}
+
+// TODO : Test this function
+void MixedLinearVariationalSolver::solve(PETScNestMatrix precond)
+{
+  begin("Solving preconditioned mixed linear variational problem.");
+  std::cout << "[WARNING] solve(...) function used with a preconditioner is still in development (no guarantee)" << std::endl;
+
+  // Get parameters
+  std::string solver_type   = parameters["linear_solver"];
+  const std::string pc_type = parameters["preconditioner"];
+  const bool symmetric = parameters["symmetric"];
+
+  // Get problem data
+  dolfin_assert(_problem);
+  const auto a = _problem->bilinear_form();
+  const auto L = _problem->linear_form();
+  auto u = _problem->solution();
+  auto bcs = _problem->bcs();
+
+  auto assembled_system = this->assemble_system();
+  auto As = std::get<0>(assembled_system);
+  auto bs = std::get<1>(assembled_system);
+  auto us = std::get<2>(assembled_system);
+
+  // Combine the matrices
+  PETScNestMatrix A(As);
+
+  auto comm = u[0]->vector()->mpi_comm();
+  auto x = u[0]->vector()->factory().create_vector(comm);
+  auto b = u[0]->vector()->factory().create_vector(comm);
+
+  // Combine the vectors (solution and rhs)
+  A.init_vectors(*x, us);
+  A.init_vectors(*b, bs);
+
+  // Get list of available preconditioners
+  std::map<std::string, std::string>
+    preconditioners = u[0]->vector()->factory().krylov_solver_preconditioners();
+
+  // Adjust iterative solver type
+  if (symmetric)
+    solver_type = "cg";
+  else
+    solver_type = "gmres";
+
+  if (pc_type != "default"
+      && !LinearSolver::in_list(pc_type, preconditioners))
+  {
+    dolfin_error("MixedLinearVariationalSolver.cpp",
+		 "solve mixed linear system",
+		 "Unknown preconditioner method \"%s\". "
+		 "Use list_krylov_solver_preconditioners() to list available methods",
+		 pc_type.c_str());
+  }
+
+  PETScKrylovSolver solver(comm, solver_type, pc_type);
+  solver.parameters.update(parameters("krylov_solver"));
+
+  // Add split for each field
+  std::vector<std::vector<dolfin::la_index>> fields(u.size());
+  std::vector<std::string> split_names(u.size());
+  for(int i=0; i<u.size(); ++i)
+  {
+    split_names[i] = "u" + std::to_string(i);
+    A.get_block_dofs(fields[i], i);
+  }
+  PETScPreconditioner::set_fieldsplit(solver, fields, split_names);
+  solver.set_operators(A, precond);
+  solver.solve(*x,*b);
 }
 //-----------------------------------------------------------------------------

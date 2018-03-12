@@ -238,7 +238,7 @@ def solve(*args, **kwargs):
 def _solve_varproblem(*args, **kwargs):
     "Solve variational problem a == L or F == 0"
     # Extract arguments
-    eq, u, bcs, J, tol, M, form_compiler_parameters, solver_parameters \
+    eq, u, bcs, J, tol, M, preconditioner, form_compiler_parameters, solver_parameters\
         = _extract_args(*args, **kwargs)
 
     # Solve linear variational problem
@@ -257,7 +257,10 @@ def _solve_varproblem(*args, **kwargs):
             # Create solver and call solve
             solver = MixedLinearVariationalSolver(problem)
             solver.parameters.update(solver_parameters)
-            solver.solve()
+            if preconditioner is not None:
+                solver.solve(preconditioner)
+            else:
+                solver.solve()
         else:
             # Create problem
             problem = LinearVariationalProblem(eq.lhs, eq.rhs, u, bcs,
@@ -336,7 +339,7 @@ def _extract_args(*args, **kwargs):
     "Common extraction of arguments for _solve_varproblem[_adaptive]"
 
     # Check for use of valid kwargs
-    valid_kwargs = ["bcs", "J", "tol", "M",
+    valid_kwargs = ["bcs", "J", "tol", "M", "precond",
                     "form_compiler_parameters", "solver_parameters"]
     for kwarg in kwargs.keys():
         if kwarg not in valid_kwargs:
@@ -378,11 +381,14 @@ def _extract_args(*args, **kwargs):
     if M is not None and not isinstance(M, ufl.Form):
         raise RuntimeError("Solve variational problem. Expecting goal functional M to be a UFL Form.")
 
+    # Extract preconditioner
+    preconditioner = kwargs.get("precond", None)
+
     # Extract parameters
     form_compiler_parameters = kwargs.get("form_compiler_parameters", {})
     solver_parameters = kwargs.get("solver_parameters", {})
 
-    return eq, u, bcs, J, tol, M, form_compiler_parameters, solver_parameters
+    return eq, u, bcs, J, tol, M, preconditioner, form_compiler_parameters, solver_parameters
 
 
 def _extract_eq(eq):
@@ -421,3 +427,30 @@ def _extract_bcs(bcs):
             raise RuntimeError("solve variational problem. Unable to extract boundary condition arguments")
 
     return bcs
+
+## NOTE : To be moved in assembling ?
+def assemble_mixed_system(*args, **kwargs):
+    "Assemble mixed variational problem a == L or F == 0"
+    assert(len(args) > 0)
+    assert(isinstance(args[0], ufl.classes.Equation))
+
+    # Extract arguments
+    eq, u, bcs, J, tol, M, preconditioner, form_compiler_parameters, solver_parameters\
+        = _extract_args(*args, **kwargs)
+
+    if u.num_sub_spaces() > 0:
+        # Extract blocks from the variational formulation
+        eq_lsh_forms = extract_blocks(eq.lhs)
+        eq_rsh_forms = extract_blocks(eq.rhs)
+        u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
+
+        # Create problem
+        problem = MixedLinearVariationalProblem(eq_lsh_forms, eq_rsh_forms, u_comps, bcs,
+                                                form_compiler_parameters=form_compiler_parameters)
+
+        # Create solver and call solve
+        solver = MixedLinearVariationalSolver(problem)
+        system = solver.assemble_system()
+        return system
+    else:
+        print("Error : You're trying to use assemble_mixed_system on a single domain problem.")
