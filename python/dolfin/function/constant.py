@@ -65,7 +65,10 @@ class Constant(ufl.Coefficient):
 
         array = numpy.array(value)
         rank = len(array.shape)
-        floats = list(map(float, array.flat))
+        if array.dtype == numpy.complex:
+            raise TypeError("Complex constants are not supported yet")
+        else:
+            floats = list(map(float, array.flat))
 
         # Create UFL element and initialize constant
         if rank == 0:
@@ -121,8 +124,33 @@ class Constant(ufl.Coefficient):
     def __complex__(self):
         # Overriding UFL operator in this particular case.
         if self.ufl_shape:
-            raise TypeError("Cannot convert nonscalar constant to float.")
+            raise TypeError("Cannot convert nonscalar constant to complex.")
         return complex(self._cpp_object)
+
+    def evaluate(self, x, mapping, component, index_values, derivatives=()):
+        "Get *self* from *mapping* and return the component asked for."
+        # Overriding ufl.Terminal.evaluate in this particular case.
+        f = mapping.get(self)
+        # No mapping, trying to evaluate self as a constant
+        if f is None:
+            try:
+                f = float(self)
+                if derivatives:
+                    f = 0.0
+                return f
+            except Exception:
+                pass
+            # If it has an ufl_evaluate function, call it
+            if hasattr(self, 'ufl_evaluate'):
+                return self.ufl_evaluate(x, component, derivatives)
+            # Take component if any
+            from ufl.log import warning
+            warning("Couldn't map '%s' to a float, returning ufl object without evaluation." % str(self))
+            f = self
+            # Take component if any
+            if component:
+                f = f[component]
+            return f
 
     def str(self, verbose):
         return self._cpp_object.str(verbose)
