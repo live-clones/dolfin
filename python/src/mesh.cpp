@@ -89,7 +89,9 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshGeometry, std::shared_ptr<dolfin::MeshGeometry>>
       (m, "MeshGeometry", "DOLFIN MeshGeometry object")
       .def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension")
-      .def("degree", &dolfin::MeshGeometry::degree, "Degree");
+      .def("degree", &dolfin::MeshGeometry::degree, "Degree")
+      .def("get_entity_index", &dolfin::MeshGeometry::get_entity_index)
+      .def("num_entity_coordinates", &dolfin::MeshGeometry::num_entity_coordinates);
 
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>, dolfin::Variable>

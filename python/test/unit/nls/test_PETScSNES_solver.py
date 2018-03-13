@@ -200,7 +200,18 @@ def test_preconditioner_interface(V, parameter_backend):
             assert getattr(self, "_solver_setup_called", False)
             assert getattr(self, "_update_solution_called", False)
 
-    for solverclass in [NewtonSolver, MyNewtonSolver, PETScSNESSolver]:
+    class MyPETScNewtonSolver(MyNewtonSolver):
+        def __init__(self):
+            self.petsc_solver = PETScKrylovSolver()
+            NewtonSolver.__init__(self, V.mesh().mpi_comm(),
+                self.petsc_solver, PETScFactory.instance())
+        def update_solution(self, x, dx, rp, p, i):
+            self._update_solution_called = True
+            assert self.linear_solver() is self.petsc_solver
+            super().update_solution(x, dx, rp, p, i)
+
+
+    for solverclass in [NewtonSolver, MyNewtonSolver, MyPETScNewtonSolver, PETScSNESSolver]:
         problem = Problem(V)
         x = problem.u.vector()
 
@@ -252,3 +263,10 @@ def test_snes_solver_bound_vectors(F, u, bcs, J,
     u.interpolate(Constant(-1000.0))
     solver.solve()
     assert u.vector().min() >= 0
+
+
+@skip_if_not_PETSc
+def test_snes_set_from_options():
+    solver = PETScSNESSolver()
+    PETScOptions.set("snes_atol", 1e-12)
+    solver.set_from_options()
