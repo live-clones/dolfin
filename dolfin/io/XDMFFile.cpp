@@ -133,7 +133,8 @@ void XDMFFile::write(const Mesh& mesh, const Encoding encoding)
 void XDMFFile::write_checkpoint(const Function& u,
                                 std::string function_name,
                                 double time_step,
-                                const Encoding encoding)
+                                const Encoding encoding,
+                                bool append)
 {
   check_encoding(encoding);
   check_function_name(function_name);
@@ -141,8 +142,9 @@ void XDMFFile::write_checkpoint(const Function& u,
   log(PROGRESS, "Writing function \"%s\" to XDMF file \"%s\" with "
       "time step %f.", function_name.c_str(), _filename.c_str(), time_step);
 
-  // If XML file exists load it to member _xml_doc
-  if (boost::filesystem::exists(_filename))
+  // If XML file exists and appending is enabled 
+  // load it to member _xml_doc
+  if (boost::filesystem::exists(_filename) and append == true)
   {
     log(WARNING, "Appending to an existing XDMF XML file \"%s\".",
         _filename.c_str());
@@ -159,10 +161,19 @@ void XDMFFile::write_checkpoint(const Function& u,
 
   bool truncate_hdf = false;
 
-  // If the XML file doesn't have expected structure (domain) reset the file
-  // and create empty structure
-  if (_xml_doc->select_node("/Xdmf/Domain").node().empty())
+  // If the XML file doesn't have expected structure (domain) 
+  // or appending is disabled
+  // reset the file and create empty structure
+  if (_xml_doc->select_node("/Xdmf/Domain").node().empty() or append == false)
   {
+
+    // If we will reset the XDMF file that exists
+    if (boost::filesystem::exists(_filename))
+    {
+      log(WARNING, "XDMF file \"%s\" will be overwritten.",
+          _filename.c_str());
+    }
+
     _xml_doc->reset();
 
     // Prepare new XML structure
