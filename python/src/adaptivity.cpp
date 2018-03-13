@@ -20,6 +20,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <dolfin/adaptivity/adapt.h>
 #include <dolfin/adaptivity/AdaptiveLinearVariationalSolver.h>
 #include <dolfin/adaptivity/AdaptiveNonlinearVariationalSolver.h>
 #include <dolfin/adaptivity/ErrorControl.h>
@@ -34,6 +35,7 @@
 #include <dolfin/function/Function.h>
 #include <dolfin/la/GenericVector.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshFunction.h>
 
 #include "casters.h"
 
@@ -114,4 +116,9 @@ namespace dolfin_wrappers
            std::shared_ptr<dolfin::Form>,
            std::shared_ptr<dolfin::ErrorControl>>());
   }
+
+    // dolfin::adapt
+    m.def("adapt", (std::shared_ptr<dolfin::MeshFunction<std::size_t>> (*)(const dolfin::MeshFunction<std::size_t>&,
+          std::shared_ptr<const dolfin::Mesh>)) &dolfin::adapt,
+          py::arg("mesh_function"), py::arg("adapted_mesh"));
 }
