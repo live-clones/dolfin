@@ -153,8 +153,9 @@ namespace dolfin_wrappers
                                int cell_orientation)
           {
             auto ufc_element = self.ufc_element();
+            const std::size_t size = ufc_element->value_size();
             const std::size_t space_dimension = ufc_element->space_dimension();
-            py::array_t<double, py::array::c_style> values(space_dimension);
+            py::array_t<double, py::array::c_style> values(space_dimension*size);
             self.evaluate_basis_all(values.mutable_data(), x.data(), coordinate_dofs.data(),
                                 cell_orientation);
             return values;
