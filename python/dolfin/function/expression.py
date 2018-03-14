@@ -140,7 +140,7 @@ class BaseExpression(ufl.Coefficient):
         if values is not None:
             if not isinstance(values, numpy.ndarray):
                 raise TypeError("expected a NumPy array for 'values'")
-            if len(values) != value_size or not numpy.issubdtype(values.dtype, 'd'):
+            if len(values) != value_size or not numpy.issubdtype(values.dtype, numpy.float64):
                 raise TypeError("expected a double NumPy array of length"
                                 " %d for return values." % value_size)
             values_provided = True
@@ -303,7 +303,6 @@ class CompiledExpression(BaseExpression):
         domain = kwargs.pop("domain", None)
         name = kwargs.pop("name", None)
         label = kwargs.pop("label", None)
-        # mpi_comm = kwargs.pop("mpi_comm", None)
 
         if not isinstance(cpp_module, cpp.function.Expression):
             raise RuntimeError("Must supply compiled C++ Expression module to CompiledExpression")
@@ -362,8 +361,6 @@ class Expression(BaseExpression):
         domain = kwargs.pop("domain", None)
         name = kwargs.pop("name", None)
         label = kwargs.pop("label", None)
-        # FIXME: feed mpi_comm through to JIT
-        # mpi_comm = kwargs.pop("mpi_comm", None)
 
         if not isinstance(cpp_code, (str, tuple, list)):
             raise RuntimeError("Must supply C++ code to Expression. You may want to use UserExpression")

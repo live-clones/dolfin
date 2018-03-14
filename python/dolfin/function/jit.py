@@ -8,6 +8,7 @@
 # version.
 
 from dolfin.cpp.log import log, LogLevel
+from dolfin.cpp import MPI
 from dolfin.jit.jit import compile_class, _math_header
 
 
@@ -150,8 +151,9 @@ extern "C" DLL_EXPORT dolfin::Expression * create_{classname}()
 
 def compile_expression(statements, properties):
 
+    mpi_comm = properties.pop("mpi_comm", MPI.comm_world)
     cpp_data = {'statements': statements, 'properties': properties,
                 'name': 'expression', 'jit_generate': jit_generate}
 
-    expression = compile_class(cpp_data)
+    expression = compile_class(cpp_data, mpi_comm=mpi_comm)
     return expression

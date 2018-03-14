@@ -283,11 +283,13 @@ namespace dolfin_wrappers
            {
              auto _u = value.attr("_cpp_object").cast<std::shared_ptr<const dolfin::GenericFunction>>();
              self.set_value(_u);
-           });
+           })
+      .def("value", &dolfin::DirichletBC::value);
 
     // dolfin::AssemblerBase
     py::class_<dolfin::AssemblerBase, std::shared_ptr<dolfin::AssemblerBase>>
       (m, "AssemblerBase")
+      .def("init_global_tensor", &dolfin::AssemblerBase::init_global_tensor)
       .def_readwrite("add_values", &dolfin::Assembler::add_values)
       .def_readwrite("keep_diagonal", &dolfin::Assembler::keep_diagonal)
       .def_readwrite("finalize_tensor", &dolfin::Assembler::finalize_tensor);

@@ -89,7 +89,9 @@ namespace dolfin_wrappers
     py::class_<dolfin::MeshGeometry, std::shared_ptr<dolfin::MeshGeometry>>
       (m, "MeshGeometry", "DOLFIN MeshGeometry object")
       .def("dim", &dolfin::MeshGeometry::dim, "Geometrical dimension")
-      .def("degree", &dolfin::MeshGeometry::degree, "Degree");
+      .def("degree", &dolfin::MeshGeometry::degree, "Degree")
+      .def("get_entity_index", &dolfin::MeshGeometry::get_entity_index)
+      .def("num_entity_coordinates", &dolfin::MeshGeometry::num_entity_coordinates);
 
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>, dolfin::Variable>
@@ -99,7 +101,7 @@ namespace dolfin_wrappers
       .def("init", (void (dolfin::MeshTopology::*)(std::size_t, std::size_t, std::size_t))
            &dolfin::MeshTopology::init)
       .def("__call__", (const dolfin::MeshConnectivity& (dolfin::MeshTopology::*)(std::size_t, std::size_t) const)
-           &dolfin::MeshTopology::operator())
+           &dolfin::MeshTopology::operator(), py::return_value_policy::reference_internal)
       .def("size", &dolfin::MeshTopology::size)
       .def("hash", &dolfin::MeshTopology::hash)
       .def("init_global_indices", &dolfin::MeshTopology::init_global_indices)
@@ -224,7 +226,8 @@ namespace dolfin_wrappers
       (m, "MeshConnectivity", "DOLFIN MeshConnectivity object")
       .def("__call__", [](const dolfin::MeshConnectivity& self, std::size_t i)
            {
-             return Eigen::Map<const Eigen::Matrix<unsigned int, Eigen::Dynamic, 1>>(self(i), self.size(i));})
+             return Eigen::Map<const Eigen::Matrix<unsigned int, Eigen::Dynamic, 1>>(self(i), self.size(i));
+           }, py::return_value_policy::reference_internal)
       .def("size", (std::size_t (dolfin::MeshConnectivity::*)() const)
            &dolfin::MeshConnectivity::size)
       .def("size", (std::size_t (dolfin::MeshConnectivity::*)(std::size_t) const)

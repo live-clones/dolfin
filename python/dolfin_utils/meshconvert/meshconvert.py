@@ -37,15 +37,14 @@
 # NOTE: If future additions need that please import dolfin in a try: except:
 # NOTE: clause and tell the user to install dolfin if it is not installed.
 
-from __future__ import print_function
+
 import getopt
+import subprocess
 import sys
-from instant import get_status_output
 import re
 import warnings
 import os.path
 import numpy
-import six
 
 from . import abaqus
 from . import xml_writer
@@ -342,7 +341,12 @@ def gmsh2xml(ifilename, handler):
             _error("DOLFIN must be installed to handle Gmsh boundary regions")
         mesh = Mesh()
         mesh_editor = MeshEditor ()
-        mesh_editor.open( mesh, highest_dim, highest_dim )
+        if (highest_dim == 2):
+            mesh_editor.open(mesh, "triangle", highest_dim, highest_dim)
+        elif (highest_dim == 3):
+            mesh_editor.open(mesh, "tetrahedron", highest_dim, highest_dim)
+        else:
+            raise RuntimeError
         process_facets = True
     else:
         # TODO: Output a warning or an error here
@@ -574,7 +578,7 @@ def triangle2xml(ifilename, ofilename):
                 print("Some edge markers are negative! dolfin will increase "\
                         "them by probably 2**32 when loading xml. "\
                         "Consider using non-negative edge markers only.")
-            for tri, vertices in six.iteritems(tris):
+            for tri, vertices in tris.items():
                 v0, v1, v2 = sorted((vertices[0:3]))
                 try:
                     edge_markers_local.append((tri, 0, \
@@ -595,12 +599,12 @@ def triangle2xml(ifilename, ofilename):
     xml_writer.write_header_mesh(ofile, "triangle", 2)
     xml_writer.write_header_vertices(ofile, num_nodes)
     node_off = 0 if 0 in nodes else -1
-    for node, node_t in six.iteritems(nodes):
+    for node, node_t in nodes.items():
         xml_writer.write_vertex(ofile, node+node_off, node_t[0], node_t[1], 0.0)
     xml_writer.write_footer_vertices(ofile)
     xml_writer.write_header_cells(ofile, num_tris)
     tri_off = 0 if 0 in tris else -1
-    for tri, tri_t in six.iteritems(tris):
+    for tri, tri_t in tris.items():
         xml_writer.write_cell_triangle(ofile, tri+tri_off, tri_t[0] + node_off,
                                        tri_t[1] + node_off, tri_t[2] + node_off)
     xml_writer.write_footer_cells(ofile)
@@ -620,7 +624,7 @@ def triangle2xml(ifilename, ofilename):
         xml_writer.write_header_meshfunction2(afile)
         xml_writer.write_header_meshvaluecollection(afile, \
                              "triangle attribs "+str(i), 2, num_tris, "double")
-        for tri, tri_a in six.iteritems(tri_attrs):
+        for tri, tri_a in tri_attrs.items():
              xml_writer.write_entity_meshvaluecollection(afile, \
                                             2, tri+tri_off, tri_a[i], 0)
         xml_writer.write_footer_meshvaluecollection(afile)
@@ -867,7 +871,7 @@ def diffpack2xml(ifilename, ofilename):
     xml_writer.write_footer_vertices(ofile)
     xml_writer.write_header_cells(ofile, num_cells)
 
-    # Output unique vertex markers as individual MeshFunctions on vertices
+    # Output unique vertex markers as individual VertexFunctions
     unique_vertex_markers.difference_update([0])
     for unique_marker in unique_vertex_markers:
         ofile_marker = open(ofilename.replace(".xml", "") + \
@@ -1280,10 +1284,7 @@ def exodus2xml(ifilename,ofilename):
 
     name = ifilename.split(".")[0]
     netcdffilename = name +".ncdf"
-    status, output = get_status_output('ncdump '+ifilename + ' > '+netcdffilename)
-    if status != 0:
-        raise IOError("Something wrong while executing ncdump. Is ncdump "\
-              "installed on the system?")
+    subprocess.run(['ncdump', ifilename, ' > ', netcdffilename], check=True)
     netcdf2xml(netcdffilename, ofilename)
 
 
@@ -1294,7 +1295,8 @@ def _error(message):
     sys.exit(2)
 
 def convert2xml(ifilename, ofilename, iformat=None):
-    """ Convert a file to the DOLFIN XML format.
+    """Convert a file to the DOLFIN XML format.
+
     """
     convert(ifilename, XmlHandler(ofilename), iformat=iformat)
 

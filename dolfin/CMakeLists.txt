@@ -22,7 +22,7 @@ file(GLOB DOLFIN_CONTENT RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
 set(DOLFIN_DIRS)
 
 # List of excluded files and directories
-set(EXCLUDES ${DOLFIN_H} swig CMakeLists.txt)
+set(EXCLUDES ${DOLFIN_H} CMakeLists.txt)
 
 # Iterate over all directories and files and append to DOLFIN_DIRS
 foreach(_DIR_NAME ${DOLFIN_CONTENT})
@@ -84,25 +84,6 @@ else()
 endif()
 
 #------------------------------------------------------------------------------
-# Check type sizes
-
-# Check size of size_t
-include(CheckTypeSize)
-check_type_size("size_t" size_t_size)
-if (size_t_size)
-  target_compile_definitions(dolfin PUBLIC DOLFIN_SIZE_T=${size_t_size})
-endif()
-
-# Set size of dolfin::la_index
-if (DOLFIN_ENABLE_PETSC AND PETSC_FOUND)
-  target_compile_definitions(dolfin PUBLIC DOLFIN_LA_INDEX_SIZE=${PETSC_INT_SIZE})
-  list(APPEND DOLFIN_CXX_DEFINITIONS "-DDOLFIN_LA_INDEX_SIZE=${PETSC_INT_SIZE}") # remove this line when Instant/SWIG is removed
-else()
-  target_compile_definitions(dolfin PUBLIC DOLFIN_LA_INDEX_SIZE=4)
-  list(APPEND DOLFIN_CXX_DEFINITIONS "-DDOLFIN_LA_INDEX_SIZE=4") # remove this line when Instant/SWIG is removed
-endif()
-
-#------------------------------------------------------------------------------
 # Add include directories and libs of required packages
 
 # UFC
@@ -125,7 +106,7 @@ endforeach()
 
 # HDF5
 if (DOLFIN_ENABLE_HDF5 AND HDF5_FOUND)
-  list(APPEND DOLFIN_LINK_FLAGS ${HDF5_LINK_FLAGS})
+  #list(APPEND DOLFIN_LINK_FLAGS ${HDF5_LINK_FLAGS})
   target_compile_definitions(dolfin PUBLIC HAS_HDF5)
   target_compile_definitions(dolfin PUBLIC ${HDF5_DEFINITIONS})
   target_link_libraries(dolfin PUBLIC ${HDF5_C_LIBRARIES})
@@ -145,7 +126,6 @@ if (DOLFIN_ENABLE_PETSC AND DOLFIN_ENABLE_SLEPC AND SLEPC_FOUND)
   target_compile_definitions(dolfin PUBLIC HAS_SLEPC)
   target_link_libraries(dolfin PUBLIC SLEPC::slepc)
   target_link_libraries(dolfin PRIVATE SLEPC::slepc_static)
-  list(APPEND DOLFIN_PYTHON_DEFINITIONS "-DHAS_SLEPC")  # remove this line when Instant/SWIG is removed
 endif()
 
 # PETSc
@@ -153,24 +133,6 @@ if (DOLFIN_ENABLE_PETSC AND PETSC_FOUND)
   target_compile_definitions(dolfin PUBLIC HAS_PETSC)
   target_link_libraries(dolfin PUBLIC PETSC::petsc)
   target_link_libraries(dolfin PRIVATE PETSC::petsc_static)
-  list(APPEND DOLFIN_PYTHON_DEFINITIONS "-DHAS_PETSC")  # remove this line when Instant/SWIG is removed
-endif()
-
-# petsc4py
-if (DOLFIN_ENABLE_PETSC AND DOLFIN_ENABLE_PETSC4PY AND PETSC4PY_FOUND)
-  list(APPEND DOLFIN_PYTHON_DEFINITIONS "-DHAS_PETSC4PY")
-  list(APPEND PYTHON_INCLUDE_DIRS ${PETSC4PY_INCLUDE_DIRS})
-
-  # This is requied for the pybdind11 transion. Review once SWIG
-  # backend is removed.
-  target_compile_definitions(dolfin PUBLIC HAS_PETSC4PY)
-  target_include_directories(dolfin SYSTEM PUBLIC ${PETSC4PY_INCLUDE_DIRS})
-endif()
-
-# slepc4py
-if (DOLFIN_ENABLE_SLEPC AND DOLFIN_ENABLE_SLEPC4PY AND SLEPC4PY_FOUND)
-  list(APPEND DOLFIN_PYTHON_DEFINITIONS "-DHAS_SLEPC4PY")
-  list(APPEND PYTHON_INCLUDE_DIRS ${SLEPC4PY_INCLUDE_DIRS})
 endif()
 
 # UMFPACK
@@ -212,12 +174,11 @@ endif()
 if (DOLFIN_ENABLE_MPI AND MPI_CXX_FOUND)
   set(DOLFIN_CXX_FLAGS "${DOLFIN_CXX_FLAGS} ${MPI_CXX_COMPILE_FLAGS}")
   target_compile_definitions(dolfin PUBLIC HAS_MPI)
-  list(APPEND DOLFIN_PYTHON_DEFINITIONS "-DHAS_MPI")  # remove this line when Instant/SWIG is removed
   target_link_libraries(dolfin PUBLIC ${MPI_CXX_LIBRARIES})
   target_include_directories(dolfin SYSTEM PUBLIC ${MPI_CXX_INCLUDE_PATH})
 endif()
 
-if (DOLFIN_ENABLE_GEOMETRY_DEBUGGING AND GMP_FOUND AND MPFR_FOUND AND CGAL_FOUND) 
+if (DOLFIN_ENABLE_GEOMETRY_DEBUGGING AND GMP_FOUND AND MPFR_FOUND AND CGAL_FOUND)
   message(STATUS "Appending link flags for geometry debugging")
   target_compile_definitions(dolfin PUBLIC "-DDOLFIN_ENABLE_GEOMETRY_DEBUGGING")
   target_include_directories(dolfin PRIVATE ${CGAL_INCLUDE_DIRS})
@@ -242,32 +203,9 @@ set_source_files_properties(common/defines.cpp PROPERTIES COMPILE_FLAGS
   "-DDOLFIN_GIT_COMMIT_HASH=\\\"${GIT_COMMIT_HASH}\\\" -DUFC_SIGNATURE=\\\"${UFC_SIGNATURE}\\\"")
 
 # Add flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${DOLFIN_LINK_FLAGS}")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DOLFIN_LINK_FLAGS}")
-
-#------------------------------------------------------------------------------
-# SWIG
-
-if (PYTHONINTERP_FOUND AND PYTHONLIBS_FOUND AND SWIG_FOUND)
-
-  # Add numpy defines to DOLFIN_PYTHON_DEFINITIONS
-  if (NUMPY_FOUND)
-
-    # Set numpy version define
-    set(DOLFIN_PYTHON_DEFINITIONS ${DOLFIN_PYTHON_DEFINITIONS};-DNUMPY_VERSION_MAJOR=${NUMPY_VERSION_MAJOR};-DNUMPY_VERSION_MINOR=${NUMPY_VERSION_MINOR};-DNUMPY_VERSION_MICRO=${NUMPY_VERSION_MICRO})
-
-    # Only set define for none deprecated API for NUMPY version 1.7
-    # and larger
-    if(NUMPY_VERSION VERSION_GREATER 1.6.2)
-      set(DOLFIN_PYTHON_DEFINITIONS ${DOLFIN_PYTHON_DEFINITIONS} -DNPY_NO_DEPRECATED_API=NPY_${NUMPY_VERSION_MAJOR}_${NUMPY_VERSION_MINOR}_API_VERSION)
-    endif()
-
-  endif()
-
-  add_subdirectory(swig)
-
-endif()
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${DOLFIN_LINK_FLAGS}")
+#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DOLFIN_LINK_FLAGS}")
 
 #------------------------------------------------------------------------------
 # Install
@@ -283,21 +221,12 @@ install(EXPORT DOLFINTargets DESTINATION ${DOLFIN_SHARE_DIR}/cmake)
 #------------------------------------------------------------------------------
 # Generate CMake config files (DOLFINConfig{,Version}.cmake)
 
-# Instant legacy. Remove when transitioned to pybind11
-get_target_property(DOLFIN_DEP_INCLUDE_DIRECTORIES dolfin INTERFACE_INCLUDE_DIRECTORIES)
-if (DOLFIN_ENABLE_PETSC AND PETSC_FOUND)
-  get_target_property(PETSC_DOLFIN_INCLUDE_DIRECTORIES PETSC::petsc INTERFACE_INCLUDE_DIRECTORIES)
-  list(APPEND DOLFIN_DEP_INCLUDE_DIRECTORIES ${PETSC_DOLFIN_INCLUDE_DIRECTORIES})
-endif()
-
 configure_file(${DOLFIN_CMAKE_DIR}/templates/DOLFINConfig.cmake.in
   ${CMAKE_BINARY_DIR}/dolfin/DOLFINConfig.cmake @ONLY)
 configure_file(${DOLFIN_CMAKE_DIR}/templates/DOLFINConfigVersion.cmake.in
   ${CMAKE_BINARY_DIR}/dolfin/DOLFINConfigVersion.cmake @ONLY)
 configure_file(${DOLFIN_CMAKE_DIR}/templates/UseDOLFIN.cmake.in
   ${CMAKE_BINARY_DIR}/dolfin/UseDOLFIN.cmake @ONLY)
-configure_file(${DOLFIN_CMAKE_DIR}/templates/DOLFINPythonXY.cmake.in
-  ${CMAKE_BINARY_DIR}/dolfin/DOLFINPython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.cmake @ONLY)
 
 install(
   FILES
@@ -306,10 +235,8 @@ install(
   ${CMAKE_BINARY_DIR}/dolfin/DOLFINConfig.cmake
   ${CMAKE_BINARY_DIR}/dolfin/DOLFINConfigVersion.cmake
   ${CMAKE_BINARY_DIR}/dolfin/UseDOLFIN.cmake
-  ${CMAKE_BINARY_DIR}/dolfin/DOLFINPython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.cmake
   DESTINATION ${DOLFIN_SHARE_DIR}/cmake
-  COMPONENT Development
-  )
+  COMPONENT Development)
 
 #------------------------------------------------------------------------------
 # Generate pkg-config file and install it

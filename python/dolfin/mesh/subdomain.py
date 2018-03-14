@@ -17,6 +17,7 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import dolfin.cpp as cpp
+from dolfin.cpp import MPI
 from dolfin.cpp.log import log, LogLevel
 from dolfin.jit.jit import compile_class, _math_header
 
@@ -110,10 +111,11 @@ extern "C" DLL_EXPORT dolfin::SubDomain * create_{classname}()
 
 def compile_subdomain(inside_code, properties):
 
+    mpi_comm = properties.pop("mpi_comm", MPI.comm_world)
     cpp_data = {'statements': inside_code, 'properties': properties,
                 'name': 'subdomain', 'jit_generate': jit_generate}
 
-    subdomain = compile_class(cpp_data)
+    subdomain = compile_class(cpp_data, mpi_comm=mpi_comm)
     return subdomain
 
 
