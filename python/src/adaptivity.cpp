@@ -115,10 +115,10 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<dolfin::NonlinearVariationalProblem>,
            std::shared_ptr<dolfin::Form>,
            std::shared_ptr<dolfin::ErrorControl>>());
-  }
 
     // dolfin::adapt
     m.def("adapt", (std::shared_ptr<dolfin::MeshFunction<std::size_t>> (*)(const dolfin::MeshFunction<std::size_t>&,
           std::shared_ptr<const dolfin::Mesh>)) &dolfin::adapt,
           py::arg("mesh_function"), py::arg("adapted_mesh"));
+  }
 }
