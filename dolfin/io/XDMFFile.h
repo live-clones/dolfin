@@ -143,11 +143,18 @@ namespace dolfin
     ///         the same time steps.
     /// @param    encoding (_Encoding_)
     ///         Encoding to use: HDF5 or ASCII
+    /// @param    append (default false)
+    ///         If set (default) to false, then XDMF and HDF files 
+    ///         (if encoding = HDF) are overwritten.
+    ///         If set to true, then both XDMF and HDF 
+    ///         (if encoding = HDF) files are appended at end. Set append to true
+    ///         when saving timeseries.
     ///
     void write_checkpoint(const Function& u,
                           std::string function_name,
                           double time_step = 0.0,
-                          Encoding encoding=default_encoding);
+                          Encoding encoding=default_encoding,
+                          bool append=false);
 
     /// Save a Function to XDMF file for visualisation, using an
     /// associated HDF5 file, or storing the data inline as XML.
