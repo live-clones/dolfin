@@ -122,9 +122,9 @@ for n in range(N):
     u = solve_poisson(t, x1, y1, x2, y2)
 
     # Save to file
-    f0.write(u.part(0), t)
-    f1.write(u.part(1), t)
-    f2.write(u.part(2), t)
+    f0.write(u.part(0, deepcopy=True), t)
+    f1.write(u.part(1, deepcopy=True), t)
+    f2.write(u.part(2, deepcopy=True), t)
 
 # Close files
 f0.close()

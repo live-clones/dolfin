@@ -64,8 +64,8 @@ solve(A, x, b)
 outfile0 = XDMFFile("output/u0.xdmf")
 outfile1 = XDMFFile("output/u1.xdmf")
 
-outfile0.write(uh.part(0), 0.0)
-outfile1.write(uh.part(1), 0.0)
+outfile0.write(uh.part(0, deepcopy=True), 0.0)
+outfile1.write(uh.part(1, deepcopy=True), 0.0)
 
 outfile0.close()
 outfile1.close()
