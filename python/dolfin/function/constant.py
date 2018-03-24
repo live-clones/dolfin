@@ -97,6 +97,9 @@ class Constant(ufl.Coefficient):
     def compute_vertex_values(self, mesh):
         return self._cpp_object.compute_vertex_values(mesh)
 
+    def eval(self, *args, **kwargs):
+        return self._cpp_object.eval(*args, **kwargs)
+
     def values(self):
         return self._cpp_object.values()
 

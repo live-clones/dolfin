@@ -28,7 +28,6 @@ from dolfin import *
 from dolfin_utils.test import skip_in_parallel
 
 @skip_in_parallel
-@pytest.mark.skip
 def test_issue_754():
     N = 3
     meshes = [UnitSquareMesh(2*N, 2*N),
@@ -51,11 +50,10 @@ def test_issue_754():
     # create multimesh function w such that
     #     w(x) =  1  if x is in the last mesh
     #          =  0  otherwise
-
-    w = MultiMeshFunction(V); x = w.vector()
-    dofs = V.part(V.num_parts()-1).dofmap().dofs() \
-           + sum(V.part(i).dim() for i in range(V.num_parts()-1))
-    w.vector()[dofs] = 1.
+    V_1 = FunctionSpace(multimesh.part(len(meshes)-1), "CG", 1)
+    v_1 = interpolate(Constant(1),V_1)
+    w = MultiMeshFunction(V)
+    w.assign_part((len(meshes)-1), v_1)
 
     # Compute the area and perimeter of the last mesh
     a = w.vector().inner(A * w.vector())

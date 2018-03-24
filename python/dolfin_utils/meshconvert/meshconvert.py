@@ -477,7 +477,7 @@ def gmsh2xml(ifilename, handler):
               # as facets are vertices
               facets_as_nodes = numpy.array([[i] for i in range(mesh.num_facets())])
             else:
-              facets_as_nodes = mesh.topology()(highest_dim-1,0)().reshape ( mesh.num_facets(), highest_dim )
+                facets_as_nodes =  numpy.reshape(mesh.topology()(highest_dim-1,0)(),(mesh.num_facets(), highest_dim))
 
             # Build the reverse map
             nodes_as_facets = {}
