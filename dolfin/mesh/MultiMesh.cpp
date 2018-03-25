@@ -19,7 +19,7 @@
 // Modified by Benjamin Kehlet 2016
 //
 // First added:  2013-08-05
-// Last changed: 2017-12-12
+// Last changed: 2018-03-25
 
 #include <cmath>
 #include <algorithm>
@@ -30,6 +30,7 @@
 #include <dolfin/geometry/IntersectionConstruction.h>
 #include <dolfin/geometry/ConvexTriangulation.h>
 #include <dolfin/geometry/GeometryPredicates.h>
+#include <dolfin/geometry/MeshPointIntersection.h>
 
 #include "Cell.h"
 #include "Facet.h"
@@ -451,6 +452,68 @@ std::string MultiMesh::plot_matplotlib(double delta_z,
   }
   ss << "    plt.show()\n";
   return ss.str();
+}
+//------------------------------------------------------------------------------
+void MultiMesh::auto_cover(std::size_t p,
+			   const Point& point)
+{
+  // Find cell containing p. Should not be covered.
+  std::shared_ptr<const Mesh> mesh = part(p);
+  MeshPointIntersection mpi(*mesh, point);
+  const std::vector<unsigned int> cells = mpi.intersected_cells();
+  const std::size_t tdim = mesh->topology().dim();
+  mesh->init(tdim - 1, tdim);
+
+  if (cells.size())
+  {
+    for (const unsigned int cell_index : cells)
+    {
+      // Find cell that is uncut or cut, i.e., not covered
+      if (std::find(_covered_cells[p].begin(),
+		    _covered_cells[p].end(), cell_index)
+	  == _covered_cells[p].end())
+      {
+	std::vector<unsigned int> new_covered_cells;
+	new_covered_cells.push_back(cell_index);
+	std::size_t cnt = 0;
+
+	// Flooding
+	while (cnt < new_covered_cells.size())
+	{
+	  // Get facet neighbors
+	  const Cell cell(*mesh, new_covered_cells[cnt]);
+	  cnt++;
+
+	  for (FacetIterator f(cell); !f.end(); ++f)
+	  {
+	    for (CellIterator neigh_cell(*f); !neigh_cell.end(); ++neigh_cell)
+	    {
+	      if (neigh_cell->index() != new_covered_cells[cnt] and
+		  std::find(new_covered_cells.begin(),
+			    new_covered_cells.end(), neigh_cell->index())
+		  == new_covered_cells.end() and
+		  std::find(_covered_cells[p].begin(),
+			    _covered_cells[p].end(), neigh_cell->index())
+		  == _covered_cells[p].end())
+	      {
+		// Set as covered
+		new_covered_cells.push_back(neigh_cell->index());
+	      }
+	    }
+	  }
+	}
+
+	// Update covered cells
+	mark_covered(p, new_covered_cells);
+	return;
+      }
+    }
+  }
+  else
+  {
+    info("part %d does not contain the point (%g,%g,%g)",
+	 p, point.x(), point.y(), point.z());
+  }
 }
 //-----------------------------------------------------------------------------
 void MultiMesh::_build_boundary_meshes()
