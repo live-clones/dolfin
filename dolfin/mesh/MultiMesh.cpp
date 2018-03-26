@@ -19,7 +19,7 @@
 // Modified by Benjamin Kehlet 2016
 //
 // First added:  2013-08-05
-// Last changed: 2018-03-25
+// Last changed: 2018-03-26
 
 #include <cmath>
 #include <algorithm>
@@ -464,17 +464,22 @@ void MultiMesh::auto_cover(std::size_t p,
   const std::size_t tdim = mesh->topology().dim();
   mesh->init(tdim - 1, tdim);
 
+  // Structures to avoid std::find
+  std::vector<bool> is_new_covered(mesh->num_cells(), false);
+  std::vector<bool> is_covered(mesh->num_cells(), false);
+  for (unsigned int c : _covered_cells[p])
+    is_covered[c] = 1;
+
   if (cells.size())
   {
     for (const unsigned int cell_index : cells)
     {
       // Find cell that is uncut or cut, i.e., not covered
-      if (std::find(_covered_cells[p].begin(),
-		    _covered_cells[p].end(), cell_index)
-	  == _covered_cells[p].end())
+      if (!is_covered[cell_index])
       {
-	std::vector<unsigned int> new_covered_cells;
+	std::deque<unsigned int> new_covered_cells;
 	new_covered_cells.push_back(cell_index);
+	is_new_covered[cell_index] = true;
 	std::size_t cnt = 0;
 
 	// Flooding
@@ -489,22 +494,34 @@ void MultiMesh::auto_cover(std::size_t p,
 	    for (CellIterator neigh_cell(*f); !neigh_cell.end(); ++neigh_cell)
 	    {
 	      if (neigh_cell->index() != new_covered_cells[cnt] and
-		  std::find(new_covered_cells.begin(),
-			    new_covered_cells.end(), neigh_cell->index())
-		  == new_covered_cells.end() and
-		  std::find(_covered_cells[p].begin(),
-			    _covered_cells[p].end(), neigh_cell->index())
-		  == _covered_cells[p].end())
+		  !is_new_covered[neigh_cell->index()] and
+		  !is_covered[neigh_cell->index()])
 	      {
 		// Set as covered
 		new_covered_cells.push_back(neigh_cell->index());
+		is_new_covered[neigh_cell->index()] = true;
 	      }
 	    }
 	  }
 	}
 
 	// Update covered cells
-	mark_covered(p, new_covered_cells);
+	for (unsigned int cell_index : new_covered_cells)
+	{
+	  // Add as covered
+	  _covered_cells[p].push_back(cell_index);
+
+	  // Remove from uncut
+	  _uncut_cells[p].erase(std::remove(_uncut_cells[p].begin(),
+					    _uncut_cells[p].end(), cell_index),
+				_uncut_cells[p].end());
+
+	  // Remove from collision maps
+	  if (_collision_maps_cut_cells[p].find(cell_index)
+	      != _collision_maps_cut_cells[p].end())
+	    _collision_maps_cut_cells[p][cell_index].clear();
+	}
+
 	return;
       }
     }
