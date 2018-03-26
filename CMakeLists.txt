@@ -324,7 +324,7 @@ if (DOLFIN_ENABLE_MPI AND MPI_C_FOUND)
   endif()
   
   if (DOLFIN_ENABLE_SUNDIALS)
-    find_package(SUNDIALS 3.0.0)
+    find_package(SUNDIALS 3)
     set_package_properties(SUNDIALS PROPERTIES TYPE OPTIONAL
       DESCRIPTION "SUite of Nonlinear and DIfferential/ALgebraic Equation Solvers"
       URL "http://computation.llnl.gov/projects/sundials"
