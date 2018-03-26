@@ -88,6 +88,7 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
     flag = CVSpilsSetLinearSolver(_cvode_mem, _ls);
     dolfin_assert(flag == CV_SUCCESS);
 
+    // Set the preconditioner solver function to be called by CVode solver
     flag = CVSpilsSetPreconditioner(_cvode_mem, NULL, prec_solve);
     dolfin_assert(flag == CV_SUCCESS);
 

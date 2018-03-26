@@ -70,32 +70,38 @@ namespace dolfin
                          double t, std::shared_ptr<const GenericVector> y,
                          std::shared_ptr<const GenericVector> fy);
 
-    /// Document
+    /// User-defined setup function called once per Newton iteration.
+    /// Data structures for usage by the Jacobian function can be setup here
     virtual int jacobian_setup(double t,
                                std::shared_ptr<GenericVector> Jv,
-                               std::shared_ptr<GenericVector> y);
+wstd::shared_ptr<GenericVector> y);
 
-    /// Overloaded reconditioner solver function
+    /// Overloaded preconditioner solver function
     virtual int psolve(double tn, std::shared_ptr<const GenericVector>y,
                        std::shared_ptr<const GenericVector> fy,
                        std::shared_ptr<const GenericVector> r,
                        std::shared_ptr<GenericVector> z,
                        double gamma, double delta, int lr);
 
-    /// FIXME: document
+    /// Returns a map structure containing information stored in the CVode
+    /// structure, ie. number of solver steps, RHS evaluations, current time
     std::map<std::string,double> statistics();
 
   private:
-    // Internal callback from CVode to get time derivatives - passed on to derivs (above)
+    /// Internal callback from CVode to get time derivatives
+    /// Executes the overloaded derivs function(above)
     static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 
-    // FIXME: document
+    /// Internal callback from CVode to perform user-defined setup before calling Jacobian function
+    /// Executes the overloaded jacobian_setup function (above)
     static int f_jac_setup(double t, N_Vector y, N_Vector fy, void *user_data);
 
-    // FIXME: document
+    /// Internal callback from CVode to the Jacobian estimation function
+    /// Executes the overloaded jacobian function (above)
     static int f_jac(N_Vector u, N_Vector fu, double t, N_Vector y, N_Vector fy, void* , N_Vector tmp);
 
-    // FIXME: document
+    /// Internal callback from CVode to the preconditioner solver function
+    /// Executes the overloaded psolve function (above)
     static int prec_solve(double, N_Vector, N_Vector, N_Vector, N_Vector, double, double, int, void*);
 
     // Vector of values - wrapper around dolfin::GenericVector
