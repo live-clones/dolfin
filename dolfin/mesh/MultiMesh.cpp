@@ -19,7 +19,7 @@
 // Modified by Benjamin Kehlet 2016
 //
 // First added:  2013-08-05
-// Last changed: 2017-12-12
+// Last changed: 2018-03-27
 
 #include <cmath>
 #include <algorithm>
@@ -30,6 +30,7 @@
 #include <dolfin/geometry/IntersectionConstruction.h>
 #include <dolfin/geometry/ConvexTriangulation.h>
 #include <dolfin/geometry/GeometryPredicates.h>
+#include <dolfin/geometry/MeshPointIntersection.h>
 
 #include "Cell.h"
 #include "Facet.h"
@@ -451,6 +452,83 @@ std::string MultiMesh::plot_matplotlib(double delta_z,
   }
   ss << "    plt.show()\n";
   return ss.str();
+}
+//------------------------------------------------------------------------------
+void MultiMesh::auto_cover(std::size_t p,
+			   const Point& point)
+{
+  // Find cell in part p containing point. Should not be covered.
+  std::shared_ptr<const Mesh> mesh = part(p);
+  MeshPointIntersection mpi(*mesh, point);
+  const std::vector<unsigned int> cells = mpi.intersected_cells();
+
+  // Structures to avoid std::find
+  std::vector<bool> is_new_covered(mesh->num_cells(), false);
+  std::vector<bool> is_covered(mesh->num_cells(), false);
+  for (unsigned int c : _covered_cells[p])
+    is_covered[c] = true;
+
+  if (cells.size())
+  {
+    for (const unsigned int cell_index : cells)
+    {
+      // Find cell that is uncut or cut, i.e., not covered
+      if (!is_covered[cell_index])
+      {
+	std::vector<unsigned int> new_covered_cells;
+	new_covered_cells.push_back(cell_index);
+	is_new_covered[cell_index] = true;
+	std::size_t cnt = 0;
+
+	// Flooding
+	while (cnt < new_covered_cells.size())
+	{
+	  // Get facet neighbors
+	  const Cell cell(*mesh, new_covered_cells[cnt]);
+	  cnt++;
+
+	  for (FacetIterator f(cell); !f.end(); ++f)
+	  {
+	    for (CellIterator neigh_cell(*f); !neigh_cell.end(); ++neigh_cell)
+	    {
+	      if (neigh_cell->index() != new_covered_cells[cnt] and
+		  !is_new_covered[neigh_cell->index()] and
+		  !is_covered[neigh_cell->index()])
+	      {
+		// Set as covered
+		new_covered_cells.push_back(neigh_cell->index());
+		is_new_covered[neigh_cell->index()] = true;
+	      }
+	    }
+	  }
+	}
+
+	// Update covered cells
+	for (const unsigned int cell_index : new_covered_cells)
+	{
+	  // Add as covered
+	  _covered_cells[p].push_back(cell_index);
+
+	  // Remove from uncut
+	  _uncut_cells[p].erase(std::remove(_uncut_cells[p].begin(),
+					    _uncut_cells[p].end(), cell_index),
+				_uncut_cells[p].end());
+
+	  // Remove from collision maps
+	  if (_collision_maps_cut_cells[p].find(cell_index)
+	      != _collision_maps_cut_cells[p].end())
+	    _collision_maps_cut_cells[p][cell_index].clear();
+	}
+
+	return;
+      }
+    }
+  }
+  else
+  {
+    info("part %d does not contain the point (%g,%g,%g)",
+	 p, point.x(), point.y(), point.z());
+  }
 }
 //-----------------------------------------------------------------------------
 void MultiMesh::_build_boundary_meshes()
