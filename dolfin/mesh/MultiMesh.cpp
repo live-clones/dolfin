@@ -19,7 +19,7 @@
 // Modified by Benjamin Kehlet 2016
 //
 // First added:  2013-08-05
-// Last changed: 2018-03-26
+// Last changed: 2018-03-27
 
 #include <cmath>
 #include <algorithm>
@@ -457,18 +457,16 @@ std::string MultiMesh::plot_matplotlib(double delta_z,
 void MultiMesh::auto_cover(std::size_t p,
 			   const Point& point)
 {
-  // Find cell containing p. Should not be covered.
+  // Find cell in part p containing point. Should not be covered.
   std::shared_ptr<const Mesh> mesh = part(p);
   MeshPointIntersection mpi(*mesh, point);
   const std::vector<unsigned int> cells = mpi.intersected_cells();
-  const std::size_t tdim = mesh->topology().dim();
-  mesh->init(tdim - 1, tdim);
 
   // Structures to avoid std::find
   std::vector<bool> is_new_covered(mesh->num_cells(), false);
   std::vector<bool> is_covered(mesh->num_cells(), false);
   for (unsigned int c : _covered_cells[p])
-    is_covered[c] = 1;
+    is_covered[c] = true;
 
   if (cells.size())
   {
@@ -477,7 +475,7 @@ void MultiMesh::auto_cover(std::size_t p,
       // Find cell that is uncut or cut, i.e., not covered
       if (!is_covered[cell_index])
       {
-	std::deque<unsigned int> new_covered_cells;
+	std::vector<unsigned int> new_covered_cells;
 	new_covered_cells.push_back(cell_index);
 	is_new_covered[cell_index] = true;
 	std::size_t cnt = 0;
@@ -506,7 +504,7 @@ void MultiMesh::auto_cover(std::size_t p,
 	}
 
 	// Update covered cells
-	for (unsigned int cell_index : new_covered_cells)
+	for (const unsigned int cell_index : new_covered_cells)
 	{
 	  // Add as covered
 	  _covered_cells[p].push_back(cell_index);
