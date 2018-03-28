@@ -51,6 +51,27 @@ def V_high(multimesh):
     return MultiMeshFunctionSpace(multimesh, element)
 
 @fixture
+def V_vector(multimesh):
+    return MultiMeshVectorFunctionSpace(multimesh,"CG", 1)
+
+@fixture
+def e_x():
+    return Expression(("1.0","0.0"), degree=1)
+
+@fixture
+def f_vec2():
+    return Expression(("sin(x[1])","1.0"), degree=3)
+
+@fixture
+def v_vec(V_vector):
+    return MultiMeshFunction(V_vector)
+
+@fixture
+def f_vec():
+    return Expression(("x[0]","x[1]"),degree=2)
+
+
+@fixture
 def f():
     return Expression("sin(pi*x[0])*cos(2*pi*x[1])", degree=4)
 
@@ -65,49 +86,51 @@ def v(V):
 def v_high(V_high):
     return MultiMeshFunction(V_high)
 
-@pytest.mark.skip
 @skip_in_parallel
 def test_measure_mul(v, multimesh):
     assert isinstance(v*dX, ufl.form.Form)
 
-@pytest.mark.skip
 @skip_in_parallel
 def test_assemble_zero(v, multimesh):
     assert numpy.isclose(assemble_multimesh(v*dX), 0)
 
-@pytest.mark.skip
 @skip_in_parallel
 def test_assemble_area(v, multimesh):
     v.vector()[:] = 1
     assert numpy.isclose(assemble_multimesh(v*dX), 1)
 
-@pytest.mark.skip
 @skip_in_parallel
 def test_assemble_exterior_facet(v, multimesh):
     v.vector()[:] = 1
     assert numpy.isclose(assemble_multimesh(v*ds), 4)
 
-@pytest.mark.skip
 @skip_in_parallel
 def test_interpolate(v_high, f):
     v_high.interpolate(f)
     assert numpy.isclose(assemble_multimesh(v_high*dX), 0)
 
-@pytest.mark.skip
 @skip_in_parallel
 def test_project(f, V_high):
     v = project(f ,V_high)
     assert numpy.isclose(assemble_multimesh(v*dX), 0)
 
-@pytest.mark.skip
 @skip_in_parallel
 def test_errornorm_L2(f_2, v_high):
     const = Expression("1", degree=1)
     v_high.interpolate(f_2)
     assert numpy.isclose(errornorm(const, v_high, norm_type="L2", degree_rise=3), numpy.sqrt(22)/6)
 
-@pytest.mark.skip
 @skip_in_parallel
 def test_errornorm_H1(f, f_2, v_high):
     v_high.interpolate(f_2)
     assert numpy.isclose(errornorm(f, v_high, norm_type="H1", degree_rise=3), numpy.sqrt(37./36+5*numpy.pi**2/4))
+
+@skip_in_parallel
+def test_vector_space(v_vec,e_x,f_vec2,V_vector,f_vec):
+    v_vec.interpolate(e_x)
+    assert numpy.isclose(assemble_multimesh(inner(f_vec,v_vec)*dX), 0.5)
+    v_vec.interpolate(f_vec)
+    print((assemble_multimesh(inner(v_vec, f_vec2)*dX),
+                                            1/2 + numpy.sin(1/2)*numpy.sin(1/2)))
+    assert numpy.isclose(assemble_multimesh(inner(v_vec, f_vec2)*dX),
+                                            1/2 + numpy.sin(1/2)*numpy.sin(1/2))

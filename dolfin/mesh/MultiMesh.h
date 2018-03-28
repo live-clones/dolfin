@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2014-03-03
-// Last changed: 2017-09-22
+// Last changed: 2017-10-10
 
 #ifndef __MULTI_MESH_H
 #define __MULTI_MESH_H
@@ -55,8 +55,8 @@ namespace dolfin
     /// A simplex is a list of points
     typedef std::vector<Point> Simplex;
 
-    /// A polyhedron is a list of simplices
-    typedef std::vector<Simplex> Polyhedron;
+    /// A polyhedron is a list of simplices and the part numbers
+    typedef std::pair<std::vector<Simplex>, std::set<std::size_t>> Polyhedron;
 
     /// Key to identify polyhedra
     typedef std::vector<std::size_t> IncExcKey;
@@ -152,6 +152,15 @@ namespace dolfin
     ///     std::vector<unsigned int>
     ///         List of covered cell indices for given part
     const std::vector<unsigned int>& covered_cells(std::size_t part) const;
+
+    /// Mark a set of cells as covered in the mesh.
+    ///
+    /// *Arguments*
+    ///     part (std::size_t)
+    ///         The part number
+    ///     cells (std::vector<unsigned int>)
+    ///         The cells to be covered
+    void mark_covered(std::size_t part, const std::vector<unsigned int>& cells);
 
     /// Return the collision map for cut cells of the given part
     ///
@@ -436,12 +445,6 @@ namespace dolfin
     std::vector<std::map<unsigned int,
                          std::vector<std::pair<std::size_t, unsigned int> > > >
     _collision_maps_cut_cells;
-
-    // FIXME: test saving collision with boundary in its own data
-    // structure (this saves only the boundary part)
-    std::vector<std::map<unsigned int,
-                         std::vector<std::pair<std::size_t, unsigned int> > > >
-    _collision_maps_cut_cells_boundary;
 
     // Quadrature rules for cut cells. Access data by
     //
