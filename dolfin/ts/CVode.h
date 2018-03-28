@@ -61,7 +61,7 @@ namespace dolfin
 
     /// Overloaded function for time derivatives of u at time t
     /// Given the vector u, at time t, provide the time derivative udot.
-    virtual void derivs(double t, std::shared_ptr<const GenericVector> u,
+    virtual void derivs(double t, std::shared_ptr<GenericVector> u,
                         std::shared_ptr<GenericVector> udot);
 
     /// Given the values (t, y, fy, v), compute Jv = (df/dy)v
@@ -74,7 +74,7 @@ namespace dolfin
     /// Data structures for usage by the Jacobian function can be setup here
     virtual int jacobian_setup(double t,
                                std::shared_ptr<GenericVector> Jv,
-wstd::shared_ptr<GenericVector> y);
+                               std::shared_ptr<GenericVector> y);
 
     /// Overloaded preconditioner solver function
     virtual int psolve(double tn, std::shared_ptr<const GenericVector>y,

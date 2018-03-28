@@ -120,7 +120,7 @@ void CVode::set_time(double t0)
   _t = t0;
 }
 //-----------------------------------------------------------------------------
-void CVode::derivs(double t, std::shared_ptr<const GenericVector> u,
+void CVode::derivs(double t, std::shared_ptr<GenericVector> u,
                    std::shared_ptr<GenericVector> udot)
 {
   dolfin_error("CVode.cpp",
