@@ -43,7 +43,7 @@ namespace dolfin_wrappers
     public:
       using dolfin::CVode::CVode;
 
-      void derivs(double t, std::shared_ptr<const dolfin::GenericVector> u,
+      void derivs(double t, std::shared_ptr<dolfin::GenericVector> u,
                   std::shared_ptr<dolfin::GenericVector> udot)
       { PYBIND11_OVERLOAD_NAME(void, dolfin::CVode, "derivs", derivs,
                                 t, u, udot); }
