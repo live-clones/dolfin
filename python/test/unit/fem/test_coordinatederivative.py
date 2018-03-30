@@ -39,7 +39,7 @@ def test_first_shape_derivative():
     assert np.allclose(computed, actual, rtol=1e-14)    
 
     J = inner(grad(u), grad(u)) * dx
-    computed = assemble(derivative(J, X, dX)).get_local()
+    computed = assemble(derivative(J, X)).get_local()
     dJdX = -2*inner(dot(grad(dX), grad(u)), grad(u)) * dx + inner(grad(u), grad(u)) * div(dX) * dx
     actual = assemble(dJdX).get_local()
     assert np.allclose(computed, actual, rtol=1e-14)    
@@ -77,7 +77,7 @@ def test_mixed_derivatives():
 
     J = inner(grad(u), grad(u)) * dx
     computed1 = assemble(derivative(derivative(J, X, dX), u)).array()
-    computed2 = assemble(derivative(derivative(J, u), X, dX_)).array()
+    computed2 = assemble(derivative(derivative(J, u), X)).array()
     actual = assemble(2*inner(grad(u), grad(v)) * div(dX) * dx
                       - 2*inner(dot(grad(dX), grad(u)), grad(v)) * dx 
                       - 2*inner(grad(u), dot(grad(dX), grad(v))) * dx).array()
@@ -96,7 +96,7 @@ def test_second_shape_derivative():
     dX2 = TrialFunction(Z)
 
     J = u * u * dx
-    computed = assemble(derivative(derivative(J, X, dX1), X, dX2)).array()
+    computed = assemble(derivative(derivative(J, X), X)).array()
     actual = assemble(u * u * div(dX1) * div(dX2) * dx - u * u * tr(grad(dX1)*grad(dX2)) * dx).array()
     assert np.allclose(computed, actual, rtol=1e-14)    
     
