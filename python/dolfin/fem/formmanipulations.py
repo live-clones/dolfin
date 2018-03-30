@@ -72,12 +72,10 @@ def derivative(form, u, du=None, coefficient_derivatives=None):
             V = u.function_space()
             du = Argument(V, number, part)
         elif isinstance(u, SpatialCoordinate):
-            raise RuntimeError("Please provide a direction to assemble the CoordinateDerivative in")
-            # I was hoping the below would work, but it doesn't... 
-            # domain = extract_unique_domain(u)
-            # P1 = VectorElement("Lagrange", domain.ufl_cell(), 1)
-            # V = FunctionSpace(domain, P1)
-            # du = Argument(V, number, part)
+            mesh = u.ufl_domain().ufl_cargo()
+            element = u.ufl_domain().ufl_coordinate_element()
+            V = FunctionSpace(mesh, element)
+            du = Argument(V, number, part)
         elif isinstance(u, (list, tuple)) and all(isinstance(w, Function) for w in u):
             raise RuntimeError("Taking derivative of form w.r.t. a tuple of Coefficients. Take derivative w.r.t. a single Coefficient on a mixed space instead.")
         else:
