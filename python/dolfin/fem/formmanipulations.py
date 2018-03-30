@@ -18,6 +18,9 @@
 
 import ufl
 import ufl.algorithms.elementtransformations
+from ufl.finiteelement.mixedelement import VectorElement
+from ufl.domain import extract_unique_domain
+from ufl.geometry import SpatialCoordinate
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.function.function import Function
 from dolfin.function.argument import Argument
@@ -68,6 +71,13 @@ def derivative(form, u, du=None, coefficient_derivatives=None):
         if isinstance(u, Function):
             V = u.function_space()
             du = Argument(V, number, part)
+        elif isinstance(u, SpatialCoordinate):
+            raise RuntimeError("Please provide a direction to assemble the CoordinateDerivative in")
+            # I was hoping the below would work, but it doesn't... 
+            # domain = extract_unique_domain(u)
+            # P1 = VectorElement("Lagrange", domain.ufl_cell(), 1)
+            # V = FunctionSpace(domain, P1)
+            # du = Argument(V, number, part)
         elif isinstance(u, (list, tuple)) and all(isinstance(w, Function) for w in u):
             raise RuntimeError("Taking derivative of form w.r.t. a tuple of Coefficients. Take derivative w.r.t. a single Coefficient on a mixed space instead.")
         else:
