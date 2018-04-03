@@ -18,18 +18,8 @@ multimesh.add(background_mesh)
 multimesh.add(annulus_mesh)
 multimesh.build()
 
-# Identify background cells within the hole
-cell_markers = MeshFunction("size_t", background_mesh, 2)
-additional_covered_cells = []
-for cell_id in multimesh.cut_cells(0) + multimesh.uncut_cells(0):
-    cell = Cell(multimesh.part(0), cell_id)
-    r = (cell.midpoint() - center).norm()
-    if abs(r_inner - r) < abs(r_outer - r):
-        cell_markers[cell_id]= 1
-        additional_covered_cells.append(cell_id)
-
-# Mark cells as covered
-multimesh.mark_covered(0, additional_covered_cells)
+# Identify background cells within the hole and mark them as covered
+multimesh.auto_cover(0, center)
 
 # Variational formulation
 V = MultiMeshFunctionSpace(multimesh, "P", 1)
