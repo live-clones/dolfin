@@ -18,8 +18,6 @@
 
 import ufl
 import ufl.algorithms.elementtransformations
-from ufl.finiteelement.mixedelement import VectorElement
-from ufl.domain import extract_unique_domain
 from ufl.geometry import SpatialCoordinate
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.function.function import Function
