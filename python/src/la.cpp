@@ -863,6 +863,49 @@ namespace dolfin_wrappers
       .def("set_nullspace", &dolfin::PETScMatrix::set_nullspace)
       .def("set_near_nullspace", &dolfin::PETScMatrix::set_near_nullspace);
 
+    // dolfin::PETScNestMatrix
+    py::class_<dolfin::PETScNestMatrix, std::shared_ptr<dolfin::PETScNestMatrix>,
+               dolfin::PETScMatrix>
+      (m, "PETScNestMatrix", "DOLFIN PETScMatrix object")
+      .def(py::init<>())
+      //.def(py::init<std::vector<std::shared_ptr<dolfin::GenericMatrix>>>() )
+      // explicit wrapper
+      .def(py::init([](py::list mats){
+	    std::vector<std::shared_ptr<dolfin::GenericMatrix>> _mats;
+	    for (auto mat : mats){
+	      // python object without cpp attribute.
+	      auto _mat = mat.cast<std::shared_ptr<dolfin::GenericMatrix>>();
+	      if(!mat.is_none())
+		_mats.push_back(_mat);
+	      else
+		_mats.push_back(NULL);
+	    }
+	    return dolfin::PETScNestMatrix(_mats);
+	  }))
+      .def("init_vectors",[](const dolfin::PETScNestMatrix self, dolfin::GenericVector& vec_out, py::list vecs){
+	  std::vector<std::shared_ptr<dolfin::GenericVector>> _vecs;
+	  for (auto vec : vecs)
+	  {
+	    auto _vec = vec.cast<std::shared_ptr<dolfin::GenericVector>>();
+	    _vecs.push_back(_vec);
+	  }
+	  self.init_vectors(vec_out,_vecs);
+	})
+
+      .def("mult", &dolfin::PETScNestMatrix::mult)
+      //.def("init_vectors",&dolfin::PETScNestMatrix::init_vectors)
+      //.def("get_block_dofs",&dolfin::PETScNestMatrix::get_block_dofs) 
+      .def("get_block_dofs",[](const dolfin::PETScNestMatrix self, std::size_t idx) 
+       {
+         std::vector<dolfin::la_index> dofs;   
+         self.get_block_dofs(dofs, idx);
+	 return   py::array_t<dolfin::la_index>(dofs.size(), dofs.data());
+       }, py::arg("idx"))
+
+      .def("size", (std::size_t (dolfin::PETScBaseMatrix::*)(std::size_t) const) &dolfin::PETScNestMatrix::size)
+      .def("str", &dolfin::PETScNestMatrix::str); 
+
+
     py::class_<dolfin::PETScPreconditioner, std::shared_ptr<dolfin::PETScPreconditioner>,
                dolfin::Variable>
       (m, "PETScPreconditioner", "DOLFIN PETScPreconditioner object")

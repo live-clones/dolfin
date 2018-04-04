@@ -129,6 +129,7 @@ void UFC::init(const Form& a)
       {
 	int codim = mapping->mesh()->topology().dim() - dolfin_form.mesh()->topology().dim();
 	if(codim == 1)
+	  // Consider as many entities as interior facet (max) - Resized in the assembly if needed (exterior)
 	  nb_entities = 2;
 	else if(codim == 2)
 	  std::cout << "[UFC::init] - codim 2 - Not implemented" << std::endl;
