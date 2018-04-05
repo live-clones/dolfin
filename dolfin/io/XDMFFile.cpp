@@ -2440,35 +2440,40 @@ void XDMFFile::read_mesh_function(MeshFunction<T>& meshfunction,
 
   // Check all top level Grid nodes for suitable dataset
   pugi::xml_node grid_node;
+  pugi::xml_node value_node;
+
   // Using lambda to exit nested loops
   [&] {
     for (pugi::xml_node node : domain_node.children("Grid"))
     {
-      for (pugi::xml_node value_node : node.children("Attribute"))
+      for (pugi::xml_node attr_node : node.children("Attribute"))
       {
-        if (value_node
-            and (name == ""
-                 or name == value_node.attribute("Name").as_string()))
+        if (attr_node
+            and (name == "" or name == attr_node.attribute("Name").as_string()))
         {
           grid_node = node;
+          value_node = attr_node;
           return;
         }
       }
     }
   }();
 
-  // Check if a TimeSeries (old format), in which case the Grid will be down one level
+  // Check if a TimeSeries (old format), in which case the Grid will be down
+  // one level
   if (!grid_node)
   {
     pugi::xml_node grid_node1 = domain_node.child("Grid");
     if (grid_node1)
     {
-      for (pugi::xml_node node: grid_node1.children("Grid"))
+      for (pugi::xml_node node : grid_node1.children("Grid"))
       {
-        pugi::xml_node value_node = node.child("Attribute");
-        if (value_node and (name == "" or name == value_node.attribute("Name").as_string()))
+        pugi::xml_node attr_node = node.child("Attribute");
+        if (attr_node
+            and (name == "" or name == attr_node.attribute("Name").as_string()))
         {
           grid_node = node;
+          value_node = attr_node;
           break;
         }
       }
@@ -2486,10 +2491,6 @@ void XDMFFile::read_mesh_function(MeshFunction<T>& meshfunction,
   // Get topology node
   pugi::xml_node topology_node = grid_node.child("Topology");
   dolfin_assert(topology_node);
-
-  // Get value node
-  pugi::xml_node value_node = grid_node.child("Attribute");
-  dolfin_assert(value_node);
 
   // Get existing Mesh of MeshFunction
   const auto mesh = meshfunction.mesh();
