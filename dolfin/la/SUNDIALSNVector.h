@@ -40,6 +40,8 @@ namespace dolfin
   public:
 
     /// Create empty vector
+    /// @param comm
+    ///    MPI communicator
     SUNDIALSNVector(MPI_Comm comm=MPI_COMM_WORLD)
     {
       DefaultFactory factory;
@@ -47,6 +49,10 @@ namespace dolfin
     }
 
     /// Create vector of size N
+    /// @param comm
+    ///    MPI communicator
+    /// @param N
+    ///    Size of vector
     SUNDIALSNVector(MPI_Comm comm, std::size_t N)
     {
       DefaultFactory factory;
@@ -58,9 +64,13 @@ namespace dolfin
     }
 
     /// Copy constructor
+    /// @param x
+    ///    SUNDIALSNVector to copy
     SUNDIALSNVector(const SUNDIALSNVector& x) : vector(x.vec()->copy()) {}
 
     /// Create an SUNDIALSNVector from a GenericVector
+    /// @param x
+    ///    GenericVector to copy
     SUNDIALSNVector(const GenericVector& x) : vector(x.copy())
     {
       N_V = std::unique_ptr<_generic_N_Vector>(new _generic_N_Vector);
@@ -69,6 +79,8 @@ namespace dolfin
     }
 
     /// Create a SUNDIALSNVector wrapper to an existing GenericVector
+    /// @param x
+    ///    GenericVector pointer to copy
     SUNDIALSNVector(std::shared_ptr<GenericVector> x) : vector(x)
     {
       N_V = std::unique_ptr<_generic_N_Vector>(new _generic_N_Vector);
@@ -78,6 +90,8 @@ namespace dolfin
     //-----------------------------------------------------------------------------
 
     /// Get underlying raw SUNDIALS N_Vector struct
+    /// @return 
+    ///   raw SUNDIALS N_Vector struct
     N_Vector nvector() const
     {
       N_V->content = (void *)(this);
@@ -85,6 +99,8 @@ namespace dolfin
     }
 
     /// Get underlying GenericVector
+    /// @return 
+    ///   underlying GenericVector
     std::shared_ptr<GenericVector> vec() const
     {
       return vector;
@@ -96,17 +112,17 @@ namespace dolfin
 
   private:
 
-    ///--- Implementation of N_Vector ops
+    //--- Implementation of N_Vector ops
 
-    /// Get ID for custom SUNDIALSNVector implementation
+    // Get ID for custom SUNDIALSNVector implementation
     static N_Vector_ID N_VGetVectorID(N_Vector nv)
     {
       dolfin_debug("N_VGetVectorID");
       return SUNDIALS_NVEC_CUSTOM;
     }
 
-    /// Sets the components of the N_Vector z to be the absolute values of the
-    /// components of the N_Vector x
+    // Sets the components of the N_Vector z to be the absolute values of the
+    // components of the N_Vector x
     static void N_VAbs(N_Vector x, N_Vector z)
     {
       dolfin_debug("N_VAbs");
