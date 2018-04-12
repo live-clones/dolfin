@@ -42,15 +42,31 @@ namespace dolfin
     enum ITER { cv_functional = CV_FUNCTIONAL, cv_newton = CV_NEWTON };
 
     /// Constructor
+    /// @param cv_lmm
+    ///   linear multistep method
+    /// @param cv_iter
+    ///   iteration type
     CVode(LMM cv_lmm, ITER cv_iter);
 
     /// Destructor
     virtual ~CVode();
 
     /// Initialise CVode
+    /// @param u0
+    ///   Input vector
+    /// @param atol
+    ///   absolute tolerance
+    /// @param rtol
+    ///   relative tolerance
+    /// @param mxsteps
+    ///   maximum number of steps
     void init(std::shared_ptr<GenericVector> u0, double atol, double rtol, long int mxsteps = 0);
 
     /// Advance time by timestep dt
+    /// @param dt
+    ///   timestep 
+    /// @return
+    ///   CVODE return flag
     double step(double dt);
 
     /// Get current time
@@ -59,6 +75,8 @@ namespace dolfin
     double get_time() const;
 
     /// Set the current time
+    /// @param t0
+    ///   current time
     void set_time(double t0);
 
     /// Overloaded function for time derivatives of u at time t.
@@ -73,6 +91,18 @@ namespace dolfin
                         std::shared_ptr<GenericVector> udot);
 
     /// Given the values (t, y, fy, v), compute Jv = (df/dy)v
+    /// @param v
+    ///   vector to be multiplied by the Jacobian df/dy 
+    /// @param Jv
+    ///   output vector of (df/dy)*v
+    /// @param t
+    ///   current value of the independent variable.
+    /// @param y
+    ///   current value of the ependent variable.
+    /// @param fy
+    ///   vector f(t,y)
+    /// @return
+    ///   success flag, 0 if successful
     virtual int jacobian(std::shared_ptr<const GenericVector> v,
                          std::shared_ptr<GenericVector> Jv,
                          double t, std::shared_ptr<const GenericVector> y,
@@ -80,19 +110,48 @@ namespace dolfin
 
     /// User-defined setup function called once per Newton iteration.
     /// Data structures for usage by the Jacobian function can be setup here
+    /// @param t
+    ///   current value of the independent variable 
+    /// @param Jv
+    ///   current value of the dependent variable vector,
+    ///   namely the predicted value of y(t).
+    /// @param y
+    ///   vector f(t,y). 
+    /// @return
+    ///   success flag, 0 if success
     virtual int jacobian_setup(double t,
                                std::shared_ptr<GenericVector> Jv,
                                std::shared_ptr<GenericVector> y);
 
     /// Overloaded preconditioner solver function
+    /// @param tn
+    ///   current value of the independent variable.
+    /// @param y
+    ///   current value of the dependent variable vector.
+    /// @param fy
+    ///   vector f(t,y) 
+    /// @param r
+    ///   right-hand side vector of the linear system.
+    /// @param z
+    ///   output vector computed by PrecSolve.
+    /// @param gamma
+    ///   scalar appearing in the Newton matrix.
+    /// @param delta
+    ///   input tolerance if an iterative method is used.
+    /// @param lr
+    ///   input flag indicating whether to use left or right preconditioner.
+    /// @return
+    ///   success flag, 0 if success 
     virtual int psolve(double tn, std::shared_ptr<const GenericVector>y,
                        std::shared_ptr<const GenericVector> fy,
                        std::shared_ptr<const GenericVector> r,
                        std::shared_ptr<GenericVector> z,
                        double gamma, double delta, int lr);
 
-    /// Returns a map structure containing information stored in the CVode
-    /// structure, ie. number of solver steps, RHS evaluations, current time
+    /// Return statistics
+    /// @return
+    ///   map structure containing information stored in the CVode
+    ///   structure, ie. number of solver steps, RHS evaluations, current time
     std::map<std::string,double> statistics();
 
   private:
