@@ -54,13 +54,21 @@ namespace dolfin
     double step(double dt);
 
     /// Get current time
+    /// @return double
+    ///   current time
     double get_time() const;
 
     /// Set the current time
     void set_time(double t0);
 
-    /// Overloaded function for time derivatives of u at time t
+    /// Overloaded function for time derivatives of u at time t.
     /// Given the vector u, at time t, provide the time derivative udot.
+    /// @param t
+    ///   time
+    /// @param u
+    ///   input vector of values u
+    /// @param udot
+    ///   output vector containing computed derivative of u at time t
     virtual void derivs(double t, std::shared_ptr<GenericVector> u,
                         std::shared_ptr<GenericVector> udot);
 
