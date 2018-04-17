@@ -4,7 +4,9 @@ Change log
 2018.1.0.dev0
 -------------
 
-- No changes.
+- Rename ``mpi_comm_world()`` to ``MPI.comm_world``.
+- Removed ``from fenics import *``, use ``from dolfin import *``
+- Rename ``ERROR``, ``CRITICAL`` etc. to ``LogLevel.ERROR``, ``LogLevel.CRITICAL``.
 
 2017.2.0 (2017-12-05)
 ---------------------

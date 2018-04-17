@@ -90,6 +90,7 @@ namespace dolfin_wrappers
     m.def("sizeof_la_index", &dolfin::sizeof_la_index);
 
     m.attr("DOLFIN_EPS") = DOLFIN_EPS;
+    m.attr("DOLFIN_EPS_LARGE") = DOLFIN_EPS_LARGE;
     m.attr("DOLFIN_PI") = DOLFIN_PI;
 
     // dolfin::Timer

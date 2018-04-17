@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2016-05-03
-// Last changed: 2017-10-07
+// Last changed: 2017-10-26
 //
 // Developer note:
 //
@@ -44,6 +44,7 @@
 #include "Point.h"
 #include "predicates.h"
 #include <dolfin/log/log.h>
+#include <dolfin/log/LogStream.h>
 #include <dolfin/math/basic.h>
 #include <vector>
 #include <algorithm>
@@ -89,8 +90,8 @@ namespace dolfin
     {
       dolfin_error("CGALExactArithmetic.h",
 		   "verify intersection",
-		   "size of point set differs (%d vs %d)",
-		   dolfin_result.size(), cgal_result.size());
+		   "Intersection function %s and CGAL give different size of point sets (%d vs %d)",
+		   function.c_str(), dolfin_result.size(), cgal_result.size());
     }
 
     for (const Point& p1 : dolfin_result)
@@ -108,8 +109,8 @@ namespace dolfin
       if (!found)
 	dolfin_error("CGALExactArithmetic.h",
 		     "verify intersection construction result",
-		     "Point (%f, %f, %f) in dolfin result not found in cgal result",
-		     p1[0], p1[1], p1[2]);
+		     "Error in intersection function %s\nPoint (%f, %f, %f) in dolfin result not found",
+		     function.c_str(), p1[0], p1[1], p1[2]);
     }
     return dolfin_result;
   }
@@ -993,14 +994,12 @@ namespace dolfin
     const Nef_polyhedron_3 tet_a_nef(tet_a);
     const Nef_polyhedron_3 tet_b_nef(tet_b);
 
-    const Nef_polyhedron_3 intersection_nef = tet_a_nef*tet_a_nef;
-
-    Polyhedron_3 intersection;
-    intersection_nef.convert_to_polyhedron(intersection);
+    const Nef_polyhedron_3 intersection_nef = tet_a_nef*tet_b_nef;
 
     std::vector<Point> res;
-    for (Polyhedron_3::Vertex_const_iterator vit = intersection.vertices_begin();
-	 vit != intersection.vertices_end(); vit++)
+
+    for (auto vit = intersection_nef.vertices_begin();
+	 vit != intersection_nef.vertices_end(); ++vit)
     {
       res.push_back(Point(CGAL::to_double(vit->point().x()),
 			  CGAL::to_double(vit->point().y()),
@@ -1060,9 +1059,12 @@ namespace dolfin
   // Computes the volume of the convex hull of the given points
   inline double cgal_polyhedron_volume(const std::vector<Point>& ch)
   {
+    if (ch.size() < 4)
+      return 0;
+
     std::vector<Point_3> exact_points;
     exact_points.reserve(ch.size());
-    for (const Point p : ch)
+    for (const Point& p : ch)
     {
       exact_points.push_back(Point_3(p.x(), p.y(), p.z()));
     }
