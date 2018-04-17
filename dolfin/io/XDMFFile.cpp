@@ -2507,7 +2507,12 @@ void XDMFFile::read_mesh_function(MeshFunction<T>& meshfunction,
 
   // Ensure num_entities_global(cell_dim) is set and check dataset matches
   DistributedMeshTools::number_entities(*mesh, cell_dim);
-  dolfin_assert(mesh->num_entities_global(cell_dim) == num_entities_global);
+
+  if (mesh->num_entities_global(cell_dim) != num_entities_global)
+  {
+    dolfin_error("XDMFFile.cpp", "read MeshFunction",
+                 "Mismatched number of entities");
+  }
 
   boost::filesystem::path xdmf_filename(_filename);
   const boost::filesystem::path parent_path = xdmf_filename.parent_path();
