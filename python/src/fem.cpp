@@ -177,6 +177,25 @@ namespace dolfin_wrappers
                                              cell_orientation);
              return values;
            })
+      .def("evaluate_basis_derivatives_all", [](const dolfin::FiniteElement& self,
+                                            int order,
+                                            const py::array_t<double> x,
+                                            const py::array_t<double> coordinate_dofs,
+                                            int cell_orientation)
+          {
+            auto ufc_element = self.ufc_element();
+
+            const std::size_t gdim = self.geometric_dimension();
+            const std::size_t num_derivs = pow(gdim, order);
+            const std::size_t size = ufc_element->value_size()*num_derivs;
+            const std::size_t space_dimension = ufc_element->space_dimension();
+            py::array_t<double, py::array::c_style> values(size*space_dimension);
+            self.evaluate_basis_derivatives_all(order, values.mutable_data(),
+                                            x.data(), coordinate_dofs.data(),
+                                            cell_orientation);
+            return values;
+          })
+
       .def("space_dimension", &dolfin::FiniteElement::space_dimension)
       .def("geometric_dimension", &dolfin::FiniteElement::geometric_dimension)
       .def("value_dimension", &dolfin::FiniteElement::value_dimension)
