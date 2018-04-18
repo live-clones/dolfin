@@ -153,7 +153,7 @@ namespace dolfin_wrappers
              self.evaluate_basis(i, values.mutable_data(), x.data(), coordinate_dofs.data(),
                                  cell_orientation);
              return values;
-           })
+           }, "Evaluate basis function i at given point x in cell.")
      .def("evaluate_basis_all", [](const dolfin::FiniteElement& self,
                                const py::array_t<double> x,
                                const py::array_t<double> coordinate_dofs,
@@ -166,7 +166,7 @@ namespace dolfin_wrappers
             self.evaluate_basis_all(values.mutable_data(), x.data(), coordinate_dofs.data(),
                                 cell_orientation);
             return values;
-          })
+          }, "Evaluate order n derivatives of all basis functions at given point x in cell.")
       .def("evaluate_basis_derivatives", [](const dolfin::FiniteElement& self,
                                             int i, int order,
                                             const py::array_t<double> x,
@@ -183,7 +183,7 @@ namespace dolfin_wrappers
                                              x.data(), coordinate_dofs.data(),
                                              cell_orientation);
              return values;
-           })
+           }, "Evaluate order n derivatives of basis function i at given point x in cell.")
       .def("evaluate_basis_derivatives_all", [](const dolfin::FiniteElement& self,
                                             int order,
                                             const py::array_t<double> x,
@@ -201,7 +201,7 @@ namespace dolfin_wrappers
                                             x.data(), coordinate_dofs.data(),
                                             cell_orientation);
             return values;
-          })
+          }, "Evaluate all basis functions at given point x in cell.")
 
       .def("space_dimension", &dolfin::FiniteElement::space_dimension)
       .def("geometric_dimension", &dolfin::FiniteElement::geometric_dimension)
