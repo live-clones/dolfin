@@ -1,9 +1,13 @@
 Change log
 ==========
 
-2018.1.0 (2018-xx-xx)
+2018.1.0 (2018-05-01)
 ---------------------
+
 - Remove SWIG (now use pybind11 for wrapping C++)
+- Rename ``mpi_comm_world()`` to ``MPI.comm_world``.
+- Removed ``from fenics import *``, use ``from dolfin import *``
+- Rename ``ERROR``, ``CRITICAL`` etc. to ``LogLevel.ERROR``, ``LogLevel.CRITICAL``.
 
 2017.2.0 (2017-09-25)
 ---------------------

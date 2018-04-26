@@ -311,7 +311,8 @@ namespace dolfin_wrappers
         py::arg("comm"), py::arg("filename"))
       .def(py::init<std::string>())
       .def("__enter__", [](dolfin::XDMFFile& self){ return &self; })
-      .def("__exit__", [](dolfin::XDMFFile& self, py::args args, py::kwargs kwargs){ self.close(); });
+      .def("__exit__", [](dolfin::XDMFFile& self, py::args args, py::kwargs kwargs){ self.close(); })
+      .def("close", &dolfin::XDMFFile::close);
 
     // dolfin::XDMFFile::Encoding enums
     py::enum_<dolfin::XDMFFile::Encoding>(xdmf_file, "Encoding")
