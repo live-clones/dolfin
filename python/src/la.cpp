@@ -1091,10 +1091,20 @@ namespace dolfin_wrappers
           py::arg("type")="right");
 
     // la free functions
+    m.def("list_linear_algebra_backends", &dolfin::list_linear_algebra_backends);
+    m.def("list_linear_solver_methods", &dolfin::list_linear_solver_methods);
+    m.def("list_lu_solver_methods", &dolfin::list_lu_solver_methods);
+    m.def("list_krylov_solver_methods", &dolfin::list_krylov_solver_methods);
+    m.def("list_krylov_solver_preconditioners", &dolfin::list_krylov_solver_preconditioners);
     m.def("has_linear_algebra_backend", &dolfin::has_linear_algebra_backend);
-    m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
+    m.def("has_lu_solver_method", &dolfin::has_lu_solver_method);
     m.def("has_krylov_solver_method", &dolfin::has_krylov_solver_method);
     m.def("has_krylov_solver_preconditioner", &dolfin::has_krylov_solver_preconditioner);
+    m.def("linear_algebra_backends", &dolfin::linear_algebra_backends);
+    m.def("linear_solver_methods", &dolfin::linear_solver_methods);
+    m.def("lu_solver_methods", &dolfin::lu_solver_methods);
+    m.def("krylov_solver_methods", &dolfin::krylov_solver_methods);
+    m.def("krylov_solver_preconditioners", &dolfin::krylov_solver_preconditioners);
     m.def("normalize", &dolfin::normalize, py::arg("x"), py::arg("normalization_type")="average");
 
     // la/solve free functions

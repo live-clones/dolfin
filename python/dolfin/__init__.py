@@ -71,10 +71,21 @@ from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh,
                              SphericalShellMesh)
 from .cpp.graph import GraphBuilder
 from .cpp.io import File, XDMFFile, VTKFile
-from .cpp.la import (has_linear_algebra_backend,
-                     linear_algebra_backends,
+from .cpp.la import (list_linear_algebra_backends,
+                     list_linear_solver_methods,
+                     list_lu_solver_methods,
+                     list_krylov_solver_methods,
+                     list_krylov_solver_preconditioners,
+                     has_linear_algebra_backend,
+                     has_lu_solver_method,
                      has_krylov_solver_method,
-                     has_krylov_solver_preconditioner, normalize,
+                     has_krylov_solver_preconditioner,
+                     linear_algebra_backends,
+                     linear_solver_methods,
+                     lu_solver_methods,
+                     krylov_solver_methods,
+                     krylov_solver_preconditioners,
+                     normalize,
                      VectorSpaceBasis, in_nullspace)
 
 if has_linear_algebra_backend('PETSc'):
