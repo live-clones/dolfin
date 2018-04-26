@@ -38,7 +38,7 @@ namespace dolfin
   public:
 
     /// Constructor
-    NonlinearProblem() : _called(false) {}
+    NonlinearProblem() {}
 
     /// Destructor
     virtual ~NonlinearProblem() {}
