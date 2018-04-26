@@ -284,22 +284,31 @@ LocalAssembler::assemble_interior_facet(Eigen::Matrix<double, Eigen::Dynamic,
                             ufc_cell1->orientation);
 
   // Stuff upper left quadrant (corresponding to cell_plus) or lower
-  // left quadrant (corresponding to cell_minus) into A depending on
+  // right quadrant (corresponding to cell_minus) into A depending on
   // which cell is the local cell
   const std::size_t M = A.rows();
   const std::size_t N = A.cols();
-  const std::size_t offset_N = local_is_plus ? 0 : N;
   const std::size_t offset_M = local_is_plus ? 0 : M;
-  if (N == 1)
+  const std::size_t offset_N = local_is_plus ? 0 : N;
+  const std::size_t rank = ufc.form.rank();
+  switch (rank)
   {
-    for (std::size_t i = 0; i < M; i++)
-      A(i, 0) += ufc.macro_A[i + offset_M];
-  }
-  else
-  {
-    for (std::size_t i = 0; i < M; i++)
-      for (std::size_t j = 0; j < N; j++)
-        A(i, j) += ufc.macro_A[2*N*(i + offset_M) + j + offset_N];
+    case 0:
+      A(0, 0) += ufc.macro_A[0];
+      break;
+    case 1:
+      for (std::size_t i = 0; i < M; i++)
+        A(i, 0) += ufc.macro_A[i + offset_M];
+      break;
+    case 2:
+      for (std::size_t i = 0; i < M; i++)
+        for (std::size_t j = 0; j < N; j++)
+          A(i, j) += ufc.macro_A[2*N*(i + offset_M) + j + offset_N];
+      break;
+    default:
+      dolfin_error("LocalAssembler.cpp",
+                   "assembler exterior facet",
+                   "rank %d not supported", rank);
   }
 }
 //------------------------------------------------------------------------------
