@@ -99,6 +99,23 @@ namespace dolfin
     /// Destructor
     ~MultiMeshDirichletBC();
 
+    /// Return multimesh function space V
+    ///
+    /// @return FunctionSpace
+    ///         The multimesh function space to which boundary conditions are applied.
+    std::shared_ptr<const MultiMeshFunctionSpace> function_space() const
+    { return _function_space; }
+
+    /// Return a view of boundary conditions on a part of the multimesh
+    ///
+    /// @param     part (std::size_t)
+    ///         The part number
+    std::shared_ptr<DirichletBC> view(std::size_t part) const
+    {
+      dolfin_assert(part < _bcs.size());
+      return _bcs[part];
+    }
+
     /// Apply boundary condition to a matrix
     ///
     /// @param     A (_GenericMatrix_)
@@ -186,6 +203,9 @@ namespace dolfin
       bool _exclude_overlapped_boundaries;
 
     };
+
+    // Multimesh function space
+    std::shared_ptr<const MultiMeshFunctionSpace> _function_space;
 
     // List of boundary conditions for parts
     std::vector<std::shared_ptr<DirichletBC>> _bcs;

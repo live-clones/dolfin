@@ -255,8 +255,7 @@ def test_incremental_assembly(mesh_factory):
 @skip_in_parallel
 @pytest.mark.parametrize('mesh_factory', [
     (UnitSquareMesh.create, (24, 24, CellType.Type.triangle)),
-    # FFC PR #91 disables (broken) DQ elements
-    pytest.mark.xfail((UnitSquareMesh.create, (24, 24, CellType.Type.quadrilateral)), strict=True, raises=Exception),
+    (UnitSquareMesh.create, (24, 24, CellType.Type.quadrilateral)),
 ])
 def test_domains(mesh_factory):
 

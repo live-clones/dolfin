@@ -73,7 +73,6 @@ def h(V, V0, V1):
     return h
 
 @skip_in_parallel
-@pytest.mark.skip
 def test_dX_integral(f, g, h):
     f_dX = assemble_multimesh(f * dX)
     assert abs(f_dX - 1.25) < DOLFIN_EPS_LARGE
@@ -82,7 +81,6 @@ def test_dX_integral(f, g, h):
     assert abs(fgh_dX - 0.75) < DOLFIN_EPS_LARGE
 
 @skip_in_parallel
-@pytest.mark.skip
 def test_dI_integral(f, g, h):
     f_dI0 = assemble_multimesh(f("-") * dI)
     assert abs(f_dI0 - 4.0) < DOLFIN_EPS_LARGE
@@ -97,7 +95,6 @@ def test_dI_integral(f, g, h):
     assert abs(fgh_dI1 - 1.0) < DOLFIN_EPS_LARGE
 
 @skip_in_parallel
-@pytest.mark.skip
 def test_dO_integral(f, g, h):
     f_dO0 = assemble_multimesh(f("-") * dO)
     assert abs(f_dO0 - 0.50) < DOLFIN_EPS_LARGE

@@ -111,7 +111,7 @@ class DirichletBC(cpp.fem.DirichletBC):
             self.sub_domain = CompiledSubDomain(args[2], mpi_comm=args[0].mesh().mpi_comm())
             args = args[:2] + (self.sub_domain,) + args[3:]
         elif isinstance(args[2], cpp.mesh.MeshFunctionSizet):
-            pass
+            self.domain_args = args[2:]
         else:
             raise RuntimeError("Invalid argument")
 

@@ -145,3 +145,46 @@ def test_solver_parameters():
     # Reset parameters so that other tests will continue to work
     if absolute_tolerance is not None:
         parameters["krylov_solver"]["absolute_tolerance"] = absolute_tolerance
+
+def test_parse_parameters():
+
+    def check_pset_and_dict_args(pset, pset_dict):
+        for k, v in pset_dict.items():
+            assert pset[k] == v
+
+    def create_command_line_args(pset_dict):
+        # Construct args like: --a=1 --b=2 --c=3
+        command_line_args1 = ["--" + str(k) + "=" + str(v) for k, v in pset_dict.items()]
+        # Construct args like: --a 1 --b 2 --c 3
+        command_line_args2 = [str(element) for k in pset_dict for element in (k, pset_dict[k])]
+        return command_line_args1, command_line_args2
+
+    pset_dict = {
+        "integer": 1,
+        "double": 2.5,
+        "string": "string",
+        "boolean": False
+    }
+
+    pset = Parameters("test_parse")
+    for k, v in pset_dict.items():
+        pset.add(k, v)
+
+    command_line_args = create_command_line_args(pset_dict)
+    pset.parse([""] + command_line_args[0])
+    check_pset_and_dict_args(pset, pset_dict)
+    pset.parse([""] + command_line_args[1])
+    check_pset_and_dict_args(pset, pset_dict)
+
+    changed_pset_dict = {
+        "integer": 2,
+        "double": 4.5,
+        "string": "another string",
+        "boolean": True
+    }
+
+    changed_command_line_args = create_command_line_args(changed_pset_dict)
+    pset.parse([""] + changed_command_line_args[0])
+    check_pset_and_dict_args(pset, changed_pset_dict)
+    pset.parse([""] + changed_command_line_args[1])
+    check_pset_and_dict_args(pset, changed_pset_dict)
