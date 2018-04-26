@@ -20,10 +20,14 @@ GenericFoo interface
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-from dolfin import (PETScVector, PETScMatrix, PETScLUSolver,
-                    PETScKrylovSolver, UnitSquareMesh, TrialFunction,
-                    TestFunction, MPI,
-                    FunctionSpace, assemble, Constant, dx, parameters)
+from dolfin import (UnitSquareMesh, TrialFunction, TestFunction,
+                    MPI, FunctionSpace, assemble, Constant, dx, 
+                    parameters, has_petsc)
+
+if has_petsc() :
+    from dolfin import (PETScVector, PETScMatrix,
+                        PETScLUSolver, PETScKrylovSolver)
+
 from dolfin_utils.test import (skip_if_not_PETSc,
                                skip_if_not_petsc4py,
                                pushpop_parameters)
