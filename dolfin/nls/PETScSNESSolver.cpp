@@ -580,8 +580,8 @@ void PETScSNESSolver::set_linear_solver_parameters()
     if (ierr != 0) petsc_error(ierr, __FILE__, "PCSetType");
     auto it = PETScLUSolver::lumethods.find(lu_method);
     dolfin_assert(it != PETScLUSolver::lumethods.end());
-    ierr = PCFactorSetMatSolverPackage(pc, it->second);
-    if (ierr != 0) petsc_error(ierr, __FILE__, "PCFactorSetMatSolverPackage");
+    ierr = PCFactorSetMatSolverType(pc, it->second);
+    if (ierr != 0) petsc_error(ierr, __FILE__, "PCFactorSetMatSolverType");
   }
   else
   {

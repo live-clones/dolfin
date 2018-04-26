@@ -42,10 +42,22 @@ def update(self, params):
         raise ValueError("Parameters or dict")
 
 
+def to_dict(self):
+    """Convert a nested set of Parameters to a nested dict"""
+    ret = {}
+    for key, value in self.items():
+        if isinstance(value, cpp.parameter.Parameters):
+            ret[key] = value.to_dict()
+        else:
+            ret[key] = value
+    return ret
+
+
 # Extend the cpp.parameter.Parameters class and clean-up
+cpp.parameter.Parameters.to_dict = to_dict
 cpp.parameter.Parameters.__getitem__ = __getitem__
 cpp.parameter.Parameters.update = update
-del __getitem__, update
+del __getitem__, update, to_dict
 
 
 def ffc_default_parameters():

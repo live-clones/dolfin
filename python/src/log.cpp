@@ -23,6 +23,7 @@
 #include <dolfin/common/Variable.h>
 #include <dolfin/log/log.h>
 #include <dolfin/log/Table.h>
+#include <dolfin/log/Progress.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/multistage/MultiStageScheme.h>
 #include "casters.h"
@@ -62,5 +63,13 @@ namespace dolfin_wrappers
     m.def("get_log_level", &dolfin::get_log_level);
     m.def("log", [](dolfin::LogLevel level, std::string s){ dolfin::log(level, s); });
 
+    // dolfin::Progress
+    py::class_<dolfin::Progress, std::shared_ptr<dolfin::Progress>>
+      (m, "Progress", py::dynamic_attr(), "DOLFIN Progress object")
+      .def(py::init<std::string>())
+      .def(py::init<std::string, unsigned int>())
+      .def("_assign", (void (dolfin::Progress::*)(double))
+           &dolfin::Progress::operator=)
+      .def("_increment", &dolfin::Progress::operator++);
   }
 }

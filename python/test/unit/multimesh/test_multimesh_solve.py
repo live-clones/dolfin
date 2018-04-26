@@ -82,7 +82,6 @@ def solve_multimesh_poisson(mesh_0, mesh_1, exactsolution):
     return uh
 
 @pytest.mark.slow
-@pytest.mark.skip
 @skip_in_parallel
 def test_multimesh_poisson_2d():
     # This tests solves a Poisson problem on two meshes in 2D with u =

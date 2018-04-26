@@ -424,12 +424,12 @@ def test_generic_function_attributes(mesh, V):
     with pytest.raises(Exception):
         Expression("t", t=W, degree=0)
 
-    # Test non-scalar GenericFunction
+    # Test using generic function parameter with wrong shape
     f2 = Function(W)
     e2.t = f2
-
-    with pytest.raises(RuntimeError):
-        e2(0, 0)
+    if has_debug():  # The condition is caught by assertion
+        with pytest.raises(RuntimeError):
+            e2(0, 0)
 
     # Test user_parameters assignment
     assert "value" in te.user_parameters
@@ -541,3 +541,8 @@ def test_doc_string_python_expressions(mesh):
 
     assert id(f3._mesh) == id(square)
     assert id(f3._domain) == id(cell_data)
+
+def test_rename():
+    c1 = Expression("1", degree=2)
+    c1.rename("constant1","")
+    assert(c1.name()=="constant1")

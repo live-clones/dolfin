@@ -75,7 +75,6 @@ def volume_area(multimesh):
     return volume, area
 
 @skip_in_parallel
-@pytest.mark.skip
 def test_compression_2d():
     # Reference volume and area
     multimesh = build_multimesh_2d(False, False)

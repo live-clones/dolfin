@@ -249,3 +249,17 @@ def test_nocaching_values():
         bc.set_value(Constant(2.0))
         bc.apply(x)
         assert numpy.allclose(x.get_local(), 2.0)
+
+
+def test_get_value():
+    mesh = UnitSquareMesh(4, 4)
+
+    vspace_dim = 4
+    V = VectorFunctionSpace(mesh, "CG", 1, dim=vspace_dim)
+
+    boundary_constant = Constant((0.0, 1.0, 2.0, 3.0))
+    bc = DirichletBC(V, boundary_constant, "on_boundary")
+
+    assert bc.value() == boundary_constant.cpp_object()
+    for j in range(vspace_dim):
+        assert bc.value().values()[j] == boundary_constant.values()[j]
