@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import pkgconfig
 import numpy
 import hashlib
 import dijitso
@@ -9,6 +10,12 @@ from dolfin.cpp import MPI
 from functools import wraps
 import ffc
 from dolfin.cpp.parameter import parameters
+
+# Get DOLFIN pkg-config data
+if pkgconfig.exists("dolfin"):
+    dolfin_pc = pkgconfig.parse("dolfin")
+else:
+    raise RuntimeError("Could not find DOLFIN pkg-config file. Please make sure appropriate paths are set.")
 
 
 # Copied over from site-packages
@@ -72,9 +79,7 @@ def mpi_jit_decorator(local_jit, *args, **kwargs):
             # to allow catching the error without deadlock
             if not root:
                 error_msg = "Compilation failed on root node."
-            cpp.dolfin_error("jit.py",
-                             "perform just-in-time compilation of form",
-                             error_msg)
+            raise RuntimeError(error_msg)
         return output
 
     # Return the decorated jit function
@@ -113,7 +118,7 @@ const double pi = DOLFIN_PI;
 """ % "\n".join("using std::%s;" % mf for mf in _cpp_math_builtins)
 
 
-def compile_class(cpp_data):
+def compile_class(cpp_data, mpi_comm=MPI.comm_world):
     """Compile a user C(++) string or set of statements to a Python object
 
     cpp_data is a dict containing:
@@ -124,18 +129,11 @@ def compile_class(cpp_data):
 
     """
 
-    import pkgconfig
-    if not pkgconfig.exists('dolfin'):
-        raise RuntimeError("Could not find DOLFIN pkg-config file. Please make sure appropriate paths are set.")
-
-    # Get DOLFIN pkg-config data
-    d = pkgconfig.parse('dolfin')
-
     # Set compiler/build options
     params = dijitso.params.default_params()
-    params['build']['include_dirs'] = d["include_dirs"]
-    params['build']['libs'] = d["libraries"]
-    params['build']['lib_dirs'] = d["library_dirs"]
+    params['build']['include_dirs'] = dolfin_pc["include_dirs"]
+    params['build']['libs'] = dolfin_pc["libraries"]
+    params['build']['lib_dirs'] = dolfin_pc["library_dirs"]
 
     name = cpp_data['name']
     if name not in ('subdomain', 'expression'):
@@ -165,7 +163,8 @@ def compile_class(cpp_data):
 
     try:
         module, signature = dijitso_jit(cpp_data, module_name, params,
-                                        generate=cpp_data['jit_generate'])
+                                        generate=cpp_data['jit_generate'],
+                                        mpi_comm=mpi_comm)
         submodule = dijitso.extract_factory_function(module, "create_" + module_name)()
     except Exception:
         raise RuntimeError("Unable to compile C++ code with dijitso")

@@ -9,7 +9,7 @@
 
 import ufl
 import dolfin.cpp as cpp
-from dolfin.jit.jit import ffc_jit
+from dolfin.jit.jit import dolfin_pc, ffc_jit
 
 
 class Form(cpp.fem.Form):
@@ -23,6 +23,8 @@ class Form(cpp.fem.Form):
         self.subdomains, = list(sd.values())  # Assuming single domain
         domain, = list(sd.keys())  # Assuming single domain
         mesh = domain.ufl_cargo()
+        if isinstance(mesh, cpp.mesh.MultiMesh):
+            mesh = mesh.part(0)
 
         # Having a mesh in the form is a requirement
         if mesh is None:
@@ -33,19 +35,21 @@ class Form(cpp.fem.Form):
         # Add DOLFIN include paths (just the Boost path for special
         # math functions is really required)
         # FIXME: move getting include paths to elsewhere
-        import pkgconfig
-        d = pkgconfig.parse('dolfin')
         if form_compiler_parameters is None:
-            form_compiler_parameters = {"external_include_dirs": d["include_dirs"]}
+            form_compiler_parameters = {"external_include_dirs": dolfin_pc["include_dirs"]}
         else:
             # FIXME: add paths if dict entry already exists
-            form_compiler_parameters["external_include_dirs"] = d["include_dirs"]
+            form_compiler_parameters["external_include_dirs"] = dolfin_pc["include_dirs"]
 
         ufc_form = ffc_jit(form, form_compiler_parameters=form_compiler_parameters,
                            mpi_comm=mesh.mpi_comm())
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 
-        function_spaces = [func.function_space()._cpp_object for func in form.arguments()]
+        function_spaces = kwargs.get("function_spaces")
+
+        # Extraction of functionspaces contained in a MultiMeshFunctionSpace
+        if not function_spaces:
+            function_spaces = [func.function_space()._cpp_object for func in form.arguments()]
 
         cpp.fem.Form.__init__(self, ufc_form, function_spaces)
 
@@ -53,10 +57,10 @@ class Form(cpp.fem.Form):
         self.coefficients = []
         for i in range(self.num_coefficients()):
             j = self.original_coefficient_position(i)
-            self.coefficients.append(original_coefficients[j].cpp_object())
+            self.coefficients.append(original_coefficients[j]._cpp_object)
 
         # Type checking coefficients
-        if not all(isinstance(c, (cpp.function.GenericFunction))
+        if not all(isinstance(c, (cpp.function.GenericFunction, cpp.function.MultiMeshFunction))
                    for c in self.coefficients):
             coefficient_error = "Error while extracting coefficients. "
             raise TypeError(coefficient_error +

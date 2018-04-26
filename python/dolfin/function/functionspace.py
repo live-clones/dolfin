@@ -172,6 +172,10 @@ class FunctionSpace(ufl.FunctionSpace):
     def set_x(self, basis, x, component):
         return self._cpp_object.set_x(basis, x, component)
 
+    def split(self):
+        """Split a mixed functionspace into its sub spaces"""
+        return [self.sub(i) for i in range(self.num_sub_spaces())]
+
     def collapse(self, collapsed_dofs=False):
         """Collapse a subspace and return a new function space and a map from
         new to old dofs

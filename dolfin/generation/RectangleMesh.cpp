@@ -255,10 +255,19 @@ void RectangleMesh::build_quad(Mesh& mesh, const std::array<Point, 2>& p,
   // Storage for vertices
   std::vector<double> x(2);
 
-  const double a = 0.0;
-  const double b = 1.0;
-  const double c = 0.0;
-  const double d = 1.0;
+  const Point& p0 = p[0];
+  const Point& p1 = p[1];
+  
+  // Extract minimum and maximum coordinates
+  const double x0 = std::min(p0.x(), p1.x());
+  const double x1 = std::max(p0.x(), p1.x());
+  const double y0 = std::min(p0.y(), p1.y());
+  const double y1 = std::max(p0.y(), p1.y());
+
+  const double a = x0;
+  const double b = x1;
+  const double c = y0;
+  const double d = y1;
 
   // Create main vertices:
   std::size_t vertex = 0;

@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2016-06-01
-// Last changed: 2017-10-09
+// Last changed: 2018-01-16
 
 #include <algorithm>
 #include <tuple>
@@ -220,9 +220,22 @@ ConvexTriangulation::_triangulate_1d(const std::vector<Point>& p,
 
   const std::vector<Point> unique_p = unique_points(p, gdim, DOLFIN_EPS);
 
-  if (unique_p.size() > 2)
+  if (unique_p.size() == 2)
   {
-    // Make sure the points are approximately collinear
+    // Return the point list. Since it is unique it is also
+    // non-degenerate
+    std::vector<std::vector<Point>> t { unique_p };
+    return t;
+  }
+  else if (unique_p.size() < 2)
+  {
+    // Return empty if 0 or 1 point
+    return std::vector<std::vector<Point>>();
+  }
+  else
+  {
+    // Here unique_p.size() > 2. Make sure the points are
+    // approximately collinear
     bool collinear = true;
     for (std::size_t i = 2; i < unique_p.size(); ++i)
     {
@@ -238,19 +251,13 @@ ConvexTriangulation::_triangulate_1d(const std::vector<Point>& p,
 
     // Average
     Point average(0.0, 0.0, 0.0);
-    for (const Point& q: unique_p)
+    for (const Point& q : unique_p)
       average += q;
     average /= unique_p.size();
-    std::vector<std::vector<Point>> t = {{ average }};
+    std::vector<std::vector<Point>> t {{ average }};
     return t;
-
-    dolfin_error("ConvexTriangulation.cpp",
-  		 "triangulate convex polyhedron",
-  		 "A convex polyhedron of topological dimension 1 can not have more than 2 points");
   }
 
-  std::vector<std::vector<Point>> t = { unique_p };
-  return t;
 }
 
 //------------------------------------------------------------------------------
@@ -260,6 +267,7 @@ ConvexTriangulation::_triangulate_graham_scan_2d(const std::vector<Point>& input
   dolfin_assert(GeometryPredicates::is_finite(input_points));
 
   // Make sure the input points are unique
+  const std::size_t tdim = 2;
   const std::size_t gdim = 2;
   std::vector<Point> points = unique_points(input_points, gdim, DOLFIN_EPS);
 
@@ -268,7 +276,10 @@ ConvexTriangulation::_triangulate_graham_scan_2d(const std::vector<Point>& input
 
   if (points.size() == 3)
   {
-    std::vector<std::vector<Point>> triangulation(1, points);
+    const std::size_t tdim = 2;
+    std::vector<std::vector<Point>> triangulation;
+    if (!GeometryPredicates::is_degenerate(points, tdim, gdim))
+      triangulation.push_back(points);
     return triangulation;
   }
 
@@ -299,15 +310,17 @@ ConvexTriangulation::_triangulate_graham_scan_2d(const std::vector<Point>& input
   // Sort angles
   std::sort(order.begin(), order.end());
 
-  // Tessellate
-  std::vector<std::vector<Point>> triangulation(order.size() - 1);
+  // Tesselate
+  std::vector<std::vector<Point>> triangulation;
 
   for (std::size_t m = 0; m < order.size()-1; ++m)
   {
     // FIXME: We could consider only triangles with area > tolerance here.
-    triangulation[m] = {{ points[0],
-    			  points[order[m].second],
-    			  points[order[m + 1].second] }};
+    const std::vector<Point> tri {{ points[0],
+	  points[order[m].second],
+	  points[order[m + 1].second] }};
+    if (!GeometryPredicates::is_degenerate(tri, tdim, gdim))
+      triangulation.push_back(tri);
   }
 
   return triangulation;
@@ -324,6 +337,7 @@ ConvexTriangulation::_triangulate_graham_scan_3d(const std::vector<Point>& input
 
   // Make sure the input points are unique. We assume this has
   // negligble effect on volume
+  const std::size_t tdim = 3;
   const std::size_t gdim = 3;
   std::vector<Point> points = unique_points(input_points, gdim, DOLFIN_EPS);
 
@@ -337,14 +351,15 @@ ConvexTriangulation::_triangulate_graham_scan_3d(const std::vector<Point>& input
   else if (points.size() == 4)
   {
     // Single tetrahedron
-    triangulation.push_back(points);
+    if (!GeometryPredicates::is_degenerate(points, tdim, gdim))
+      triangulation.push_back(points);
     return triangulation;
   }
   else
   {
     // Construct tetrahedra using facet points and a center point
     Point polyhedroncenter(0,0,0);
-    for (const Point& p: points)
+    for (const Point& p : points)
       polyhedroncenter += p;
     polyhedroncenter /= points.size();
 
@@ -419,7 +434,6 @@ ConvexTriangulation::_triangulate_graham_scan_3d(const std::vector<Point>& input
 					    points[j],
 					    points[k],
 					    polyhedroncenter };
-
 #ifdef DOLFIN_ENABLE_GEOMETRY_DEBUGGING
                 if (cgal_tet_is_degenerate(cand))
                   dolfin_error("ConvexTriangulation.cpp",
@@ -432,7 +446,8 @@ ConvexTriangulation::_triangulate_graham_scan_3d(const std::vector<Point>& input
                 //for (auto p : cand)
                 //  std::cout << " " << p;
                 //std::cout << std::endl;
-		triangulation.push_back(cand);
+		if (!GeometryPredicates::is_degenerate(cand, tdim, gdim))
+		  triangulation.push_back(cand);
 	      }
 	      else // At least four coplanar points
 	      {
@@ -452,46 +467,50 @@ ConvexTriangulation::_triangulate_graham_scan_3d(const std::vector<Point>& input
 		  compute_convex_hull_planar(coplanar_points);
 
 		Point coplanar_center(0,0,0);
-		for (Point p : coplanar_points)
+		for (const Point& p : coplanar_points)
 		  coplanar_center += p;
 		coplanar_center /= coplanar_points.size();
 
 		// Tessellate
 		for (const std::pair<std::size_t, std::size_t>& edge : coplanar_convex_hull)
 		{
-                  triangulation.push_back({polyhedroncenter,
+		  const std::vector<Point> cand {{ polyhedroncenter,
 			coplanar_center,
 			coplanar_points[edge.first],
-			coplanar_points[edge.second]});
+			coplanar_points[edge.second] }};
+		  if (!GeometryPredicates::is_degenerate(cand, tdim, gdim))
+		  {
+		    triangulation.push_back(cand);
 
 #ifdef DOLFIN_ENABLE_GEOMETRY_DEBUGGING
-                  if (cgal_tet_is_degenerate(triangulation.back()))
-                  {
-                    dolfin_error("ConvexTriangulation.cpp:544",
-				 "triangulation 3d points",
-				 "tet is degenerate");
-                  }
+		    if (cgal_tet_is_degenerate(triangulation.back()))
+		    {
+		      dolfin_error("ConvexTriangulation.cpp:544",
+				   "triangulation 3d points",
+				   "tet is degenerate");
+		    }
 
-                  if (cgal_triangulation_overlap(triangulation))
-                  {
-                    dolfin_error("ConvexTriangulation.cpp:544",
-				 "triangulation 3d points",
-				 "now triangulation overlaps");
-                  }
+		    if (cgal_triangulation_overlap(triangulation))
+		    {
+		      dolfin_error("ConvexTriangulation.cpp:544",
+				   "triangulation 3d points",
+				   "now triangulation overlaps");
+		    }
 #endif
-		}
+		  }
 
-		// Mark all combinations of the coplanar vertices as
-		// checked to avoid duplicating triangles
-                std::sort(coplanar.begin(), coplanar.end());
+		  // Mark all combinations of the coplanar vertices as
+		  // checked to avoid duplicating triangles
+		  std::sort(coplanar.begin(), coplanar.end());
 
-                for (int i = 0; i < (int)coplanar.size()-2; i++)
-                {
-                  for (int j = i+1; j < (int)coplanar.size()-1; j++)
-                  {
-                    for (std::size_t k = j+1; k < coplanar.size(); k++)
-                    {
-                      checked.emplace( std::make_tuple(coplanar[i], coplanar[j], coplanar[k]) );
+		  for (int i = 0; i < (int)coplanar.size()-2; i++)
+		  {
+		    for (int j = i+1; j < (int)coplanar.size()-1; j++)
+		    {
+		      for (std::size_t k = j+1; k < coplanar.size(); k++)
+		      {
+			checked.emplace( std::make_tuple(coplanar[i], coplanar[j], coplanar[k]) );
+		      }
                     }
                   }
                 }
@@ -537,11 +556,11 @@ ConvexTriangulation::triangulate_graham_scan_3d(const std::vector<Point>& pm)
 
   const double reference_volume = cgal_polyhedron_volume(pm);
 
-  if (std::abs(volume - reference_volume) > DOLFIN_EPS)
+  if (std::abs(volume - reference_volume) > DOLFIN_EPS_LARGE)
     dolfin_error("ConvexTriangulation.cpp",
 		 "verifying convex triangulation",
-		 "computed volume %f, but reference volume is %f",
-		 volume, reference_volume);
+		 "computed volume %f, but reference volume is %f (diff %e)",
+		 volume, reference_volume, std::abs(reference_volume-volume));
 
 
 #endif

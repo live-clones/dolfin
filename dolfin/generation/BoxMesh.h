@@ -86,7 +86,7 @@ namespace dolfin
       if (cell_type == CellType::Type::tetrahedron)
         build_tet(mesh, p, n);
       else if (cell_type == CellType::Type::hexahedron)
-        build_hex(mesh, n);
+        build_hex(mesh, p, n);
       else
       {
         dolfin_error("BoxMesh.h",
@@ -159,7 +159,8 @@ namespace dolfin
     static void build_tet(Mesh& mesh, const std::array<Point, 2>& p,
                           std::array<std::size_t, 3> n);
 
-    static void build_hex(Mesh& mesh, std::array<std::size_t, 3> n);
+    static void build_hex(Mesh& mesh, const std::array<Point, 2>& p,
+                          std::array<std::size_t, 3> n);
 
   };
 

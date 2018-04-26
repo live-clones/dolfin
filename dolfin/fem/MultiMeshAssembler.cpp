@@ -513,7 +513,7 @@ void MultiMeshAssembler::_assemble_interface(GenericTensor& A,
 
         // Collect vertex coordinates
         macro_coordinate_dofs.resize(coordinate_dofs[0].size() +
-                                     coordinate_dofs[0].size());
+                                     coordinate_dofs[1].size());
         std::copy(coordinate_dofs[0].begin(), coordinate_dofs[0].end(),
                   macro_coordinate_dofs.begin());
         std::copy(coordinate_dofs[1].begin(), coordinate_dofs[1].end(),

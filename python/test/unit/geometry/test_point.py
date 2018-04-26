@@ -17,10 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 import pytest
 import numpy as np
-from dolfin_utils.test import skip_if_pybind11
 
 from dolfin import *
 
@@ -84,3 +82,14 @@ def test_point_equality():
     r = Point(1.23+DOLFIN_EPS, 2, DOLFIN_PI)
     assert p == q
     assert p != r
+
+
+def test_point_dot():
+    p = Point(1.0, 2.0, 3.0)
+    q = Point(3.1, 4.5, 5.6)
+    r = Point(-1.6, -2.5, 3.3)
+    s = Point(152.25)
+
+    assert p.dot(q) == p[0]*q[0] + p[1]*q[1] + p[2]*q[2]
+    assert p.dot(r) == p[0]*r[0] + p[1]*r[1] + p[2]*r[2]
+    assert p.dot(s) == p[0]*s[0]

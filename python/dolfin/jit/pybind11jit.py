@@ -2,13 +2,12 @@
 
 import hashlib
 import dijitso
-import pkgconfig
 import re
 
 from dolfin.cpp.log import log, LogLevel
 from . import get_pybind_include
 
-from dolfin.jit.jit import dijitso_jit
+from dolfin.jit.jit import dijitso_jit, dolfin_pc
 
 
 def jit_generate(cpp_code, module_name, signature, parameters):
@@ -40,12 +39,6 @@ def compile_cpp_code(cpp_code):
 
     """
 
-    if not pkgconfig.exists('dolfin'):
-        raise RuntimeError("Could not find DOLFIN pkg-config file. Please make sure appropriate paths are set.")
-
-    # Get pkg-config data for DOLFIN
-    dolfin_pc = pkgconfig.parse('dolfin')
-
     # Set compiler/build options
     # FIXME: need to locate Python libs and pybind11
     from distutils import sysconfig
@@ -65,7 +58,7 @@ def compile_cpp_code(cpp_code):
     # Enable all macros from dolfin.pc
     dmacros = ()
     for dm in dolfin_pc['define_macros']:
-        if len(dm[1]) == 0:
+        if dm[1] is None or len(dm[1]) == 0:
             dmacros += ('-D' + dm[0],)
         else:
             dmacros += ('-D' + dm[0] + '=' + dm[1],)
