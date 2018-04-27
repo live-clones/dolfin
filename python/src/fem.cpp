@@ -153,7 +153,20 @@ namespace dolfin_wrappers
              self.evaluate_basis(i, values.mutable_data(), x.data(), coordinate_dofs.data(),
                                  cell_orientation);
              return values;
-           })
+           }, "Evaluate basis function i at given point x in cell.")
+     .def("evaluate_basis_all", [](const dolfin::FiniteElement& self,
+                               const py::array_t<double> x,
+                               const py::array_t<double> coordinate_dofs,
+                               int cell_orientation)
+          {
+            auto ufc_element = self.ufc_element();
+            const std::size_t size = ufc_element->value_size();
+            const std::size_t space_dimension = ufc_element->space_dimension();
+            py::array_t<double, py::array::c_style> values(space_dimension*size);
+            self.evaluate_basis_all(values.mutable_data(), x.data(), coordinate_dofs.data(),
+                                cell_orientation);
+            return values;
+          }, "Evaluate order n derivatives of all basis functions at given point x in cell.")
       .def("evaluate_basis_derivatives", [](const dolfin::FiniteElement& self,
                                             int i, int order,
                                             const py::array_t<double> x,
@@ -170,7 +183,26 @@ namespace dolfin_wrappers
                                              x.data(), coordinate_dofs.data(),
                                              cell_orientation);
              return values;
-           })
+           }, "Evaluate order n derivatives of basis function i at given point x in cell.")
+      .def("evaluate_basis_derivatives_all", [](const dolfin::FiniteElement& self,
+                                            int order,
+                                            const py::array_t<double> x,
+                                            const py::array_t<double> coordinate_dofs,
+                                            int cell_orientation)
+          {
+            auto ufc_element = self.ufc_element();
+
+            const std::size_t gdim = self.geometric_dimension();
+            const std::size_t num_derivs = pow(gdim, order);
+            const std::size_t size = ufc_element->value_size()*num_derivs;
+            const std::size_t space_dimension = ufc_element->space_dimension();
+            py::array_t<double, py::array::c_style> values(size*space_dimension);
+            self.evaluate_basis_derivatives_all(order, values.mutable_data(),
+                                            x.data(), coordinate_dofs.data(),
+                                            cell_orientation);
+            return values;
+          }, "Evaluate all basis functions at given point x in cell.")
+
       .def("space_dimension", &dolfin::FiniteElement::space_dimension)
       .def("geometric_dimension", &dolfin::FiniteElement::geometric_dimension)
       .def("value_dimension", &dolfin::FiniteElement::value_dimension)
