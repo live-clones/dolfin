@@ -1,6 +1,6 @@
 """Unit tests for coordinate derivative"""
 
-# Copyright (C) 2011-2014 Garth N. Wells
+# Copyright (C) 2018 Florian Wechsung
 #
 # This file is part of DOLFIN.
 #
