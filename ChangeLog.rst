@@ -1,7 +1,7 @@
 Change log
 ==========
 
-2018.1.0 (2018-05-01)
+2018.1.0 (2018-05-22)
 ---------------------
 
 - Remove SWIG (now use pybind11 for wrapping C++)
