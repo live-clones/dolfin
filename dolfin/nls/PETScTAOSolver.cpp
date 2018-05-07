@@ -536,11 +536,11 @@ void PETScTAOSolver::set_ksp_options()
       if (ierr != 0) petsc_error(ierr, __FILE__, "KSPSetType");
       ierr = PCSetType(pc, PCLU);
       if (ierr != 0) petsc_error(ierr, __FILE__, "PCSetType");
-      std::map<std::string, const MatSolverPackage>::const_iterator lu_pair
+      std::map<std::string, const MatSolverType>::const_iterator lu_pair
         = PETScLUSolver::lumethods.find(lu_method);
       dolfin_assert(lu_pair != PETScLUSolver::lumethods.end());
-      ierr = PCFactorSetMatSolverPackage(pc, lu_pair->second);
-      if (ierr != 0) petsc_error(ierr, __FILE__, "PCFactorSetMatSolverPackage");
+      ierr = PCFactorSetMatSolverType(pc, lu_pair->second);
+      if (ierr != 0) petsc_error(ierr, __FILE__, "PCFactorSetMatSolverType");
     }
     else     // Unknown KSP method
     {

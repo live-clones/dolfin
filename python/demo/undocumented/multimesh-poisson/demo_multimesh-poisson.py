@@ -25,10 +25,6 @@
 
 from dolfin import *
 
-if has_pybind11():
-    print("Not supported in pybind11")
-    exit()
-
 class DirichletBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary
@@ -97,7 +93,7 @@ def solve_poisson(t, x1, y1, x2, y2):
 
     return u
 
-if MPI.size(mpi_comm_world()) > 1:
+if MPI.size(MPI.comm_world) > 1:
     info("Sorry, this demo does not (yet) run in parallel.")
     exit(0)
 
@@ -126,9 +122,9 @@ for n in range(N):
     u = solve_poisson(t, x1, y1, x2, y2)
 
     # Save to file
-    f0.write(u.part(0), t)
-    f1.write(u.part(1), t)
-    f2.write(u.part(2), t)
+    f0.write(u.part(0, deepcopy=True), t)
+    f1.write(u.part(1, deepcopy=True), t)
+    f2.write(u.part(2, deepcopy=True), t)
 
 # Close files
 f0.close()

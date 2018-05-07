@@ -178,7 +178,7 @@ def test_save_and_checkpoint_scalar(tempdir, encoding, fe_degree, fe_family,
     u_out.interpolate(Expression("x[0]", degree=1))
 
     with XDMFFile(mesh.mpi_comm(), filename) as file:
-        file.write_checkpoint(u_out, "u_out", 0, encoding)
+        file.write_checkpoint(u_out, "u_out", 0, encoding, append=False)
 
     with XDMFFile(mesh.mpi_comm(), filename) as file:
         file.read_checkpoint(u_in, "u_out", 0)
@@ -215,7 +215,7 @@ def test_save_and_checkpoint_vector(tempdir, encoding, fe_degree, fe_family,
         u_out.interpolate(Expression(("x[0]*x[1]", "x[0]", "x[2]"), degree=2))
 
     with XDMFFile(mesh.mpi_comm(), filename) as file:
-        file.write_checkpoint(u_out, "u_out", 0, encoding)
+        file.write_checkpoint(u_out, "u_out", 0, encoding, append=False)
 
     with XDMFFile(mesh.mpi_comm(), filename) as file:
         file.read_checkpoint(u_in, "u_out", 0)
@@ -241,7 +241,7 @@ def test_save_and_checkpoint_timeseries(tempdir, encoding):
     with XDMFFile(mesh.mpi_comm(), filename) as file:
         for i, p in enumerate(times):
             u_out[i] = interpolate(Expression("x[0]*p", p=p, degree=1), V)
-            file.write_checkpoint(u_out[i], "u_out", p, encoding)
+            file.write_checkpoint(u_out[i], "u_out", p, encoding, append=True)
 
     with XDMFFile(mesh.mpi_comm(), filename) as file:
         for i, p in enumerate(times):

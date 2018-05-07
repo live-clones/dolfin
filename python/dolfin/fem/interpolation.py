@@ -24,6 +24,8 @@ finite element space.
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 from dolfin.function.function import Function
+from dolfin.function.multimeshfunction import MultiMeshFunction
+from dolfin.function.multimeshfunctionspace import MultiMeshFunctionSpace
 
 
 def interpolate(v, V):
@@ -32,11 +34,16 @@ def interpolate(v, V):
 
     *Arguments*
         v
-            a :py:class:`Function <dolfin.functions.function.Function>` or
+            a :py:class:`Function <dolfin.function.function.Function>` or
+            a :py:class:`MultiMeshFunction
+                         <dolfin.function.function.MultiMeshFunction>` or
             an :py:class:`Expression <dolfin.functions.expression.Expression>`
         V
             a :py:class:`FunctionSpace (standard, mixed, etc.)
             <dolfin.functions.functionspace.FunctionSpace>`
+            or a :py:class:`MultiMeshFunctionSpace
+            <dolfin.function.MultiMeshFunctionSpace>`.
+
 
     *Example of usage*
 
@@ -54,9 +61,12 @@ def interpolate(v, V):
     #                      "compute interpolation",
     #                      "Illegal function space for interpolation, not a FunctionSpace (%s)" % str(v))
 
-    # Compute interpolation
-    Pv = Function(V)
+    if isinstance(V, MultiMeshFunctionSpace):
+        Pv = MultiMeshFunction(V)
+    else:
+        Pv = Function(V)
 
+    # Compute interpolation
     if hasattr(v, "_cpp_object"):
         Pv.interpolate(v._cpp_object)
     else:

@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2014-02-03
-// Last changed: 2017-10-07
+// Last changed: 2017-12-12
 
 #include <iomanip>
 #include <dolfin/mesh/MeshEntity.h>
@@ -365,7 +365,7 @@ IntersectionConstruction::intersection_segment_segment_2d(const Point& p0,
   const double q1o = orient2d(p0, p1, q1);
 
   // Case 0: points on the same side --> no intersection
-  if ((q0o > 0.0 and q1o > 0.0) or(q0o < 0.0 and q1o < 0.0))
+  if ((q0o > 0.0 and q1o > 0.0) or (q0o < 0.0 and q1o < 0.0))
     return std::vector<Point>();
 
   // Repeat the same procedure for p
@@ -533,8 +533,8 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
   // Case 3: qo = q0o*q1o < 0.
   //
   //   --> points on different sides
+  //   --> check if the segment intersects the triangle
   //   --> compute intersection point with plane
-  //   --> project to 2D and check if point is inside triangle
   //
   // Note that the computation in Case 3 may be sensitive to rounding
   // errors if both points are almost in the plane. If this happens
@@ -545,11 +545,8 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
   const double q0o = orient3d(p0, p1, p2, q0);
   const double q1o = orient3d(p0, p1, p2, q1);
 
-  // Compute total orientation of segment wrt plane
-  const double qo = q0o*q1o;
-
   // Case 0: points on the same side --> no intersection
-  if (qo > 0.0)
+  if ((q0o > 0.0 and q1o > 0.0) or (q0o < 0.0 and q1o < 0.0))
     return std::vector<Point>();
 
   // Case 1: exactly one point in plane --> possible point intersection
@@ -569,8 +566,8 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
   const Point Q0 = GeometryTools::project_to_plane_3d(q0, major_axis);
   const Point Q1 = GeometryTools::project_to_plane_3d(q1, major_axis);
 
-  // Case 2: both points in plane (or almost)
-  if (std::abs(q0o) < DOLFIN_EPS_LARGE and std::abs(q1o) < DOLFIN_EPS_LARGE)
+  // Case 2: both points in plane
+  if (q0o == 0.0 and q1o == 0.0)
   {
     // Compute 2D intersection points
     const std::vector<Point>
@@ -607,17 +604,24 @@ IntersectionConstruction::_intersection_triangle_segment_3d(const Point& p0,
 
   // Case 3: points on different sides (main case)
 
-  // Compute intersection point
-  const double num = n.dot(p0 - q0);
-  const double den = n.dot(q1 - q0);
-  const Point x = p0 + num / den * (p1 - p0);
+  // Check if segment does not collide with triangle
+  if (orient3d(p0, p1, q0, q1)*orient3d(p0, p1, q0, p2) < 0 ||
+      orient3d(p1, p2, q0, q1)*orient3d(p1, p2, q0, p0) < 0 ||
+      orient3d(p2, p0, q0, q1)*orient3d(p2, p0, q0, p1) < 0)
+    return std::vector<Point>();
 
-  // Project point to major axis plane and check if inside triangle
-  const Point X = GeometryTools::project_to_plane_3d(x, major_axis);
-  if (CollisionPredicates::collides_triangle_point_2d(P0, P1, P2, X))
-    return std::vector<Point>(1, x);
+  // The segment and triangle collide
+  // Now compute intersection point
+  const double ratio_0 = std::abs(q0o) / (std::abs(q0o) + std::abs(q1o));
 
-  return std::vector<Point>();
+  // Check ratio and return intersection point
+  if (ratio_0 < 1.0)
+    return std::vector<Point>{q0 + ratio_0*(q1 - q0)};
+  else
+  {
+    const double ratio_1 = std::abs(q1o) / (std::abs(q0o) + std::abs(q1o));
+    return std::vector<Point>{q1 + ratio_1*(q0 - q1)};
+  }
 }
 //-----------------------------------------------------------------------------
 std::vector<Point>

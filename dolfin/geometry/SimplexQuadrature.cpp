@@ -48,8 +48,7 @@ SimplexQuadrature::SimplexQuadrature(std::size_t tdim, std::size_t order)
 }
 //-----------------------------------------------------------------------------
 std::pair<std::vector<double>, std::vector<double>>
-  SimplexQuadrature::compute_quadrature_rule(const Cell& cell,
-                                             std::size_t order) const
+  SimplexQuadrature::compute_quadrature_rule(const Cell& cell) const
 {
   // Extract dimensions
   const std::size_t tdim = cell.mesh().topology().dim();
@@ -66,13 +65,12 @@ std::pair<std::vector<double>, std::vector<double>>
       s[t][d] = x[gdim*t + d];
 
   // Call function to compute quadrature rule
-  return compute_quadrature_rule(s, gdim, order);
+  return compute_quadrature_rule(s, gdim);
 }
 //-----------------------------------------------------------------------------
 std::pair<std::vector<double>, std::vector<double>>
   SimplexQuadrature::compute_quadrature_rule(const std::vector<Point>& coordinates,
-                                             std::size_t gdim,
-                                             std::size_t order) const
+                                             std::size_t gdim) const
 {
   std::size_t tdim = coordinates.size() - 1;
 
@@ -82,13 +80,13 @@ std::pair<std::vector<double>, std::vector<double>>
     // FIXME: should we return empty qr or should we have detected this earlier?
     break;
   case 1:
-    return compute_quadrature_rule_interval(coordinates, gdim, order);
+    return compute_quadrature_rule_interval(coordinates, gdim);
     break;
   case 2:
-    return compute_quadrature_rule_triangle(coordinates, gdim, order);
+    return compute_quadrature_rule_triangle(coordinates, gdim);
     break;
   case 3:
-    return compute_quadrature_rule_tetrahedron(coordinates, gdim, order);
+    return compute_quadrature_rule_tetrahedron(coordinates, gdim);
     break;
   default:
     dolfin_error("SimplexQuadrature.cpp",
@@ -102,8 +100,7 @@ std::pair<std::vector<double>, std::vector<double>>
 //-----------------------------------------------------------------------------
 std::pair<std::vector<double>, std::vector<double>>
   SimplexQuadrature::compute_quadrature_rule_interval(const std::vector<Point>& coordinates,
-						      std::size_t gdim,
-						      std::size_t order) const
+						      std::size_t gdim) const
 {
   log(PROGRESS, "Create quadrature rule using given interval coordinates");
 
@@ -171,8 +168,7 @@ std::pair<std::vector<double>, std::vector<double>>
 //-----------------------------------------------------------------------------
 std::pair<std::vector<double>, std::vector<double>>
 SimplexQuadrature::compute_quadrature_rule_triangle(const std::vector<Point>& coordinates,
-                                                    std::size_t gdim,
-                                                    std::size_t order) const
+                                                    std::size_t gdim) const
 {
   log(PROGRESS, "Create quadrature rule using given triangle coordinates");
 
@@ -240,8 +236,7 @@ SimplexQuadrature::compute_quadrature_rule_triangle(const std::vector<Point>& co
 //-----------------------------------------------------------------------------
 std::pair<std::vector<double>, std::vector<double>>
 SimplexQuadrature::compute_quadrature_rule_tetrahedron(const std::vector<Point>& coordinates,
-                                                       std::size_t gdim,
-                                                       std::size_t order) const
+                                                       std::size_t gdim) const
 {
   log(PROGRESS, "Create quadrature rule using given tetrahedron coordinates");
 

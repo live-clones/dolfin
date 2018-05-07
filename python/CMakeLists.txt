@@ -2,9 +2,24 @@ cmake_minimum_required(VERSION 3.5.0)
 
 PROJECT(dolfin_pybind11)
 
+# Configurable options for how we want to build
+include(FeatureSummary)
+option(DOLFIN_ENABLE_PETSC4PY "Compile with support for PETSc4py." ON)
+option(DOLFIN_ENABLE_MPI4PY "Compile with support for MPI4py." ON)
+add_feature_info(DOLFIN_ENABLE_PETSC4PY DOLFIN_ENABLE_PETSC4PY "Compile with support for PETSc4py.")
+add_feature_info(DOLFIN_ENABLE_MPI4PY DOLFIN_ENABLE_MPI4PY "Compile with support for MPI4py.")
+
+# Get options from env (difficult to pass them through setuptools)
+if(DEFINED ENV{DOLFIN_ENABLE_PETSC4PY})
+  set(DOLFIN_ENABLE_PETSC4PY $ENV{DOLFIN_ENABLE_PETSC4PY})
+endif()
+if(DEFINED ENV{DOLFIN_ENABLE_MPI4PY})
+  set(DOLFIN_ENABLE_MPI4PY $ENV{DOLFIN_ENABLE_MPI4PY})
+endif()
+
+# Find required packages
 find_package(pybind11 REQUIRED CONFIG HINTS ${PYBIND11_DIR} ${PYBIND11_ROOT}
   $ENV{PYBIND11_DIR} $ENV{PYBIND11_ROOT})
-
 find_package(DOLFIN REQUIRED)
 include(${DOLFIN_USE_FILE})
 
@@ -45,14 +60,20 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Check for petsc4py
-find_package(PETSc4py)
+set(PETSC4PY_FOUND FALSE)
+if(DOLFIN_ENABLE_PETSC4PY)
+  find_package(PETSc4py)
+endif()
 if (PETSC4PY_FOUND)
   target_include_directories(cpp PRIVATE ${PETSC4PY_INCLUDE_DIRS})
   target_compile_definitions(cpp PRIVATE HAS_PYBIND11_PETSC4PY)
 endif()
 
 # Check for mpi4py
-find_package(MPI4PY)
+set(MPI4PY_FOUND FALSE)
+if(DOLFIN_ENABLE_MPI4PY)
+  find_package(MPI4PY)
+endif()
 if (MPI4PY_FOUND)
   target_include_directories(cpp PRIVATE ${MPI4PY_INCLUDE_DIR})
   target_compile_definitions(cpp PRIVATE HAS_PYBIND11_MPI4PY)

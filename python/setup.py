@@ -16,13 +16,12 @@ if sys.version_info < (3, 5):
 VERSION = "2018.1.0.dev0"
 RESTRICT_REQUIREMENTS = ">=2018.1.0.dev0,<2018.2"
 
-REQUIREMENTS = [
-    "numpy",
-    "pkgconfig",
-    "fenics-ffc{}".format(RESTRICT_REQUIREMENTS),
-    "fenics-ufl{}".format(RESTRICT_REQUIREMENTS),
-    "fenics-dijitso{}".format(RESTRICT_REQUIREMENTS),
-]
+REQUIREMENTS = ["numpy",
+                "pkgconfig",
+                "fenics-ffc{}".format(RESTRICT_REQUIREMENTS),
+                "fenics-ufl{}".format(RESTRICT_REQUIREMENTS),
+                "fenics-dijitso{}".format(RESTRICT_REQUIREMENTS)]
+
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -73,7 +72,7 @@ class CMakeBuild(build_ext):
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
+        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp, env=env)
 
 
 setup(name='fenics-dolfin',
