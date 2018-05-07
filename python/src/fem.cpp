@@ -56,7 +56,9 @@
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/SubDomain.h>
+#include <dolfin/adaptivity/adapt.h>
 
 #include "casters.h"
 
@@ -73,6 +75,12 @@ namespace dolfin_wrappers
       (m, "ufc_dofmap", "UFC dofmap object");
     py::class_<ufc::form, std::shared_ptr<ufc::form>>
       (m, "ufc_form", "UFC form object");
+
+    // Adapt functions
+    m.def("adapt", [](dolfin::Mesh mesh){return dolfin::adapt(mesh);});
+    m.def("adapt", [](const dolfin::MeshFunction<std::size_t>& mesh_function,
+		      std::shared_ptr<const dolfin::Mesh> adapted_mesh)
+	  {return dolfin::adapt(mesh_function, adapted_mesh);});
 
     // Function to convert pointers (from JIT usually) to UFC objects
     m.def("make_ufc_finite_element",
