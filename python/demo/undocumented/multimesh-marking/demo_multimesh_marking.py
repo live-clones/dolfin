@@ -9,8 +9,7 @@ background_mesh = UnitSquareMesh(16, 16)
 annulus_mesh = Mesh("../donut.xml.gz")
 
 center = Point(0.5, 0.5)
-r_outer = 0.41
-r_inner = 0.2
+r = 0.2
 
 # Build the multimesh
 multimesh = MultiMesh()
@@ -39,10 +38,26 @@ L = Constant(1) * v * dX
 A = assemble_multimesh(a)
 b = assemble_multimesh(L)
 
-boundary = CompiledSubDomain("on_boundary")
-bc = MultiMeshDirichletBC(V, Constant(0.0), boundary)
+# Will mark boundary of outer mesh
+class OuterBoundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary
+outer = OuterBoundary()
+mf0 = MeshFunction("size_t", multimesh.part(0), multimesh.part(0).topology().dim() - 1)
+outer.mark(mf0, 2)
+bc0 = MultiMeshDirichletBC(V, Constant(0), mf0, 2, 0)
 
-bc.apply(A, b)
+# Will mark inner part of top mesh
+class InnerBoundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary and ((x[0] - 0.5)**2 + (x[1] - 0.5)**2 < 0.5*r)
+inner = InnerBoundary()
+mf1 = MeshFunction("size_t", multimesh.part(1), multimesh.part(1).topology().dim()-1)
+inner.mark(mf1 , 3)
+bc1 = MultiMeshDirichletBC(V, Constant(1), mf1, 3, 1)
+bcs = [bc0, bc1]
+
+[bc.apply(A, b) for bc in bcs]
 V.lock_inactive_dofs(A, b)
 
 # Solve and plot
