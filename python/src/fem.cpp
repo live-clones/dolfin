@@ -66,6 +66,7 @@
 #include <dolfin/fem/MultiMeshDirichletBC.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <dolfin/adaptivity/adapt.h>
+#include <dolfin/parameter/GlobalParameters.h>
 
 #include "casters.h"
 
@@ -84,10 +85,12 @@ namespace dolfin_wrappers
       (m, "ufc_form", "UFC form object");
 
     // Adapt functions
-    m.def("adapt", [](dolfin::Mesh mesh){return dolfin::adapt(mesh);});
+    m.def("adapt", [](dolfin::Mesh mesh){return dolfin::adapt(mesh);},
+	  "Mapping between parent and child entities has to be set in refined mesh. See various refinement algorithms and `parameters['refinement_algorithm']`.");
     m.def("adapt", [](const dolfin::MeshFunction<std::size_t>& mesh_function,
 		      std::shared_ptr<const dolfin::Mesh> adapted_mesh)
-	  {return dolfin::adapt(mesh_function, adapted_mesh);});
+	  {
+	    return dolfin::adapt(mesh_function, adapted_mesh);});
 
     // Function to convert pointers (from JIT usually) to UFC objects
     m.def("make_ufc_finite_element",

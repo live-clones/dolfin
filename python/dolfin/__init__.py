@@ -58,7 +58,7 @@ from .cpp.fem import (FiniteElement, DofMap, Assembler, MultiMeshAssembler,
                       LinearVariationalSolver,
                       NonlinearVariationalSolver,
                       SparsityPatternBuilder,
-                      MultiMeshDirichletBC)
+                      MultiMeshDirichletBC, adapt)
 
 from .cpp.geometry import (BoundingBoxTree,
                            Point,
