@@ -66,7 +66,6 @@
 #include <dolfin/fem/MultiMeshDirichletBC.h>
 #include <dolfin/mesh/SubDomain.h>
 #include <dolfin/adaptivity/adapt.h>
-#include <dolfin/parameter/GlobalParameters.h>
 
 #include "casters.h"
 
