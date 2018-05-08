@@ -22,26 +22,33 @@
 import pytest
 import numpy
 from dolfin import *
-from dolfin_utils.test import fixture
 
-@fixture
-def mesh():
-    return UnitSquareMesh(10, 10)
+from dolfin_utils.test import fixture, skip_in_parallel
 
-def test_mesh_adaptation(mesh):
+
+@skip_in_parallel
+def test_mesh_adaptation():
+    mesh = UnitSquareMesh(10,10)
     rmesh = adapt(mesh)
     assert(numpy.isclose(mesh.hmax()/rmesh.hmax(), 2))
 
-def test_cell_function_adaptation(mesh):
+
+@skip_in_parallel
+def test_cell_function_adaptation():
+    mesh = UnitSquareMesh(10,10)
+    rmesh = adapt(mesh)
     mf = MeshFunction("size_t", mesh, mesh.topology().dim())
     rmesh = adapt(mesh)
     rmf = adapt(mf,rmesh)
     assert(rmf.size() / mf.size() == 4)
 
-def test_facet_function_adaptation(mesh):
+
+@skip_in_parallel
+def test_facet_function_adaptation():
     # Facet Function refinement needs global parameter
     parameters["refinement_algorithm"] = "plaza_with_parent_facets"
-    mf = MeshFunction("size_t", mesh, mesh.topology().dim()-1)
+    mesh = UnitSquareMesh(10,10)
     rmesh = adapt(mesh)
-    rmf = adapt(mf,rmesh)
+    mf = MeshFunction("size_t", mesh, mesh.topology().dim()-1)
+    rmf = adapt(mf, rmesh)
     assert(len(rmf.array())/len(mf.array())==3.875)
