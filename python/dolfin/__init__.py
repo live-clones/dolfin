@@ -187,7 +187,7 @@ from .multistage.rushlarsenschemes import RL1, RL2, GRL1, GRL2
 # Import from ufl
 from ufl import (FiniteElement, TensorElement, VectorElement,
                  MixedElement, rhs, lhs, conditional, le, lt, ge, gt,
-                 split, cross, inner, dot, grad, curl, dx, div,
+                 split, cross, inner, dot, grad, nabla_grad, curl, dx, div,
                  Measure, det, pi, sin, cos, tan, acos, asin, atan,
                  ln, exp, sqrt, bessel_I, bessel_J, bessel_K,
                  bessel_Y, Dx, ds, dS, dP, dX, dC, dI, dO, interval, triangle,
