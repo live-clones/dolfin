@@ -53,16 +53,12 @@ MeshQuality::aspect_ratio_gamma(std::shared_ptr<const Mesh> mesh)
     pts.clear();
     for (VertexIterator v(*cell); !v.end(); ++v)
       pts.push_back(v->point());
-    Point r0 = pts[1] - pts[0];
-    Point r1 = pts[2] - pts[0];
-    Point r2 = pts[3] - pts[0];
-    Point r3 = pts[2] - pts[1];
-    Point r4 = pts[3] - pts[2];
-    Point r5 = pts[1] - pts[3];
-    double rv
-        = r0.norm() + r1.norm() + r2.norm() + r3.norm() + r4.norm() + r5.norm();
-    rv = rv * rv * rv;
-    arg[*cell] = rv / cell->volume();
+    double rv = 0.0;
+    for (unsigned int i = 0; i < 3; ++i)
+      for (unsigned int j = i + 1; j < 4; ++j)
+        rv += (pts[i] - pts[j]).squared_norm();
+
+    arg[*cell] = std::pow(rv, 1.5) / (6 * cell->volume());
   }
 
   return arg;
