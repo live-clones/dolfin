@@ -472,6 +472,7 @@ namespace dolfin_wrappers
     // dolfin::MeshQuality
     py::class_<dolfin::MeshQuality>
       (m, "MeshQuality", "DOLFIN MeshQuality class")
+      .def_static("aspect_ratio_gamma", &dolfin::MeshQuality::aspect_ratio_gamma)
       .def_static("radius_ratios", &dolfin::MeshQuality::radius_ratios)
       .def_static("radius_ratio_histogram_data", &dolfin::MeshQuality::radius_ratio_histogram_data)
       .def_static("radius_ratio_min_max", &dolfin::MeshQuality::radius_ratio_min_max)

@@ -58,7 +58,8 @@ MeshQuality::aspect_ratio_gamma(std::shared_ptr<const Mesh> mesh)
       for (unsigned int j = i + 1; j < 4; ++j)
         rv += (pts[i] - pts[j]).squared_norm();
 
-    arg[*cell] = std::pow(rv, 1.5) / (6 * cell->volume());
+    // FIXME: check for zero volume
+    arg[*cell] = std::pow(rv, 1.5) / (36.0 * sqrt(12) * cell->volume());
   }
 
   return arg;
