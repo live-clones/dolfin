@@ -303,6 +303,7 @@ namespace dolfin_wrappers
       .def("collides", (bool (dolfin::Cell::*)(const dolfin::MeshEntity&) const) &dolfin::Cell::collides)
       .def("contains", &dolfin::Cell::contains)
       .def("distance", &dolfin::Cell::distance)
+      .def("cell_normal", &dolfin::Cell::cell_normal)
       .def("facet_area", &dolfin::Cell::facet_area)
       .def("h", &dolfin::Cell::h)
       .def("inradius", &dolfin::Cell::inradius)
