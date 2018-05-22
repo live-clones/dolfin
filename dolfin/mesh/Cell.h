@@ -413,28 +413,6 @@ namespace dolfin
   /// A CellIterator is a MeshEntityIterator of topological codimension 0.
   typedef MeshEntityIteratorBase<Cell> CellIterator;
 
-  /// A CellFunction is a MeshFunction of topological codimension 0.
-  template <typename T> class CellFunction : public MeshFunction<T>
-  {
-  public:
-
-    /// Constructor on Mesh
-    CellFunction(std::shared_ptr<const Mesh> mesh)
-      : MeshFunction<T>(mesh, mesh->topology().dim()) {
-        deprecation("CellFunction<T>(mesh)",
-                    "2017.2.0",
-                    "Use MeshFunction<T>(mesh, mesh->topology().dim())");     
-      }
-
-    /// Constructor on Mesh and value
-    CellFunction(std::shared_ptr<const Mesh> mesh, const T& value)
-      : MeshFunction<T>(mesh, mesh->topology().dim(), value) {
-        deprecation("CellFunction<T>(mesh, value)",
-                    "2017.2.0",
-                    "Use MeshFunction<T>(mesh, mesh->topology().dim(), value)");
-      }
-  };
-
 }
 
 #endif
