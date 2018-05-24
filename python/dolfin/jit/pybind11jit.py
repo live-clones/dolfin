@@ -31,7 +31,7 @@ def jit_generate(cpp_code, module_name, signature, parameters):
     return code_h, code_c, depends
 
 
-def compile_cpp_code(cpp_code):
+def compile_cpp_code(cpp_code, **kwargs):
     """Compile a user C(++) string and expose as a Python object with
     pybind11.
 
@@ -48,12 +48,20 @@ def compile_cpp_code(cpp_code):
     params['cache']['lib_basename'] = ""
     params['cache']['lib_loader'] = "import"
 
+    extra_include_dirs = kwargs.get("include_dirs", [])
+    extra_libraries = kwargs.get("libraries", [])
+    extra_library_dirs = kwargs.get("library_dirs", [])
+    cppargs = kwargs.get("cppargs", [])
+
     # Include path and library info from DOLFIN (dolfin.pc)
-    params['build']['include_dirs'] = dolfin_pc["include_dirs"] + get_pybind_include() + [sysconfig.get_config_var("INCLUDEDIR") + "/" + pyversion]
-    params['build']['libs'] = dolfin_pc["libraries"] + [pyversion]
-    params['build']['lib_dirs'] = dolfin_pc["library_dirs"] + [sysconfig.get_config_var("LIBDIR")]
+    params['build']['include_dirs'] = dolfin_pc["include_dirs"] + extra_include_dirs + get_pybind_include() + [sysconfig.get_config_var("INCLUDEDIR") + "/" + pyversion]
+    params['build']['libs'] = dolfin_pc["libraries"] + extra_libraries + [pyversion]
+    params['build']['lib_dirs'] = dolfin_pc["library_dirs"] + extra_library_dirs + [sysconfig.get_config_var("LIBDIR")]
 
     params['build']['cxxflags'] += ('-fno-lto',)
+
+    for flag in cppargs:
+        params['build']['cxxflags'] += (flag,)
 
     # Enable all macros from dolfin.pc
     dmacros = ()
