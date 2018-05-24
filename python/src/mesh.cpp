@@ -223,7 +223,11 @@ namespace dolfin_wrappers
     py::class_<dolfin::BoundaryMesh, std::shared_ptr<dolfin::BoundaryMesh>, dolfin::Mesh>
       (m, "BoundaryMesh", "DOLFIN BoundaryMesh object")
       .def(py::init<const dolfin::Mesh&, std::string, bool>(),
-           py::arg("mesh"), py::arg("type"), py::arg("order")=true);
+           py::arg("mesh"), py::arg("type"), py::arg("order")=true)
+      .def("entity_map", (dolfin::MeshFunction<std::size_t>& (dolfin::BoundaryMesh::*)(std::size_t))
+           &dolfin::BoundaryMesh::entity_map)
+      .def("entity_map", (const dolfin::MeshFunction<std::size_t>& (dolfin::BoundaryMesh::*)(std::size_t) const)
+           &dolfin::BoundaryMesh::entity_map);
 
     // dolfin::MeshConnectivity class
     py::class_<dolfin::MeshConnectivity, std::shared_ptr<dolfin::MeshConnectivity>>
@@ -299,6 +303,7 @@ namespace dolfin_wrappers
       .def("collides", (bool (dolfin::Cell::*)(const dolfin::MeshEntity&) const) &dolfin::Cell::collides)
       .def("contains", &dolfin::Cell::contains)
       .def("distance", &dolfin::Cell::distance)
+      .def("cell_normal", &dolfin::Cell::cell_normal)
       .def("facet_area", &dolfin::Cell::facet_area)
       .def("h", &dolfin::Cell::h)
       .def("inradius", &dolfin::Cell::inradius)
@@ -468,6 +473,7 @@ namespace dolfin_wrappers
     // dolfin::MeshQuality
     py::class_<dolfin::MeshQuality>
       (m, "MeshQuality", "DOLFIN MeshQuality class")
+      .def_static("aspect_ratio_gamma", &dolfin::MeshQuality::aspect_ratio_gamma)
       .def_static("radius_ratios", &dolfin::MeshQuality::radius_ratios)
       .def_static("radius_ratio_histogram_data", &dolfin::MeshQuality::radius_ratio_histogram_data)
       .def_static("radius_ratio_min_max", &dolfin::MeshQuality::radius_ratio_min_max)

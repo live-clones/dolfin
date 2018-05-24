@@ -50,6 +50,15 @@ namespace dolfin
     static MeshFunction<double>
       radius_ratios(std::shared_ptr<const Mesh> mesh);
 
+    /// Compute the Aspect Ratio Gamma (ARG) for all cells.
+    /// @param mesh
+    ///     Mesh
+    /// @return MeshFunction<double>
+    ///    The ARG is given by \[ (\Sigma r_i^2)^{3/2} \over 6 V \]
+    ///    i.e. the cube of the RMS edge length divided by six times the cell volume
+    ///
+    static MeshFunction<double>
+      aspect_ratio_gamma(std::shared_ptr<const Mesh> mesh);
 
     /// Compute the minimum and maximum radius ratio of cells
     /// (across all processes)

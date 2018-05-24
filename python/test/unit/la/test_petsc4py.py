@@ -18,9 +18,13 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import gc
-from dolfin import (PETScVector, PETScMatrix, UnitSquareMesh, TrialFunction,
-                    TestFunction, FunctionSpace, Function, assemble, dx,
-                    parameters, as_backend_type)
+from dolfin import (UnitSquareMesh, TrialFunction, TestFunction,
+                    FunctionSpace, Function, assemble, dx,
+                    parameters, as_backend_type, has_petsc)
+
+if has_petsc() :
+    from dolfin import (PETScVector, PETScMatrix)
+
 from dolfin_utils.test import skip_if_not_petsc4py, pushpop_parameters
 
 
@@ -29,7 +33,7 @@ def test_petsc4py_vector(pushpop_parameters):
     "Test PETScVector <-> petsc4py.PETSc.Vec conversions"
     parameters["linear_algebra_backend"] = "PETSc"
 
-    # Assemble a test matrix  
+    # Assemble a test matrix
     mesh = UnitSquareMesh(4, 4)
     V = FunctionSpace(mesh, "Lagrange", 1)
     v = TestFunction(V)
@@ -55,7 +59,7 @@ def test_petsc4py_matrix(pushpop_parameters):
     "Test PETScMatrix <-> petsc4py.PETSc.Mat conversions"
     parameters["linear_algebra_backend"] = "PETSc"
 
-    # Assemble a test matrix    
+    # Assemble a test matrix
     mesh = UnitSquareMesh(4, 4)
     V = FunctionSpace(mesh, "Lagrange", 1)
     u, v = TrialFunction(V), TestFunction(V)

@@ -23,6 +23,8 @@ import numpy
 from dolfin import *
 from dolfin_utils.test import skip_in_parallel, skip_in_release
 
+def test_unit_interval():
+    mesh = UnitIntervalMesh.create(MPI.comm_self, 1)
 
 @skip_in_parallel
 def test_distance_interval():

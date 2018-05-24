@@ -480,6 +480,25 @@ class Function(ufl.Coefficient):
     def cpp_object(self):
         return self._cpp_object
 
+    def restrict(self, w, element, cell, coordinate_dofs, ufc_cell):
+        """
+        Restrict function to local cell (compute expansion coefficients w)
+
+        *Arguments*
+             w : list(double)
+                 Expansion coefficients.
+             element : FiniteElement
+                 The element.
+             dolfin_cell : Cell
+                 The cell.
+             coordinate_dofs : list(double)
+                 The coordinates.
+             ufc_cell : ufc::cell.
+                 The ufc::cell.
+
+        """
+        self._cpp_object.restrict(w, element, cell, coordinate_dofs, ufc_cell)
+
     def sub(self, i, deepcopy=False):
         """
         Return a sub function.

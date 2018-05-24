@@ -142,7 +142,7 @@ void XDMFFile::write_checkpoint(const Function& u,
   log(PROGRESS, "Writing function \"%s\" to XDMF file \"%s\" with "
       "time step %f.", function_name.c_str(), _filename.c_str(), time_step);
 
-  // If XML file exists and appending is enabled 
+  // If XML file exists and appending is enabled
   // load it to member _xml_doc
   if (boost::filesystem::exists(_filename) and append == true)
   {
@@ -161,7 +161,7 @@ void XDMFFile::write_checkpoint(const Function& u,
 
   bool truncate_hdf = false;
 
-  // If the XML file doesn't have expected structure (domain) 
+  // If the XML file doesn't have expected structure (domain)
   // or appending is disabled
   // reset the file and create empty structure
   if (_xml_doc->select_node("/Xdmf/Domain").node().empty() or append == false)
@@ -2440,28 +2440,40 @@ void XDMFFile::read_mesh_function(MeshFunction<T>& meshfunction,
 
   // Check all top level Grid nodes for suitable dataset
   pugi::xml_node grid_node;
-  for (pugi::xml_node node: domain_node.children("Grid"))
-  {
-    pugi::xml_node value_node = node.child("Attribute");
-    if (value_node and (name == "" or name == value_node.attribute("Name").as_string()))
-      {
-        grid_node = node;
-        break;
-      }
-  }
+  pugi::xml_node value_node;
 
-  // Check if a TimeSeries (old format), in which case the Grid will be down one level
+  // Using lambda to exit nested loops
+  [&] {
+    for (pugi::xml_node node : domain_node.children("Grid"))
+    {
+      for (pugi::xml_node attr_node : node.children("Attribute"))
+      {
+        if (attr_node
+            and (name == "" or name == attr_node.attribute("Name").as_string()))
+        {
+          grid_node = node;
+          value_node = attr_node;
+          return;
+        }
+      }
+    }
+  }();
+
+  // Check if a TimeSeries (old format), in which case the Grid will be down
+  // one level
   if (!grid_node)
   {
     pugi::xml_node grid_node1 = domain_node.child("Grid");
     if (grid_node1)
     {
-      for (pugi::xml_node node: grid_node1.children("Grid"))
+      for (pugi::xml_node node : grid_node1.children("Grid"))
       {
-        pugi::xml_node value_node = node.child("Attribute");
-        if (value_node and (name == "" or name == value_node.attribute("Name").as_string()))
+        pugi::xml_node attr_node = node.child("Attribute");
+        if (attr_node
+            and (name == "" or name == attr_node.attribute("Name").as_string()))
         {
           grid_node = node;
+          value_node = attr_node;
           break;
         }
       }
@@ -2480,10 +2492,6 @@ void XDMFFile::read_mesh_function(MeshFunction<T>& meshfunction,
   pugi::xml_node topology_node = grid_node.child("Topology");
   dolfin_assert(topology_node);
 
-  // Get value node
-  pugi::xml_node value_node = grid_node.child("Attribute");
-  dolfin_assert(value_node);
-
   // Get existing Mesh of MeshFunction
   const auto mesh = meshfunction.mesh();
 
@@ -2499,7 +2507,12 @@ void XDMFFile::read_mesh_function(MeshFunction<T>& meshfunction,
 
   // Ensure num_entities_global(cell_dim) is set and check dataset matches
   DistributedMeshTools::number_entities(*mesh, cell_dim);
-  dolfin_assert(mesh->num_entities_global(cell_dim) == num_entities_global);
+
+  if (mesh->num_entities_global(cell_dim) != num_entities_global)
+  {
+    dolfin_error("XDMFFile.cpp", "read MeshFunction",
+                 "Mismatched number of entities");
+  }
 
   boost::filesystem::path xdmf_filename(_filename);
   const boost::filesystem::path parent_path = xdmf_filename.parent_path();
@@ -2730,7 +2743,7 @@ void XDMFFile::write_mesh_function(const MeshFunction<T>& meshfunction,
 
   const std::string mf_name = "/MeshFunction/" + std::to_string(_counter);
 
-  // If adding a MeshFunction of topology dimension dim() to an existing Mesh, 
+  // If adding a MeshFunction of topology dimension dim() to an existing Mesh,
   // do not rewrite Mesh
   // FIXME: do some checks on the existing Mesh to make sure it is the same
   // as the meshfunction's mesh.

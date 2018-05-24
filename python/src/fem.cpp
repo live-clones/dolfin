@@ -61,9 +61,11 @@
 #include <dolfin/la/GenericTensor.h>
 #include <dolfin/la/SparsityPattern.h>
 #include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/MultiMesh.h>
 #include <dolfin/fem/MultiMeshDirichletBC.h>
 #include <dolfin/mesh/SubDomain.h>
+#include <dolfin/adaptivity/adapt.h>
 
 #include "casters.h"
 
@@ -80,6 +82,14 @@ namespace dolfin_wrappers
       (m, "ufc_dofmap", "UFC dofmap object");
     py::class_<ufc::form, std::shared_ptr<ufc::form>>
       (m, "ufc_form", "UFC form object");
+
+    // Adapt functions
+    m.def("adapt", [](dolfin::Mesh mesh){return dolfin::adapt(mesh);},
+	  "Mapping between parent and child entities has to be set in refined mesh. See various refinement algorithms and `parameters['refinement_algorithm']`.");
+    m.def("adapt", [](const dolfin::MeshFunction<std::size_t>& mesh_function,
+		      std::shared_ptr<const dolfin::Mesh> adapted_mesh)
+	  {
+	    return dolfin::adapt(mesh_function, adapted_mesh);});
 
     // Function to convert pointers (from JIT usually) to UFC objects
     m.def("make_ufc_finite_element",
@@ -153,7 +163,20 @@ namespace dolfin_wrappers
              self.evaluate_basis(i, values.mutable_data(), x.data(), coordinate_dofs.data(),
                                  cell_orientation);
              return values;
-           })
+           }, "Evaluate basis function i at given point x in cell.")
+     .def("evaluate_basis_all", [](const dolfin::FiniteElement& self,
+                               const py::array_t<double> x,
+                               const py::array_t<double> coordinate_dofs,
+                               int cell_orientation)
+          {
+            auto ufc_element = self.ufc_element();
+            const std::size_t size = ufc_element->value_size();
+            const std::size_t space_dimension = ufc_element->space_dimension();
+            py::array_t<double, py::array::c_style> values(space_dimension*size);
+            self.evaluate_basis_all(values.mutable_data(), x.data(), coordinate_dofs.data(),
+                                cell_orientation);
+            return values;
+          }, "Evaluate order n derivatives of all basis functions at given point x in cell.")
       .def("evaluate_basis_derivatives", [](const dolfin::FiniteElement& self,
                                             int i, int order,
                                             const py::array_t<double> x,
@@ -170,7 +193,26 @@ namespace dolfin_wrappers
                                              x.data(), coordinate_dofs.data(),
                                              cell_orientation);
              return values;
-           })
+           }, "Evaluate order n derivatives of basis function i at given point x in cell.")
+      .def("evaluate_basis_derivatives_all", [](const dolfin::FiniteElement& self,
+                                            int order,
+                                            const py::array_t<double> x,
+                                            const py::array_t<double> coordinate_dofs,
+                                            int cell_orientation)
+          {
+            auto ufc_element = self.ufc_element();
+
+            const std::size_t gdim = self.geometric_dimension();
+            const std::size_t num_derivs = pow(gdim, order);
+            const std::size_t size = ufc_element->value_size()*num_derivs;
+            const std::size_t space_dimension = ufc_element->space_dimension();
+            py::array_t<double, py::array::c_style> values(size*space_dimension);
+            self.evaluate_basis_derivatives_all(order, values.mutable_data(),
+                                            x.data(), coordinate_dofs.data(),
+                                            cell_orientation);
+            return values;
+          }, "Evaluate all basis functions at given point x in cell.")
+
       .def("space_dimension", &dolfin::FiniteElement::space_dimension)
       .def("geometric_dimension", &dolfin::FiniteElement::geometric_dimension)
       .def("value_dimension", &dolfin::FiniteElement::value_dimension)

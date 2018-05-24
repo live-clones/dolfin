@@ -79,13 +79,13 @@ namespace dolfin_wrappers
       // Unpack
       .def("write", [](dolfin::File& instance, py::object u)
            {
-             auto _u = u.attr("_cpp_object").cast<dolfin::Function&>();
-             instance.write(_u);
+             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+             instance.write(*_u);
            })
       .def("write", [](dolfin::File& instance, py::object u, double t)
            {
-             auto _u = u.attr("_cpp_object").cast<dolfin::Function&>();
-             instance.write(_u, t);
+             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+             instance.write(*_u, t);
            })
       // Read
       .def("read", (void (dolfin::File::*)(dolfin::Parameters&)) &dolfin::File::read)
@@ -362,13 +362,13 @@ namespace dolfin_wrappers
       // py:object / dolfin.function.Function
       .def("write", [](dolfin::XDMFFile& instance, const py::object u, dolfin::XDMFFile::Encoding encoding)
            {
-             auto _u = u.attr("_cpp_object").cast<dolfin::Function&>();
-             instance.write(_u, encoding);
+             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+             instance.write(*_u, encoding);
            }, py::arg("u"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       .def("write", [](dolfin::XDMFFile& instance, const py::object u, double t, dolfin::XDMFFile::Encoding encoding)
            {
-             auto _u = u.attr("_cpp_object").cast<dolfin::Function&>();
-	     instance.write(_u, t, encoding);
+             auto _u = u.attr("_cpp_object").cast<dolfin::Function*>();
+	     instance.write(*_u, t, encoding);
            }, py::arg("u"), py::arg("t"), py::arg("encoding")=dolfin::XDMFFile::Encoding::HDF5)
       // Write for checkpointing cpp object
       .def("write_checkpoint", [](dolfin::XDMFFile& instance, const dolfin::Function& u,

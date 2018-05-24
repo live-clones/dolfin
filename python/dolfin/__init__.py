@@ -58,7 +58,7 @@ from .cpp.fem import (FiniteElement, DofMap, Assembler, MultiMeshAssembler,
                       LinearVariationalSolver,
                       NonlinearVariationalSolver,
                       SparsityPatternBuilder,
-                      MultiMeshDirichletBC)
+                      MultiMeshDirichletBC, adapt)
 
 from .cpp.geometry import (BoundingBoxTree,
                            Point,
@@ -71,10 +71,21 @@ from .cpp.generation import (IntervalMesh, BoxMesh, RectangleMesh,
                              SphericalShellMesh)
 from .cpp.graph import GraphBuilder
 from .cpp.io import File, XDMFFile, VTKFile
-from .cpp.la import (has_linear_algebra_backend,
-                     linear_algebra_backends,
+from .cpp.la import (list_linear_algebra_backends,
+                     list_linear_solver_methods,
+                     list_lu_solver_methods,
+                     list_krylov_solver_methods,
+                     list_krylov_solver_preconditioners,
+                     has_linear_algebra_backend,
+                     has_lu_solver_method,
                      has_krylov_solver_method,
-                     has_krylov_solver_preconditioner, normalize,
+                     has_krylov_solver_preconditioner,
+                     linear_algebra_backends,
+                     linear_solver_methods,
+                     lu_solver_methods,
+                     krylov_solver_methods,
+                     krylov_solver_preconditioners,
+                     normalize,
                      VectorSpaceBasis, in_nullspace)
 
 if has_linear_algebra_backend('PETSc'):
@@ -180,7 +191,7 @@ from .multistage.rushlarsenschemes import RL1, RL2, GRL1, GRL2
 # Import from ufl
 from ufl import (FiniteElement, TensorElement, VectorElement,
                  MixedElement, rhs, lhs, conditional, le, lt, ge, gt,
-                 split, cross, inner, dot, grad, curl, dx, div,
+                 split, cross, inner, dot, grad, nabla_grad, curl, dx, div,
                  Measure, det, pi, sin, cos, tan, acos, asin, atan,
                  ln, exp, sqrt, bessel_I, bessel_J, bessel_K,
                  bessel_Y, Dx, ds, dS, dP, dX, dC, dI, dO, interval, triangle,
