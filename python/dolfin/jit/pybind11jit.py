@@ -48,10 +48,10 @@ def compile_cpp_code(cpp_code, **kwargs):
     params['cache']['lib_basename'] = ""
     params['cache']['lib_loader'] = "import"
 
-    extra_include_dirs    = kwargs.get("include_dirs", [])
-    extra_libraries       = kwargs.get("libraries", [])
-    extra_library_dirs    = kwargs.get("library_dirs", [])
-    cppargs               = kwargs.get("cppargs", [])
+    extra_include_dirs = kwargs.get("include_dirs", [])
+    extra_libraries = kwargs.get("libraries", [])
+    extra_library_dirs = kwargs.get("library_dirs", [])
+    cppargs = kwargs.get("cppargs", [])
 
     # Include path and library info from DOLFIN (dolfin.pc)
     params['build']['include_dirs'] = dolfin_pc["include_dirs"] + extra_include_dirs + get_pybind_include() + [sysconfig.get_config_var("INCLUDEDIR") + "/" + pyversion]
