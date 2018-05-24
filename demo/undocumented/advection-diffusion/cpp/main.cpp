@@ -74,7 +74,6 @@ int main(int argc, char *argv[])
 
   // LU solver
   LUSolver lu(A);
-  lu.parameters["reuse_factorization"] = true;
 
   // Parameters for time-stepping
   const double T = 2.0;
