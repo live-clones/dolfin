@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import numpy
 from dolfin import *
 from dolfin_utils.test import skip_if_not_SUNDIALS
 
@@ -49,13 +50,12 @@ def test_sundials_newton():
 @skip_if_not_SUNDIALS
 def test_sundials_diffusion_1d():
     # Finite difference test
-    import numpy
-    phi = Vector(MPI.comm_world, 100)
-    n = len(phi)
-    b = 5.0
-    for i in range(n):
-        r = b*(i - n/2)
-        phi[i] = exp(-r*r)
+    mesh = UnitIntervalMesh(MPI.comm_world, 100)
+    Q = FunctionSpace(mesh, "CG", 1)
+    F = Function(Q)
+    b = 2.0
+    F.interpolate(Expression("exp(-b*pow(x[0] - 0.5, 2))", b=b, degree=1))
+    phi = F.vector()
 
     class tmp_test(CVode):
         def derivs(self, t, phi, phidot):
