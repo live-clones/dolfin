@@ -44,6 +44,7 @@ namespace dolfin_wrappers
   void math(py::module& m);
   void mesh(py::module& m);
   void multistage(py::module& m);
+  void ts(py::module& m);
   void nls(py::module& m);
   void parameter(py::module& m);
   void refinement(py::module& m);
@@ -88,6 +89,10 @@ PYBIND11_MODULE(cpp, m)
   // Create multistage submodule [multistage]
   py::module multistage = m.def_submodule("multistage", "Multistage integrator library module");
   dolfin_wrappers::multistage(multistage);
+
+  // Create multistage submodule [multistage]
+  py::module ts = m.def_submodule("ts", "Timestepping library module");
+  dolfin_wrappers::ts(ts);
 
   // Create graph submodule [graph]
   py::module graph = m.def_submodule("graph", "Graph module");

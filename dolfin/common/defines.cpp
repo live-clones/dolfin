@@ -107,6 +107,15 @@ bool dolfin::has_scotch()
 #endif
 }
 //-------------------------------------------------------------------------
+bool dolfin::has_sundials()
+{
+#ifdef HAS_SUNDIALS
+  return true;
+#else
+  return false;
+#endif
+}
+//-------------------------------------------------------------------------
 bool dolfin::has_umfpack()
 {
 #ifdef HAS_UMFPACK

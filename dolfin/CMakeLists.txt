@@ -163,6 +163,13 @@ if (DOLFIN_ENABLE_PARMETIS AND PARMETIS_FOUND)
   target_include_directories(dolfin SYSTEM PRIVATE ${PARMETIS_INCLUDE_DIRS})
 endif()
 
+# SUNDIALS
+if (DOLFIN_ENABLE_SUNDIALS AND SUNDIALS_FOUND)
+  target_compile_definitions(dolfin PUBLIC HAS_SUNDIALS)
+  target_link_libraries(dolfin PRIVATE ${SUNDIALS_LIBRARIES})
+  target_include_directories(dolfin PUBLIC ${SUNDIALS_INCLUDE_DIRS})
+endif()
+
 # ZLIB
 if (DOLFIN_ENABLE_ZLIB AND ZLIB_FOUND)
   target_compile_definitions(dolfin PUBLIC HAS_ZLIB)
