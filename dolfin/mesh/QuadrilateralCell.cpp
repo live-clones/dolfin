@@ -272,8 +272,12 @@ double QuadrilateralCell::facet_area(const Cell& cell, std::size_t facet) const
 void QuadrilateralCell::order(Cell& cell,
                  const std::vector<std::int64_t>& local_to_global_vertex_indices) const
 {
-  // Not implemented
-  // FIXME - probably not appropriate for quad cells.
+  if (!ordered(cell, local_to_global_vertex_indices))
+  {
+    dolfin_error("QuadrilateralCell.cpp",
+                 "order quadrilateral cell",
+                 "Cell is not orderable");
+  }
 }
 //-----------------------------------------------------------------------------
 bool QuadrilateralCell::collides(const Cell& cell, const Point& point) const

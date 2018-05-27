@@ -506,6 +506,37 @@ ghost_mode = set_parameters_fixture("ghost_mode", [
     "shared_vertex",
 ])
 
+def _create_two_quads(good):
+    """Create mesh with two quads either with good or
+    bad ordering according to bool parameter
+    """
+    mesh = Mesh()
+    e = MeshEditor()
+    e.open(mesh, "quadrilateral", 2, 2, degree=1)
+    e.init_vertices(6)
+    e.init_cells(2)
+    e.add_vertex(0, Point(0, 0))
+    e.add_vertex(1, Point(1, 0))
+    e.add_vertex(2, Point(2, 0))
+    e.add_vertex(3, Point(0, 1))
+    e.add_vertex(4, Point(1, 1))
+    e.add_vertex(5, Point(2, 1))
+    e.add_cell(0, [0, 1, 3, 4])
+    if good:
+        e.add_cell(1, [1, 2, 4, 5])
+    else:
+        e.add_cell(1, [4, 5, 1, 2])
+    e.close()
+    return mesh
+
+def create_two_good_quads():
+    """Create good mesh with two quads"""
+    return _create_two_quads(True)
+
+def create_two_bad_quads():
+    """Create mesh with two badly ordered quads"""
+    return _create_two_quads(False)
+
 mesh_factories = [
     (UnitIntervalMesh, (8,)),
     (UnitSquareMesh, (4, 4)),
@@ -518,6 +549,7 @@ mesh_factories = [
     (UnitCubeMesh, (2, 2, 2)),
     (UnitSquareMesh.create, (4, 4, CellType.Type.quadrilateral)),
     (UnitCubeMesh.create, (2, 2, 2, CellType.Type.hexahedron)),
+    (create_two_good_quads, ()),
     # FIXME: Add mechanism for testing meshes coming from IO
 ]
 
@@ -534,6 +566,7 @@ mesh_factories_broken_shared_entities = [
     (UnitCubeMesh, (2, 2, 2)),
     (UnitSquareMesh.create, (4, 4, CellType.Type.quadrilateral)),
     (UnitCubeMesh.create, (2, 2, 2, CellType.Type.hexahedron)),
+    xfail_in_parallel((create_two_good_quads, ())),
 ]
 
 # FIXME: Fix this xfail
@@ -545,6 +578,14 @@ def xfail_ghosted_quads_hexes(mesh_factory, ghost_mode):
         if ghost_mode == 'shared_vertex':
             pytest.xfail(reason="Missing functionality in '{}' with '' "
                          "mode".format(mesh_factory, ghost_mode))
+
+
+def test_unorderable_cells():
+    """Test that mesh with unordered quads raises:
+    https://bitbucket.org/fenics-project/dolfin/issues/997/
+    """
+    with pytest.raises(RuntimeError):
+        create_two_bad_quads()
 
 
 @pytest.mark.parametrize('mesh_factory', mesh_factories_broken_shared_entities)
