@@ -31,54 +31,62 @@ from ufl.log import UFLException
 from dolfin_utils.test import skip_in_parallel, fixture
 
 @fixture
-def cube():
-    return UnitCubeMesh(2, 2, 2)
+def one_element(): # Reference element
+    mesh = UnitSquareMesh(1, 1, "left")
+    cell_f = MeshFunction('size_t', mesh, mesh.topology().dim(), 0)
+    cell_f[0] = 1
+    mesh = SubMesh(mesh, cell_f, 1)
+
+    marker = MeshFunction('size_t', mesh, mesh.topology().dim()-1, 0)
+    for f in facets(mesh):
+        marker[f] = 0.0 - DOLFIN_EPS < f.midpoint().x() < 0.0 + DOLFIN_EPS
+
+    return (mesh, marker)
 
 @fixture
-def square():
-    return UnitSquareMesh(5, 5)
+def two_elements():
+    mesh = UnitSquareMesh(1, 1, "left")
 
-@fixture
-def exterior():
-    return "exterior"
+    marker = MeshFunction('size_t', mesh, mesh.topology().dim()-1, 0)
+    for f in facets(mesh):
+        marker[f] = 0.5 - DOLFIN_EPS < f.midpoint().x() < 0.5 + DOLFIN_EPS and 0.5 - DOLFIN_EPS < f.midpoint().y() < 0.5 + DOLFIN_EPS
 
-@fixture
-def interior():
-    return "interior"
+    return (mesh, marker)
+
+
+## TODO : Add the case of an interface between two submeshes
+## Same mesh as two_elements but each elements is a submesh
+# @fixture
+# def interface():
+#     return "interface"
 
 @pytest.fixture(scope='module', params=range(2))
-def meshes(cube, square, request):
-    mesh = [cube, square]
+def meshes(one_element, two_elements, request):
+    mesh = [one_element, two_elements]
     return mesh[request.param]
 
-@pytest.fixture(scope='module', params=range(2))
-def locations(interior, exterior, request):
-    location = [interior, exterior]
-    return location[request.param]
-    
-def test_offdiagblock_assembly(square, cube, interior, exterior):
+def test_mixed_assembly(one_element, two_elements):
     """Off-diagonal blocks assembly"""
 
-    def submesh(mesh, location):
-        marker = MeshFunction("size_t", mesh, mesh.topology().dim()-1, 0)
-        if location == "interior":
-            for f in facets(mesh):
-                marker[f] = 0.5 - DOLFIN_EPS < f.midpoint().x() < 0.5 + DOLFIN_EPS
-        elif location == "exterior":
-            DomainBoundary().mark(marker, 1)
-        return MeshView.create(marker, 1)
+    ## Test for a range of various FE types
+    def _check_scalar(case, order):
+        mesh = case[0]
+        submesh = MeshView.create(case[1], 1)
 
-    def _check_scalar(mesh, location):
-        V = FunctionSpace(mesh, 'CG', 2)
-        Q = FunctionSpace(submesh(mesh, location), 'CG', 1)
+        V = FunctionSpace(mesh, 'CG', order[0])
+        Q = FunctionSpace(submesh, 'CG', order[1])
         W = FunctionSpaceProduct(V, Q)
 
         f = Expression('x[0]+x[1]', degree=3)
-        g = Expression('x[0]+3*x[1]', degree=3)
+        g = Expression('x[0]-x[1]', degree=3)
 
         (u, p) = TrialFunction(W)
         (v, q) = TestFunction(W)
+
         dx_ = Measure('dx', domain=W.sub_space(1).mesh())
+        ## Reference value
+        ref = assemble(inner(f, g)*dx_)
+
         trace_form = inner(u, q)*dx_ + inner(u, v)*dx + inner(p, v)*dx_ + inner(p, q)*dx_
         rhs = inner(Constant(0), v)*dx + inner(Constant(0), q)*dx_
 
@@ -92,37 +100,38 @@ def test_offdiagblock_assembly(square, cube, interior, exterior):
 
         Tv = Function(Q).vector()
         T.mult(v.vector(), Tv)
-    
         qT = Function(V).vector()
         Tt.mult(q.vector(), qT)
 
-        assert(abs(q.vector().inner(Tv) - v.vector().inner(qT)) <= 1e-12)
+        vqT = v.vector().inner(qT)
+        qTv = q.vector().inner(Tv)
+
+        assert(abs(vqT - ref) <= 1e-12)
+        assert(abs(qTv - ref) <= 1e-12)
+        assert(abs(qTv - vqT) <= 1e-12)
         
-    def _check_vectorial(mesh, location):
-        V = VectorFunctionSpace(mesh, 'CG', 2)
-        Q = VectorFunctionSpace(submesh(mesh, location), 'CG', 1)
+    def _check_vectorial(case, order):
+        mesh = case[0]
+        submesh = MeshView.create(case[1], 1)
+
+        V = VectorFunctionSpace(mesh, 'CG', order[0])
+        Q = VectorFunctionSpace(submesh, 'CG', order[1])
         W = FunctionSpaceProduct(V, Q)
 
-        if mesh.topology().dim() == 2:
-            f = Expression(('x[0]+x[1]', 'x[0]-x[1]'), degree=3)
-            g = Expression(('x[0]+3*x[1]', 'x[0]-2*x[1]'), degree=3)
-        elif mesh.topology().dim() == 3:
-            f = Expression(('x[0]+x[1]', 'x[0]-x[1]', 'x[0]+x[1]'), degree=3)
-            g = Expression(('x[0]+3*x[1]', 'x[0]-2*x[1]', 'x[0]+3*x[1]'), degree=3)
+        f = Expression(('x[0]+x[1]', 'x[0]-x[1]'), degree=3)
+        g = Expression(('x[0]+3*x[1]', 'x[0]-2*x[1]'), degree=3)
 
         (u, p) = TrialFunction(W)
         (v, q) = TestFunction(W)
         dx_ = Measure('dx', domain=W.sub_space(1).mesh())
+        ## Reference value
+        ref = assemble(inner(f, g)*dx_)
+
         trace_form = inner(u, q)*dx_ + inner(u, v)*dx + inner(p, v)*dx_ + inner(p, q)*dx_
 
-        if mesh.topology().dim() == 2:
-            f = Expression(('x[0]+x[1]', 'x[0]-x[1]'), degree=3)
-            g = Expression(('x[0]+3*x[1]', 'x[0]-2*x[1]'), degree=3)
-            rhs = inner(Constant((0, 0)), v)*dx + inner(Constant((0, 0)), q)*dx_
-        elif mesh.topology().dim() == 3:
-            f = Expression(('x[0]+x[1]', 'x[0]-x[1]', 'x[0]+x[1]'), degree=3)
-            g = Expression(('x[0]+3*x[1]', 'x[0]-2*x[1]', 'x[0]+3*x[1]'), degree=3)
-            rhs = inner(Constant((0, 0, 0)), v)*dx + inner(Constant((0, 0, 0)), q)*dx_
+        f = Expression(('x[0]+x[1]', 'x[0]-x[1]'), degree=3)
+        g = Expression(('x[0]+3*x[1]', 'x[0]-2*x[1]'), degree=3)
+        rhs = inner(Constant((0, 0)), v)*dx + inner(Constant((0, 0)), q)*dx_
 
         AA, bb, _ = assemble_mixed_system(trace_form == rhs, Function(W))
 
@@ -134,18 +143,25 @@ def test_offdiagblock_assembly(square, cube, interior, exterior):
 
         Tv = Function(Q).vector()
         T.mult(v.vector(), Tv)
-    
         qT = Function(V).vector()
         Tt.mult(q.vector(), qT)
 
-        assert(abs(q.vector().inner(Tv) - v.vector().inner(qT)) <= 1e-12)
+        vqT = v.vector().inner(qT)
+        qTv = q.vector().inner(Tv)
 
-    _check_scalar(square, exterior)
-    _check_scalar(square, interior)
-    _check_vectorial(square, exterior)
-    _check_vectorial(square, interior)
-    
-    _check_scalar(cube, exterior)
-    _check_scalar(cube, interior)
-    _check_vectorial(cube, exterior)
-    _check_vectorial(cube, interior)
+        assert(abs(vqT - ref) <= 1e-12)
+        assert(abs(qTv - ref) <= 1e-12)
+        assert(abs(qTv - vqT) <= 1e-12)
+
+    # Scalar case - One element + Lagrange mult on exterior boundary
+    _check_scalar(one_element, (1,2)) # CG1 - CG2
+    _check_scalar(one_element, (2,1)) # CG2 - CG1
+    # Scalar case - Two elements + Lagrange mult on interior facet
+    _check_scalar(two_elements, (1,2)) # CG1 - CG2
+    _check_scalar(two_elements, (2,1)) # CG2 - CG1
+    # Vectorial case - One element + Lagrange mult on exterior boundary
+    _check_vectorial(one_element, (1,2)) # CG1 - CG2
+    _check_vectorial(one_element, (2,1)) # CG2 - CG1
+    # Vectorial case - Two elements + Lagrange mult on interior facet
+    _check_vectorial(two_elements, (1,2)) # CG1 - CG2
+    _check_vectorial(two_elements, (2,1)) # CG2 - CG1
