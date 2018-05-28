@@ -35,6 +35,7 @@
 #include <dolfin/common/MPI.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/Cell.h>
+#include <dolfin/mesh/MeshView.h>
 
 #include "FiniteElement.h"
 #include "Form.h"
@@ -51,8 +52,14 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
 
   // Get dof maps
   std::vector<const GenericDofMap*> dofmaps;
+  // Collect mapping
+  std::vector<const MeshView*> meshviews;
+    
   for (std::size_t i = 0; i < a.rank(); ++i)
+  {    
     dofmaps.push_back(a.function_space(i)->dofmap().get());
+    meshviews.push_back(a.function_space(i)->mesh()->topology().get());
+  }
 
   // Get mesh
   dolfin_assert(a.mesh());
@@ -89,7 +96,7 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
     {
       SparsityPattern& pattern = *tensor_layout->sparsity_pattern();
       SparsityPatternBuilder::build(pattern,
-                                    mesh, dofmaps,
+                                    mesh, dofmaps, meshviews,
                                     a.ufc_form()->has_cell_integrals(),
                                     a.ufc_form()->has_interior_facet_integrals(),
                                     a.ufc_form()->has_exterior_facet_integrals(),
