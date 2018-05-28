@@ -126,12 +126,22 @@ void MixedAssembler::assemble_cells(
 
   // Collect pointers to dof maps / id of the involved meshes
   std::vector<const GenericDofMap*> dofmaps;
-  std::vector<unsigned> mesh_id(form_rank);
-
+  std::array<std::vector<ArrayView<const la_index>>, 2> mesh_id;
+  // mesh_id[0] is the id of test/trial function
+  // mesh_id[1] is integration domain id
+  mesh_id[0].resize(1);
+  mesh_id[1].resize(form_rank);
+  // Id of the integration mesh.
+  mesh_id[0].push_back(mesh->id());
+   
+  // Collect mapping
+  std::vector<const MeshView*> meshviews;
+  
   for (std::size_t i = 0; i < form_rank; ++i)
   {
-    mesh_id[i] = a.function_space(i)->mesh()->id();
+    mesh_id[1][i] = a.function_space(i)->mesh()->id();
     dofmaps.push_back(a.function_space(i)->dofmap().get());
+    meshviews.push_back(a.function_space(i)->mesh()->topology().get());
   }
 
   // Vector to hold dof map for a cell
@@ -178,11 +188,15 @@ void MixedAssembler::assemble_cells(
 
     // Get local-to-global dof maps for cell
     bool empty_dofmap = false;
+    
     std::vector<std::vector<Cell>> mesh_cells(form_rank);
+    
     std::vector<std::vector<std::size_t>> local_facets(form_rank);
     std::vector<std::vector<ufc::cell>> ufc_cells(form_rank);
     std::vector<std::vector<std::vector<double>>> coordinate_dofs_cells(form_rank);
+    
     std::vector<std::vector<std::size_t>> cell_index(form_rank);
+
     std::vector<double> macro_coordinate_dofs;
     int codim = 0;
 
@@ -190,14 +204,15 @@ void MixedAssembler::assemble_cells(
 
     for (size_t i = 0; i < form_rank; ++i)
     {
-      cell_index[i].push_back(cell->index());
+      if (mesh_id[1][i] == mesh_id[0])
+      	 cell_index[i].push_back(cell->index()); // u(submesh) d(submesh)
       // Access to cell index in the parent mesh
       // TODO (see previous TODO for mapping def)
       // use mapping[i] returnd by build_mapping function
-      // (Should do the job without more changes)
-      if (mesh_id[i] != mesh.id() && mapping)
+      // (Should do the job without more changes) 
+      else if (mesh_id[1][i] != mesh_id[0] && mapping) 
       {
-	if(mapping->mesh()->id() == mesh_id[i])
+	if(mapping->mesh()->id() == mesh_id[1][i])
 	{
 	  codim = mapping->mesh()->topology().dim() - mesh.topology().dim();
 	  if(codim == 0)
@@ -209,14 +224,11 @@ void MixedAssembler::assemble_cells(
 	    mapping->mesh()->init(D - 1, D);
 
 	    Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
+	    cell_index[i].resize(mesh_facet.num_entities(D))
 	    for(int j=0; j<mesh_facet.num_entities(D);j++)
 	    {
 	      Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[j]);
-
-	      if(j==0)
-		cell_index[i][0] = mesh_cell.index();
-	      else
-		cell_index[i].push_back(mesh_cell.index());
+	      cell_index[i].push_back(mesh_cell.index());
 	    }
 	  }
 	  else if (codim == 2)
@@ -224,6 +236,33 @@ void MixedAssembler::assemble_cells(
 	    std::cout << "[MixedAssembler] codim 2 - Not implemented" << std::endl;
 	  }
 	}
+	// int u_L dG same parent mesh but different ID
+	else if (meshviews[i] && meshviews[i].mesh()->id() == mapping->mesh()->id() )
+	{
+		codim = mapping->mesh()->topology().dim() -mesh.topology().dim();
+		dolfin_assert(codim>0);//int uL du_R not allowed.
+		if (codim==1) //
+		{
+		    const std::size_t D = mapping->mesh()->topology().dim();
+		    mapping->mesh()->init(D);
+		    mapping->mesh()->init(D - 1, D);
+		    Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
+		    auto cell_map = meshviews[i]->cell_map()
+		    for(int j=0; j<mesh_facet.num_entities(D);j++){
+		    auto index = std::find(std::begin(cell_map), std::end(cell_map),
+				     	                                         mesh_facet.entities(D)[j]);
+		     if (index != std::end(cell_map))
+			     cell_index[i].push_back(*index);
+		    }
+
+		}
+		else if (codim==2)
+		{
+	    		std::cout << "[MixedAssembler] codim 2 - Not implemented" << std::endl;
+		}
+
+	}
+ 	
       }
 
       // Store all the contributions (all dofs involved)
