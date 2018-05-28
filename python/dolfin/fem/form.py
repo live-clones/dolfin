@@ -52,7 +52,6 @@ class Form(cpp.fem.Form):
         if not function_spaces:
             function_spaces = [func.ufl_function_space()._cpp_object for func in form.arguments()]
 
-
         cpp.fem.Form.__init__(self, ufc_form, function_spaces)
 
         original_coefficients = form.coefficients()
