@@ -53,6 +53,7 @@
 #include <dolfin/la/PETScLUSolver.h>
 #include <dolfin/la/PETScLinearOperator.h>
 #include <dolfin/la/PETScMatrix.h>
+#include <dolfin/la/PETScNestMatrix.h>
 #include <dolfin/la/PETScOptions.h>
 #include <dolfin/la/PETScPreconditioner.h>
 #include <dolfin/la/PETScVector.h>
