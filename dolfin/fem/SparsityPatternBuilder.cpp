@@ -115,21 +115,34 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 	  cell_index.push_back(mapping->cell_map()[cell->index()]);
 	else if(codim == 1)
 	{
+
 	  const std::size_t D = mapping->mesh()->topology().dim();
 	  mapping->mesh()->init(D);
 	  mapping->mesh()->init(D - 1, D);
 
 	  Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
-	  Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[0]);
-	  cell_index.push_back(mesh_cell.index());
+	  if(meshviews[i] && meshviews[i]->mesh()->id()== mapping->mesh()->id())
+		{
+		  auto cell_map= meshviews[i]->cell_map();
+		    for(int j=0; j<mesh_facet.num_entities(D);j++){
+		    auto index = std::find(std::begin(cell_map), std::end(cell_map),
+				     	                                         mesh_facet.entities(D)[j]);
+		     if (index != std::end(cell_map))
+			     cell_index[i].push_back(*index);
+		}
+	  else{
+		  Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[0]);
+	  	  cell_index.push_back(mesh_cell.index());
 
-	  // Add other contributions
-	  for(int i=1; i<mesh_facet.num_entities(D); ++i)
-	  {
-	    Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[i]);
-	    cell_index.push_back(mesh_cell.index());
+		  // Add other contributions
+		  for(int i=1; i<mesh_facet.num_entities(D); ++i)
+		  {
+		    Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[i]);
+		    cell_index.push_back(mesh_cell.index());
+		  }
+	       }
 	  }
-	}
+        }
 	else if(codim == 2)
 	{
 	  std::cout << "[SparsityBuilder] codim 2 - Not implemented" << std::endl;
