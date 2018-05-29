@@ -209,10 +209,11 @@ class FunctionSpace(ufl.FunctionSpace):
     def tabulate_dof_coordinates(self):
         return self._cpp_object.tabulate_dof_coordinates()
 
+
 class FunctionSpaceProduct(ufl.FunctionSpace):
     def __init__(self, *args):
         for a in args:
-            if not isinstance(a, (ufl.FunctionSpace) ):
+            if not isinstance(a, (ufl.FunctionSpace)):
                 cpp.dolfin_error("functionspace.py",
                                  "create function space product",
                                  "Expecting a list of FunctionSpace objects")
@@ -224,7 +225,7 @@ class FunctionSpaceProduct(ufl.FunctionSpace):
     def sub_spaces(self):
         return ufl.FunctionSpaceProduct.sub_spaces(self)
 
-    def sub_space(self,i):
+    def sub_space(self, i):
         return ufl.FunctionSpaceProduct.sub_spaces(self)[i]
 
 

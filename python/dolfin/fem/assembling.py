@@ -38,6 +38,7 @@ from dolfin.function.multimeshfunction import MultiMeshFunction
 __all__ = ["assemble", "assemble_mixed", "assemble_local", "assemble_system",
            "assemble_multimesh", "SystemAssembler"]
 
+
 def _create_dolfin_form(form, form_compiler_parameters=None,
                         function_spaces=None):
     # First check if we got a cpp.Form
@@ -219,6 +220,8 @@ def assemble(form, tensor=None, form_compiler_parameters=None,
     return tensor
 
 # JIT assembler
+
+
 def assemble_mixed(form,
                    tensor=None,
                    form_compiler_parameters=None,
@@ -249,6 +252,8 @@ def assemble_mixed(form,
     return tensor
 
 # JIT multimesh assembler
+
+
 def assemble_multimesh(form,
                        tensor=None,
                        form_compiler_parameters=None,

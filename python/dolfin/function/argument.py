@@ -44,6 +44,7 @@ class Argument(ufl.Argument):
 
     This is the overloaded PyDOLFIN variant.
     """
+
     def __init__(self, V, number, part=None):
 
         # Check argument
@@ -92,6 +93,7 @@ def TestFunction(V, part=None):
     else:
         return Argument(V, 0, part)
 
+
 def TrialFunction(V, part=None):
     """UFL value: Create a trial function argument to a form.
 
@@ -137,6 +139,7 @@ def TrialFunctions(V):
     """
     return ufl.split(TrialFunction(V))
 
+
 def ArgumentProduct(V, number):
     """UFL value: Create an Argument in a mixed space, and return a
     tuple with the function components corresponding to the
@@ -150,16 +153,18 @@ def ArgumentProduct(V, number):
 
     subspaces = V.sub_spaces()
     arguments = list()
-    i=0
+    i = 0
     for s in subspaces:
         arguments.append(Argument(s, number, i))
-        i = i+1
+        i = i + 1
     return tuple(arguments)
 
-## New function to define the view of an argument
+# New function to define the view of an argument
+
+
 def View(argument, function_space):
     assert isinstance(function_space, FunctionSpace)
     assert isinstance(argument, Argument)
     argument_view = Argument(function_space, argument.number(), argument.part())
     argument_view.set_view(argument.function_space())
-    return argument_view;
+    return argument_view

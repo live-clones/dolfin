@@ -23,6 +23,7 @@ import dolfin.cpp as cpp
 from dolfin.fem.form import Form
 from dolfin.fem.solving import *
 
+
 class LinearVariationalProblem(cpp.fem.LinearVariationalProblem):
 
     def __init__(self, a, L, u, bcs=None, form_compiler_parameters=None):
@@ -60,9 +61,10 @@ class LinearVariationalProblem(cpp.fem.LinearVariationalProblem):
         # Initialize C++ base class
         cpp.fem.LinearVariationalProblem.__init__(self, a, L, u._cpp_object, bcs)
 
+
 class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
 
-    def __init__(self, a, L, u, bcs=None,form_compiler_parameters=None):
+    def __init__(self, a, L, u, bcs=None, form_compiler_parameters=None):
         """Create mixed linear variational problem a(u, v) = L(v).
 
         An optional argument bcs may be passed to specify boundary
@@ -74,7 +76,7 @@ class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
         """
 
         # Extract and check arguments (u is a list of Function)
-        u_comps  = [u[i]._cpp_object for i in range(len(u))]
+        u_comps = [u[i]._cpp_object for i in range(len(u))]
         bcs = dolfin.fem.solving._extract_bcs(bcs)
 
         # Store form compiler parameters
@@ -82,7 +84,7 @@ class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
         self.form_compiler_parameters = form_compiler_parameters
 
         # Check number of blocks in lhs, rhs are consistent
-        assert(len(a) == len(u)*len(u))
+        assert(len(a) == len(u) * len(u))
         assert(len(L) == len(u))
 
         # Create list of forms/blocks
@@ -90,11 +92,11 @@ class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
         L_list = list()
         for Li in L:
             if Li == None:
-                L_list.append([cpp.fem.Form(1, 0)]) # single-elt list
+                L_list.append([cpp.fem.Form(1, 0)])  # single-elt list
             if Li.empty():
-                L_list.append([cpp.fem.Form(1, 0)]) # single-elt list
+                L_list.append([cpp.fem.Form(1, 0)])  # single-elt list
             else:
-                Ls = []; #List of Li subforms
+                Ls = []  # List of Li subforms
                 for Lsub in sub_forms_by_domain(Li):
                     if Lsub is None:
                         Ls.append(cpp.fem.Form(1, 0))
@@ -108,13 +110,14 @@ class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
             if ai == None:
                 a_list.append([cpp.fem.Form(2, 0)])
             else:
-                As = [];
+                As = []
                 for Asub in sub_forms_by_domain(ai):
                     As.append(Form(Asub, form_compiler_parameters=form_compiler_parameters))
                 a_list.append(As)
 
         # Initialize C++ base class
         cpp.fem.MixedLinearVariationalProblem.__init__(self, a_list, L_list, u_comps, bcs)
+
 
 class NonlinearVariationalProblem(cpp.fem.NonlinearVariationalProblem):
 

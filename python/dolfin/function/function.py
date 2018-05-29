@@ -234,7 +234,7 @@ class Function(ufl.Coefficient):
             ufl.Coefficient.__init__(self, V.ufl_function_space(), count=self._cpp_object.id())
         elif isinstance(args[0], FunctionSpaceProduct):
             V = args[0]
-            self._functions = [Function(s) for s in V.sub_spaces()] #Recursive call
+            self._functions = [Function(s) for s in V.sub_spaces()]  # Recursive call
         else:
             raise TypeError("Expected a FunctionSpace or a Function as argument 1")
 
@@ -511,7 +511,7 @@ class Function(ufl.Coefficient):
 
     def num_sub_spaces(self):
         if self._functions is not None:
-            return len(self._functions);
+            return len(self._functions)
         else:
             return self.function_space().num_sub_spaces()
 

@@ -45,7 +45,7 @@ class Form(cpp.fem.Form):
                            mpi_comm=mesh.mpi_comm())
         ufc_form = cpp.fem.make_ufc_form(ufc_form[0])
 
-        ## TO BE CHECKED
+        # TO BE CHECKED
         function_spaces = kwargs.get("function_spaces")
 
         # Extraction of functionspaces contained in a MultiMeshFunctionSpace

@@ -82,6 +82,7 @@ class LocalSolver(cpp.fem.LocalSolver):
             # Initialize C++ base class
             cpp.fem.LocalSolver.__init__(self, a, L, solver_type)
 
+
 # FIXME: The import here are here to avoid a circular dependency
 # (ugly, should fix)
 # Solver classes are imported directly
@@ -90,6 +91,8 @@ from dolfin.fem.adaptivesolving import AdaptiveLinearVariationalSolver  # noqa
 from dolfin.fem.adaptivesolving import AdaptiveNonlinearVariationalSolver  # noqa
 
 # Solve function handles both linear systems and variational problems
+
+
 def solve(*args, **kwargs):
     """Solve linear system Ax = b or variational problem a == L or F == 0.
 
@@ -428,7 +431,9 @@ def _extract_bcs(bcs):
 
     return bcs
 
-## NOTE : To be moved in assembling ?
+# NOTE : To be moved in assembling ?
+
+
 def assemble_mixed_system(*args, **kwargs):
     "Assemble mixed variational problem a == L or F == 0"
     assert(len(args) > 0)

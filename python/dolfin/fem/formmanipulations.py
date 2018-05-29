@@ -118,5 +118,6 @@ def tear(V):
     """
     return change_regularity(V, "DG")
 
+
 def extract_blocks(form, i=None, j=None):
-    return ufl.algorithms.formsplitter.fs_extract_blocks(form,i,j)
+    return ufl.algorithms.formsplitter.fs_extract_blocks(form, i, j)
