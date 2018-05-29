@@ -36,7 +36,6 @@ import dolfin.la.solver
 from dolfin.fem.problem import LinearVariationalProblem, NonlinearVariationalProblem, MixedLinearVariationalProblem
 
 from dolfin.fem.formmanipulations import extract_blocks
-import six
 
 __all__ = ["LinearVariationalProblem",
            "LinearVariationalSolver",

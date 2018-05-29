@@ -149,7 +149,7 @@ def ArgumentProduct(V, number):
 
     """
     if not isinstance(V, FunctionSpaceProduct):
-        error("ArgumentProduct should be used with FunctionSpaceProduct")
+        raise TypeError("Illegal argument for creation of ArgumentProduct, not a FunctionSpaceProduct")
 
     subspaces = V.sub_spaces()
     arguments = list()

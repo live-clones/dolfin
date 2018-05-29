@@ -20,6 +20,7 @@
 from ufl.form import sub_forms_by_domain
 
 import dolfin.cpp as cpp
+import dolfin.fem.solving
 from dolfin.fem.form import Form
 from dolfin.fem.solving import *
 
@@ -91,7 +92,7 @@ class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
         a_list = list()
         L_list = list()
         for Li in L:
-            if Li == None:
+            if Li is None:
                 L_list.append([cpp.fem.Form(1, 0)])  # single-elt list
             if Li.empty():
                 L_list.append([cpp.fem.Form(1, 0)])  # single-elt list
@@ -107,7 +108,7 @@ class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
                 L_list.append(Ls)
 
         for ai in a:
-            if ai == None:
+            if ai is None:
                 a_list.append([cpp.fem.Form(2, 0)])
             else:
                 As = []
