@@ -141,7 +141,7 @@ void MixedAssembler::assemble_cells(
   {
     mesh_id[1][i] = a.function_space(i)->mesh()->id();
     dofmaps.push_back(a.function_space(i)->dofmap().get());
-    meshviews.push_back(a.function_space(i)->mesh()->topology().get());
+    meshviews.push_back(a.function_space(i)->mesh()->topology().mapping().get());
   }
 
   // Vector to hold dof map for a cell

@@ -47,7 +47,7 @@ namespace dolfin
     static void build(SparsityPattern& sparsity_pattern,
                       const Mesh& mesh,
                       const std::vector<const GenericDofMap*> dofmaps,
-					  const std::vector<const MeshView*> meshviews,
+		      const std::vector<const MeshView*> meshviews,
                       bool cells,
                       bool interior_facets,
                       bool exterior_facets,

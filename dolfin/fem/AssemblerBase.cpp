@@ -58,7 +58,7 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
   for (std::size_t i = 0; i < a.rank(); ++i)
   {    
     dofmaps.push_back(a.function_space(i)->dofmap().get());
-    meshviews.push_back(a.function_space(i)->mesh()->topology().get());
+    meshviews.push_back(a.function_space(i)->mesh()->topology().mapping().get());
   }
 
   // Get mesh
