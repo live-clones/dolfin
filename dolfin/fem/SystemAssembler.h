@@ -64,6 +64,19 @@ namespace dolfin
                     std::shared_ptr<const Form> L,
                     std::vector<std::shared_ptr<const DirichletBC>> bcs);
 
+    /// Constructor with multiple LHS forms, matching a common RHS form
+    /// with BCs defined for the column space of each LHS form
+    SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
+                    std::vector<std::shared_ptr<const Form>> L,
+        std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs);
+
+    /// FIXME: Constructor with two sets of BCs (for 2x2 system)
+    /// Need to figure out how to wrap vector<vector<shared_ptr<TYPE>>> in SWIG
+    SystemAssembler(std::vector<std::shared_ptr<const Form>> a,
+                    std::vector<std::shared_ptr<const Form>> L,
+                    std::vector<std::shared_ptr<const DirichletBC>> bcs0,
+                    std::vector<std::shared_ptr<const DirichletBC>> bcs1);
+
     /// Assemble system (A, b)
     void assemble(GenericMatrix& A, GenericVector& b);
 
@@ -83,6 +96,10 @@ namespace dolfin
     /// Suitable for use inside a (quasi-)Newton solver.
     void assemble(GenericVector& b, const GenericVector& x0);
 
+    /// Assemble row of matrices and associated RHS vector.
+    void assemble(std::vector<std::shared_ptr<GenericMatrix>> A,
+                  std::vector<std::shared_ptr<GenericVector>> b);
+
   private:
 
     // Class to hold temporary data
@@ -94,23 +111,24 @@ namespace dolfin
       std::array<std::vector<double>, 2> Ae;
     };
 
-    // Check form arity
-    static void check_arity(std::shared_ptr<const Form> a,
-                            std::shared_ptr<const Form> L);
-
-    // Check if _bcs[bc_index] is part of FunctionSpace fs
-    bool check_functionspace_for_bc
-      (std::shared_ptr<const FunctionSpace> fs, std::size_t bc_index);
+    // Check form arity etc
+    static void check_forms(std::vector<std::shared_ptr<const Form>> a,
+                            std::vector<std::shared_ptr<const Form>> L);
 
     // Assemble system
     void assemble(GenericMatrix* A, GenericVector* b,
-                  const GenericVector* x0);
+                  const GenericVector* x0,
+                  std::shared_ptr<const Form> a,
+                  std::shared_ptr<const Form> L,
+                  std::vector<std::vector<std::shared_ptr<const DirichletBC>>> bcs,
+                  bool integrate_rhs);
 
     // Bilinear and linear forms
-    std::shared_ptr<const Form> _a, _l;
+    std::vector<std::shared_ptr<const Form>> _a;
+    std::vector<std::shared_ptr<const Form>> _l;
 
-    // Boundary conditions
-    std::vector<std::shared_ptr<const DirichletBC>> _bcs;
+    // Boundary conditions for each space in the forms
+    std::vector<std::vector<std::shared_ptr<const DirichletBC>>> _bcs;
 
     static void cell_wise_assembly(
       std::array<GenericTensor*, 2>& tensors,
@@ -118,7 +136,8 @@ namespace dolfin
       Scratch& data,
       const std::vector<DirichletBC::Map>& boundary_values,
       std::shared_ptr<const MeshFunction<std::size_t>> cell_domains,
-      std::shared_ptr<const MeshFunction<std::size_t>> exterior_facet_domains);
+      std::shared_ptr<const MeshFunction<std::size_t>> exterior_facet_domains,
+      bool integrate_rhs);
 
     static void facet_wise_assembly(
       std::array<GenericTensor*, 2>& tensors,
@@ -174,6 +193,9 @@ namespace dolfin
                          const std::vector<DirichletBC::Map>& boundary_values,
                          const ArrayView<const dolfin::la_index>& global_dofs0,
                          const ArrayView<const dolfin::la_index>& global_dofs1);
+
+    bool check_functionspace_for_bc
+      (std::shared_ptr<const FunctionSpace> fs, std::shared_ptr<const DirichletBC> bc) const;
 
     // Return true if cell has an Dirichlet/essential boundary
     // condition applied

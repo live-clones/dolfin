@@ -21,6 +21,7 @@
 #include <dolfin/la/EigenMatrix.h>
 
 #include <dolfin/la/PETScMatrix.h>
+#include <dolfin/la/PETScNestMatrix.h>
 #include <dolfin/la/PETScLinearOperator.h>
 #include <dolfin/la/PETScPreconditioner.h>
 #include <dolfin/la/TpetraMatrix.h>

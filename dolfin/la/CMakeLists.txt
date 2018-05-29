@@ -32,6 +32,7 @@ set(HEADERS
   PETScLinearOperator.h
   PETScLUSolver.h
   PETScMatrix.h
+  PETScNestMatrix.h
   PETScObject.h
   PETScOptions.h
   PETScPreconditioner.h
@@ -78,6 +79,7 @@ set(SOURCES
   PETScLinearOperator.cpp
   PETScLUSolver.cpp
   PETScMatrix.cpp
+  PETScNestMatrix.cpp
   PETScObject.cpp
   PETScOptions.cpp
   PETScPreconditioner.cpp

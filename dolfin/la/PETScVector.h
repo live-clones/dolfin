@@ -266,6 +266,8 @@ namespace dolfin
     /// usage.
     void reset(Vec vec);
 
+    friend class PETScNestMatrix;
+
   private:
 
     // Initialise PETSc vector

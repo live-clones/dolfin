@@ -67,17 +67,18 @@ namespace dolfin
     /// can be generated using GenericDofMap::tabulate_all_dofs.
     void set_coordinates(const std::vector<double>& x, std::size_t dim);
 
+
     /// Assign indices from fields as separate PETSc index sets, with
     /// given names
-    /// @param solver (PETScKrylovSolver&)
-    /// @param fields (std::vector<std::vector<dolfin::la_index>>&)
-    /// @param split_names (std::vector<std::string>&)
-    void
-      set_fieldsplit(PETScKrylovSolver& solver,
-                     const std::vector<std::vector<dolfin::la_index>>& fields,
-                     const std::vector<std::string>& split_names);
+    /// @param solver
+    /// @param fields
+    /// @param split_names
+    static void set_fieldsplit(PETScKrylovSolver& solver,
+            const std::vector<std::vector<dolfin::la_index>>& fields,
+            const std::vector<std::string>& split_names);
 
     /// Return informal string representation (pretty-print)
+    /// @param verbose
     std::string str(bool verbose) const;
 
     /// Return a list of available preconditioners
