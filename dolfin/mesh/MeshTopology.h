@@ -43,6 +43,9 @@ namespace dolfin
   /// i), where dim is the topological dimension and i is the index of
   /// the entity within that topological dimension.
 
+
+  class MeshView;
+
   class MeshTopology : public Variable
   {
   public:
@@ -172,7 +175,16 @@ namespace dolfin
       std::pair<std::vector<std::size_t>,
       std::vector<std::vector<std::size_t>>>> coloring;
 
+    // Mapping to another Mesh, if any
+    std::shared_ptr<MeshView> mapping() const
+    { return _mapping; }
+
   private:
+
+    friend class MeshView;
+
+    // Mapping to another Mesh, if any
+    std::shared_ptr<MeshView> _mapping;
 
     // Number of mesh entities for each topological dimension
     std::vector<unsigned int> num_entities;

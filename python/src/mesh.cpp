@@ -33,6 +33,7 @@
 #include <dolfin/mesh/MeshTopology.h>
 #include <dolfin/mesh/MeshGeometry.h>
 #include <dolfin/mesh/MeshEntity.h>
+#include <dolfin/mesh/MeshView.h>
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/Edge.h>
 #include <dolfin/mesh/Face.h>
@@ -95,6 +96,14 @@ namespace dolfin_wrappers
       .def("get_entity_index", &dolfin::MeshGeometry::get_entity_index)
       .def("num_entity_coordinates", &dolfin::MeshGeometry::num_entity_coordinates);
 
+    // dolfin::MeshView class
+    py::class_<dolfin::MeshView, std::shared_ptr<dolfin::MeshView>>
+      (m, "MeshView", "DOLFIN MeshView object")
+      .def("mesh", &dolfin::MeshView::mesh)
+      .def("create", &dolfin::MeshView::create)
+      .def("cell_map", &dolfin::MeshView::cell_map)
+      .def("vertex_map", &dolfin::MeshView::vertex_map);
+
     // dolfin::MeshTopology class
     py::class_<dolfin::MeshTopology, std::shared_ptr<dolfin::MeshTopology>, dolfin::Variable>
       (m, "MeshTopology", "DOLFIN MeshTopology object")
@@ -110,6 +119,7 @@ namespace dolfin_wrappers
       .def("have_global_indices", &dolfin::MeshTopology::have_global_indices)
       .def("ghost_offset", &dolfin::MeshTopology::ghost_offset)
       .def("cell_owner", (const std::vector<unsigned int>& (dolfin::MeshTopology::*)() const) &dolfin::MeshTopology::cell_owner)
+      .def("mapping", &dolfin::MeshTopology::mapping)
       .def("set_global_index", &dolfin::MeshTopology::set_global_index)
       .def("global_indices", [](const dolfin::MeshTopology& self, int dim)
            { auto& indices = self.global_indices(dim); return py::array_t<std::int64_t>(indices.size(), indices.data()); })

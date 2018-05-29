@@ -36,6 +36,7 @@ set(HEADERS
   MeshTopology.h
   MeshTransformation.h
   MeshValueCollection.h
+  MeshView.h
   MultiMesh.h
   PeriodicBoundaryComputation.h
   PointCell.h
@@ -80,6 +81,7 @@ set(SOURCES
   MeshSmoothing.cpp
   MeshTopology.cpp
   MeshTransformation.cpp
+  MeshView.cpp
   MultiMesh.cpp
   PeriodicBoundaryComputation.cpp
   PointCell.cpp
