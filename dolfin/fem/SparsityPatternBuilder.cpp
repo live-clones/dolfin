@@ -367,15 +367,17 @@ void SparsityPatternBuilder::build_multimesh_sparsity_pattern(
 
     // Build list of dofmaps
     std::vector<const GenericDofMap*> dofmaps;
+    std::vector<const MeshView*> meshviews;
     for (std::size_t i = 0; i < form.rank(); i++)
       dofmaps.push_back(&*form.function_space(i)->dofmap()->part(part));
+      meshviews.push_back(NULL);
 
     log(PROGRESS, "Building intra-mesh sparsity pattern on part %d.", part);
 
     // Build sparsity pattern for part by calling the regular dofmap
     // builder. This builds the sparsity pattern for all interacting
     // dofs on the current part.
-    build(sparsity_pattern, mesh, dofmaps,
+    build(sparsity_pattern, mesh, dofmaps, meshviews,
           true, false, false, true, false, false);
 
     log(PROGRESS, "Building inter-mesh sparsity pattern on part %d.", part);
