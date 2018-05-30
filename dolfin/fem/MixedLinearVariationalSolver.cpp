@@ -84,7 +84,7 @@ MixedLinearVariationalSolver::assemble_system()
     for (size_t j=0; j<u.size(); ++j)
     {
       bool has_ufc_form = false;
-      for(int k=0; k<a[i*u.size() + j].size(); ++k)
+      for(size_t k=0; k<a[i*u.size() + j].size(); ++k)
       {
 	dolfin_assert(a[i*u.size() + j][k]);
 	if(a[i*u.size() + j][k]->ufc_form())
@@ -109,7 +109,7 @@ MixedLinearVariationalSolver::assemble_system()
     // Check that rhs (L) is not empty
     for (size_t i=0; i<L.size(); ++i)
     {
-      for (int j=0; j<L[i].size(); ++j)
+      for (size_t j=0; j<L[i].size(); ++j)
       {
 	if (!L[i][j]->ufc_form())
 	{
@@ -132,13 +132,13 @@ MixedLinearVariationalSolver::assemble_system()
       for (size_t j=0; j<u.size(); ++j)
       {
 	// Block-by-block assembly
-	for(int k=0; k<a[i*u.size() + j].size(); ++k)
+	for(size_t k=0; k<a[i*u.size() + j].size(); ++k)
 	{
 	  if(a[i*u.size() + j][k]->ufc_form()) // If block(i,j) not empty
 	    assemble_mixed(*(As[i*u.size() + j]), *(a[i*u.size() + j][k]));
 	}
       }
-      for (int j=0; j<L[i].size(); ++j)
+      for (size_t j=0; j<L[i].size(); ++j)
       {
 	if (L[i][j]->ufc_form())
 	{
@@ -153,10 +153,10 @@ MixedLinearVariationalSolver::assemble_system()
 			 "assemble linear form in linear variational solver",
 			 "Empty linear forms cannot have coefficient");
 	  }
-	  for (int k=0; k<u.size(); ++k)
+	  for (size_t k=0; k<u.size(); ++k)
 	  {
 	    bool has_ufc_form = false;
-	    for(int l=0; l<a[i*u.size() + k].size(); ++l)
+	    for(size_t l=0; l<a[i*u.size() + k].size(); ++l)
 	    {
 	      if(a[i*u.size() + k][l]->ufc_form())
 		has_ufc_form = true;
@@ -190,9 +190,7 @@ void MixedLinearVariationalSolver::solve()
   // Get parameters
   std::string solver_type   = parameters["linear_solver"];
   const std::string pc_type = parameters["preconditioner"];
-  // const bool print_rhs      = parameters["print_rhs"];
   const bool symmetric      = parameters["symmetric"];
-  // const bool print_matrix   = parameters["print_matrix"];
 
   // Get problem data
   dolfin_assert(_problem);
@@ -306,7 +304,7 @@ void MixedLinearVariationalSolver::solve(PETScNestMatrix precond)
   // Add split for each field
   std::vector<std::vector<dolfin::la_index>> fields(u.size());
   std::vector<std::string> split_names(u.size());
-  for(int i=0; i<u.size(); ++i)
+  for(size_t i=0; i<u.size(); ++i)
   {
     split_names[i] = "u" + std::to_string(i);
     A.get_block_dofs(fields[i], i);
