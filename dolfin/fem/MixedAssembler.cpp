@@ -260,7 +260,7 @@ void MixedAssembler::assemble_cells(
 	  // #FIXME : This could be more elegant
 	  for(std::size_t dof=0; jidx != 0 && dof<dofs[i].size(); ++dof)
 	  {
-	    for(std::size_t rm = 0; rm<dmap.size(); rm++)
+	    for(int rm = 0; rm<dmap.size(); rm++)
 	    {
 	      if(dmap[rm] == dofs[i][dof]) // This dof (index=rm) has already been set
 	      {
