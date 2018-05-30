@@ -22,7 +22,6 @@ from ufl.form import sub_forms_by_domain
 import dolfin.cpp as cpp
 import dolfin.fem.solving
 from dolfin.fem.form import Form
-from dolfin.fem.solving import *
 
 
 class LinearVariationalProblem(cpp.fem.LinearVariationalProblem):
