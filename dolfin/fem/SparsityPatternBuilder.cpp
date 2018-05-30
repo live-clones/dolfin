@@ -123,7 +123,7 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 	  cell_index.push_back(mesh_cell.index());
 
 	  // Add other contributions
-	  for(int i=1; i<mesh_facet.num_entities(D); ++i)
+	  for(std::size_t i=1; i<mesh_facet.num_entities(D); ++i)
 	  {
 	    Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[i]);
 	    cell_index.push_back(mesh_cell.index());
@@ -139,7 +139,7 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 	  auto dmap1 = dofmaps[1]->cell_dofs(cell->index());
 	  dofs[1].set(dmap1.size(), dmap1.data());
 
-	  for(int i=0; i<cell_index.size(); ++i)
+	  for(std::size_t i=0; i<cell_index.size(); ++i)
 	  {
 	    auto dmap0 = dofmaps[0]->cell_dofs(cell_index[i]);
 	    dofs[0].set(dmap0.size(), dmap0.data());
@@ -153,7 +153,7 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 	  auto dmap0 = dofmaps[0]->cell_dofs(cell->index());
 	  dofs[0].set(dmap0.size(), dmap0.data());
 
-	  for(int i=0; i<cell_index.size(); ++i)
+	  for(std::size_t i=0; i<cell_index.size(); ++i)
 	  {
 	    auto dmap1 = dofmaps[1]->cell_dofs(cell_index[i]);
 	    dofs[1].set(dmap1.size(), dmap1.data());
