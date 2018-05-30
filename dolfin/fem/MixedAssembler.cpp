@@ -203,7 +203,7 @@ void MixedAssembler::assemble_cells(
 	    mapping->mesh()->init(D - 1, D);
 
 	    Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
-	    for(int j=0; j<mesh_facet.num_entities(D);j++)
+	    for(std::size_t j=0; j<mesh_facet.num_entities(D);j++)
 	    {
 	      Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[j]);
 	      local_ldim.push_back(mesh_cell.index(mesh_facet));
@@ -230,7 +230,7 @@ void MixedAssembler::assemble_cells(
 				coordinate_dofs.data(),
 				ufc_cell.orientation);
 
-      for(int i=0; i<form_rank; ++i)
+      for(std::size_t i=0; i<form_rank; ++i)
       {
 	auto dmap = dofmaps[i]->cell_dofs(cell_index[i][0]);
 	dofs[i].set(dmap.size(), dmap.data());
@@ -243,7 +243,7 @@ void MixedAssembler::assemble_cells(
     }
     else // Mixed-dimensional integrals
     {
-      for(int j=0; j<local_ldim.size(); ++j)
+      for(std::size_t j=0; j<local_ldim.size(); ++j)
       {
 	integral->tabulate_tensor(ufc.A.data(),
 				  ufc.w(),
@@ -251,27 +251,27 @@ void MixedAssembler::assemble_cells(
 				  ufc_cell.orientation,
 				  local_ldim[j]); // local index of the lower dim entity involved
 
-	for(int i=0; i<form_rank; ++i)
+	for(std::size_t i=0; i<form_rank; ++i)
 	{
 	  std::size_t jidx  = (codim[i] != 0) ? j:0;
 	  auto dmap = dofmaps[i]->cell_dofs(cell_index[i][jidx]);
 
 	  // If there is more than one higher-dimensional contrib, do not consider the same dof twice
 	  // #FIXME : This could be more elegant
-	  for(int dof=0; jidx != 0 && dof<dofs[i].size(); ++dof)
+	  for(std::size_t dof=0; jidx != 0 && dof<dofs[i].size(); ++dof)
 	  {
-	    for(int rm = 0; rm<dmap.size(); rm++)
+	    for(std::size_t rm = 0; rm<dmap.size(); rm++)
 	    {
 	      if(dmap[rm] == dofs[i][dof]) // This dof (index=rm) has already been set
 	      {
 		if(i == 0)
 		{
-		  for(int col=0; col<dofmaps[1]->max_element_dofs(); ++col)
+		  for(std::size_t col=0; col<dofmaps[1]->max_element_dofs(); ++col)
 		    ufc.A[rm*dofmaps[1]->max_element_dofs() + col] = 0.0;
 		}
 		else if(i == 1)
 		{
-		  for(int row=0; row<dofmaps[0]->max_element_dofs(); ++row)
+		  for(std::size_t row=0; row<dofmaps[0]->max_element_dofs(); ++row)
 		    ufc.A[row*dofmaps[1]->max_element_dofs() + rm] = 0.0;
 		}
 	      }

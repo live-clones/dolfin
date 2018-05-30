@@ -159,7 +159,7 @@ MixedLinearVariationalProblem::check_forms() const
   // Check rank of bilinear form a
   for (size_t i=0; i<_a.size(); ++i)
   {
-    for(int j=0; j<_a[i].size(); ++j)
+    for(size_t j=0; j<_a[i].size(); ++j)
     {
       dolfin_assert(_a[i][j]);
       if (_a[i][j]->rank() != 2)
@@ -173,9 +173,9 @@ MixedLinearVariationalProblem::check_forms() const
   }
 
   // Check rank of i-th linear form L
-  for (int i=0; i<_l.size(); ++i)
+  for (size_t i=0; i<_l.size(); ++i)
   {
-    for(int j=0; j<_l[i].size(); ++j)
+    for(size_t j=0; j<_l[i].size(); ++j)
     {
       // Check rank of i-th linear form L
       dolfin_assert(_l[i][j]);
@@ -190,9 +190,9 @@ MixedLinearVariationalProblem::check_forms() const
 
     // Check that function space of solution variable matches trial space (for each problem)
     dolfin_assert(_u[i]);
-    for (int j=0; j<_l.size(); ++j)
+    for (size_t j=0; j<_l.size(); ++j)
     {
-      for(int k=0; k<_a[i + j*_l.size()].size(); ++k)
+      for(size_t k=0; k<_a[i + j*_l.size()].size(); ++k)
       {
 	const auto trial_space = _a[i + j*_l.size()][k]->function_space(1);
 	dolfin_assert(trial_space);
@@ -212,9 +212,9 @@ MixedLinearVariationalProblem::check_forms() const
       dolfin_assert(bc);
       const auto bc_space = bc->function_space();
       dolfin_assert(bc_space);
-      for (int j=0;  j<_l.size(); ++j)
+      for (size_t j=0;  j<_l.size(); ++j)
       {
-	for(int k=0; k<_a[i + j*_l.size()].size(); ++k)
+	for(size_t k=0; k<_a[i + j*_l.size()].size(); ++k)
 	{
 	  const auto trial_space = _a[i + j*_l.size()][k]->function_space(1);
 	  if (trial_space != nullptr && !trial_space->contains(*bc_space))
