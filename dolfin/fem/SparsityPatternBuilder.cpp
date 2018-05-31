@@ -121,7 +121,11 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 	  mapping->mesh()->init(D - 1, D);
 
 	  Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
-	  if(meshviews[i] && meshviews[i]->mesh()->id()== mapping->mesh()->id())
+	  //TODO: we have cell_index, we need to define 2 case and mantain them also after..
+         if(  )
+	 { 
+	 for (int i(0); i<rank; i++){  
+               if(meshviews[i] && meshviews[i]->mesh()->id()== mapping->mesh()->id())
 		{
 		  auto cell_map= meshviews[i]->cell_map();
 		    for(int j=0; j<mesh_facet.num_entities(D);j++){
@@ -130,6 +134,8 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 		     if (index != std::end(cell_map))
 			     cell_index[i].push_back(*index);
 		}
+          }
+	  }
 	  else{
 		  Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[0]);
 	  	  cell_index.push_back(mesh_cell.index());
