@@ -81,16 +81,19 @@ def a_blocks(a):
 def L_blocks(L):
     return extract_blocks(L)
 
+@skip_in_parallel
 def test_size(space, a_blocks, L_blocks):
     assert len(L_blocks) == space.num_sub_spaces()
     assert len(a_blocks) == len(L_blocks)*len(L_blocks)
 
+@skip_in_parallel
 def test_indices(space, a, L, a_blocks, L_blocks):
     for i in range(space.num_sub_spaces()):   
         assert extract_blocks(L,i) == L_blocks[i]
         for j in range(space.num_sub_spaces()):
             assert extract_blocks(a,i,j) == a_blocks[i*space.num_sub_spaces()+j]
 
+@skip_in_parallel
 def test_spaces(space, a_blocks, L_blocks):
     for i in range(space.num_sub_spaces()):
         L_form = _create_dolfin_form(L_blocks[i])

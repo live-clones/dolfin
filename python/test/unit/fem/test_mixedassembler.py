@@ -65,6 +65,7 @@ def meshes(one_element, two_elements, request):
     mesh = [one_element, two_elements]
     return mesh[request.param]
 
+@skip_in_parallel
 def test_mixed_assembly(one_element, two_elements):
     """Off-diagonal blocks assembly"""
 

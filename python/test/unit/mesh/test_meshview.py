@@ -42,6 +42,8 @@ def meshes(cube, square, request):
     mesh = [cube, square]
     return mesh[request.param]
 
+
+@skip_in_parallel
 def test_make_facets_view(square, cube):
     """Create view of facets"""
 
@@ -66,6 +68,7 @@ def test_make_facets_view(square, cube):
     _check_facets_view(cube)
 
 
+@skip_in_parallel
 def test_make_cells_view(square, cube):
     """Create view of cells"""
 
@@ -88,6 +91,7 @@ def test_make_cells_view(square, cube):
     _check_cells_view(cube)
 
 
+@skip_in_parallel
 def test_make_edges_view(cube):
     """Create view of edges"""
 
