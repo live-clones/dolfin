@@ -25,7 +25,7 @@ from dolfin import (UnitSquareMesh, TrialFunction, TestFunction,
                     parameters, has_petsc)
 
 if has_petsc() :
-    from dolfin import (PETScVector, PETScMatrix,
+    from dolfin import (PETScVector, PETScMatrix, PETScNestMatrix,
                         PETScLUSolver, PETScKrylovSolver)
 
 from dolfin_utils.test import (skip_if_not_PETSc,

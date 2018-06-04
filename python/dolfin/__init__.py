@@ -89,7 +89,7 @@ from .cpp.la import (list_linear_algebra_backends,
                      VectorSpaceBasis, in_nullspace)
 
 if has_linear_algebra_backend('PETSc'):
-    from .cpp.la import (PETScVector, PETScMatrix, PETScFactory,
+    from .cpp.la import (PETScVector, PETScMatrix, PETScNestMatrix, PETScFactory,
                          PETScOptions, PETScLUSolver,
                          PETScKrylovSolver, PETScPreconditioner)
     from .cpp.fem import PETScDMCollection

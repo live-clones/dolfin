@@ -34,7 +34,7 @@ from dolfin.fem.assembling import _create_dolfin_form
 @fixture
 def marker():
     cube = UnitCubeMesh(8, 8, 8)
-    marker = MeshFunction("size_t", cube, cube.topology().dim() - 1, 0)
+    marker = MeshFunction("size_t", cube, cube.topology().dim(), 0)
     for c in cells(cube):
         marker[c] = c.midpoint().x() < 0.5
     return marker
