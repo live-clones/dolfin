@@ -4,21 +4,22 @@ import numpy
 from dolfin import *
 from dolfin_utils.test import skip_if_not_SUNDIALS
 
-class MyCVode(CVode):
-
-    def derivs(self, t, u, udot):
-        udot[:] = -u[:]
-
-    def jacobian(self, v, Jv, t, y, fy):
-        Jv[:] = v[:]
-        return 0
-
-    def psolve(self, t, u, udot, r, z, gamma, x, y):
-        z[:] = r[:]
-        return 0
 
 @skip_if_not_SUNDIALS
 def test_sundials_adams():
+
+    class MyCVode(CVode):
+
+        def derivs(self, t, u, udot):
+            udot[:] = -u[:]
+
+        def jacobian(self, v, Jv, t, y, fy):
+            Jv[:] = v[:]
+            return 0
+
+        def psolve(self, t, u, udot, r, z, gamma, x, y):
+            z[:] = r[:]
+            return 0
 
     phi = Vector(MPI.comm_world, 10)
     phi[:] = 1.0
@@ -34,6 +35,19 @@ def test_sundials_adams():
 
 @skip_if_not_SUNDIALS
 def test_sundials_newton():
+
+    class MyCVode(CVode):
+
+        def derivs(self, t, u, udot):
+            udot[:] = -u[:]
+
+        def jacobian(self, v, Jv, t, y, fy):
+            Jv[:] = v[:]
+            return 0
+
+        def psolve(self, t, u, udot, r, z, gamma, x, y):
+            z[:] = r[:]
+            return 0
 
     phi = Vector(MPI.comm_world, 10)
     phi[:] = 1.0
