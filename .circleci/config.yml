@@ -21,16 +21,6 @@ jobs:
             pip3 install git+https://bitbucket.org/fenics-project/dijitso.git@"${DEP_BRANCH_NAME}"
             pip3 install git+https://bitbucket.org/fenics-project/ffc.git@"${DEP_BRANCH_NAME}"
       - run:
-          name : Install SUNDIALS
-          command: |
-            wget http://computation.llnl.gov/projects/sundials/download/sundials-3.0.0.tar.gz
-            tar xf sundials-3.0.0.tar.gz
-            mkdir -p sundials-3.0.0/build
-            cd sundials-3.0.0/build
-            cmake -DMPI_ENABLE=ON ..
-            make -j2
-            make install
-      - run:
           name: Flake8 checks on pybind11 Python code
           command: python3 -m flake8 python/dolfin
       - run:
@@ -38,7 +28,7 @@ jobs:
           command: cd doc && doxygen
       - run:
           name: Configure DOLFIN (C++)
-          command: export SUNDIALS_DIR=/usr/local && mkdir -p build && cd build && cmake -DDOLFIN_ENABLE_SUNDIALS=true -DCMAKE_BUILD_TYPE=Developer ../
+          command: mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Developer ../
       - run:
           name: Build DOLFIN and install (C++)
           command: cd build && make -j2 install

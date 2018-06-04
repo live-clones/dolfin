@@ -71,8 +71,6 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
   _u = std::make_shared<SUNDIALSNVector>(u0);
 
   // Initialise
-  std::cout << "Initialising with t = " << _t << "\n";
-
   int flag = CVodeInit(_cvode_mem, f, _t, _u->nvector());
   dolfin_assert(flag == CV_SUCCESS);
 
@@ -102,11 +100,9 @@ void CVode::init(std::shared_ptr<GenericVector> u0, double atol, double rtol, lo
 double CVode::step(double dt)
 {
   double tout = _t + dt;
-  std::cout << "t_in = " << _t << ", dt = " << dt << " " << ((CVodeMem) _cvode_mem)->cv_h;
   int flag = ::CVode(_cvode_mem, tout, _u->nvector(), &_t, CV_NORMAL);
   dolfin_assert((flag == CV_SUCCESS) || (flag == CV_TSTOP_RETURN) || (flag == CV_ROOT_RETURN));
 
-  std::cout << " " << flag << " -  t_out = " << _t << std::endl;
   return _t;
 }
 //-----------------------------------------------------------------------------
