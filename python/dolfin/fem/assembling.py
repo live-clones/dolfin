@@ -477,18 +477,31 @@ class SystemAssembler(cpp.fem.SystemAssembler):
            bcs (_DirichletBC_)
               A list or a single DirichletBC (optional)
         """
-        # Create dolfin Form objects referencing all data needed by
-        # assembler
-        A_dolfin_form = _create_dolfin_form(A_form, form_compiler_parameters)
-        b_dolfin_form = _create_dolfin_form(b_form, form_compiler_parameters)
 
-        # Check bcs
-        bcs = _wrap_in_list(bcs, 'bcs', cpp.fem.DirichletBC)
+        if isinstance(A_form, list) and isinstance(b_form, list):
+            A_dolfin_forms = [_create_dolfin_form(f, form_compiler_parameters) for f in A_form]
+            b_dolfin_forms = [_create_dolfin_form(f, form_compiler_parameters) for f in b_form]
 
-        # Call C++ assemble function
-        cpp.fem.SystemAssembler.__init__(self, A_dolfin_form, b_dolfin_form,
-                                         bcs)
+            # Call C++ assemble function
+            cpp.fem.SystemAssembler.__init__(self, A_dolfin_forms, b_dolfin_forms,
+                                             bcs)
 
-        # Keep Python counterpart of bcs (and Python object it owns)
-        # alive
-        self._bcs = bcs
+            # Keep Python counterpart of bcs (and Python object it owns)
+            # alive
+            self._bcs = bcs
+        else:
+            # Create dolfin Form objects referencing all data needed by
+            # assembler
+            A_dolfin_form = _create_dolfin_form(A_form, form_compiler_parameters)
+            b_dolfin_form = _create_dolfin_form(b_form, form_compiler_parameters)
+
+            # Check bcs
+            bcs = _wrap_in_list(bcs, 'bcs', cpp.fem.DirichletBC)
+
+            # Call C++ assemble function
+            cpp.fem.SystemAssembler.__init__(self, A_dolfin_form, b_dolfin_form,
+                                             bcs)
+
+            # Keep Python counterpart of bcs (and Python object it owns)
+            # alive
+            self._bcs = bcs

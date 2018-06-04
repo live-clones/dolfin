@@ -413,7 +413,11 @@ namespace dolfin_wrappers
       (m, "SystemAssembler", "DOLFIN SystemAssembler object")
       .def(py::init<std::shared_ptr<const dolfin::Form>, std::shared_ptr<const dolfin::Form>,
            std::vector<std::shared_ptr<const dolfin::DirichletBC>>>())
+      .def(py::init<std::vector<std::shared_ptr<const dolfin::Form>>, std::vector<std::shared_ptr<const dolfin::Form>>,
+           std::vector<std::vector<std::shared_ptr<const dolfin::DirichletBC>>>>())
       .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericMatrix&, dolfin::GenericVector&))
+           &dolfin::SystemAssembler::assemble)
+      .def("assemble", (void (dolfin::SystemAssembler::*)(std::vector<std::shared_ptr<dolfin::GenericMatrix>>, std::vector<std::shared_ptr<dolfin::GenericVector>>))
            &dolfin::SystemAssembler::assemble)
       .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericMatrix&)) &dolfin::SystemAssembler::assemble)
       .def("assemble", (void (dolfin::SystemAssembler::*)(dolfin::GenericVector&)) &dolfin::SystemAssembler::assemble)
