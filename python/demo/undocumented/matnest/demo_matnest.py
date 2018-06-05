@@ -119,7 +119,8 @@ solver = PETScKrylovSolver("minres")
 solver.set_from_options()
 solver.set_operators(AA, PP)
 
-PETScPreconditioner.set_fieldsplit(solver, AA, ["0", "1"]);
+fields = [PETScNestMatrix.get_block_dofs(AA, i) for i in [0,1]]
+PETScPreconditioner.set_fieldsplit(solver, fields, ["0", "1"])
 
 solver.solve(x, b)
 

@@ -911,8 +911,9 @@ namespace dolfin_wrappers
                dolfin::Variable>
       (m, "PETScPreconditioner", "DOLFIN PETScPreconditioner object")
       .def(py::init<std::string>(), py::arg("type")="default")
-      .def("preconditioners", &dolfin::PETScPreconditioner::preconditioners);
-
+      .def("preconditioners", &dolfin::PETScPreconditioner::preconditioners)
+      .def("set_fieldsplit", (void (*)(dolfin::PETScKrylovSolver&, const std::vector<std::vector<dolfin::la_index>>&, const std::vector<std::string>&))
+	   &dolfin::PETScPreconditioner::set_fieldsplit);
     #endif
 
     #ifdef HAS_TRILINOS

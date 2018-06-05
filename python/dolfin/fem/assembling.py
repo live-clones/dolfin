@@ -41,8 +41,10 @@ __all__ = ["assemble", "assemble_mixed", "assemble_local", "assemble_system",
 
 def _create_dolfin_form(form, form_compiler_parameters=None,
                         function_spaces=None):
+    if form is None:
+        return form
     # First check if we got a cpp.Form
-    if isinstance(form, cpp.fem.Form):
+    elif isinstance(form, cpp.fem.Form):
 
         # Check that jit compilation has already happened
         if not hasattr(form, "_compiled_form"):
