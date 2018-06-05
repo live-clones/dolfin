@@ -129,10 +129,10 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 	    cell_index.push_back(mesh_cell.index());
 	  }
 	}
+#if 0 // Confusing when we are considering 3D-1D uncoupled problem
 	else if(codim == 2)
-	{
 	  std::cout << "[SparsityBuilder] codim 2 - Not implemented" << std::endl;
-	}
+#endif
 
 	if(max_rows > max_cols) // Test functions in mesh while trial functions in the submesh
 	{
