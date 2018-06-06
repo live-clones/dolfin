@@ -561,8 +561,9 @@ namespace dolfin_wrappers
       .def("cut_cells", &dolfin::MultiMesh::cut_cells)
       .def("uncut_cells", &dolfin::MultiMesh::uncut_cells)
       .def("covered_cells", &dolfin::MultiMesh::covered_cells)
-      .def("mark_covered", &dolfin::MultiMesh::mark_covered)
+      .def("mark_covered", &dolfin::MultiMesh::mark_covered, "Function that marks a set of cells, given by indicies in a list, as covered.")
       .def("compute_area", &dolfin::MultiMesh::compute_area)
+      .def("auto_cover", &dolfin::MultiMesh::auto_cover, " Marks all uncut and cut cells connected to the given point as covered.")
       .def("quadrature_rules_interface",
 	   (const std::map<unsigned int, std::vector<dolfin::MultiMesh::quadrature_rule> >&(dolfin::MultiMesh::*)(std::size_t) const)(&dolfin::MultiMesh::quadrature_rules_interface))
       .def("quadrature_rules_interface",
