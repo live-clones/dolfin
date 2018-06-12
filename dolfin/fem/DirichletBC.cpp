@@ -22,7 +22,7 @@
 // Modified by Mikael Mortensen, 2013
 //
 // First added:  2007-04-10
-// Last changed: 2018-03-28
+// Last changed: 2014-01-23
 
 #include <cinttypes>
 #include <cmath>
@@ -737,8 +737,8 @@ void DirichletBC::compute_bc_topological(Map& boundary_values,
   // Special case
   if (_facets.empty())
   {
-    // if (MPI::size(mesh.mpi_comm()) == 1)
-    //   warning("Found no facets matching domain for boundary condition.");
+    if (MPI::size(mesh.mpi_comm()) == 1)
+      warning("Found no facets matching domain for boundary condition.");
     return;
   }
 
@@ -822,8 +822,8 @@ void DirichletBC::compute_bc_geometric(Map& boundary_values,
   // Special case
   if (_facets.empty())
   {
-    // if (MPI::size(mesh.mpi_comm()) == 1)
-    //   warning("Found no facets matching domain for boundary condition.");
+    if (MPI::size(mesh.mpi_comm()) == 1)
+      warning("Found no facets matching domain for boundary condition.");
     return;
   }
 
