@@ -18,7 +18,7 @@
 // Modified by Mikael Mortensen, 2014
 //
 // First added:  2005-12-02
-// Last changed: 2015-06-15
+// Last changed: 2018-02-09
 
 #ifndef __UNIT_SQUARE_MESH_H
 #define __UNIT_SQUARE_MESH_H
@@ -72,7 +72,7 @@ namespace dolfin
     static Mesh create(std::size_t nx, std::size_t ny, CellType::Type cell_type,
                        std::string diagonal="right")
     {
-      return RectangleMesh::create({{Point(0.0, 0.0), Point(1.0, 1.0)}}, {nx, ny},
+      return RectangleMesh::create({{Point(0.0, 0.0), Point(1.0, 1.0)}}, {{nx, ny}},
                                    cell_type, diagonal);
     }
 
@@ -82,7 +82,7 @@ namespace dolfin
                        CellType::Type cell_type,
                        std::string diagonal="right")
     {
-      return RectangleMesh::create(comm, {{Point(0.0, 0.0), Point(1.0, 1.0)}}, {nx, ny},
+      return RectangleMesh::create(comm, {{Point(0.0, 0.0), Point(1.0, 1.0)}}, {{nx, ny}},
                                    cell_type, diagonal);
     }
 
