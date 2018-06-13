@@ -56,6 +56,60 @@
 
 using namespace dolfin;
 
+// API wrapper for Eigen such that the interface can be used via virtual functions
+class EigenLUSolver::EigenLUImplBase
+{
+public:
+  virtual void solve(EigenVector &x, const EigenVector &b) = 0;
+};
+
+namespace {
+template<typename Solver>
+class EigenLUImpl : public EigenLUSolver::EigenLUImplBase
+{
+public:
+  EigenLUImpl(std::shared_ptr<Solver> solver, const EigenMatrix &A) :
+    _solver(solver),
+    // Copy to format suitable for solver
+    // Eigen wants ColMajor matrices for solver
+    // FIXME: Do we want this? It could affect re-assembly performance
+    _A(A.mat())
+  {
+    // Compress matrix
+    // Most solvers require a compressed matrix
+    _A.makeCompressed();
+
+    // Factorize matrix
+    _solver->compute(_A);
+
+    if (_solver->info() != Eigen::Success)
+    {
+      dolfin_error("EigenLUSolver.cpp",
+                   "compute matrix factorisation",
+                   "The provided data did not satisfy the prerequisites");
+    }
+  }
+
+  void solve(EigenVector &x, const EigenVector &b) override
+  {
+    dolfin_assert(b.vec());
+    dolfin_assert(x.vec());
+    *(x.vec()) = _solver->solve(*(b.vec()));
+
+    if (_solver->info() != Eigen::Success)
+    {
+      dolfin_error("EigenLUSolver.cpp",
+                   "solve A.x = b",
+                   "Solver failed");
+    }
+  }
+
+private:
+  std::shared_ptr<Solver> _solver;
+  typename Solver::MatrixType _A;
+};
+}
+
 // List of available LU solvers
 const std::map<std::string, std::string>
 EigenLUSolver::_methods_descr
@@ -137,6 +191,8 @@ void EigenLUSolver::set_operator(std::shared_ptr<const EigenMatrix> A)
   _matA = A;
   dolfin_assert(_matA);
   dolfin_assert(!_matA->empty());
+
+  _impl.reset(nullptr);
 }
 //-----------------------------------------------------------------------------
 const GenericLinearOperator& EigenLUSolver::get_operator() const
@@ -151,66 +207,6 @@ const GenericLinearOperator& EigenLUSolver::get_operator() const
 }
 //-----------------------------------------------------------------------------
 std::size_t EigenLUSolver::solve(GenericVector& x, const GenericVector& b)
-{
-  if (_method == "sparselu")
-  {
-    Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor>,
-                    Eigen::COLAMDOrdering<int>> solver;
-    call_solver(solver, x, b);
-  }
-  else if (_method == "cholesky")
-  {
-    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double, Eigen::ColMajor>,
-                          Eigen::Lower> solver;
-    call_solver(solver, x, b);
-  }
-#ifdef HAS_CHOLMOD
-  else if (_method == "cholmod")
-  {
-    Eigen::CholmodDecomposition<Eigen::SparseMatrix<double, Eigen::ColMajor>,
-                                Eigen::Lower> solver;
-    solver.setMode(Eigen::CholmodLDLt);
-    call_solver(solver, x, b);
-  }
-#endif
-#ifdef EIGEN_PASTIX_SUPPORT
-  else if (_method == "pastix")
-  {
-    Eigen::PastixLU<Eigen::SparseMatrix<double, Eigen::ColMajor>> solver;
-    call_solver(solver, x, b);
-  }
-#endif
-#ifdef EIGEN_PARDISO_SUPPORT
-  else if (_method == "pardiso")
-  {
-    Eigen::PardisoLU<Eigen::SparseMatrix<double, Eigen::ColMajor>> solver;
-    call_solver(solver, x, b);
-  }
-#endif
-#ifdef EIGEN_SUPERLU_SUPPORT
-  else if (_method == "superlu")
-  {
-    Eigen::SuperLU<Eigen::SparseMatrix<double, Eigen::ColMajor>> solver;
-    call_solver(solver, x, b);
-  }
-#endif
-#ifdef HAS_UMFPACK
-  else if (_method == "umfpack")
-  {
-    Eigen::UmfPackLU<Eigen::SparseMatrix<double, Eigen::ColMajor>> solver;
-    call_solver(solver, x, b);
-  }
-#endif
-  else
-    dolfin_error("EigenLUSolver.cpp", "solve A.x =b",
-                 "Unknown method \"%s\"", _method.c_str());
-
-  return 1;
-}
-//-----------------------------------------------------------------------------
-template <typename Solver>
-void EigenLUSolver::call_solver(Solver& solver, GenericVector& x,
-                                const GenericVector& b)
 {
   const std::string timer_title = "Eigen LU solver (" + _method + ")";
   Timer timer(timer_title);
@@ -233,36 +229,74 @@ void EigenLUSolver::call_solver(Solver& solver, GenericVector& x,
   if (x.empty())
     _matA->init_vector(x, 1);
 
-  // Copy to format suitable for solver
-  // Eigen wants ColMajor matrices for solver
-  // FIXME: Do we want this? It could affect re-assembly performance
-  typename Solver::MatrixType _A;
-  _A = _matA->mat();
+  // Initialize Eigen LU solver and compute factorization
+  if (!_impl) {
+    if (_method == "sparselu")
+    {
+      typedef Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor>,
+                              Eigen::COLAMDOrdering<int>> Solver;
 
-  // Compress matrix
-  // Most solvers require a compressed matrix
-  _A.makeCompressed();
-
-  // Factorize matrix
-  solver.compute(_A);
-
-  if (solver.info() != Eigen::Success)
-  {
-    dolfin_error("EigenLUSolver.cpp",
-                 "compute matrix factorisation",
-                 "The provided data did not satisfy the prerequisites");
+      auto solver = std::make_shared<Solver>();
+      _impl.reset(new EigenLUImpl<Solver>(solver, *_matA));
+    }
+    else if (_method == "cholesky")
+    {
+      typedef Eigen::SimplicialLDLT<Eigen::SparseMatrix<double, Eigen::ColMajor>,
+                                    Eigen::Lower> Solver;
+      auto solver = std::make_shared<Solver>();
+      _impl.reset(new EigenLUImpl<Solver>(solver, *_matA));
+    }
+#ifdef HAS_CHOLMOD
+    else if (_method == "cholmod")
+    {
+      typedef Eigen::CholmodDecomposition<Eigen::SparseMatrix<double, Eigen::ColMajor>,
+                                          Eigen::Lower> Solver;
+      auto solver = std::make_shared<Solver>();
+      solver->setMode(Eigen::CholmodLDLt);
+      _impl.reset(new EigenLUImpl<Solver>(solver, *_matA));
+    }
+#endif
+#ifdef EIGEN_PASTIX_SUPPORT
+    else if (_method == "pastix")
+    {
+      typedef Eigen::PastixLU<Eigen::SparseMatrix<double, Eigen::ColMajor>> Solver;
+      auto solver = std::make_shared<Solver>();
+      _impl.reset(new EigenLUImpl<Solver>(solver, *_matA));
+    }
+#endif
+#ifdef EIGEN_PARDISO_SUPPORT
+    else if (_method == "pardiso")
+    {
+      typedef Eigen::PardisoLU<Eigen::SparseMatrix<double, Eigen::ColMajor>> Solver;
+      auto solver = std::make_shared<Solver>();
+      _impl.reset(new EigenLUImpl<Solver>(solver, *_matA));
+    }
+#endif
+#ifdef EIGEN_SUPERLU_SUPPORT
+    else if (_method == "superlu")
+    {
+      typedef Eigen::SuperLU<Eigen::SparseMatrix<double, Eigen::ColMajor>> Solver;
+      auto solver = std::make_shared<Solver>();
+      _impl.reset(new EigenLUImpl<Solver>(solver, *_matA));
+    }
+#endif
+#ifdef HAS_UMFPACK
+    else if (_method == "umfpack")
+    {
+      typedef Eigen::UmfPackLU<Eigen::SparseMatrix<double, Eigen::ColMajor>> Solver;
+      auto solver = std::make_shared<Solver>();
+      _impl.reset(new EigenLUImpl<Solver>(solver, *_matA));
+    }
+#endif
+    else
+      dolfin_error("EigenLUSolver.cpp", "solve A.x =b",
+                   "Unknown method \"%s\"", _method.c_str());
   }
 
   // Solve linear system
-  dolfin_assert(_b.vec());
-  dolfin_assert(_x.vec());
-  *(_x.vec()) = solver.solve(*(_b.vec()));
-  if (solver.info() != Eigen::Success)
-  {
-    dolfin_error("EigenLUSolver.cpp",
-                 "solve A.x = b",
-                 "Solver failed");
-  }
+  _impl->solve(_x, _b);
+
+  return 1;
 }
 //-----------------------------------------------------------------------------
 std::size_t EigenLUSolver::solve(const GenericLinearOperator& A,
