@@ -1,7 +1,7 @@
 Change log
 ==========
 
-2018.1.0 (2018-05-22)
+2018.1.0 (2018-06-14)
 ---------------------
 
 - Remove python2 support.
@@ -10,7 +10,7 @@ Change log
 - Removed ``from fenics import *``, use ``from dolfin import *``
 - Rename ``ERROR``, ``CRITICAL`` etc. to ``LogLevel.ERROR``, ``LogLevel.CRITICAL``.
 
-2017.2.0 (2017-09-25)
+2017.2.0 (2017-12-05)
 ---------------------
 
 - Remove ``UnitQuadMesh`` and ``UnitHexMesh``. Now use ``UnitSquareMesh`` and
