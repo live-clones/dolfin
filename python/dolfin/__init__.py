@@ -35,7 +35,7 @@ from .cpp import __version__
 
 from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          has_hdf5_parallel, has_mpi, has_mpi4py,
-                         has_petsc, has_petsc4py, has_parmetis,
+                         has_petsc, has_petsc4py, has_parmetis, has_sundials,
                          has_slepc, has_slepc4py, git_commit_hash,
                          DOLFIN_EPS, DOLFIN_PI,  DOLFIN_EPS_LARGE,
                          TimingClear, TimingType,
@@ -58,7 +58,7 @@ from .cpp.fem import (FiniteElement, DofMap, Assembler, MultiMeshAssembler,
                       LinearVariationalSolver,
                       NonlinearVariationalSolver,
                       SparsityPatternBuilder,
-                      MultiMeshDirichletBC)
+                      MultiMeshDirichletBC, adapt)
 
 from .cpp.geometry import (BoundingBoxTree,
                            Point,
@@ -123,6 +123,10 @@ from .cpp.refinement import refine, p_refine
 from .cpp.parameter import Parameters, parameters
 from .cpp.io import X3DOM, X3DOMParameters
 
+if has_sundials():
+    from .cpp.la import SUNDIALSNVector
+    from .cpp.ts import CVode
+
 # Import Python modules
 from . import io
 from . import la
@@ -154,7 +158,7 @@ from .function.multimeshfunctionspace import (MultiMeshFunctionSpace,
                                               MultiMeshVectorFunctionSpace,
                                               MultiMeshTensorFunctionSpace)
 from .function.functionspace import (FunctionSpace,
-                                     VectorFunctionSpace, 
+                                     VectorFunctionSpace,
                                      TensorFunctionSpace)
 from .function.function import Function
 from .function.multimeshfunction import MultiMeshFunction
@@ -187,7 +191,7 @@ from .multistage.rushlarsenschemes import RL1, RL2, GRL1, GRL2
 # Import from ufl
 from ufl import (FiniteElement, TensorElement, VectorElement,
                  MixedElement, rhs, lhs, conditional, le, lt, ge, gt,
-                 split, cross, inner, dot, grad, curl, dx, div,
+                 split, cross, inner, dot, grad, nabla_grad, curl, dx, div,
                  Measure, det, pi, sin, cos, tan, acos, asin, atan,
                  ln, exp, sqrt, bessel_I, bessel_J, bessel_K,
                  bessel_Y, Dx, ds, dS, dP, dX, dC, dI, dO, interval, triangle,

@@ -46,6 +46,7 @@ pybind11_add_module(cpp SHARED
   src/math.cpp
   src/mesh.cpp
   src/multistage.cpp
+  src/ts.cpp
   src/io.cpp
   src/la.cpp
   src/nls.cpp

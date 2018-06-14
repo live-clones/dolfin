@@ -107,7 +107,9 @@ def test_lu_solver_reuse(backend):
     assemble(Constant(0.5)*u*v*dx, tensor=A)
     x = Vector()
     solver.solve(x, b)
-    assert round(x.norm("l2") - 2.0*norm, 10) == 0
+    if backend != 'Eigen':
+        # The eigen backend only recomputes the factorization once set_operator is called
+        assert round(x.norm("l2") - 2.0*norm, 10) == 0
 
     solver.set_operator(A)
     solver.solve(x, b)

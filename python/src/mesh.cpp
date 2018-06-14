@@ -303,6 +303,7 @@ namespace dolfin_wrappers
       .def("collides", (bool (dolfin::Cell::*)(const dolfin::MeshEntity&) const) &dolfin::Cell::collides)
       .def("contains", &dolfin::Cell::contains)
       .def("distance", &dolfin::Cell::distance)
+      .def("cell_normal", &dolfin::Cell::cell_normal)
       .def("facet_area", &dolfin::Cell::facet_area)
       .def("h", &dolfin::Cell::h)
       .def("inradius", &dolfin::Cell::inradius)
@@ -472,6 +473,7 @@ namespace dolfin_wrappers
     // dolfin::MeshQuality
     py::class_<dolfin::MeshQuality>
       (m, "MeshQuality", "DOLFIN MeshQuality class")
+      .def_static("aspect_ratio_gamma", &dolfin::MeshQuality::aspect_ratio_gamma)
       .def_static("radius_ratios", &dolfin::MeshQuality::radius_ratios)
       .def_static("radius_ratio_histogram_data", &dolfin::MeshQuality::radius_ratio_histogram_data)
       .def_static("radius_ratio_min_max", &dolfin::MeshQuality::radius_ratio_min_max)
@@ -559,8 +561,9 @@ namespace dolfin_wrappers
       .def("cut_cells", &dolfin::MultiMesh::cut_cells)
       .def("uncut_cells", &dolfin::MultiMesh::uncut_cells)
       .def("covered_cells", &dolfin::MultiMesh::covered_cells)
-      .def("mark_covered", &dolfin::MultiMesh::mark_covered)
+      .def("mark_covered", &dolfin::MultiMesh::mark_covered, "Function that marks a set of cells, given by indicies in a list, as covered.")
       .def("compute_area", &dolfin::MultiMesh::compute_area)
+      .def("auto_cover", &dolfin::MultiMesh::auto_cover, " Marks all uncut and cut cells connected to the given point as covered.")
       .def("quadrature_rules_interface",
 	   (const std::map<unsigned int, std::vector<dolfin::MultiMesh::quadrature_rule> >&(dolfin::MultiMesh::*)(std::size_t) const)(&dolfin::MultiMesh::quadrature_rules_interface))
       .def("quadrature_rules_interface",

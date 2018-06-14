@@ -16,7 +16,7 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // First added:  2016-06-01
-// Last changed: 2018-01-16
+// Last changed: 2018-02-09
 
 #include <algorithm>
 #include <tuple>
@@ -27,7 +27,6 @@
 #include "CollisionPredicates.h"
 #include "IntersectionConstruction.h"
 #include "ConvexTriangulation.h"
-
 #include "CGALExactArithmetic.h"
 
 using namespace dolfin;
@@ -249,13 +248,19 @@ ConvexTriangulation::_triangulate_1d(const std::vector<Point>& p,
 
     dolfin_assert(collinear);
 
-    // Average
-    Point average(0.0, 0.0, 0.0);
-    for (const Point& q : unique_p)
-      average += q;
-    average /= unique_p.size();
-    std::vector<std::vector<Point>> t {{ average }};
-    return t;
+    // Return extremal
+    const Point v = unique_p[1] - unique_p[0];
+    std::vector<std::pair<double, std::size_t>> order;
+    order.emplace_back(0.0, 0);
+    order.emplace_back(1.0, 1);
+    for (std::size_t i = 2; i < unique_p.size(); ++i)
+      order.emplace_back(v.dot(unique_p[i]-unique_p[0]), i);
+
+    std::sort(order.begin(), order.end());
+
+    // Return first and last
+    return {{ unique_p[order.front().second],
+	  unique_p[order.back().second] }};
   }
 
 }

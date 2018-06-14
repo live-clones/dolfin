@@ -9,8 +9,7 @@ background_mesh = UnitSquareMesh(16, 16)
 annulus_mesh = Mesh("../donut.xml.gz")
 
 center = Point(0.5, 0.5)
-r_outer = 0.41
-r_inner = 0.2
+r = 0.2
 
 # Build the multimesh
 multimesh = MultiMesh()
@@ -18,18 +17,8 @@ multimesh.add(background_mesh)
 multimesh.add(annulus_mesh)
 multimesh.build()
 
-# Identify background cells within the hole
-cell_markers = MeshFunction("size_t", background_mesh, 2)
-additional_covered_cells = []
-for cell_id in multimesh.cut_cells(0) + multimesh.uncut_cells(0):
-    cell = Cell(multimesh.part(0), cell_id)
-    r = (cell.midpoint() - center).norm()
-    if abs(r_inner - r) < abs(r_outer - r):
-        cell_markers[cell_id]= 1
-        additional_covered_cells.append(cell_id)
-
-# Mark cells as covered
-multimesh.mark_covered(0, additional_covered_cells)
+# Identify background cells within the hole and mark them as covered
+multimesh.auto_cover(0, center)
 
 # Variational formulation
 V = MultiMeshFunctionSpace(multimesh, "P", 1)
@@ -49,10 +38,26 @@ L = Constant(1) * v * dX
 A = assemble_multimesh(a)
 b = assemble_multimesh(L)
 
-boundary = CompiledSubDomain("on_boundary")
-bc = MultiMeshDirichletBC(V, Constant(0.0), boundary)
+# Will mark boundary of outer mesh
+class OuterBoundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary
+outer = OuterBoundary()
+mf0 = MeshFunction("size_t", multimesh.part(0), multimesh.part(0).topology().dim() - 1)
+outer.mark(mf0, 2)
+bc0 = MultiMeshDirichletBC(V, Constant(0), mf0, 2, 0)
 
-bc.apply(A, b)
+# Will mark inner part of top mesh
+class InnerBoundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary and ((x[0] - 0.5)**2 + (x[1] - 0.5)**2 < 0.5*r)
+inner = InnerBoundary()
+mf1 = MeshFunction("size_t", multimesh.part(1), multimesh.part(1).topology().dim()-1)
+inner.mark(mf1 , 3)
+bc1 = MultiMeshDirichletBC(V, Constant(1), mf1, 3, 1)
+bcs = [bc0, bc1]
+
+[bc.apply(A, b) for bc in bcs]
 V.lock_inactive_dofs(A, b)
 
 # Solve and plot

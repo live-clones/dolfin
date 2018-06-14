@@ -56,6 +56,7 @@
 #include <dolfin/la/PETScOptions.h>
 #include <dolfin/la/PETScPreconditioner.h>
 #include <dolfin/la/PETScVector.h>
+#include <dolfin/la/SUNDIALSNVector.h>
 #include <dolfin/la/TpetraFactory.h>
 #include <dolfin/la/TpetraMatrix.h>
 #include <dolfin/la/TpetraVector.h>
@@ -1074,6 +1075,18 @@ namespace dolfin_wrappers
              self.get_eigenpair(lr, lc, r, c, i);
              return py::make_tuple(lr, lc, r, c);
            });
+    #endif
+
+    #ifdef HAS_SUNDIALS
+    //dolfin::SUNDIALSNVector
+    py::class_<dolfin::SUNDIALSNVector, std::shared_ptr<dolfin::SUNDIALSNVector>>(m,"SUNDIALSNVector")
+      .def(py::init<const dolfin::GenericVector&>())
+      .def(py::init<const dolfin::SUNDIALSNVector&>())
+      .def(py::init<std::shared_ptr<dolfin::GenericVector>>())
+      .def("nvector", (N_Vector (dolfin::SUNDIALSNVector::*)())
+          &dolfin::SUNDIALSNVector::nvector)
+      .def("vec", (std::shared_ptr<dolfin::GenericVector> (dolfin::SUNDIALSNVector::*)())
+          &dolfin::SUNDIALSNVector::vec);
     #endif
 
     // dolfin::VectorSpaceBasis

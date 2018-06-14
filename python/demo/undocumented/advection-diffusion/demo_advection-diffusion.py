@@ -88,7 +88,6 @@ bc.apply(A)
 
 # Create linear solver and factorize matrix
 solver = LUSolver(A)
-solver.parameters["reuse_factorization"] = True
 
 # Output file
 out_file = File("results/temperature.pvd")
@@ -100,7 +99,7 @@ u = u0
 i = 0
 plt.figure()
 plot(u, title=r"t = {0:1.1f}".format(0.0))
-i += 1 
+i += 1
 
 while t - T < DOLFIN_EPS:
     # Assemble vector and apply boundary conditions
@@ -114,7 +113,7 @@ while t - T < DOLFIN_EPS:
     u0 = u
 
     # Plot solution
-    if i % 5 == 0: 
+    if i % 5 == 0:
         plt.figure()
         plot(u, title=r"t = {0:1.1f}".format(t))
 

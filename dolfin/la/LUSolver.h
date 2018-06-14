@@ -71,8 +71,6 @@ namespace dolfin
       p.add("report", true);
       p.add("verbose", false);
       p.add("symmetric", false);
-      p.add("same_nonzero_pattern", false);   // deprecated
-      p.add("reuse_factorization", false);   // deprecated
       return p;
     }
 

@@ -23,6 +23,7 @@
 #include <dolfin/fem/dolfin_fem.h>
 #include <dolfin/multistage/dolfin_multistage.h>
 #include <dolfin/adaptivity/dolfin_adaptivity.h>
+#include <dolfin/ts/dolfin_ts.h>
 
 #include <dolfin/io/dolfin_io.h>
 

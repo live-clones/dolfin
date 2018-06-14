@@ -24,6 +24,7 @@
 #include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/function/Constant.h>
 #include <dolfin/function/Function.h>
+#include <dolfin/la/GenericVector.h>
 #include <dolfin/multistage/MultiStageScheme.h>
 #include <dolfin/multistage/PointIntegralSolver.h>
 #include <dolfin/multistage/RKSolver.h>
@@ -32,6 +33,7 @@ namespace py = pybind11;
 
 namespace dolfin_wrappers
 {
+
   void multistage(py::module& m)
   {
     // dolfin::MultiStageScheme
@@ -65,5 +67,6 @@ namespace dolfin_wrappers
       .def("reset_stage_solutions", &dolfin::PointIntegralSolver::reset_stage_solutions)
       .def("step", &dolfin::PointIntegralSolver::step)
       .def("step_interval", &dolfin::PointIntegralSolver::step_interval);
+
   }
 }

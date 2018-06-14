@@ -84,10 +84,9 @@ namespace dolfin
     { return "lu_solver"; }
 
   private:
-
-    // Call generic solve
-    template <typename Solver>
-    void call_solver(Solver& solver, GenericVector& x, const GenericVector& b);
+    // Eigen LU implementation class
+    class EigenLUImplBase;
+    std::unique_ptr<EigenLUImplBase> _impl;
 
     // Available LU solvers and descriptions
     static const std::map<std::string, std::string> _methods_descr;
