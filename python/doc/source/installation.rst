@@ -39,15 +39,15 @@ Required
 - Eigen3 (http://eigen.tuxfamily.org)
 - FFC (https://bitbucket.org/fenics-project/ffc)
 - pkg-config (https://www.freedesktop.org/wiki/Software/pkg-config/)
-- Python (used by the build system)
+- Python 3 (used by the build system)
 - zlib
 
 
 Required for Python interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Python (including header files)
-- SWIG (http://www.swig.org)
+- Python 3 (including header files)
+- pybind11 (https://github.com/pybind/pybind11)
 - NumPy (http://www.numpy.org)
 - ply (https://github.com/dabeaz/ply)
 
