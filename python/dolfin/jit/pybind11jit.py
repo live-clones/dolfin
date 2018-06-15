@@ -6,7 +6,7 @@ import re
 
 from dolfin.cpp.log import log, LogLevel
 from . import get_pybind_include
-
+import dolfin.cpp as cpp
 from dolfin.jit.jit import dijitso_jit, dolfin_pc
 
 
@@ -80,7 +80,8 @@ def compile_cpp_code(cpp_code, **kwargs):
     #     params['build']['libs'] += ['petsc']
     #     params['build']['lib_dirs'] += [os.environ["PETSC_DIR"] + "/lib"]
 
-    module_hash = hashlib.md5(cpp_code.encode('utf-8')).hexdigest()
+    hash_str = cpp_code + cpp.__version__
+    module_hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
     module_name = "dolfin_cpp_module_" + module_hash
 
     module, signature = dijitso_jit(cpp_code, module_name, params,
