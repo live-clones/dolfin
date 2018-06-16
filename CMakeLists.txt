@@ -289,7 +289,7 @@ set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED
   URL "http://www.python.org")
 
 # Check for required package UFC
-find_package(UFC MODULE 2017.2)
+find_package(UFC MODULE ${DOLFIN_VERSION_MAJOR}.${DOLFIN_VERSION_MINOR})
 set_package_properties(UFC PROPERTIES TYPE REQUIRED
   DESCRIPTION "Unified language for form-compilers (part of FFC)"
   URL "https://bitbucket.org/fenics-project/ffc")
