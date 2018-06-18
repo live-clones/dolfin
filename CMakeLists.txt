@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.5)
 project(DOLFIN)
 set(DOLFIN_VERSION_RELEASE 0)
 set(DOLFIN_VERSION_MAJOR "2018")
-set(DOLFIN_VERSION_MINOR "1")
+set(DOLFIN_VERSION_MINOR "2")
 set(DOLFIN_VERSION_MICRO "0")
 set(DOLFIN_VERSION "${DOLFIN_VERSION_MAJOR}.${DOLFIN_VERSION_MINOR}.${DOLFIN_VERSION_MICRO}")
 if (NOT DOLFIN_VERSION_RELEASE)
@@ -130,6 +130,7 @@ list(APPEND OPTIONAL_PACKAGES "UMFPACK")
 list(APPEND OPTIONAL_PACKAGES "CHOLMOD")
 list(APPEND OPTIONAL_PACKAGES "SCOTCH")
 list(APPEND OPTIONAL_PACKAGES "ParMETIS")
+list(APPEND OPTIONAL_PACKAGES "SUNDIALS")
 list(APPEND OPTIONAL_PACKAGES "zlib")
 list(APPEND OPTIONAL_PACKAGES "HDF5")
 
@@ -288,7 +289,7 @@ set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED
   URL "http://www.python.org")
 
 # Check for required package UFC
-find_package(UFC MODULE 2017.2)
+find_package(UFC MODULE ${DOLFIN_VERSION_MAJOR}.${DOLFIN_VERSION_MINOR})
 set_package_properties(UFC PROPERTIES TYPE REQUIRED
   DESCRIPTION "Unified language for form-compilers (part of FFC)"
   URL "https://bitbucket.org/fenics-project/ffc")
@@ -320,6 +321,14 @@ if (DOLFIN_ENABLE_MPI AND MPI_C_FOUND)
       DESCRIPTION "Parallel Graph Partitioning and Fill-reducing Matrix Ordering"
       URL "http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview"
       PURPOSE "Enables parallel graph partitioning")
+  endif()
+  
+  if (DOLFIN_ENABLE_SUNDIALS)
+    find_package(SUNDIALS 3)
+    set_package_properties(SUNDIALS PROPERTIES TYPE OPTIONAL
+      DESCRIPTION "SUite of Nonlinear and DIfferential/ALgebraic Equation Solvers"
+      URL "http://computation.llnl.gov/projects/sundials"
+      PURPOSE "Provides robust time integrators and nonlinear solvers that can easily be incorporated into existing simulation codes.")
   endif()
 
   if (DOLFIN_ENABLE_SCOTCH)

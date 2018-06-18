@@ -26,6 +26,8 @@
 #include <dolfin/la/PETScPreconditioner.h>
 #include <dolfin/la/TpetraMatrix.h>
 
+#include <dolfin/la/SUNDIALSNVector.h>
+
 #include <dolfin/la/EigenKrylovSolver.h>
 #include <dolfin/la/EigenLUSolver.h>
 #include <dolfin/la/PETScKrylovSolver.h>

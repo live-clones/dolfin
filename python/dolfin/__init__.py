@@ -35,7 +35,7 @@ from .cpp import __version__
 
 from .cpp.common import (Variable, has_debug, has_hdf5, has_scotch,
                          has_hdf5_parallel, has_mpi, has_mpi4py,
-                         has_petsc, has_petsc4py, has_parmetis,
+                         has_petsc, has_petsc4py, has_parmetis, has_sundials,
                          has_slepc, has_slepc4py, git_commit_hash,
                          DOLFIN_EPS, DOLFIN_PI,  DOLFIN_EPS_LARGE,
                          TimingClear, TimingType,
@@ -122,6 +122,10 @@ from .cpp.nls import (NonlinearProblem, NewtonSolver, OptimisationProblem)
 from .cpp.refinement import refine, p_refine
 from .cpp.parameter import Parameters, parameters
 from .cpp.io import X3DOM, X3DOMParameters
+
+if has_sundials():
+    from .cpp.la import SUNDIALSNVector
+    from .cpp.ts import CVode
 
 # Import Python modules
 from . import io

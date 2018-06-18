@@ -15,8 +15,10 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
+// Modified by August Johansson 2018
+//
 // First added:  2014-03-03
-// Last changed: 2017-10-10
+// Last changed: 2018-04-03
 
 #ifndef __MULTI_MESH_H
 #define __MULTI_MESH_H
@@ -380,6 +382,11 @@ namespace dolfin
     /// Create matplotlib string to plot 2D multimesh (small meshes only)
     std::string plot_matplotlib(double delta_z=1,
 				const std::string& filename="") const;
+
+    /// Marks all uncut and cut cells connected to the given point as covered.
+    /// This can be used for instance to mark a hole as covered where one
+    /// point inside the hole is known.
+    void auto_cover(std::size_t p, const Point& point);
 
   private:
 

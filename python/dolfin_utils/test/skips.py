@@ -35,6 +35,8 @@ skip_if_not_petsc4py = pytest.mark.skipif(not has_petsc4py(),
                                           reason="Skipping unit test(s) depending on petsc4py.")
 skip_if_not_SLEPc = pytest.mark.skipif(not has_slepc(),
                                        reason="Skipping unit test(s) depending on SLEPc.")
+skip_if_not_SUNDIALS = pytest.mark.skipif(not has_sundials(),
+                                          reason="Skipping unit test(s) depending on SUNDIALS.")
 
 # Skips with respect to parallel or serial
 xfail_in_parallel = pytest.mark.xfail(MPI.size(MPI.comm_world) > 1,
