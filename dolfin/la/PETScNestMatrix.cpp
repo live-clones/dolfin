@@ -65,9 +65,11 @@ PETScNestMatrix::PETScNestMatrix
           mpi_comm = mats[i]->mpi_comm();
         else if (mpi_comm != mats[i]->mpi_comm())
         {
+#if 0
           dolfin_error("PETScNestMatrix.cpp",
                        "construct MatNest",
                        "Constituent matrices have different communicators");
+#endif
         }
       }
     }
