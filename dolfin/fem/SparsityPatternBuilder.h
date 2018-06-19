@@ -44,8 +44,13 @@ namespace dolfin
   public:
 
     /// Build sparsity pattern for assembly of given form
+    /// Mesh is the integration mesh (associated with the form)
+    /// Test and trial function can belong to different meshes :
+    /// mesh_ids[0] is the mesh id associated with the test function
+    /// mesh_ids[1] is the mesh id associated with the trial function
     static void build(SparsityPattern& sparsity_pattern,
                       const Mesh& mesh,
+		      std::vector<unsigned> mesh_ids,
                       const std::vector<const GenericDofMap*> dofmaps,
                       bool cells,
                       bool interior_facets,

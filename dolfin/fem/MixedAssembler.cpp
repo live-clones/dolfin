@@ -184,11 +184,15 @@ void MixedAssembler::assemble_cells(
     for (size_t i = 0; i < form_rank; ++i)
     {
       cell_index[i].push_back(cell->index());
+      // NOTE (interface between subdomains) :
       // Access to cell index in the parent mesh
       // TODO (see previous TODO for mapping def)
-      // use mapping[i] returnd by build_mapping function
+      // use mapping[i] returned by build_mapping function
       // (Should do the job without more changes)
 
+      // NOTE : A similar cell_index vector is already
+      // filled by the SparsityBuilder
+      // Could it be re-used here ?
       if (mesh_id[i] != mesh.id() && mapping)
       {
 	if(mapping->mesh()->id() == mesh_id[i])

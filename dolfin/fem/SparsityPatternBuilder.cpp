@@ -42,6 +42,7 @@ using namespace dolfin;
 void
 SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
                               const Mesh& mesh,
+			      std::vector<unsigned> mesh_ids,
                               const std::vector<const GenericDofMap*> dofmaps,
                               bool cells,
                               bool interior_facets,
@@ -101,88 +102,58 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
 
     for (CellIterator cell(mesh); !cell.end(); ++cell)
     {
-      // Tabulate dofs for each dimension and get local dimensions
-      if(mapping && rank > 1) // Only if we have a matrix AND if the considered mesh is a MeshView
+      std::vector<std::vector<std::size_t>> cell_index(rank);
+      std::vector<std::size_t> codim(rank);
+      for (std::size_t i = 0; i < rank; ++i)
       {
-	// Differenciate the off-diag blocks
-	int max_rows = dofmaps[0]->index_map()->local_range().second; // nb test functions
-	int max_cols = dofmaps[1]->index_map()->local_range().second; // nb trial function
+	cell_index[i].push_back(cell->index());
 
-	std::vector<std::size_t> cell_index;
-	int codim = mapping->mesh()->topology().dim() - mesh.topology().dim();
-	if(codim == 0)
-	  cell_index.push_back(mapping->cell_map()[cell->index()]);
-	else if(codim == 1)
+	if(mapping && mesh_ids[i] != mesh.id())
 	{
-	  const std::size_t D = mapping->mesh()->topology().dim();
-	  mapping->mesh()->init(D);
-	  mapping->mesh()->init(D - 1, D);
-
-	  Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
-	  Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[0]);
-	  cell_index.push_back(mesh_cell.index());
-
-	  // Add other contributions
-	  for(std::size_t i=1; i<mesh_facet.num_entities(D); ++i)
+	  if(mapping->mesh()->id() == mesh_ids[i])
 	  {
-	    Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[i]);
-	    cell_index.push_back(mesh_cell.index());
-	  }
-	}
+	    codim[i] = mapping->mesh()->topology().dim() - mesh.topology().dim();
+	    if(codim[i] == 0)
+	      cell_index[i][0] = mapping->cell_map()[cell->index()];
+	    else if(codim[i] == 1)
+	    {
+	      const std::size_t D = mapping->mesh()->topology().dim();
+	      mapping->mesh()->init(D);
+	      mapping->mesh()->init(D - 1, D);
+
+	      Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
+	      for(std::size_t j=0; j<mesh_facet.num_entities(D);j++)
+	      {
+		Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[j]);
+		if(j==0)
+		  cell_index[i][0] = mesh_cell.index();
+		else
+		  cell_index[i].push_back(mesh_cell.index());
+	      }
+	    }
 #if 0 // Confusing when we are considering 3D-1D uncoupled problem
-	else if(codim == 2)
-	  std::cout << "[SparsityBuilder] codim 2 - Not implemented" << std::endl;
+	    else if(codim[i] == 2)
+	      std::cout << "[SparsityBuilder] codim 2 - Not implemented" << std::endl;
 #endif
-
-	if(max_rows > max_cols) // Test functions in mesh while trial functions in the submesh
-	{
-	  auto dmap1 = dofmaps[1]->cell_dofs(cell->index());
-	  dofs[1].set(dmap1.size(), dmap1.data());
-
-	  for(std::size_t i=0; i<cell_index.size(); ++i)
-	  {
-	    auto dmap0 = dofmaps[0]->cell_dofs(cell_index[i]);
-	    dofs[0].set(dmap0.size(), dmap0.data());
-
-	    sparsity_pattern.insert_local(dofs);
 	  }
-	  p++;
-	}
-	else if(max_rows < max_cols)
-	{
-	  auto dmap0 = dofmaps[0]->cell_dofs(cell->index());
-	  dofs[0].set(dmap0.size(), dmap0.data());
-
-	  for(std::size_t i=0; i<cell_index.size(); ++i)
-	  {
-	    auto dmap1 = dofmaps[1]->cell_dofs(cell_index[i]);
-	    dofs[1].set(dmap1.size(), dmap1.data());
-
-	    sparsity_pattern.insert_local(dofs);
-	  }
-	  p++;
-	}
-	else
-	{
-	  auto dmap0 = dofmaps[0]->cell_dofs(cell->index());
-	  dofs[0].set(dmap0.size(), dmap0.data());
-	  auto dmap1 = dofmaps[1]->cell_dofs(cell->index());
-	  dofs[1].set(dmap1.size(), dmap1.data());
-
-	  sparsity_pattern.insert_local(dofs);
-	  p++;
 	}
       }
-      else
+
+      std::size_t nlocal_ldim = cell_index[0].size();
+      if(rank > 1)
+	nlocal_ldim = std::max(cell_index[0].size(), cell_index[1].size());
+
+      for(std::size_t j=0; j<nlocal_ldim; ++j)
       {
-	for (std::size_t i = 0; i < rank; ++i)
+	for(std::size_t i=0; i<rank; ++i)
 	{
-	  auto dmap = dofmaps[i]->cell_dofs(cell->index());
+	  std::size_t jidx  = (codim[i] != 0) ? j:0;
+	  auto dmap = dofmaps[i]->cell_dofs(cell_index[i][jidx]);
 	  dofs[i].set(dmap.size(), dmap.data());
 	}
 	sparsity_pattern.insert_local(dofs);
-	p++;
       }
+      p++;
     }
   }
 
@@ -374,7 +345,7 @@ void SparsityPatternBuilder::build_multimesh_sparsity_pattern(
     // Build sparsity pattern for part by calling the regular dofmap
     // builder. This builds the sparsity pattern for all interacting
     // dofs on the current part.
-    build(sparsity_pattern, mesh, dofmaps,
+    build(sparsity_pattern, mesh, std::vector<unsigned>(), dofmaps,
           true, false, false, true, false, false);
 
     log(PROGRESS, "Building inter-mesh sparsity pattern on part %d.", part);

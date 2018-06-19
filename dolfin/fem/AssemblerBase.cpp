@@ -51,9 +51,12 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
 
   // Get dof maps
   std::vector<const GenericDofMap*> dofmaps;
+  std::vector<unsigned> mesh_ids(a.rank());
   for (std::size_t i = 0; i < a.rank(); ++i)
+  {
     dofmaps.push_back(a.function_space(i)->dofmap().get());
-
+    mesh_ids[i] = a.function_space(i)->mesh()->id();
+  }
   // Get mesh
   dolfin_assert(a.mesh());
   const Mesh& mesh = *(a.mesh());
@@ -89,7 +92,7 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
     {
       SparsityPattern& pattern = *tensor_layout->sparsity_pattern();
       SparsityPatternBuilder::build(pattern,
-                                    mesh, dofmaps,
+                                    mesh, mesh_ids, dofmaps,
                                     a.ufc_form()->has_cell_integrals(),
                                     a.ufc_form()->has_interior_facet_integrals(),
                                     a.ufc_form()->has_exterior_facet_integrals(),
