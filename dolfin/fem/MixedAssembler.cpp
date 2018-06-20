@@ -165,7 +165,7 @@ void MixedAssembler::assemble_cells(
     // We want a mapping for each function involved
     // mapping[i] = mapping mesh <-> a.function_space(i)->mesh()
     // Need a function build_mapping(...)
-    auto mapping = mesh.topology().mapping();
+    auto mapping_map = mesh.topology().mapping();
 
     // Update to current cell
     cell->get_cell_data(ufc_cell);
@@ -193,34 +193,34 @@ void MixedAssembler::assemble_cells(
       // NOTE : A similar cell_index vector is already
       // filled by the SparsityBuilder
       // Could it be re-used here ?
-      if (mesh_id[i] != mesh.id() && mapping)
+      if (mesh_id[i] != mesh.id() && mapping_map[mesh_id[i]])
       {
-	if(mapping->mesh()->id() == mesh_id[i])
+	auto mapping = mapping_map[mesh_id[i]];
+	dolfin_assert(mapping->mesh()->id() == mesh_id[i]);
+
+	codim[i] = mapping->mesh()->topology().dim() - mesh.topology().dim();
+	if(codim[i] == 0)
+	  cell_index[i][0] = mapping->cell_map()[cell->index()];
+	else if(codim[i] == 1) // 2D-1D or 3D-2D (cells - facets relationships)
 	{
-	  codim[i] = mapping->mesh()->topology().dim() - mesh.topology().dim();
-	  if(codim[i] == 0)
-	    cell_index[i][0] = mapping->cell_map()[cell->index()];
-	  else if(codim[i] == 1) // 2D-1D or 3D-2D (cells - facets relationships)
+	  const std::size_t D = mapping->mesh()->topology().dim();
+	  mapping->mesh()->init(D);
+	  mapping->mesh()->init(D - 1, D);
+
+	  Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
+	  for(std::size_t j=0; j<mesh_facet.num_entities(D);j++)
 	  {
-	    const std::size_t D = mapping->mesh()->topology().dim();
-	    mapping->mesh()->init(D);
-	    mapping->mesh()->init(D - 1, D);
+	    Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[j]);
+	    local_ldim.push_back(mesh_cell.index(mesh_facet));
 
-	    Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
-	    for(std::size_t j=0; j<mesh_facet.num_entities(D);j++)
-	    {
-	      Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[j]);
-	      local_ldim.push_back(mesh_cell.index(mesh_facet));
-
-	      if(j==0)
-		cell_index[i][0] = mesh_cell.index();
-	      else
-		cell_index[i].push_back(mesh_cell.index());
-	    }
+	    if(j==0)
+	      cell_index[i][0] = mesh_cell.index();
+	    else
+	      cell_index[i].push_back(mesh_cell.index());
 	  }
-	  else if(codim[i] == 2) // 3D-1D (cells - edges relationships)
-	    std::cout << "[MixedAssembler] codim 2 - Not implemented" << std::endl;
 	}
+	else if(codim[i] == 2) // 3D-1D (cells - edges relationships)
+	  std::cout << "[MixedAssembler] codim 2 - Not implemented" << std::endl;
       }
     }
 

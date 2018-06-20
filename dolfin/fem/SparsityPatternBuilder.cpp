@@ -98,7 +98,7 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
   if (cells)
   {
     Progress p("Building sparsity pattern over cells", mesh.num_cells());
-    auto mapping = mesh.topology().mapping();
+    auto mapping_map = mesh.topology().mapping();
 
     for (CellIterator cell(mesh); !cell.end(); ++cell)
     {
@@ -108,34 +108,34 @@ SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
       {
 	cell_index[i].push_back(cell->index());
 
-	if(mapping && mesh_ids[i] != mesh.id())
+	if(mesh_ids[i] != mesh.id() && mapping_map[mesh_ids[i]])
 	{
-	  if(mapping->mesh()->id() == mesh_ids[i])
-	  {
-	    codim[i] = mapping->mesh()->topology().dim() - mesh.topology().dim();
-	    if(codim[i] == 0)
-	      cell_index[i][0] = mapping->cell_map()[cell->index()];
-	    else if(codim[i] == 1)
-	    {
-	      const std::size_t D = mapping->mesh()->topology().dim();
-	      mapping->mesh()->init(D);
-	      mapping->mesh()->init(D - 1, D);
+	  auto mapping = mapping_map[mesh_ids[i]];
+	  dolfin_assert(mapping->mesh()->id() == mesh_ids[i]);
 
-	      Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
-	      for(std::size_t j=0; j<mesh_facet.num_entities(D);j++)
-	      {
-		Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[j]);
-		if(j==0)
-		  cell_index[i][0] = mesh_cell.index();
-		else
-		  cell_index[i].push_back(mesh_cell.index());
-	      }
+	  codim[i] = mapping->mesh()->topology().dim() - mesh.topology().dim();
+	  if(codim[i] == 0)
+	    cell_index[i][0] = mapping->cell_map()[cell->index()];
+	  else if(codim[i] == 1)
+	  {
+	    const std::size_t D = mapping->mesh()->topology().dim();
+	    mapping->mesh()->init(D);
+	    mapping->mesh()->init(D - 1, D);
+
+	    Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
+	    for(std::size_t j=0; j<mesh_facet.num_entities(D);j++)
+	    {
+	      Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[j]);
+	      if(j==0)
+		cell_index[i][0] = mesh_cell.index();
+	      else
+		cell_index[i].push_back(mesh_cell.index());
 	    }
-#if 0 // Confusing when we are considering 3D-1D uncoupled problem
-	    else if(codim[i] == 2)
-	      std::cout << "[SparsityBuilder] codim 2 - Not implemented" << std::endl;
-#endif
 	  }
+#if 0 // Confusing when we are considering 3D-1D uncoupled problem
+	  else if(codim[i] == 2)
+	    std::cout << "[SparsityBuilder] codim 2 - Not implemented" << std::endl;
+#endif
 	}
       }
 
@@ -345,7 +345,7 @@ void SparsityPatternBuilder::build_multimesh_sparsity_pattern(
     // Build sparsity pattern for part by calling the regular dofmap
     // builder. This builds the sparsity pattern for all interacting
     // dofs on the current part.
-    build(sparsity_pattern, mesh, std::vector<unsigned>(), dofmaps,
+    build(sparsity_pattern, mesh, std::vector<unsigned>({mesh.id(), mesh.id()}), dofmaps,
           true, false, false, true, false, false);
 
     log(PROGRESS, "Building inter-mesh sparsity pattern on part %d.", part);

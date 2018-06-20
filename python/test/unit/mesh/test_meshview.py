@@ -61,8 +61,8 @@ def test_make_facets_view(square, cube):
         m2 = MeshView.create(marker, 1)
 
         assert m2.num_cells() == c
-        assert m2.num_cells() == len(m2.topology().mapping().cell_map())
-        assert m2.num_vertices() == len(m2.topology().mapping().vertex_map())
+        assert m2.num_cells() == len(m2.topology().mapping()[mesh.id()].cell_map())
+        assert m2.num_vertices() == len(m2.topology().mapping()[mesh.id()].vertex_map())
 
     _check_facets_view(square)
     _check_facets_view(cube)
@@ -84,8 +84,8 @@ def test_make_cells_view(square, cube):
         m2 = MeshView.create(marker, 1)
 
         assert m2.num_cells() == ct
-        assert m2.num_cells() == len(m2.topology().mapping().cell_map())
-        assert m2.num_vertices() == len(m2.topology().mapping().vertex_map())
+        assert m2.num_cells() == len(m2.topology().mapping()[mesh.id()].cell_map())
+        assert m2.num_vertices() == len(m2.topology().mapping()[mesh.id()].vertex_map())
 
     _check_cells_view(square)
     _check_cells_view(cube)
@@ -113,5 +113,5 @@ def test_make_edges_view(cube):
     m2 = MeshView.create(marker, 1)
 
     assert m2.num_cells() == c
-    assert m2.num_cells() == len(m2.topology().mapping().cell_map())
-    assert m2.num_vertices() == len(m2.topology().mapping().vertex_map())
+    assert m2.num_cells() == len(m2.topology().mapping()[cube.id()].cell_map())
+    assert m2.num_vertices() == len(m2.topology().mapping()[cube.id()].vertex_map())

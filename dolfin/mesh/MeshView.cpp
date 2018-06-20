@@ -223,7 +223,7 @@ Mesh MeshView::create(const MeshFunction<std::size_t>& marker,
     new_topo.set_global_index(0, i, vertex_global_index[i]);
 
   // Store relationship between meshes
-  new_topo._mapping = std::make_shared<MeshView>(mesh, vertex_fwd_map, indices);
+  new_topo._mapping.insert(std::make_pair(mesh->id(), std::make_shared<MeshView>(mesh, vertex_fwd_map, indices)));
 
   return new_mesh;
 }
