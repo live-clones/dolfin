@@ -84,6 +84,9 @@ namespace dolfin
     // Check forms
     void check_forms() const;
 
+    // Build the necessary mappings between submeshes
+    void build_mappings();
+
     // The bilinear forms
     form_list_type _a;
 

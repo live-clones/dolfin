@@ -147,6 +147,8 @@ void MixedAssembler::assemble_cells(
   std::vector<double> coordinate_dofs;
   Progress p(AssemblerBase::progress_message(A.rank(), "cells"),
              mesh.num_cells());
+
+  auto mapping_map = mesh.topology().mapping();
   for (CellIterator cell(mesh); !cell.end(); ++cell)
   {
     // Get integral for sub domain (if any)
@@ -159,13 +161,6 @@ void MixedAssembler::assemble_cells(
 
     // Check that cell is not a ghost
     dolfin_assert(!cell->is_ghost());
-
-    // Collect mapping of the integration domain mesh
-    // TODO : Instead of having a unique mapping here,
-    // We want a mapping for each function involved
-    // mapping[i] = mapping mesh <-> a.function_space(i)->mesh()
-    // Need a function build_mapping(...)
-    auto mapping_map = mesh.topology().mapping();
 
     // Update to current cell
     cell->get_cell_data(ufc_cell);
@@ -184,15 +179,10 @@ void MixedAssembler::assemble_cells(
     for (size_t i = 0; i < form_rank; ++i)
     {
       cell_index[i].push_back(cell->index());
-      // NOTE (interface between subdomains) :
-      // Access to cell index in the parent mesh
-      // TODO (see previous TODO for mapping def)
-      // use mapping[i] returned by build_mapping function
-      // (Should do the job without more changes)
-
       // NOTE : A similar cell_index vector is already
       // filled by the SparsityBuilder
       // Could it be re-used here ?
+
       if (mesh_id[i] != mesh.id() && mapping_map[mesh_id[i]])
       {
 	auto mapping = mapping_map[mesh_id[i]];

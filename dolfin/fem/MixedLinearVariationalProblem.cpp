@@ -60,6 +60,10 @@ MixedLinearVariationalProblem::MixedLinearVariationalProblem(
   // Check forms
   // FIXME
   // check_forms();
+
+  // Build the necessary mappings
+  build_mappings();
+
 }
 //-----------------------------------------------------------------------------
 MixedLinearVariationalProblem::form_list_type
@@ -150,6 +154,61 @@ MixedLinearVariationalProblem::test_space(int i) const
     dolfin_assert(_l[i][j]);
   // FIXME
   return _l[i][0]->function_space(0);
+}
+//-----------------------------------------------------------------------------
+
+void
+MixedLinearVariationalProblem::build_mappings()
+{
+  // LHS
+  for (size_t i=0; i<_a.size(); ++i)
+  {
+    for(size_t j=0; j<_a[i].size(); ++j)
+    {
+      // Get integration mesh topology
+      if(!_a[i][j]->ufc_form())
+	break;
+
+      auto mesh = _a[i][j]->mesh();
+      MeshTopology mesh_topo = _a[i][j]->mesh()->topology();
+      auto mesh_mapping = _a[i][j]->mesh()->topology().mapping();
+      // Get meshes associated with the test and trial functions
+      auto mesh0 = _a[i][j]->function_space(0)->mesh();
+      auto mesh1 = _a[i][j]->function_space(1)->mesh();
+
+      if(_a[i][j]->mesh()->id() != mesh0->id() && mesh_mapping.count(mesh0->id()) == 0)
+      {
+	std::cout << "Build mapping between " << _a[i][j]->mesh()->id()
+		  << " and " << mesh0->id() << std::endl;
+        _a[i][j]->mesh()->build_mapping(mesh0);
+      }
+
+      if(_a[i][j]->mesh()->id() != mesh1->id() && mesh_mapping.count(mesh1->id()) == 0)
+      {
+	std::cout << "Build mapping between " << _a[i][j]->mesh()->id()
+		  << " and " << mesh1->id() << std::endl;
+	_a[i][j]->mesh()->build_mapping(mesh1);
+      }
+    }
+  }
+  // RHS
+  for (size_t i=0; i<_l.size(); ++i)
+  {
+    for(size_t j=0; j<_l[i].size(); ++j)
+    {
+      // Get integration mesh topology
+      MeshTopology mesh_topo = _l[i][j]->mesh()->topology();
+      // Get meshes associated with the test function
+      auto mesh0 = _l[i][j]->function_space(0)->mesh();
+
+      if(_l[i][j]->mesh()->id() != mesh0->id() && mesh_topo.mapping().count(mesh0->id()) == 0)
+      {
+	std::cout << "Build mapping between " << _l[i][j]->mesh()->id()
+		  << " and " << mesh0->id() << std::endl;
+	_a[i][j]->mesh()->build_mapping(mesh0);
+      }
+    }
+  }
 }
 //-----------------------------------------------------------------------------
 

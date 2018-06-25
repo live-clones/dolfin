@@ -182,6 +182,9 @@ namespace dolfin
     std::map<unsigned, std::shared_ptr<MeshView>> mapping() const
     { return _mapping; }
 
+    void add_mapping(const std::pair<unsigned, std::shared_ptr<MeshView>> _pair)
+    { _mapping.emplace(_pair); }
+
   private:
 
     friend class MeshView;
