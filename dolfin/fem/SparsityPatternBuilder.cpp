@@ -42,7 +42,7 @@ using namespace dolfin;
 void
 SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
                               const Mesh& mesh,
-			      std::vector<unsigned> mesh_ids,
+			      std::vector<std::size_t> mesh_ids,
                               const std::vector<const GenericDofMap*> dofmaps,
                               bool cells,
                               bool interior_facets,
@@ -345,7 +345,7 @@ void SparsityPatternBuilder::build_multimesh_sparsity_pattern(
     // Build sparsity pattern for part by calling the regular dofmap
     // builder. This builds the sparsity pattern for all interacting
     // dofs on the current part.
-    build(sparsity_pattern, mesh, std::vector<unsigned>({mesh.id(), mesh.id()}), dofmaps,
+    build(sparsity_pattern, mesh, {mesh.id(), mesh.id()}, dofmaps,
           true, false, false, true, false, false);
 
     log(PROGRESS, "Building inter-mesh sparsity pattern on part %d.", part);

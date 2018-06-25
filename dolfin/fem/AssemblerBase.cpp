@@ -51,7 +51,7 @@ void AssemblerBase::init_global_tensor(GenericTensor& A, const Form& a)
 
   // Get dof maps
   std::vector<const GenericDofMap*> dofmaps;
-  std::vector<unsigned> mesh_ids(a.rank());
+  std::vector<std::size_t> mesh_ids(a.rank());
   for (std::size_t i = 0; i < a.rank(); ++i)
   {
     dofmaps.push_back(a.function_space(i)->dofmap().get());

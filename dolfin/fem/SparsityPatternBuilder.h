@@ -50,7 +50,7 @@ namespace dolfin
     /// mesh_ids[1] is the mesh id associated with the trial function
     static void build(SparsityPattern& sparsity_pattern,
                       const Mesh& mesh,
-		      std::vector<unsigned> mesh_ids,
+		      std::vector<std::size_t> mesh_ids,
                       const std::vector<const GenericDofMap*> dofmaps,
                       bool cells,
                       bool interior_facets,
