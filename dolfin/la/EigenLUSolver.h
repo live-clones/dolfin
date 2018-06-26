@@ -83,9 +83,10 @@ namespace dolfin
     std::string parameter_type() const
     { return "lu_solver"; }
 
-  private:
     // Eigen LU implementation class
     class EigenLUImplBase;
+
+  private:
     std::unique_ptr<EigenLUImplBase> _impl;
 
     // Available LU solvers and descriptions
