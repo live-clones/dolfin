@@ -508,7 +508,7 @@ void Mesh::build_mapping(std::shared_ptr<const Mesh> other) const
 
   std::vector<std::size_t>::iterator found;
   // Build the new mapping current <-> other from the common parent (cell_map only)
-  for(int i=0; i<new_cell_map.size(); ++i)
+  for(std::size_t i=0; i<new_cell_map.size(); ++i)
   {
     bool new_idx_found = false;
     // Co-dimension 0
