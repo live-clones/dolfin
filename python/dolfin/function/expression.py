@@ -222,9 +222,9 @@ class BaseExpression(ufl.Coefficient):
         Returns expansion coefficients of expression restricted to local cell.
 
         *Arguments*
-             element : FiniteElement
+             element : cpp.fem.FiniteElement
                  The element.
-             dolfin_cell : Cell
+             dolfin : Cell
                  The cell.
         """
         return self._cpp_object.restrict(element, cell)

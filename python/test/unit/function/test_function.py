@@ -444,6 +444,8 @@ def test_interpolation_old(V, W, mesh):
     assert round(f.vector().norm("l1") - 3*mesh.num_vertices(), 7) == 0
 
 def test_restrict(mesh, V):
+    from numpy import allclose
+
     expr = Expression('x[0]+x[1]+x[2]', degree=1)
     u = interpolate(expr, V)
 
@@ -453,4 +455,4 @@ def test_restrict(mesh, V):
     u_restr = u.restrict(element, cell)
     expr_restr = expr.restrict(element, cell) # Covered in test_expression.py
 
-    assert max(abs(u_restr-expr_restr)) < DOLFIN_EPS_LARGE
+    assert allclose(u_restr, expr_restr)

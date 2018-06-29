@@ -485,9 +485,9 @@ class Function(ufl.Coefficient):
         Returns expansion coefficients of function restricted to local cell.
 
         *Arguments*
-             element : FiniteElement
+             element : cpp.fem.FiniteElement
                  The element.
-             dolfin_cell : Cell
+             cell : Cell
                  The cell.
         """
         return self._cpp_object.restrict(element, cell)

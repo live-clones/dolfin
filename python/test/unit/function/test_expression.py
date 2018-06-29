@@ -548,7 +548,7 @@ def test_rename():
     assert c1.name()=="constant1"
 
 def test_restrict(mesh, V):
-    from numpy import array, zeros
+    from numpy import array
 
     # Non-linear would be better
     expr = Expression('x[0]+x[1]+x[2]', degree=1)
