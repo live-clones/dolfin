@@ -545,4 +545,22 @@ def test_doc_string_python_expressions(mesh):
 def test_rename():
     c1 = Expression("1", degree=2)
     c1.rename("constant1","")
-    assert(c1.name()=="constant1")
+    assert c1.name()=="constant1"
+
+def test_restrict(mesh, V):
+    from numpy import array, zeros
+
+    # Non-linear would be better
+    expr = Expression('x[0]+x[1]+x[2]', degree=1)
+
+    # Arbitrary cell and point within it.
+    cell = list(cells(mesh))[-1]
+    x = cell.midpoint()[:]
+
+    element = V.dolfin_element()
+    weights = expr.restrict(element, cell)
+
+    coords = array(cell.get_vertex_coordinates())
+    basis = element.evaluate_basis_all(x, coords, cell.orientation())
+
+    assert near(np.dot(weights, basis), x[0]+x[1]+x[2])

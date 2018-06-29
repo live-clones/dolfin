@@ -137,7 +137,7 @@ def test_assign(V, W):
         u.assign(-u2/2 + 2*u1 - u1/0.5 + u2*0.5)
         assert round(u.vector().sum() - 0.0, 7) == 0
 
-        # Test errounious assignments
+        # Test erroneous assignments
         uu = Function(V1)
         f = Expression("1.0", degree=0)
         with pytest.raises(RuntimeError):
@@ -442,3 +442,15 @@ def test_interpolation_old(V, W, mesh):
     f = Function(W)
     f.interpolate(f1)
     assert round(f.vector().norm("l1") - 3*mesh.num_vertices(), 7) == 0
+
+def test_restrict(mesh, V):
+    expr = Expression('x[0]+x[1]+x[2]', degree=1)
+    u = interpolate(expr, V)
+
+    cell = list(cells(mesh))[-1] # Arbitrary cell
+    element = V.dolfin_element()
+
+    u_restr = u.restrict(element, cell)
+    expr_restr = expr.restrict(element, cell) # Covered in test_expression.py
+
+    assert max(abs(u_restr-expr_restr)) < DOLFIN_EPS_LARGE
