@@ -146,7 +146,7 @@ void XDMFFile::write_checkpoint(const Function& u,
   // load it to member _xml_doc
   if (boost::filesystem::exists(_filename) and append == true)
   {
-    log(WARNING, "Appending to an existing XDMF XML file \"%s\".",
+    log(PROGRESS, "Appending to an existing XDMF XML file \"%s\".",
         _filename.c_str());
 
     pugi::xml_parse_result result = _xml_doc->load_file(_filename.c_str());
@@ -154,7 +154,7 @@ void XDMFFile::write_checkpoint(const Function& u,
 
     if (_xml_doc->select_node("/Xdmf/Domain").node().empty())
     {
-      log(WARNING, "File \"%s\" contains invalid XDMF. Writing new XDMF.",
+      log(PROGRESS, "File \"%s\" contains invalid XDMF. Writing new XDMF.",
           _filename.c_str());
     }
   }
@@ -170,7 +170,7 @@ void XDMFFile::write_checkpoint(const Function& u,
     // If we will reset the XDMF file that exists
     if (boost::filesystem::exists(_filename))
     {
-      log(WARNING, "XDMF file \"%s\" will be overwritten.",
+      log(PROGRESS, "XDMF file \"%s\" will be overwritten.",
           _filename.c_str());
     }
 
@@ -189,7 +189,7 @@ void XDMFFile::write_checkpoint(const Function& u,
 
   if (truncate_hdf and boost::filesystem::exists(get_hdf5_filename(_filename)))
   {
-    log(WARNING, "HDF file \"%s\" will be overwritten.",
+    log(PROGRESS, "HDF file \"%s\" will be overwritten.",
         get_hdf5_filename(_filename).c_str());
   }
 
@@ -200,10 +200,14 @@ void XDMFFile::write_checkpoint(const Function& u,
   {
     if (truncate_hdf)
     {
-      // We are writing for the first time, any HDF file must be overwritten
-      _hdf5_file.reset(new HDF5File(_mpi_comm.comm(),
-                                    get_hdf5_filename(_filename),
-                                    "w"));
+      // Any HDF file must be overwritten
+      // By resetting the pointer we destruct and close HDF file
+      _hdf5_file.reset();
+      // And new HDF file is opened, overwritting existing
+      _hdf5_file = 
+        std::unique_ptr<HDF5File>(new HDF5File(_mpi_comm.comm(),
+                                               get_hdf5_filename(_filename),
+                                               "w"));
     }
     else if (_hdf5_file)
     {
