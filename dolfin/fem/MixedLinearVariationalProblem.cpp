@@ -58,8 +58,7 @@ MixedLinearVariationalProblem::MixedLinearVariationalProblem(
 		   "Number of blocks in rhs, lhs, solution are inconsistent");
   
   // Check forms
-  // FIXME
-  // check_forms();
+  check_forms();
 
   // Build the necessary mappings
   build_mappings();
@@ -252,14 +251,17 @@ MixedLinearVariationalProblem::check_forms() const
     {
       for(size_t k=0; k<_a[i + j*_l.size()].size(); ++k)
       {
-	const auto trial_space = _a[i + j*_l.size()][k]->function_space(1);
-	dolfin_assert(trial_space);
-	// trial_space can be null is the block is empty (Form=None)
-	if (trial_space != nullptr && !_u[i]->in(*trial_space))
+	if(_a[i + j*_l.size()][k]->ufc_form())
 	{
-	  dolfin_error("MixedLinearVariationalProblem.cpp",
-		       "define mixed linear variational problem a(u, v) = L(v) for all v",
-		       "Expecting the solution variable u to be a member of the trial space");
+	  const auto trial_space = _a[i + j*_l.size()][k]->function_space(1);
+	  dolfin_assert(trial_space);
+	  // trial_space can be null is the block is empty (Form=None)
+	  if (trial_space != nullptr && !_u[i]->in(*trial_space))
+	  {
+	    dolfin_error("MixedLinearVariationalProblem.cpp",
+			 "define mixed linear variational problem a(u, v) = L(v) for all v",
+			 "Expecting the solution variable u to be a member of the trial space");
+	  }
 	}
       }
     }
@@ -274,13 +276,16 @@ MixedLinearVariationalProblem::check_forms() const
       {
 	for(size_t k=0; k<_a[i + j*_l.size()].size(); ++k)
 	{
-	  const auto trial_space = _a[i + j*_l.size()][k]->function_space(1);
-	  if (trial_space != nullptr && !trial_space->contains(*bc_space))
+	  if(_a[i + j*_l.size()][k]->ufc_form())
 	  {
-	    dolfin_error("MixedLinearVariationalProblem.cpp",
-			 "define mixed linear variational problem a(u, v) = L(v) for all v",
-			 "Expecting the boundary conditions to live on (a "
-			 "subspace of) the trial space");
+	    const auto trial_space = _a[i + j*_l.size()][k]->function_space(1);
+	    if (trial_space != nullptr && !trial_space->contains(*bc_space))
+	    {
+	      dolfin_error("MixedLinearVariationalProblem.cpp",
+			   "define mixed linear variational problem a(u, v) = L(v) for all v",
+			   "Expecting the boundary conditions to live on (a "
+			   "subspace of) the trial space");
+	    }
 	  }
 	}
       }
