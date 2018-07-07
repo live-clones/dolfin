@@ -90,7 +90,6 @@
     }
 #endif
 
-
 namespace pybind11
 {
   namespace detail
@@ -102,8 +101,6 @@ namespace pybind11
     PETSC_CASTER_MACRO(Vec, vec);
   }
 }
-
-#undef PETSC_CASTER_MACRO
 
 #endif
 #endif

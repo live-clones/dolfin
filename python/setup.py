@@ -7,6 +7,7 @@ import multiprocessing
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
+from distutils.command.install_headers import install_headers
 from distutils.version import LooseVersion
 
 if sys.version_info < (3, 5):
@@ -75,25 +76,35 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp, env=env)
 
 
+class PydolfinHeaders(install_headers):
+    def initialize_options(self):
+        super(PydolfinHeaders, self).initialize_options()
+        self.install_dir = os.path.join('include', 'dolfin', 'pybind11')
+
+
 setup(name='fenics-dolfin',
-      version=VERSION,
-      author='FEniCS Project',
-      description='DOLFIN Python interface',
-      long_description='',
-      packages=["dolfin",
-                "dolfin.common",
-                "dolfin.function",
-                "dolfin.fem",
-                "dolfin.la",
-                "dolfin.io",
-                "dolfin.jit",
-                "dolfin.mesh",
-                "dolfin.multistage",
-                "dolfin.parameter",
-                "dolfin_utils.meshconvert",
-                "dolfin_utils.test",
-                "fenics"],
-      ext_modules=[CMakeExtension('dolfin.cpp')],
-      cmdclass=dict(build_ext=CMakeBuild),
-      install_requires=REQUIREMENTS,
-      zip_safe=False)
+    version=VERSION,
+    author='FEniCS Project',
+    description='DOLFIN Python interface',
+    long_description='',
+    packages=["dolfin",
+              "dolfin.common",
+              "dolfin.function",
+              "dolfin.fem",
+              "dolfin.la",
+              "dolfin.io",
+              "dolfin.jit",
+              "dolfin.mesh",
+              "dolfin.multistage",
+              "dolfin.parameter",
+              "dolfin_utils.meshconvert",
+              "dolfin_utils.test",
+              "fenics"],
+    ext_modules=[CMakeExtension('dolfin.cpp')],
+    cmdclass=dict(build_ext=CMakeBuild, install_headers=PydolfinHeaders),
+    headers=[os.path.join('src', 'petsc_casters.h'),
+             os.path.join('src', 'mpi_casters.h'),
+             os.path.join('src', 'casters.h'),
+             os.path.join('src', 'MPICommWrapper.h')],
+    install_requires=REQUIREMENTS,
+    zip_safe=False)
