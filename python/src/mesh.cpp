@@ -150,7 +150,8 @@ namespace dolfin_wrappers
                (self.geometry().x().data(),
                 self.geometry().num_points(),
                 self.geometry().dim());
-           })
+           },
+           py::return_value_policy::reference_internal)
       .def("domains", (dolfin::MeshDomains& (dolfin::Mesh::*)())
            &dolfin::Mesh::domains, py::return_value_policy::reference_internal)
       .def("data", (dolfin::MeshData& (dolfin::Mesh::*)())

@@ -723,6 +723,18 @@ def test_mesh_topology_lifetime():
     assert sys.getrefcount(mesh) == rc
 
 
+def test_mesh_coordinates_lifetime():
+    """Check that lifetime of Mesh.coordinates() is bound to
+    underlying mesh object"""
+    mesh = UnitSquareMesh(4, 4)
+
+    rc = sys.getrefcount(mesh)
+    coordinates = mesh.coordinates()
+    assert sys.getrefcount(mesh) == rc + 1
+    del coordinates
+    assert sys.getrefcount(mesh) == rc
+
+
 def test_mesh_connectivity_lifetime():
     """Check that lifetime of MeshConnectivity is bound to
     underlying mesh topology object"""
