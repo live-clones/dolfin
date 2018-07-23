@@ -223,10 +223,16 @@ class FunctionSpaceProduct(ufl.FunctionSpace):
         return ufl.FunctionSpaceProduct.num_sub_spaces(self)
 
     def sub_spaces(self):
-        return ufl.FunctionSpaceProduct.sub_spaces(self)
+        return ufl.FunctionSpaceProduct.ufl_sub_spaces(self)
 
     def sub_space(self, i):
-        return ufl.FunctionSpaceProduct.sub_spaces(self)[i]
+        return ufl.FunctionSpaceProduct.ufl_sub_spaces(self)[i]
+
+    def ufl_elements(self):
+        return ufl.FunctionSpaceProduct.ufl_elements(self)
+
+    def ufl_element(self):
+        return ufl.FunctionSpaceProduct.ufl_element(self)
 
 
 def VectorFunctionSpace(mesh, family, degree, dim=None, form_degree=None,
