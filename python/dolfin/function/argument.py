@@ -24,7 +24,7 @@ from .functionspace import FunctionSpace, FunctionSpaceProduct
 from .multimeshfunctionspace import MultiMeshFunctionSpace
 
 
-__all__ = ["TestFunction", "TrialFunction", "Argument", "ArgumentProduct",
+__all__ = ["TestFunction", "TrialFunction", "Argument",
            "TestFunctions", "TrialFunctions"]
 
 # --- Subclassing of ufl.{Basis, Trial, Test}Function ---
@@ -89,7 +89,8 @@ def TestFunction(V, part=None):
     This is the overloaded PyDOLFIN variant.
     """
     if isinstance(V, FunctionSpaceProduct):
-        return ArgumentProduct(V, 0)
+        return [Argument(V.sub_space(i), 0, i)
+                for i in range(V.num_sub_spaces())]
     else:
         return Argument(V, 0, part)
 
@@ -101,7 +102,8 @@ def TrialFunction(V, part=None):
 
     """
     if isinstance(V, FunctionSpaceProduct):
-        return ArgumentProduct(V, 1)
+        return [Argument(V.sub_space(i), 1, i)
+                for i in range(V.num_sub_spaces())]
     else:
         return Argument(V, 1, part)
 
@@ -138,33 +140,3 @@ def TrialFunctions(V):
 
     """
     return ufl.split(TrialFunction(V))
-
-
-def ArgumentProduct(V, number):
-    """UFL value: Create an Argument in a mixed space, and return a
-    tuple with the function components corresponding to the
-    subelements.
-
-    This is the overloaded PyDOLFIN variant.
-
-    """
-    if not isinstance(V, FunctionSpaceProduct):
-        raise TypeError("Illegal argument for creation of ArgumentProduct, not a FunctionSpaceProduct")
-
-    subspaces = V.sub_spaces()
-    arguments = list()
-    i = 0
-    for s in subspaces:
-        arguments.append(Argument(s, number, i))
-        i = i + 1
-    return tuple(arguments)
-
-# New function to define the view of an argument
-
-
-def View(argument, function_space):
-    assert isinstance(function_space, FunctionSpace)
-    assert isinstance(argument, Argument)
-    argument_view = Argument(function_space, argument.number(), argument.part())
-    argument_view.set_view(argument.function_space())
-    return argument_view
