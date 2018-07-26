@@ -61,6 +61,7 @@ class EigenLUSolver::EigenLUImplBase
 {
 public:
   virtual void solve(EigenVector &x, const EigenVector &b) = 0;
+  virtual ~EigenLUImplBase() {}
 };
 
 namespace {
