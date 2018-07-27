@@ -53,7 +53,7 @@ sol2 = Function(V.sub_space(1))
 solve(a2 == L2, sol2, bc2)
 
 # Save solution in vtk format
-out_sub1 = File("formsplitter-product-subdomain1.pvd")
+out_sub1 = File("formsplitter-subdomain1.pvd")
 out_sub1 << sol1
-out_sub2 = File("formsplitter-product-subdomain2.pvd")
+out_sub2 = File("formsplitter-subdomain2.pvd")
 out_sub2 << sol2

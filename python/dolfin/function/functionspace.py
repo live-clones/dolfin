@@ -9,6 +9,7 @@
 import ufl
 import dolfin.cpp as cpp
 from dolfin.jit.jit import ffc_jit
+from dolfin.cpp.log import dolfin_error
 
 
 class FunctionSpace(ufl.FunctionSpace):
@@ -214,9 +215,9 @@ class FunctionSpaceProduct(ufl.FunctionSpace):
     def __init__(self, *args):
         for a in args:
             if not isinstance(a, (ufl.FunctionSpace)):
-                cpp.dolfin_error("functionspace.py",
-                                 "create function space product",
-                                 "Expecting a list of FunctionSpace objects")
+                dolfin_error("functionspace.py",
+                             "create function space product",
+                             "Expecting a list of FunctionSpace objects")
         ufl.FunctionSpaceProduct.__init__(self, *args)
 
     def num_sub_spaces(self):

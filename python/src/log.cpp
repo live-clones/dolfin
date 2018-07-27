@@ -62,6 +62,7 @@ namespace dolfin_wrappers
     m.def("set_log_level", &dolfin::set_log_level);
     m.def("get_log_level", &dolfin::get_log_level);
     m.def("log", [](dolfin::LogLevel level, std::string s){ dolfin::log(level, s); });
+    m.def("dolfin_error", [](std::string s1, std::string s2, std::string s3){ dolfin::dolfin_error(s1, s2, s3); });
 
     // dolfin::Progress
     py::class_<dolfin::Progress, std::shared_ptr<dolfin::Progress>>
