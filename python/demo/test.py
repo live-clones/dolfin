@@ -65,7 +65,7 @@ def test_demos(mpiexec, num_proc, path, name):
                   'demo_block-assembly-3D2D.py',
                   'demo_block-assembly-3D1D.py',
                   'demo_functionspace-product.py',
-                  'demo_formsplitter-product.py',
+                  'demo_formsplitter.py',
         ]
         if name in broken:
             return
