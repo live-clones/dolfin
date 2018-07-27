@@ -181,6 +181,8 @@ void PETScSNESSolver::init(NonlinearProblem& nonlinear_problem,
   // FIXME: We are duplicating ghosted vector, while we don't need ghosted
   // NOTE: Seems that we can get rid of f_tmp and use working vec obtained by
   //       SNESLineSearchGetVecs
+  if (_snes_ctx.f_tmp)
+    VecDestroy(&_snes_ctx.f_tmp);
   ierr = VecDuplicate(_snes_ctx.x->vec(), &_snes_ctx.f_tmp);
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecDuplicate");
 
