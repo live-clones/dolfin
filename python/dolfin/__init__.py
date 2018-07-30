@@ -108,7 +108,7 @@ from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar,
                      BlockMatrix, BlockVector)
 from .cpp.la import GenericVector  # Remove when pybind11 transition complete
 from .cpp.log import (info, Table, set_log_level, get_log_level, LogLevel,
-                      Progress, dolfin_error)
+                      Progress)
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        MeshColoring, CellType, Cell, Facet, Face,

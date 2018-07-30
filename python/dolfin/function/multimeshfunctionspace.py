@@ -8,7 +8,6 @@
 
 import ufl
 import dolfin.cpp as cpp
-from dolfin.cpp.log import dolfin_error
 from dolfin.function.functionspace import FunctionSpace
 from six import string_types
 
@@ -51,10 +50,9 @@ class MultiMeshFunctionSpace(object):
     def __init_from_ufl(self, multimesh, element):
         self.info = [element]
         if not isinstance(element, ufl.FiniteElementBase):
-            dolfin_error("multimeshfunctionspace.py",
-                         "create function space",
-                         "Illegal argument, not a finite element: " + str(element))
-
+            cpp.dolfin_error("multimeshfunctionspace.py",
+                             "create function space",
+                             "Illegal argument, not a finite element: " + str(element))
         # Create and add individual function spaces
         V = cpp.function.MultiMeshFunctionSpace(multimesh)
         V_parts = []
@@ -74,17 +72,17 @@ class MultiMeshFunctionSpace(object):
         # Check arguments
         self.info = [family, degree]
         if not isinstance(family, string_types):
-            dolfin_error("multimeshfunctionspace.py",
-                         "create function space",
-                         "Illegal argument for finite element family, not a string: " + str(family))
+            cpp.dolfin_error("multimeshfunctionspace.py",
+                             "create function space",
+                             "Illegal argument for finite element family, not a string: " + str(family))
         if not isinstance(degree, int):
-            dolfin_error("multimeshfunctionspace.py",
-                         "create function space",
-                         "Illegal argument for degree, not an integer: " + str(degree))
+            cpp.dolfin_error("multimeshfunctionspace.py",
+                             "create function space",
+                             "Illegal argument for degree, not an integer: " + str(degree))
         if not isinstance(multimesh, cpp.mesh.MultiMesh):
-            dolfin_error("functionspace.py",
-                         "create multimesh function space",
-                         "Illegal argument, not a multimesh: " + str(multimesh))
+            cpp.dolfin_error("functionspace.py",
+                             "create multimesh function space",
+                             "Illegal argument, not a multimesh: " + str(multimesh))
 
         # Create UFL element
         mesh = multimesh.part(0)
