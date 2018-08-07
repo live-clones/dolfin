@@ -57,7 +57,7 @@ class Traction(UserExpression):
         self.t   = t
         self.dt  = dt
         self.old = old
-        super().__init__(**kwargs)
+        #super(Traction, self).__init__(**kwargs)
 
     def eval(self, values, x):
 
@@ -67,10 +67,10 @@ class Traction(UserExpression):
             t_tmp -= self.dt
 
         cutoff_t = 10.0*1.0/32.0;
-        weight = t_tmp/cutoff_t if t_tmp < cutoff_t else 1.0
+        weight = t_tmp/cutoff_t if t_tmp < cutoff_t else 0.0
 
-        values[0] = 1.0*weight
-        values[1] = 0.0
+        values[0] = 0.0
+        values[1] = 1.0*weight
 
     def value_shape(self):
         return (2,)
@@ -81,19 +81,21 @@ def left(x, on_boundary):
 
 # Sub domain for rotation at right end
 def right(x, on_boundary):
-    return x[0] > 0.99 and on_boundary
+    return near(x[0], 1.) and on_boundary
 
 # Load mesh and define function space
-mesh = Mesh("../dolfin_fine.xml.gz")
+# mesh = Mesh("../dolfin_fine.xml.gz")
+mesh = RectangleMesh(Point(0., 0.), Point(1., 0.1), 100, 20, "crossed")
 
 # Define function space
 V = VectorFunctionSpace(mesh, "CG", 1)
+V0 = FunctionSpace(mesh, "CG", 1)
 
 # Test and trial functions
 u = TrialFunction(V)
 r = TestFunction(V)
 
-E  = 1.0
+E  = 10.0
 nu = 0.0
 mu    = E / (2.0*(1.0 + nu))
 lmbda = E*nu / ((1.0 + nu)*(1.0 - 2.0*nu))
@@ -109,7 +111,7 @@ beta    = 0.36
 gamma   = 0.7
 dt      = 1.0/32.0
 t       = 0.0
-T       = 10*dt
+T       = 200*dt
 
 # Some useful factors
 factor_m1  = rho*(1.0-alpha_m)/(beta*dt*dt)
@@ -162,6 +164,7 @@ bc = DirichletBC(V, zero, left)
 
 # Time-stepping
 u = Function(V)
+sigxx = Function(V0, name="sigma_xx")
 vtk_file = File("elasticity.pvd")
 while t <= T:
 
@@ -175,7 +178,9 @@ while t <= T:
     update(u, u0, v0, a0, beta, gamma, dt)
 
     # Save solution to VTK format
-    vtk_file << u
+    #vtk_file << u
+    sigxx.assign(project(sigma(u)[0,0], V0))
+    vtk_file << sigxx
 
 # Plot solution
 plot(u, mode="displacement")
