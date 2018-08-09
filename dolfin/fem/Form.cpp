@@ -371,12 +371,6 @@ void Form::check() const
                 _ufc_form->num_coefficients(), _coefficients.size());
   }
 
-  // FIXME : This test is disabled for now because it fails in
-  // case we have a View(...) of an Argument in the Form.
-  // In case of a View(...) the function_space returned by
-  // _function_spaces[i] is the function_space of the "original"
-  // argument, not the one of the view.
-#if 0
   // Check argument function spaces
   for (std::size_t i = 0; i < _function_spaces.size(); ++i)
   {
@@ -394,7 +388,6 @@ void Form::check() const
                    "Wrong type of function space for argument %d", i);
     }
   }
-#endif
 }
 //-----------------------------------------------------------------------------
 Equation Form::operator==(const Form& rhs) const
