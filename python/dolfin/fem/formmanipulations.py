@@ -18,7 +18,6 @@
 
 import ufl
 import ufl.algorithms.elementtransformations
-from ufl.geometry import SpatialCoordinate
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.function.function import Function
 from dolfin.function.argument import Argument
@@ -68,11 +67,6 @@ def derivative(form, u, du=None, coefficient_derivatives=None):
 
         if isinstance(u, Function):
             V = u.function_space()
-            du = Argument(V, number, part)
-        elif isinstance(u, SpatialCoordinate):
-            mesh = u.ufl_domain().ufl_cargo()
-            element = u.ufl_domain().ufl_coordinate_element()
-            V = FunctionSpace(mesh, element)
             du = Argument(V, number, part)
         elif isinstance(u, (list, tuple)) and all(isinstance(w, Function) for w in u):
             raise RuntimeError("Taking derivative of form w.r.t. a tuple of Coefficients. Take derivative w.r.t. a single Coefficient on a mixed space instead.")
