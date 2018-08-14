@@ -23,7 +23,7 @@ import pytest
 import numpy as np
 from dolfin import *
 from ufl.log import UFLException
-
+from dolfin_utils.test import skip_in_parallel
 
 
 def test_first_shape_derivative():
@@ -132,6 +132,7 @@ def test_second_shape_derivative():
 
     test_second(Ja+Jb, ddJa + ddJb)
 
+@skip_in_parallel
 def test_integral_scaling_edge_case():
     mesh = UnitSquareMesh(6, 6)
     X = SpatialCoordinate(mesh)
@@ -140,14 +141,12 @@ def test_integral_scaling_edge_case():
 
     J = u * u * dx
 
-    # FIXME: add test in parallel, it does not throw UFLException
-    if MPI.rank(MPI.comm_world) == 0:
-        with pytest.raises(UFLException):
-            assemble(Constant(2.0) * derivative(J, X))
-        with pytest.raises(UFLException):
-            assemble(derivative(Constant(2.0) * derivative(J, X), X))
-        with pytest.raises(UFLException):
-            assemble(Constant(2.0) * derivative(derivative(J, X), X))
+    with pytest.raises(UFLException):
+        assemble(Constant(2.0) * derivative(J, X))
+    with pytest.raises(UFLException):
+        assemble(derivative(Constant(2.0) * derivative(J, X), X))
+    with pytest.raises(UFLException):
+        assemble(Constant(2.0) * derivative(derivative(J, X), X))
 
 if __name__ == "__main__":
     import os
