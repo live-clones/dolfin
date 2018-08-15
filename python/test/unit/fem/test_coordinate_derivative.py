@@ -132,6 +132,9 @@ def test_second_shape_derivative():
 
     test_second(Ja+Jb, ddJa + ddJb)
 
+
+# In parallel a RuntimeError is thrown instead of the specific
+# UFLException, so we skip that case.
 @skip_in_parallel
 def test_integral_scaling_edge_case():
     mesh = UnitSquareMesh(6, 6)
