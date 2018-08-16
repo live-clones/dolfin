@@ -9,7 +9,6 @@
 import ufl
 import dolfin.cpp as cpp
 from dolfin.function.functionspace import FunctionSpace
-from six import string_types
 
 
 class MultiMeshFunctionSpace(object):
@@ -72,7 +71,7 @@ class MultiMeshFunctionSpace(object):
     def _init_convenience(self, multimesh, family, degree):
         # Check arguments
         self.info = [family, degree]
-        if not isinstance(family, string_types):
+        if not isinstance(family, str):
             cpp.dolfin_error("multimeshfunctionspace.py",
                              "create function space",
                              "Illegal argument for finite element family, not a string: " + str(family))
