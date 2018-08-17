@@ -2913,7 +2913,8 @@ std::vector<double> XDMFFile::get_point_data_values(const Function& u)
 
   std::int64_t width = get_padded_width(u);
 
-  if (u.value_rank() > 0)
+  const std::size_t value_rank = u.value_rank();
+  if (value_rank > 0)
   {
     // Transpose vector/tensor data arrays
     const std::size_t num_local_vertices = mesh->num_entities(0);
@@ -2923,7 +2924,8 @@ std::vector<double> XDMFFile::get_point_data_values(const Function& u)
     {
       for (std::size_t j = 0; j < value_size; j++)
       {
-        std::size_t tensor_2d_offset = (j > 1 && value_size == 4) ? 1 : 0;
+        std::size_t tensor_2d_offset
+            = (j > 1 && value_rank == 2 && value_size == 4) ? 1 : 0;
         _data_values[i*width + j + tensor_2d_offset]
           = data_values[i + j*num_local_vertices];
       }
