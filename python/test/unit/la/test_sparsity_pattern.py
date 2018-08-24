@@ -50,7 +50,7 @@ def test_str(mesh, V):
     tl.init([index_map, index_map], TensorLayout.Ghosts.UNGHOSTED)
     sp = tl.sparsity_pattern()
     sp.init([index_map, index_map])
-    SparsityPatternBuilder.build(sp, mesh, [mesh.id(), mesh.id()], [dm, dm],
+    SparsityPatternBuilder.build(sp, mesh, [dm, dm],
                                  True, False, False, False,
                                  False, init=False, finalize=True)
 

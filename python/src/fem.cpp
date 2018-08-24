@@ -292,6 +292,12 @@ namespace dolfin_wrappers
     // dolfin::SparsityPatternBuilder
     py::class_<dolfin::SparsityPatternBuilder>(m, "SparsityPatternBuilder")
       .def_static("build", &dolfin::SparsityPatternBuilder::build,
+                  py::arg("sparsity_pattern"), py::arg("mesh"),
+                  py::arg("dofmaps"), py::arg("cells"),
+                  py::arg("interior_facets"), py::arg("exterior_facets"),
+                  py::arg("vertices"), py::arg("diagonal"),
+                  py::arg("init")=true, py::arg("finalize")=true)
+      .def_static("build", &dolfin::SparsityPatternBuilder::build_mixed,
                   py::arg("sparsity_pattern"), py::arg("mesh_ids"), py::arg("mesh"),
                   py::arg("dofmaps"), py::arg("cells"),
                   py::arg("interior_facets"), py::arg("exterior_facets"),

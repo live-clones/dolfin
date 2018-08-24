@@ -41,16 +41,36 @@ using namespace dolfin;
 //-----------------------------------------------------------------------------
 void
 SparsityPatternBuilder::build(SparsityPattern& sparsity_pattern,
-                              const Mesh& mesh,
-			      std::vector<std::size_t> mesh_ids,
-                              const std::vector<const GenericDofMap*> dofmaps,
-                              bool cells,
-                              bool interior_facets,
-                              bool exterior_facets,
-                              bool vertices,
-                              bool diagonal,
-                              bool init,
-                              bool finalize)
+			      const Mesh& mesh,
+			      const std::vector<const GenericDofMap*> dofmaps,
+			      bool cells,
+			      bool interior_facets,
+			      bool exterior_facets,
+			      bool vertices,
+			      bool diagonal,
+			      bool init,
+			      bool finalize)
+{
+  /// Mono-domain version :
+  /// Call the more generic build_mixed with mesh_ids[0] = mesh_ids[1] = integration mesh
+  /// mesh_ids[0] is the mesh id associated with the test function
+  /// mesh_ids[1] is the mesh id associated with the trial function
+  std::vector<std::size_t> mesh_ids = {mesh.id(), mesh.id()};
+  build_mixed(sparsity_pattern, mesh, mesh_ids, dofmaps, cells, interior_facets, exterior_facets, vertices, diagonal, init, finalize);
+}
+//-----------------------------------------------------------------------------
+void
+SparsityPatternBuilder::build_mixed(SparsityPattern& sparsity_pattern,
+				    const Mesh& mesh,
+				    std::vector<std::size_t> mesh_ids,
+				    const std::vector<const GenericDofMap*> dofmaps,
+				    bool cells,
+				    bool interior_facets,
+				    bool exterior_facets,
+				    bool vertices,
+				    bool diagonal,
+				    bool init,
+				    bool finalize)
 {
   // Get global dimensions and local range
   const std::size_t rank = dofmaps.size();
@@ -345,8 +365,8 @@ void SparsityPatternBuilder::build_multimesh_sparsity_pattern(
     // Build sparsity pattern for part by calling the regular dofmap
     // builder. This builds the sparsity pattern for all interacting
     // dofs on the current part.
-    build(sparsity_pattern, mesh, {mesh.id(), mesh.id()}, dofmaps,
-          true, false, false, true, false, false);
+    build(sparsity_pattern, mesh, dofmaps,
+	  true, false, false, true, false, false);
 
     log(PROGRESS, "Building inter-mesh sparsity pattern on part %d.", part);
 
