@@ -324,7 +324,7 @@ namespace dolfin_wrappers
       .def("method", &dolfin::DirichletBC::method)
       .def("zero", &dolfin::DirichletBC::zero)
       .def("zero_columns", &dolfin::DirichletBC::zero_columns,
-           py::arg("A"), py::arg("b"), py::arg("diagonal_value")=0.0)
+           py::arg("A"), py::arg("b"), py::arg("diagonal_value")=0.0, py::arg("transpose")=false)
       .def("get_boundary_values", [](const dolfin::DirichletBC& instance)
            {
              dolfin::DirichletBC::Map map;

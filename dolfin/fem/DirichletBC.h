@@ -290,7 +290,7 @@ namespace dolfin
     /// @param[in] diag_val (double)
     ///         This parameter would normally be -1, 0 or 1.
     void zero_columns(GenericMatrix& A, GenericVector& b,
-                      double diag_val=0) const;
+                      double diag_val=0, bool transpose=false) const;
 
     /// Return boundary markers
     ///
