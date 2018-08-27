@@ -169,14 +169,19 @@ MixedLinearVariationalSolver::assemble_system()
     }
 
     // Apply boundary conditions
-    // NOTE : Apply boundary conditions on each block doesn't preserve symmetry
-    for (size_t s=0; s<u.size(); ++s) //Number of blocks/subdomains
+    for (size_t i=0; i<u.size(); ++i)
     {
-      for (std::size_t i = 0; i < bcs[s].size(); i++)
+      // Iterate over bcs for i-th diag block
+      for (size_t c = 0; c < bcs[i].size(); c++)
       {
-	dolfin_assert(bcs[s][i]);
-	// Apply condition to diagonal blocks
-	bcs[s][i]->apply(*(As[s*u.size() + s]), *(bs[s]));
+	dolfin_assert(bcs[i][c]);
+	for (size_t j=0; j<u.size(); ++j)
+	{
+	  if(i!=j && a[i*u.size() + j][0]->ufc_form()) // Apply condition to off-diag blocks (zero values)
+	    bcs[i][c]->zero_columns(*(As[i*u.size() + j]), *(bs[i]), true);
+	  else // Apply condition to diag blocks
+	    bcs[i][c]->apply(*(As[i*u.size() + i]), *(bs[i]));
+	}
       }
     }
   }
