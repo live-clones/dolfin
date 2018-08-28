@@ -319,6 +319,10 @@ namespace dolfin_wrappers
           std::vector<double> x;
           self.get_vertex_coordinates(x);
           return x; }, "Get cell vertex coordinates")
+      .def("get_coordinate_dofs", [](const dolfin::Cell& self){
+          std::vector<double> x;
+          self.get_coordinate_dofs(x);
+          return x; }, "Get the coordinates of the dofs in this cell")
       .def("orientation", (std::size_t (dolfin::Cell::*)() const) &dolfin::Cell::orientation)
       .def("orientation", (std::size_t (dolfin::Cell::*)(const dolfin::Point&) const) &dolfin::Cell::orientation);
 
