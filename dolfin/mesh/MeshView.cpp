@@ -168,7 +168,7 @@ Mesh MeshView::create(const MeshFunction<std::size_t>& marker,
   editor.init_vertices_global(vertex_fwd_map.size(),
                               MPI::sum(mesh->mpi_comm(), local_count));
   for (unsigned int i = 0; i != vertex_fwd_map.size(); ++i)
-    editor.add_vertex(i, mesh->geometry().point(vertex_fwd_map[i]));
+    new_mesh.geometry().set(i, mesh->geometry().point(vertex_fwd_map[i]).coordinates());
 
   editor.close();
 
