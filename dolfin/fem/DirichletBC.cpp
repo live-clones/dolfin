@@ -313,7 +313,7 @@ void DirichletBC::zero_columns(GenericMatrix& A,
 			       bool transpose) const
 {
   // Check arguments
-  check_arguments(&A, &b, NULL, 1);
+  check_arguments(&A, &b, NULL, !transpose);
 
   // A map to hold the mapping from boundary dofs to boundary values
   Map bv_map;
