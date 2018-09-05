@@ -11,12 +11,17 @@ This demo is implemented in a single Python file,
 :download:`demo_elastodynamics.py`, which contains both the
 variational forms and the solver.
 
-This demo shows how to perform time integration of transient elastodynamics using the generalized-:math:`\alpha` method [ref].
-In particular it demonstrates how to:
+This demo shows how to perform time integration of transient elastodynamics using the generalized-:math:`\alpha` method [ERL2002]_. In particular it demonstrates how to:
 
 * formulate mass and damping forms of the elastodynamics equation
 * implement the generalized-:math:`\alpha` method and its influence on the solution
 * perform efficient computation of stresses using ``LocalSolver``
+
+The deformed structure evolution over time along with the axial stress will look as follows:
+
+.. image:: beam_transient_deformation.gif
+   :width: 70%
+   :align: center
 
 
 ----------------------------------------- 
@@ -28,8 +33,8 @@ The elastodynamics equation combine the balance of linear momentum:
 .. math::
    \nabla \cdot \sigma + \rho b = \rho \ddot{u}
 
-where :math:`u` is the displacement vector field, :math:`\rho` the material density, 
-:math:`b` a given body force and :math:`\sigma` the stress tensor which is related 
+where :math:`u` is the displacement vector field, :math:`\ddot{u}=\partial^2 u/\partial t^2` is the acceleration, 
+:math:`\rho` the material density, :math:`b` a given body force and :math:`\sigma` the stress tensor which is related 
 to the displacement through a constitutive equation. In the case of isotropic linearized elasticity, one has:
 
 .. math::
@@ -62,7 +67,7 @@ which is a generalized :math:`n`-dof harmonic oscillator equation.
 
 Quite often in structural dynamics, structures do not oscillate perfectly but lose energy through various dissipative mechanisms (friction with air or supports,
 internal dissipation through plasticity, damage, etc.). Dissipative terms can be introduced at the level of the constitutive equation if these mechanisms are well
-known but quite often it is not the case. Dissipation can then be modeled by adding an ad hoc damping term depending on the structure velocity :math:`\dot{u}` 
+known but quite often it is not the case. Dissipation can then be modeled by adding an *ad hoc* damping term depending on the structure velocity :math:`\dot{u}` 
 to the previous evolution equation:
 
 .. math::
@@ -80,9 +85,6 @@ can be fitted against experimental measures for instance (usually by measuring t
 ---------------------------------------------------------------
 Time discretization using the generalized-:math:`\alpha` method
 ---------------------------------------------------------------
-
-Silvano Erlicher, Luca Bonaventura, Oreste Bursi. The analysis of the Generalized-alpha method for
-non-linear dynamic problems. Computational Mechanics, Springer Verlag, 2002, 28, pp.83-104, doi:10.1007/s00466-001-0273-z
 
 We now introduce a time discretization of the interval study :math:`[0;T]` in :math:`N+1` time increments :math:`t_0=0,t_1,\ldots,t_N,t_{N+1}=T` 
 with :math:`\Delta t=T/N` denoting the time step (supposed constant). The resolution will make use of the generalized-:math:`\alpha` method
@@ -115,7 +117,7 @@ After plugging into the evolution and rearranging the known and unknown terms, o
 
 .. math::
    \begin{align*}
-   [\bar{K}]\{u_{n+1}\} &= \{F(t_{n+1-\alpha_f)}\} - \alpha_f[K]\{u_n\} \\
+   [\bar{K}]\{u_{n+1}\} &= \{F(t_{n+1-\alpha_f})\} - \alpha_f[K]\{u_n\} \\
 	&- [C](c_1\{u_n\}+c_2\{\dot{u}_n\}+c_3\{\ddot{u}_n\})-[M](m_1\{u_n\}+m_2\{\dot{u}_n\}+m_3\{\ddot{u}_n\})
  \end{align*}
 where:
@@ -163,9 +165,9 @@ After importing the relevant modules, the mesh and subdomains for boundary condi
      return near(x[0], 1.) and on_boundary
 
 
-Material parameters for the elastic constitutive relation, the material density :math:`rho`
+Material parameters for the elastic constitutive relation, the material density :math:`\rho`
 for the mass matrix and the two parameters defining the Rayleigh damping :math:`\eta_M,\eta_K`
-(here zero damping is considered but this value can be changed) are now defined::
+(initially zero damping is considered but this value can be changed) are now defined::
 
  # Elastic parameters
  E  = 1000.0
@@ -177,31 +179,31 @@ for the mass matrix and the two parameters defining the Rayleigh damping :math:`
  rho = Constant(1.0)
 
  # Rayleigh damping coefficients
- eta_m = Constant(0.01)
- eta_k = Constant(0.01)
+ eta_m = Constant(0.)
+ eta_k = Constant(0.)
 
 Parameters used for the time discretization scheme are now defined. First, the four parameters used by the
-generalized-:math:` \alpha` method are chosen. Here, we used the optimal dissipation and second-order accuracy
+generalized-:math:`\alpha` method are chosen. Here, we used the optimal dissipation and second-order accuracy
 choice for :math:`\beta` and :math:`\gamma`, namely :math:`\beta=\dfrac{1}{4}\left(\gamma+\dfrac{1}{2}\right)^2` and
 :math:`\gamma=\dfrac{1}{2}+\alpha_m-\alpha_f` with :math:`\alpha_m=0.2` and :math:`\alpha_f=0.4` ensuring unconditional stability::
 
  # Generalized-alpha method parameters
- alpha_m = 0.2
- alpha_f = 0.4
- gamma   = 0.5+alpha_f-alpha_m
- beta    = (gamma+0.5)**2/4.
+ alpha_m = Constant(0.)
+ alpha_f = Constant(0.4)
+ gamma   = Constant(0.5+alpha_f-alpha_m)
+ beta    = Constant((gamma+0.5)**2/4.)
 
 We also define the final time of the interval, the number of time steps and compute the associated time interval
 between two steps::
 
  # Time-stepping parameters
  T       = 4.0
- Nsteps  = 200
- dt = T/Nsteps
+ Nsteps  = 50
+ dt = Constant(T/Nsteps)
 
 
 We now define the time-dependent loading. Body forces are zero and the imposed loading consists of a uniform vertical traction
-applied at the ``right`` extremity. The loading amplitude will vary linearly from :math:`0` to :math:`p_0` over the time interval
+applied at the ``right`` extremity. The loading amplitude will vary linearly from :math:`0` to :math:`p_0=1` over the time interval
 :math:`[0;T_c=T/5]`, after :math:`T_c` the loading is removed. For this purpose, we used the following JIT-compiled ``Expression``.
 In particular, it uses a conditional syntax using operators ``?`` and ``:`` ::
 
@@ -211,7 +213,7 @@ In particular, it uses a conditional syntax using operators ``?`` and ``:`` ::
  p = Expression(("0", "t <= tc ? p0*t/tc : 0", "0"), t=0, tc=cutoff_Tc, p0=p0, degree=0)
 
 A standard vectorial :math:`P^1` FunctionSpace is now defined for the displacement, velocity and acceleration fields. We also
-define a tensorial FunctionSpace for saving the stress field evolution::
+define a tensorial DG-0 FunctionSpace for saving the stress field evolution::
 
  # Define function space for displacement, velocity and acceleration
  V = VectorFunctionSpace(mesh, "CG", 1)
@@ -249,7 +251,7 @@ The exterior surface measure ``ds`` is then defined using the boundary subdomain
  bc = DirichletBC(V, zero, left)
 
 Python functions are now defined to obtain the elastic stress tensor :math:`\sigma` (linear isotropic elasticity), the bilinear mass and stiffness forms as well
-as the damping form obtained as a linear combination of the mass and stiffness forms (Rayleigh damping). The linear form corresponding ot the work of external forces is also defined::
+as the damping form obtained as a linear combination of the mass and stiffness forms (Rayleigh damping). The linear form corresponding to the work of external forces is also defined::
 
  # Stress tensor
  def sigma(r):
@@ -271,25 +273,35 @@ as the damping form obtained as a linear combination of the mass and stiffness f
  def Wext(u_):
      return dot(u_, p)*dss(3)
 
-Functions for implementing the time stepping scheme are also implemented. ``update_a`` returns :math:`\{\ddot{u}_{n+1}\}` 
-as a function of the variables at the previous increment and of the new displacement :math:`\{u_{n+1}\}`. The expressions
-involved are such that this function can be used with UFL representations or array of values (we will make use of both possibilities
-later), in particular the time step ``dt`` and time-stepping scheme parameters are simple floats and not ``Constant`` for instance.
+Functions for implementing the time stepping scheme are also defined. ``update_a`` returns :math:`\{\ddot{u}_{n+1}\}` 
+as a function of the variables at the previous increment and of the new displacement :math:`\{u_{n+1}\}`. The function accepts a keyword ``ufl`` so that the expressions involved can be used with UFL representations if ``True`` or with array of values if ``False`` (we will make use of both possibilities later). 
+In particular, the time step ``dt`` and time-stepping scheme parameters are either ``Constant`` or floats depending on the case.
 Function ``update_v`` does the same but for the new velocity :math:`\{\dot{u}_{n+1}\}` as a function of the previous variables 
 and of the new acceleration. Finally, function ``update_fields`` performs the final update at the end of the time step when the new 
 displacement :math:`\{u_{n+1}\}` has effectively been computed. In this context, the new acceleration and velocities are computed 
-using the vector representation of the different fields. The variables keeping track of the values at the previous increment are now 
-assigned the new values computed for the current increment::
+using the vector representation of the different fields. The variables keeping track of the values at the previous increment are now assigned the new values computed for the current increment::
 
  # Update formula for acceleration
  # a = 1/(2*beta)*((u - u0 - v0*dt)/(0.5*dt*dt) - (1-2*beta)*a0)
- def update_a(u, u_old, v_old, a_old):
-     return (u-u_old-dt*v_old)/beta/dt**2 - (1-2*beta)/2/beta*a_old
+ def update_a(u, u_old, v_old, a_old, ufl=True):
+     if ufl:
+         dt_ = dt
+         beta_ = beta
+     else:
+         dt_ = float(dt)
+         beta_ = float(beta)
+     return (u-u_old-dt_*v_old)/beta_/dt_**2 - (1-2*beta_)/2/beta_*a_old
 
  # Update formula for velocity
  # v = dt * ((1-gamma)*a0 + gamma*a) + v0
- def update_v(a, u_old, v_old, a_old):
-     return v_old + dt*((1-gamma)*a_old + gamma*a)
+ def update_v(a, u_old, v_old, a_old, ufl=True):
+     if ufl:
+         dt_ = dt
+         gamma_ = gamma
+     else:
+         dt_ = float(dt)
+         gamma_ = float(gamma)
+     return v_old + dt_*((1-gamma_)*a_old + gamma_*a)
 
  def update_fields(u, u_old, v_old, a_old):
      """Update fields at the end of each time step.""" 
@@ -299,14 +311,14 @@ assigned the new values computed for the current increment::
      v0_vec, a0_vec = v_old.vector(), a_old.vector() 
  
      # use update functions using vector arguments
-     a_vec = update_a(u_vec, u0_vec, v0_vec, a0_vec)
-     v_vec = update_v(a_vec, u0_vec, v0_vec, a0_vec)
+     a_vec = update_a(u_vec, u0_vec, v0_vec, a0_vec, ufl=False)
+     v_vec = update_v(a_vec, u0_vec, v0_vec, a0_vec, ufl=False)
  
      # Update (u_old <- u)
      v_old.vector()[:], a_old.vector()[:] = v_vec, a_vec
      u_old.vector()[:] = u.vector()
 
-The system variational form is now build by expressing the new acceleration :math:`\{\ddot{u}_{n+1}\}` as a function of
+The system variational form is now built by expressing the new acceleration :math:`\{\ddot{u}_{n+1}\}` as a function of
 the TrialFunction ``du`` using ``update_a``, which here works as a UFL expression. Using this new acceleration, the same is
 done for the new velocity using ``update_v``. Intermediate averages using parameters :math:`\alpha_m,\alpha_f` of the generalized- :math:`\alpha`
 method are obtained with a user-defined fuction ``avg``. The weak form evolution equation is then written using all these 
@@ -316,15 +328,15 @@ quantities. Since the problem is linear, we then extract the bilinear and linear
      return alpha*x_old + (1-alpha)*x_new
 
  # Residual
- a_new = update_a(du, u_old, v_old, a_old)
- v_new = update_v(a_new, u_old, v_old, a_old)
+ a_new = update_a(du, u_old, v_old, a_old, ufl=True)
+ v_new = update_v(a_new, u_old, v_old, a_old, ufl=True)
  res = m(avg(a_old, a_new, alpha_m), u_) + c(avg(v_old, v_new, alpha_f), u_) \
         + k(avg(u_old, du, alpha_f), u_) - Wext(u_)
  a_form = lhs(res)
  L_form = rhs(res)
 
-Alternatively, the use of ``derivative`` can be made for non-linear problems for instance or directly formulate the system to
-solve, involving the modified stiffness matrix :math:`[\bar{K}]` and the various coefficients introduced earlier.
+Alternatively, the use of ``derivative`` can be made for non-linear problems for instance or one can also directly 
+formulate the system to solve, involving the modified stiffness matrix :math:`[\bar{K}]` and the various coefficients introduced earlier.
 
 Since the system matrix to solve is the same for each time step (constant time step), it is not necessary to factorize the system at each increment.
 It can be done once and for all and only perform assembly of the varying right-hand side and backsubstitution to obtain the solution 
@@ -333,7 +345,7 @@ much more efficiently. This is done by defining a ``LUSolver`` object and asking
  # Define solver for reusing factorization
  solver = LUSolver("mumps")
  solver.parameters["symmetric"] = True
- solver.parameters["reuse_factorization"] = False
+ solver.parameters["reuse_factorization"] = True
  K, res = assemble_system(a_form, L_form, bc)
 
 We now initiate the time stepping loop. We will keep track of the beam vertical tip displacement over time as well as the different
@@ -380,7 +392,7 @@ performed: stresses are computed and written to the result file and the tip disp
      print("Time: ", t)
 
      # Forces are evaluated at t_{n+1-alpha_f}=t_{n+1}-alpha_f*dt
-     p.t = t-alpha_f*dt
+     p.t = t-float(alpha_f*dt)
 
      # Solve for new displacement
      res = assemble(L_form)
@@ -439,7 +451,6 @@ When the time evolution loop is finished, the evolution of the tip displacement 
  plt.xlabel("Time")
  plt.ylabel("Tip displacement")
  plt.ylim(-0.5, 0.5)
- plt.savefig("displacement.png",dpi=400)
  plt.show()
 
  # Plot energies evolution
@@ -449,7 +460,6 @@ When the time evolution loop is finished, the evolution of the tip displacement 
  plt.xlabel("Time")
  plt.ylabel("Energies")
  plt.ylim(0, 0.0011)
- plt.savefig("energies.png",dpi=400)
  plt.show()
 
 Analyzing the results
@@ -472,3 +482,15 @@ For both cases, the scheme is unconditionally stable. Moreover, these difference
    :align: center
 
    Generalized-:math:`\alpha` with :math:`\alpha_m=0.2, \alpha_f=0.4`
+
+For non-zero Rayleigh damping :math:`\eta_M=\eta_K=0.01`, the total energy including viscous dissipation tends to oscillate around a constant value, with oscillations vanishing for decreasing time steps.
+
+.. image:: energies_generalized_alpha_damping.png
+   :width: 60%
+   :align: center
+
+
+References
+-----------
+
+.. [ERL2002] Silvano Erlicher, Luca Bonaventura, Oreste Bursi. The analysis of the Generalized-alpha method for non-linear dynamic problems. Computational Mechanics, Springer Verlag, 2002, 28, pp.83-104, doi:10.1007/s00466-001-0273-z
