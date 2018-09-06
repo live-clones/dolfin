@@ -19,7 +19,7 @@ This demo shows how to perform time integration of transient elastodynamics usin
 
 The deformed structure evolution over time along with the axial stress will look as follows:
 
-.. image:: beam_transient_deformation.gif
+.. image:: elastodynamics-transient_deformation.gif
    :width: 70%
    :align: center
 
@@ -471,13 +471,13 @@ This scheme is known for being conservative. This can be observed (figure-left) 
 for non zero alpha parameters, e.g. :math:`\alpha_m=0.2, \alpha_f=0.4`, it can be observed (figure-right) that the energy is decreasing during this phase, indicating numerical damping.
 For both cases, the scheme is unconditionally stable. Moreover, these differences vanish when reducing the time step.
 
-.. figure:: energies_newmark.png
+.. figure:: elastodynamics-energies_newmark.png
    :width: 60%
    :align: center
 
    Newmark-:math:`\beta` method :math:`\alpha_m=\alpha_f=0`
 
-.. figure:: energies_generalized_alpha.png
+.. figure:: elastodynamics-energies_generalized_alpha.png
    :width: 60%
    :align: center
 
@@ -485,7 +485,7 @@ For both cases, the scheme is unconditionally stable. Moreover, these difference
 
 For non-zero Rayleigh damping :math:`\eta_M=\eta_K=0.01`, the total energy including viscous dissipation tends to oscillate around a constant value, with oscillations vanishing for decreasing time steps.
 
-.. image:: energies_generalized_alpha_damping.png
+.. image:: elastodynamics-energies_generalized_alpha_damping.png
    :width: 60%
    :align: center
 
