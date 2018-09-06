@@ -75,6 +75,7 @@ to the previous evolution equation:
 
 The damping form will be considered here as bilinear and symmetric, being therefore associated with a damping matrix :math:`[C]`.
 
+~~~~~~~~~~~~~~~~~
 Rayleigh damping
 ~~~~~~~~~~~~~~~~~
 
@@ -120,6 +121,7 @@ After plugging into the evolution and rearranging the known and unknown terms, o
    [\bar{K}]\{u_{n+1}\} &= \{F(t_{n+1-\alpha_f})\} - \alpha_f[K]\{u_n\} \\
 	&- [C](c_1\{u_n\}+c_2\{\dot{u}_n\}+c_3\{\ddot{u}_n\})-[M](m_1\{u_n\}+m_2\{\dot{u}_n\}+m_3\{\ddot{u}_n\})
  \end{align*}
+
 where:
  * :math:`[\bar{K}] = [K]+c_1[C]+m_1[M]`
  * :math:`c_1 = \dfrac{\gamma(1-\alpha_f)}{\beta\Delta t}`
@@ -131,8 +133,9 @@ where:
  
 Once the linear system has been solved for :math:`\{u_{n+1}\}`, the new velocity and acceleration are computed using the previous formulae.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Popular choice of parameters
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The most popular choice for the parameters is: :math:`\alpha_m,\alpha_f \leq 1/2` and :math:`\gamma=\dfrac{1}{2}+\alpha_m-\alpha_f`,
 :math:`\beta=\dfrac{1}{4}\left(\gamma+\dfrac{1}{2}\right)^2` which ensures unconditional stability, optimal dissipation and second-order accuracy.
@@ -462,6 +465,7 @@ When the time evolution loop is finished, the evolution of the tip displacement 
  plt.ylim(0, 0.0011)
  plt.show()
 
+---------------------
 Analyzing the results
 ---------------------
 
@@ -489,7 +493,7 @@ For non-zero Rayleigh damping :math:`\eta_M=\eta_K=0.01`, the total energy inclu
    :width: 60%
    :align: center
 
-
+-----------
 References
 -----------
 
