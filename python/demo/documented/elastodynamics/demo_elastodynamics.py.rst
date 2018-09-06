@@ -191,7 +191,7 @@ choice for :math:`\beta` and :math:`\gamma`, namely :math:`\beta=\dfrac{1}{4}\le
 :math:`\gamma=\dfrac{1}{2}+\alpha_m-\alpha_f` with :math:`\alpha_m=0.2` and :math:`\alpha_f=0.4` ensuring unconditional stability::
 
  # Generalized-alpha method parameters
- alpha_m = Constant(0.)
+ alpha_m = Constant(0.2)
  alpha_f = Constant(0.4)
  gamma   = Constant(0.5+alpha_f-alpha_m)
  beta    = Constant((gamma+0.5)**2/4.)
