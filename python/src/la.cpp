@@ -1074,6 +1074,12 @@ namespace dolfin_wrappers
              dolfin::PETScVector r, c;
              self.get_eigenpair(lr, lc, r, c, i);
              return py::make_tuple(lr, lc, r, c);
+           })
+      .def("get_eigenpair", [](dolfin::SLEPcEigenSolver& self, dolfin::PETScVector& r, dolfin::PETScVector& c, std::size_t i)
+           {
+             double lr, lc;
+             self.get_eigenpair(lr, lc, r, c, i);
+             return py::make_tuple(lr, lc);
            });
     #endif
 
