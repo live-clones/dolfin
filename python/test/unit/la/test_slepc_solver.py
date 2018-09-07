@@ -42,7 +42,7 @@ def SLEPcEigenSolverOperatorsFromSetOperators(K, M):
 
 @fixture
 def mesh():
-    return UnitSquareMesh(32, 32)
+    return UnitSquareMesh(8, 8)
 
 @fixture
 def V(mesh):
@@ -96,10 +96,10 @@ def test_slepc_eigensolver_gen_hermitian(K_M, SLEPcEigenSolverWrapper):
 
     esolver.parameters["solver"] = "krylov-schur"
     esolver.parameters["spectral_transform"] = 'shift-and-invert'
-    esolver.parameters['spectral_shift'] = 0.0
+    esolver.parameters['spectral_shift'] = 0.5
     esolver.parameters["problem_type"] = "gen_hermitian"
 
-    nevs = 20
+    nevs = 10
     esolver.solve(nevs)
 
     # Test default eigenvalue
@@ -142,8 +142,10 @@ def test_slepc_null_space(K_M, V):
     V.dofmap().set(nullspace_basis, 1.0)
     esolver.set_deflation_space(VectorSpaceBasis([nullspace_basis]))
 
-    nevs = 20
+    nevs = 10
     esolver.solve(nevs)
+
+    phi_re, phi_im = Function(V), Function(V)
 
     for j in range(1, nevs):
         re, im, v_re, v_im = esolver.get_eigenpair(j)
@@ -151,6 +153,10 @@ def test_slepc_null_space(K_M, V):
         assert near(im, 0.0)
         assert v_re.norm("l2") > 0.0
         assert near(v_im.norm("l2"), 0.0)
+
+        esolver.get_eigenpair(phi_re.vector(), phi_im.vector(), j)
+        assert near(v_re.norm("l2"), phi_re.vector().norm("l2"))
+        assert near(v_im.norm("l2"), phi_im.vector().norm("l2"))
 
 
 @skip_if_not_PETsc_or_not_slepc
@@ -182,8 +188,10 @@ def test_slepc_vector_null_space(K_M_vec, V_vec):
     nullspace_basis = build_nullspace(V_vec, u0.vector())
     esolver.set_deflation_space(nullspace_basis)
 
-    nevs = 20
+    nevs = 10
     esolver.solve(nevs)
+
+    phi_re, phi_im = Function(V_vec), Function(V_vec)
 
     for j in range(1, nevs):
         re, im, v_re, v_im = esolver.get_eigenpair(j)
@@ -192,6 +200,9 @@ def test_slepc_vector_null_space(K_M_vec, V_vec):
         assert v_re.norm("l2") > 0.0
         assert near(v_im.norm("l2"), 0.0)
 
+        esolver.get_eigenpair(phi_re.vector(), phi_im.vector(), j)
+        assert near(v_re.norm("l2"), phi_re.vector().norm("l2"))
+        assert near(v_im.norm("l2"), phi_im.vector().norm("l2"))
 
 @skip_if_not_PETsc_or_not_slepc
 def test_slepc_initial_space(K_M, V):
@@ -206,8 +217,10 @@ def test_slepc_initial_space(K_M, V):
     u0 = as_backend_type(interpolate(Constant(2.0), V).vector())
     esolver.set_initial_space(VectorSpaceBasis([u0]))
 
-    nevs = 20
+    nevs = 10
     esolver.solve(nevs)
+
+    phi_re, phi_im = Function(V), Function(V)
 
     for j in range(1, nevs):
         re, im, v_re, v_im = esolver.get_eigenpair(j)
@@ -215,6 +228,10 @@ def test_slepc_initial_space(K_M, V):
         assert near(im, 0.0)
         assert v_re.norm("l2") > 0.0
         assert near(v_im.norm("l2"), 0.0)
+
+        esolver.get_eigenpair(phi_re.vector(), phi_im.vector(), j)
+        assert near(v_re.norm("l2"), phi_re.vector().norm("l2"))
+        assert near(v_im.norm("l2"), phi_im.vector().norm("l2"))
 
 
 @skip_if_not_PETsc_or_not_slepc
@@ -232,8 +249,10 @@ def test_slepc_vector_initial_space(K_M_vec, V_vec):
     initial_space = VectorSpaceBasis([u0, u1])
     esolver.set_initial_space(initial_space)
 
-    nevs = 20
+    nevs = 10
     esolver.solve(nevs)
+
+    phi_re, phi_im = Function(V_vec), Function(V_vec)
 
     for j in range(1, nevs):
         re, im, v_re, v_im = esolver.get_eigenpair(j)
@@ -241,3 +260,7 @@ def test_slepc_vector_initial_space(K_M_vec, V_vec):
         assert near(im, 0.0)
         assert v_re.norm("l2") > 0.0
         assert near(v_im.norm("l2"), 0.0)
+
+        esolver.get_eigenpair(phi_re.vector(), phi_im.vector(), j)
+        assert near(v_re.norm("l2"), phi_re.vector().norm("l2"))
+        assert near(v_im.norm("l2"), phi_im.vector().norm("l2"))
