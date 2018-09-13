@@ -314,6 +314,7 @@ namespace dolfin_wrappers
       .def("homogenize", &dolfin::DirichletBC::homogenize)
       .def("method", &dolfin::DirichletBC::method)
       .def("zero", &dolfin::DirichletBC::zero)
+	  .def("markers", &dolfin::DirichletBC::markers)
       .def("zero_columns", &dolfin::DirichletBC::zero_columns,
            py::arg("A"), py::arg("b"), py::arg("diagonal_value")=0.0)
       .def("get_boundary_values", [](const dolfin::DirichletBC& instance)
@@ -332,7 +333,7 @@ namespace dolfin_wrappers
            &dolfin::DirichletBC::apply)
       .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericMatrix&, dolfin::GenericVector&, const dolfin::GenericVector&) const)
            &dolfin::DirichletBC::apply)
-      .def("user_subdomain", &dolfin::DirichletBC::user_sub_domain)
+      .def("user_sub_domain", &dolfin::DirichletBC::user_sub_domain)
       .def("set_value", &dolfin::DirichletBC::set_value)
       .def("set_value", [](dolfin::DirichletBC& self, py::object value)
            {
