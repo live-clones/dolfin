@@ -314,7 +314,7 @@ namespace dolfin_wrappers
       .def("homogenize", &dolfin::DirichletBC::homogenize)
       .def("method", &dolfin::DirichletBC::method)
       .def("zero", &dolfin::DirichletBC::zero)
-	  .def("markers", &dolfin::DirichletBC::markers)
+      .def("markers", &dolfin::DirichletBC::markers)
       .def("zero_columns", &dolfin::DirichletBC::zero_columns,
            py::arg("A"), py::arg("b"), py::arg("diagonal_value")=0.0)
       .def("get_boundary_values", [](const dolfin::DirichletBC& instance)
