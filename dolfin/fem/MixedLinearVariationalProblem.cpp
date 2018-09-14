@@ -62,7 +62,6 @@ MixedLinearVariationalProblem::MixedLinearVariationalProblem(
 
   // Build the necessary mappings
   build_mappings();
-
 }
 //-----------------------------------------------------------------------------
 MixedLinearVariationalProblem::form_list_type
@@ -195,6 +194,9 @@ MixedLinearVariationalProblem::build_mappings()
     for(size_t j=0; j<_l[i].size(); ++j)
     {
       // Get integration mesh topology
+      if(!_l[i][j]->ufc_form())
+	break;
+
       auto mesh_mapping = _l[i][j]->mesh()->topology().mapping();
       // Get meshes associated with the test function
       auto mesh0 = _l[i][j]->function_space(0)->mesh();

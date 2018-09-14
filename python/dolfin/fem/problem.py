@@ -83,6 +83,13 @@ class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
         form_compiler_parameters = form_compiler_parameters or {}
         self.form_compiler_parameters = form_compiler_parameters
 
+        # Update rhs if we don't have a consistent number of blocks
+        if len(L) != len(u):
+            L_tmp = [None for i in range(len(u))]
+            for Li in L:
+                L_tmp[Li.arguments()[0].part()] = Li
+            L = L_tmp
+
         # Check number of blocks in lhs, rhs are consistent
         assert(len(a) == len(u) * len(u))
         assert(len(L) == len(u))
@@ -93,7 +100,7 @@ class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
         for Li in L:
             if Li is None:
                 L_list.append([cpp.fem.Form(1, 0)])  # single-elt list
-            if Li.empty():
+            elif Li.empty():
                 L_list.append([cpp.fem.Form(1, 0)])  # single-elt list
             else:
                 Ls = []  # List of Li subforms

@@ -66,24 +66,42 @@ MixedLinearVariationalSolver::assemble_system()
   std::vector<std::shared_ptr<GenericMatrix>> As;
   std::vector<std::shared_ptr<GenericVector>> bs;
   std::vector<std::shared_ptr<GenericVector>> us;
+
+  std::vector<std::shared_ptr<const IndexMap>> index_maps(2);
+  bool has_ufc_form = false;
+
+  MPI_Comm comm = u[0]->vector()->mpi_comm(); // TO CHECK (not tested in //)
+
   for (size_t i=0; i<u.size(); ++i)
   {
-    for(size_t j=0; j<L[i].size(); ++j)
-      dolfin_assert(L[i][j]);
     dolfin_assert(u[i]);
-
     dolfin_assert(u[i]->vector());
     us.push_back(u[i]->vector());
 
     // Create rhs vectors
-    MPI_Comm comm = u[0]->vector()->mpi_comm(); // TO CHECK (not tested in //)
+    for(size_t j=0; j<L[i].size(); ++j)
+    {
+      dolfin_assert(L[i][j]);
+      if (L[i][j]->ufc_form())
+	has_ufc_form = true;
+    }
+
     std::shared_ptr<GenericVector> b = u[i]->vector()->factory().create_vector(comm);
+    index_maps[0] = u[i]->function_space()->dofmap().get()->index_map();
+
+    if(!has_ufc_form)
+    {
+      auto tensor_layout = b->factory().create_layout(comm, 1);
+      tensor_layout->init(index_maps, TensorLayout::Ghosts::UNGHOSTED);
+      b->init(*tensor_layout);
+      b->zero();
+    }
     bs.push_back(b);
 
     // Create lhs matrices
     for (size_t j=0; j<u.size(); ++j)
     {
-      bool has_ufc_form = false;
+      has_ufc_form = false;
       for(size_t k=0; k<a[i*u.size() + j].size(); ++k)
       {
 	dolfin_assert(a[i*u.size() + j][k]);
@@ -91,15 +109,18 @@ MixedLinearVariationalSolver::assemble_system()
 	  has_ufc_form = true;
       }
 
-      if(has_ufc_form)
+      std::shared_ptr<GenericMatrix> A = u[j]->vector()->factory().create_matrix(comm);
+      index_maps[1] = u[j]->function_space()->dofmap().get()->index_map();
+
+      if(!has_ufc_form)
       {
-	std::shared_ptr<GenericMatrix> A = u[j]->vector()->factory().create_matrix(comm);
-	As.push_back(A);
+	auto tensor_layout = A->factory().create_layout(comm, 2);
+	tensor_layout->init(index_maps, TensorLayout::Ghosts::UNGHOSTED);
+	A->init(*tensor_layout);
+	A->zero();
+	A->apply("add");
       }
-      else
-      {
-	As.push_back(NULL);
-      }
+      As.push_back(A);
     }
   }
 

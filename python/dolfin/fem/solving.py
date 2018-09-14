@@ -444,12 +444,12 @@ def assemble_mixed_system(*args, **kwargs):
 
     if u.num_sub_spaces() > 0:
         # Extract blocks from the variational formulation
-        eq_lsh_forms = extract_blocks(eq.lhs)
-        eq_rsh_forms = extract_blocks(eq.rhs)
+        eq_lhs_forms = extract_blocks(eq.lhs)
+        eq_rhs_forms = extract_blocks(eq.rhs)
         u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
 
         # Create problem
-        problem = MixedLinearVariationalProblem(eq_lsh_forms, eq_rsh_forms, u_comps, bcs,
+        problem = MixedLinearVariationalProblem(eq_lhs_forms, eq_rhs_forms, u_comps, bcs,
                                                 form_compiler_parameters=form_compiler_parameters)
 
         # Create solver and call solve
