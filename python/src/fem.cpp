@@ -377,6 +377,12 @@ namespace dolfin_wrappers
            std::size_t, std::size_t, std::string>(),
            py::arg("V"), py::arg("g"), py::arg("sub_domains"),
            py::arg("sub_domain"), py::arg("part"), py::arg("method")="topological")
+      .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>,
+           std::shared_ptr<const dolfin::GenericFunction>,
+           std::shared_ptr<const dolfin::SubDomain>, std::size_t, std::string, bool, bool>(),
+           py::arg("V"), py::arg("g"), py::arg("sub_domain"), py::arg("part"),
+           py::arg("method")="topological", py::arg("check_midpoint")=true,
+           py::arg("exclude_overlapped_boundaries")=true)
       .def("function_space", &dolfin::MultiMeshDirichletBC::function_space)
       .def("homogenize", &dolfin::MultiMeshDirichletBC::homogenize)
       .def("zero", &dolfin::MultiMeshDirichletBC::zero)
