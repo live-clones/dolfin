@@ -67,6 +67,33 @@ namespace dolfin
                          bool check_midpoint=true,
                          bool exclude_overlapped_boundaries=true);
 
+    /// Create boundary condition for subdomain on specified part
+    ///
+    /// @param    V (_MultiMeshFunctionSpace_)
+    ///         The function space
+    /// @param    g (_GenericFunction_)
+    ///         The value
+    /// @param     sub_domain (_SubDomain_)
+    ///         The subdomain
+    /// @param     part (std::size_t)
+    ///         The part on which to set boundary conditions
+    /// @param     method (std::string)
+    ///         Option passed to DirichletBC.
+    /// @param     check_midpoint (bool)
+    ///         Option passed to DirichletBC.
+    /// @param     exclude_overlapped_boundaries (bool)
+    ///         If true, then the variable on_boundary will
+    ///         be set to false for facets that are overlapped
+    ///         by another mesh (irrespective of the layering order
+    ///         of the meshes).
+    MultiMeshDirichletBC(std::shared_ptr<const MultiMeshFunctionSpace> V,
+                         std::shared_ptr<const GenericFunction> g,
+                         std::shared_ptr<const SubDomain> sub_domain,
+                         std::size_t part,
+                         std::string method="topological",
+                         bool check_midpoint=true,
+                         bool exclude_overlapped_boundaries=true);
+
     /// Create boundary condition for subdomain specified by index
     ///
     /// @param     V (_FunctionSpace_)
@@ -112,8 +139,7 @@ namespace dolfin
     ///         The part number
     std::shared_ptr<DirichletBC> view(std::size_t part) const
     {
-      dolfin_assert(part < _bcs.size());
-      return _bcs[part];
+      return _bcs.at(part);
     }
 
     /// Apply boundary condition to a matrix
@@ -207,8 +233,8 @@ namespace dolfin
     // Multimesh function space
     std::shared_ptr<const MultiMeshFunctionSpace> _function_space;
 
-    // List of boundary conditions for parts
-    std::vector<std::shared_ptr<DirichletBC>> _bcs;
+    // Map from parts to boundary conditions
+    std::map<std::size_t, std::shared_ptr<DirichletBC>> _bcs;
 
     // Wrapper of user-defined subdomain
     mutable std::shared_ptr<MultiMeshSubDomain> _sub_domain;
