@@ -509,7 +509,7 @@ namespace dolfin_wrappers
     // dolfin::SubDomian
     py::class_<dolfin::SubDomain, std::shared_ptr<dolfin::SubDomain>, PySubDomain>
       (m, "SubDomain", "DOLFIN SubDomain object")
-      .def(py::init<double>(), py::arg("map_tol")=DOLFIN_EPS)
+      .def(py::init<double>(), py::arg("map_tol")=1.0e-10)
       .def("inside", (bool (dolfin::SubDomain::*)(Eigen::Ref<const Eigen::VectorXd>, bool) const)
            &dolfin::SubDomain::inside)
       .def("map", (void (dolfin::SubDomain::*)(Eigen::Ref<const Eigen::VectorXd>, Eigen::Ref<Eigen::VectorXd>) const)
