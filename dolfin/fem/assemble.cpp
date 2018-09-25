@@ -35,9 +35,10 @@ void dolfin::assemble(GenericTensor& A, const Form& a)
   assembler.assemble(A, a);
 }
 //-----------------------------------------------------------------------------
-void dolfin::assemble_mixed(GenericTensor& A, const Form& a)
+void dolfin::assemble_mixed(GenericTensor& A, const Form& a, bool add)
 {
   MixedAssembler assembler;
+  assembler.add_values = add;
   assembler.assemble(A, a);
 }
 //-----------------------------------------------------------------------------
@@ -86,7 +87,7 @@ double dolfin::assemble(const Form& a)
   return s.get_scalar_value();
 }
 //-----------------------------------------------------------------------------
-double dolfin::assemble_mixed(const Form& a)
+double dolfin::assemble_mixed(const Form& a, bool add)
 {
   if (a.rank() != 0)
   {
@@ -98,6 +99,7 @@ double dolfin::assemble_mixed(const Form& a)
 
   Scalar s;
   MixedAssembler assembler;
+  assembler.add_values = add;
   assembler.assemble(s, a);
   return s.get_scalar_value();
 }

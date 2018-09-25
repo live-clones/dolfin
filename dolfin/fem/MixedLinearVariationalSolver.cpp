@@ -156,7 +156,7 @@ MixedLinearVariationalSolver::assemble_system()
 	for(size_t k=0; k<a[i*u.size() + j].size(); ++k)
 	{
 	  if(a[i*u.size() + j][k]->ufc_form()) // If block(i,j) not empty
-	    assemble_mixed(*(As[i*u.size() + j]), *(a[i*u.size() + j][k]));
+	    assemble_mixed(*(As[i*u.size() + j]), *(a[i*u.size() + j][k]), bool(k>0));
 	}
       }
       for (size_t j=0; j<L[i].size(); ++j)
@@ -164,7 +164,7 @@ MixedLinearVariationalSolver::assemble_system()
 	if (L[i][j]->ufc_form())
 	{
 	  // Block-by-block assembly
-	  assemble_mixed(*(bs[i]), *(L[i][j]));
+	  assemble_mixed(*(bs[i]), *(L[i][j]), bool(j>0));
 	}
 	else
 	{
