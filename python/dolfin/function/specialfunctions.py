@@ -113,7 +113,7 @@ def FacetNormal(mesh):
 
 # Simple definition of CellDiameter via UFL
 def CellDiameter(mesh):
-    """Return function cell diameter for given mesh.
+    r"""Return function cell diameter for given mesh.
 
     Note that diameter of cell :math:`K` is defined as
     :math:`\sup_{\mathbf{x,y}\in K} |\mathbf{x-y}|`.
