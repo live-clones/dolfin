@@ -31,7 +31,7 @@ __all__ = ["TestFunction", "TrialFunction", "Argument",
 
 # TODO: Update this message to clarify dolfin.FunctionSpace vs
 # ufl.FunctionSpace
-_ufl_dolfin_difference_message = """\ When constructing an Argument, TestFunction or TrialFunction, you
+_ufl_dolfin_difference_message = r"""\ When constructing an Argument, TestFunction or TrialFunction, you
 must to provide a FunctionSpace and not a FiniteElement.  The
 FiniteElement class provided by ufl only represents an abstract finite
 element space and is only used in standalone .ufl files, while the
