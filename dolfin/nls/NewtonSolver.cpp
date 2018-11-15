@@ -129,6 +129,11 @@ NewtonSolver::solve(NonlinearProblem& nonlinear_problem,
   nonlinear_problem.form(*_matA, *_matP, *_b, x);
   nonlinear_problem.F(*_b, x);
 
+  // FIXME : Need to initialize _dx to guarantee it has the right type
+  // (needed when we have VECNEST type with mixed-domains)
+  _dx = _b->copy();
+  _dx->zero();
+
   // Check convergence
   bool newton_converged = false;
   if (convergence_criterion == "residual")

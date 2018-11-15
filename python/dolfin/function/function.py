@@ -184,6 +184,7 @@ class Function(ufl.Coefficient):
 
         # For FunctionSpaceProduct use
         self._functions = None
+        self._part = None
 
         if isinstance(args[0], Function):
             other = args[0]
@@ -225,6 +226,10 @@ class Function(ufl.Coefficient):
                 elif isinstance(args[1], str):
                     # Read from xml filename in string
                     self._cpp_object = cpp.function.Function(V._cpp_object, args[1])
+                elif isinstance(args[1], int):
+                    # Specify the part associated with the Function (mixed-domains)
+                    self._cpp_object = cpp.function.Function(V._cpp_object)
+                    self._part = args[1]
                 else:
                     raise RuntimeError("Don't know what to do with ", type(args[1]))
             else:
@@ -234,7 +239,8 @@ class Function(ufl.Coefficient):
             ufl.Coefficient.__init__(self, V.ufl_function_space(), count=self._cpp_object.id())
         elif isinstance(args[0], FunctionSpaceProduct):
             V = args[0]
-            self._functions = [Function(s) for s in V.sub_spaces()]  # Recursive call
+            # self._functions = [Function(s) for s in V.sub_spaces()]  # Recursive call
+            self._functions = [Function(s, i) for i, s in enumerate(V.sub_spaces())]
         else:
             raise TypeError("Expected a FunctionSpace or a Function as argument 1")
 
@@ -246,6 +252,9 @@ class Function(ufl.Coefficient):
         else:
             name = kwargs.get("name") or "f_%d" % self.count()
             self.rename(name, "a Function")
+
+    def part(self):
+        return self._part
 
     def function_space(self):
         "Return the FunctionSpace"

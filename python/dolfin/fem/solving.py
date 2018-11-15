@@ -26,6 +26,7 @@ from dolfin.function.function import Function
 
 # Import UFL
 import ufl
+from ufl.algorithms.ad import expand_derivatives
 
 # Local imports
 from dolfin.fem.form import Form
@@ -33,7 +34,7 @@ import dolfin.fem.formmanipulations as formmanipulations
 from dolfin.fem.formmanipulations import derivative
 
 import dolfin.la.solver
-from dolfin.fem.problem import LinearVariationalProblem, NonlinearVariationalProblem, MixedLinearVariationalProblem
+from dolfin.fem.problem import LinearVariationalProblem, NonlinearVariationalProblem, MixedLinearVariationalProblem, MixedNonlinearVariationalProblem
 
 from dolfin.fem.formmanipulations import extract_blocks
 
@@ -44,6 +45,8 @@ __all__ = ["LinearVariationalProblem",
            "LocalSolver",
            "NonlinearVariationalProblem",
            "NonlinearVariationalSolver",
+           "MixedNonlinearVariationalProblem",
+           "MixedNonlinearVariationalSolver",
            "solve"]
 
 
@@ -85,7 +88,7 @@ class LocalSolver(cpp.fem.LocalSolver):
 # FIXME: The import here are here to avoid a circular dependency
 # (ugly, should fix)
 # Solver classes are imported directly
-from dolfin.cpp.fem import LinearVariationalSolver, NonlinearVariationalSolver, MixedLinearVariationalSolver  # noqa
+from dolfin.cpp.fem import LinearVariationalSolver, NonlinearVariationalSolver, MixedLinearVariationalSolver, MixedNonlinearVariationalSolver  # noqa
 from dolfin.fem.adaptivesolving import AdaptiveLinearVariationalSolver  # noqa
 from dolfin.fem.adaptivesolving import AdaptiveNonlinearVariationalSolver  # noqa
 
@@ -248,21 +251,18 @@ def _solve_varproblem(*args, **kwargs):
 
         if u._functions is not None:
             # Extract blocks from the variational formulation
-            eq_lsh_forms = extract_blocks(eq.lhs)
-            eq_rsh_forms = extract_blocks(eq.rhs)
+            eq_lhs_forms = extract_blocks(eq.lhs)
+            eq_rhs_forms = extract_blocks(eq.rhs)
             u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
 
             # Create problem
-            problem = MixedLinearVariationalProblem(eq_lsh_forms, eq_rsh_forms, u_comps, bcs,
+            problem = MixedLinearVariationalProblem(eq_lhs_forms, eq_rhs_forms, u_comps, bcs,
                                                     form_compiler_parameters=form_compiler_parameters)
 
             # Create solver and call solve
             solver = MixedLinearVariationalSolver(problem)
             solver.parameters.update(solver_parameters)
-            if preconditioner is not None:
-                solver.solve(preconditioner)
-            else:
-                solver.solve()
+            solver.solve()
         else:
             # Create problem
             problem = LinearVariationalProblem(eq.lhs, eq.rhs, u, bcs,
@@ -275,21 +275,46 @@ def _solve_varproblem(*args, **kwargs):
     # Solve nonlinear variational problem
     else:
 
-        # Create Jacobian if missing
-        if J is None:
-            cpp.log.info("No Jacobian form specified for nonlinear variational problem.")
-            cpp.log.info("Differentiating residual form F to obtain Jacobian J = F'.")
-            F = eq.lhs
-            J = formmanipulations.derivative(F, u)
+        if u._functions is not None:
+            # Extract blocks from the variational formulation
+            eq_lhs_forms = extract_blocks(eq.lhs)
+            u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
 
-        # Create problem
-        problem = NonlinearVariationalProblem(eq.lhs, u, bcs, J,
-                                              form_compiler_parameters=form_compiler_parameters)
+            if J is None:
+                cpp.log.info("No Jacobian form specified for nonlinear mixed variational problem.")
+                cpp.log.info("Differentiating residual form F to obtain Jacobian J = F'.")
+                # Give the list of jacobian for each eq_lhs
+                Js = []
+                for Fi in eq_lhs_forms:
+                    for uj in u_comps:
+                        derivative = formmanipulations.derivative(Fi, uj)
+                        derivative = expand_derivatives(derivative)
+                        Js.append(derivative)
 
-        # Create solver and call solve
-        solver = NonlinearVariationalSolver(problem)
-        solver.parameters.update(solver_parameters)
-        solver.solve()
+            # Create problem
+            problem = MixedNonlinearVariationalProblem(eq_lhs_forms, u_comps, bcs, Js,
+                                                       form_compiler_parameters=form_compiler_parameters)
+            # Create solver and call solve
+            solver = MixedNonlinearVariationalSolver(problem)
+            solver.parameters.update(solver_parameters)
+            solver.solve()
+        else:
+            # Create Jacobian if missing
+            if J is None:
+                cpp.log.info("No Jacobian form specified for nonlinear variational problem.")
+                cpp.log.info("Differentiating residual form F to obtain Jacobian J = F'.")
+                F = eq.lhs
+                J = formmanipulations.derivative(F, u)
+                print("Jacobian form = ", J)
+
+            # Create problem
+            problem = NonlinearVariationalProblem(eq.lhs, u, bcs, J,
+                                                  form_compiler_parameters=form_compiler_parameters)
+
+            # Create solver and call solve
+            solver = NonlinearVariationalSolver(problem)
+            solver.parameters.update(solver_parameters)
+            solver.solve()
 
 
 def _solve_varproblem_adaptive(*args, **kwargs):
@@ -430,8 +455,6 @@ def _extract_bcs(bcs):
 
     return bcs
 
-# NOTE : To be moved in assembling ?
-
 
 def assemble_mixed_system(*args, **kwargs):
     "Assemble mixed variational problem a == L or F == 0"
@@ -443,18 +466,57 @@ def assemble_mixed_system(*args, **kwargs):
         = _extract_args(*args, **kwargs)
 
     if u.num_sub_spaces() > 0:
-        # Extract blocks from the variational formulation
-        eq_lhs_forms = extract_blocks(eq.lhs)
-        eq_rhs_forms = extract_blocks(eq.rhs)
-        u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
 
-        # Create problem
-        problem = MixedLinearVariationalProblem(eq_lhs_forms, eq_rhs_forms, u_comps, bcs,
-                                                form_compiler_parameters=form_compiler_parameters)
+        if isinstance(eq.lhs, ufl.Form) and isinstance(eq.rhs, ufl.Form):
+            # Extract blocks from the variational formulation
+            eq_lhs_forms = extract_blocks(eq.lhs)
+            eq_rhs_forms = extract_blocks(eq.rhs)
+            u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
 
-        # Create solver and call solve
-        solver = MixedLinearVariationalSolver(problem)
-        system = solver.assemble_system()
-        return system
+            # Create problem
+            problem = MixedLinearVariationalProblem(eq_lhs_forms, eq_rhs_forms, u_comps, bcs,
+                                                    form_compiler_parameters=form_compiler_parameters)
+
+            # Create solver and call solve
+            solver = MixedLinearVariationalSolver(problem)
+            system = solver.assemble_system()
+            return system
+        else:
+            # Extract blocks from the variational formulation
+            eq_lhs_forms = extract_blocks(eq.lhs)
+            u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
+
+            if J is None:
+                cpp.log.info("No Jacobian form specified for nonlinear variational problem.")
+                cpp.log.info("Differentiating residual form F to obtain Jacobian J = F'.")
+                # Give the list of jacobian for each eq_lhs
+                Js = []
+                for Fi in eq_lhs_forms:
+                    for uj in u_comps:
+                        Js.append(formmanipulations.derivative(Fi, uj))
+
+            # Create problem
+            problem = MixedNonlinearVariationalProblem(eq_lhs_forms, u_comps, bcs, Js,
+                                                       form_compiler_parameters=form_compiler_parameters)
+            # Create solver and call solve
+            solver = MixedNonlinearVariationalSolver(problem)
+            # system = solver.assemble_system()
+            # return system
     else:
         print("Error : You're trying to use assemble_mixed_system on a single domain problem.")
+
+
+# NOTE : Need to be updated to take into acccount NL problems
+def solve_mixed_system(*args, **kwargs):
+    "Solve assembled mixed variational problem a == L or F == 0"
+    assert(len(args) == 1)  # No arguments except the assembled system
+    system = args[0]
+
+    # Extract parameters
+    solver_parameters = kwargs.get("solver_parameters", {})
+
+    # Create solver and call solve
+    # FIXME : Works only for linear case
+    solver = MixedLinearVariationalSolver()
+    solver.parameters.update(solver_parameters)
+    solver.solve(system)

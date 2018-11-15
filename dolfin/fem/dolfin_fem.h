@@ -29,6 +29,8 @@
 #include <dolfin/fem/MixedLinearVariationalSolver.h>
 #include <dolfin/fem/NonlinearVariationalProblem.h>
 #include <dolfin/fem/NonlinearVariationalSolver.h>
+#include <dolfin/fem/MixedNonlinearVariationalProblem.h>
+#include <dolfin/fem/MixedNonlinearVariationalSolver.h>
 #include <dolfin/fem/MultiMeshAssembler.h>
 #include <dolfin/fem/MultiMeshDirichletBC.h>
 #include <dolfin/fem/MultiMeshDofMap.h>

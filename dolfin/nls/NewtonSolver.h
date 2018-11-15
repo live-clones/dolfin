@@ -38,6 +38,7 @@ namespace dolfin
   class GenericMatrix;
   class GenericVector;
   class NonlinearProblem;
+  class MixedNonlinearProblem;
 
   /// This class defines a Newton solver for nonlinear systems of
   /// equations of the form :math:`F(x) = 0`.

@@ -80,6 +80,9 @@ namespace dolfin
     /// Initialize zero tensor using tensor layout
     void init(const TensorLayout& tensor_layout);
 
+    /// Initialize or update a nested matrix from the list of its blocks
+    void set_nest(std::vector<Mat> mats);
+
     /// Return true if empty
     bool empty() const;
 

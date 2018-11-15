@@ -160,3 +160,80 @@ class NonlinearVariationalProblem(cpp.fem.NonlinearVariationalProblem):
 
         # Initialize C++ base class
         cpp.fem.NonlinearVariationalProblem.__init__(self, F, u._cpp_object, bcs, J)
+
+
+class MixedNonlinearVariationalProblem(cpp.fem.MixedNonlinearVariationalProblem):
+
+    def __init__(self, F, u, bcs=None, J=None, form_compiler_parameters=None):
+        """Create nonlinear variational problem F(u; v) = 0.
+
+        An optional argument bcs may be passed to specify boundary
+        conditions.
+
+        Another optional argument form_compiler_parameters may be
+        specified to pass parameters to the form compiler.
+
+        """
+
+        # Extract and check arguments (u is a list of Function)
+        u_comps = [u[i]._cpp_object for i in range(len(u))]
+        bcs = dolfin.fem.solving._extract_bcs(bcs)
+
+        # Store form compiler parameters
+        form_compiler_parameters = form_compiler_parameters or {}
+        self.form_compiler_parameters = form_compiler_parameters
+
+        # Store input UFL forms and solution Function
+        self.F_ufl = F
+        self.J_ufl = J
+        self.u_ufl = u
+
+        # Update rhs if we don't have a consistent number of blocks
+        if len(F) != len(u):
+            F_tmp = [None for i in range(len(u))]
+            for Fi in F:
+                F_tmp[Fi.arguments()[0].part()] = Fi
+            F = F_tmp
+
+        # Check number of blocks in the residual and solution are coherent
+        assert(len(J) == len(u) * len(u))
+        assert(len(F) == len(u))
+
+        # Create list of forms/blocks
+        F_list = list()
+        print("[problem.py] size F = ", len(F))
+        for Fi in F:
+            if Fi is None:
+                F_list.append([cpp.fem.Form(1, 0)])
+            elif Fi.empty():
+                F_list.append([cpp.fem.Form(1, 0)])  # single-elt list
+            else:
+                Fs = []
+                for Fsub in sub_forms_by_domain(Fi):
+                    if Fsub is None:
+                        Fs.append(cpp.fem.Form(1, 0))
+                    elif Fsub.empty():
+                        Fs.append(cpp.fem.Form(1, 0))
+                    else:
+                        Fs.append(Form(Fsub, form_compiler_parameters=form_compiler_parameters))
+                F_list.append(Fs)
+        print("[problem] create list of residual forms OK")
+
+        J_list = None
+        if J is not None:
+            J_list = list()
+            print("[problem.py] size J = ", len(J))
+            for Ji in J:
+                if Ji is None:
+                    J_list.append([cpp.fem.Form(2, 0)])
+                elif Ji.empty():
+                    J_list.append([cpp.fem.Form(2, 0)])
+                else:
+                    Js = []
+                    for Jsub in sub_forms_by_domain(Ji):
+                        Js.append(Form(Jsub, form_compiler_parameters=form_compiler_parameters))
+                    J_list.append(Js)
+        print("[problem] create list of jacobian forms OK, J_list size = ", len(J_list))
+
+        # Initialize C++ base class
+        cpp.fem.MixedNonlinearVariationalProblem.__init__(self, F_list, u_comps, bcs, J_list)

@@ -49,6 +49,8 @@
 #include <dolfin/fem/LocalSolver.h>
 #include <dolfin/fem/NonlinearVariationalProblem.h>
 #include <dolfin/fem/NonlinearVariationalSolver.h>
+#include <dolfin/fem/MixedNonlinearVariationalProblem.h>
+#include <dolfin/fem/MixedNonlinearVariationalSolver.h>
 #include <dolfin/fem/PETScDMCollection.h>
 #include <dolfin/fem/PointSource.h>
 #include <dolfin/fem/SparsityPatternBuilder.h>
@@ -582,9 +584,13 @@ namespace dolfin_wrappers
     py::class_<dolfin::MixedLinearVariationalSolver,
                std::shared_ptr<dolfin::MixedLinearVariationalSolver>,
                dolfin::Variable>(m, "MixedLinearVariationalSolver")
+      .def(py::init<>())
       .def(py::init<std::shared_ptr<dolfin::MixedLinearVariationalProblem>>())
       .def("solve", (void (dolfin::MixedLinearVariationalSolver::*)())&dolfin::MixedLinearVariationalSolver::solve)
-      .def("solve", (void (dolfin::MixedLinearVariationalSolver::*)(dolfin::PETScNestMatrix)) &dolfin::MixedLinearVariationalSolver::solve)
+      .def("solve", (void (dolfin::MixedLinearVariationalSolver::*)
+		     (std::tuple<std::vector<std::shared_ptr<dolfin::GenericMatrix>>,
+		      std::vector<std::shared_ptr<dolfin::GenericVector>>,
+		      std::vector<std::shared_ptr<dolfin::GenericVector>> >))&dolfin::MixedLinearVariationalSolver::solve)
       .def("assemble_system", (std::tuple<std::vector<std::shared_ptr<dolfin::GenericMatrix>>,
 			       std::vector<std::shared_ptr<dolfin::GenericVector>>,
 			       std::vector<std::shared_ptr<dolfin::GenericVector>> >
@@ -620,6 +626,26 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<dolfin::NonlinearVariationalProblem>>())
       .def("solve", &dolfin::NonlinearVariationalSolver::solve)
       .def("default_parameters", &dolfin::NonlinearVariationalSolver::default_parameters);
+
+    // dolfin::MixedNonlinearVariationalProblem
+    py::class_<dolfin::MixedNonlinearVariationalProblem,
+               std::shared_ptr<dolfin::MixedNonlinearVariationalProblem>>
+      (m, "MixedNonlinearVariationalProblem")
+      .def(py::init<std::vector<std::vector<std::shared_ptr<const dolfin::Form>>>,
+           std::vector<std::shared_ptr<dolfin::Function>>,
+           std::vector<std::shared_ptr<const dolfin::DirichletBC>>,
+	   std::vector<std::vector<std::shared_ptr<const dolfin::Form>>>>())
+      .def("bcs", (std::vector<std::shared_ptr<const dolfin::DirichletBC>>
+		   (dolfin::MixedNonlinearVariationalProblem::*)(int) const) &dolfin::MixedNonlinearVariationalProblem::bcs)
+      .def("bcs", (std::vector<std::vector<std::shared_ptr<const dolfin::DirichletBC>>>
+		   (dolfin::MixedNonlinearVariationalProblem::*)() const) &dolfin::MixedNonlinearVariationalProblem::bcs);
+
+    // dolfin::MixedNonlinearVariationalSolver
+    py::class_<dolfin::MixedNonlinearVariationalSolver,
+               std::shared_ptr<dolfin::MixedNonlinearVariationalSolver>,
+               dolfin::Variable>(m, "MixedNonlinearVariationalSolver")
+      .def(py::init<std::shared_ptr<dolfin::MixedNonlinearVariationalProblem>>())
+      .def("solve", (void (dolfin::MixedNonlinearVariationalSolver::*)())&dolfin::MixedNonlinearVariationalSolver::solve);
 
     // dolfin::LocalSolver
     py::class_<dolfin::LocalSolver, std::shared_ptr<dolfin::LocalSolver>>

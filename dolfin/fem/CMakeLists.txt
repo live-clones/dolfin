@@ -28,6 +28,8 @@ set(HEADERS
   MultiMeshForm.h
   NonlinearVariationalProblem.h
   NonlinearVariationalSolver.h
+  MixedNonlinearVariationalProblem.h
+  MixedNonlinearVariationalSolver.h
   PETScDMCollection.h
   PointSource.h
   solve.h
@@ -63,6 +65,8 @@ set(SOURCES
   MultiMeshForm.cpp
   NonlinearVariationalProblem.cpp
   NonlinearVariationalSolver.cpp
+  MixedNonlinearVariationalProblem.cpp
+  MixedNonlinearVariationalSolver.cpp
   PointSource.cpp
   PETScDMCollection.cpp
   solve.cpp
