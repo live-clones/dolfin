@@ -256,7 +256,7 @@ void MixedAssembler::assemble_cells(
 	  {
 	    for(int rm = 0; rm<dmap.size(); rm++)
 	    {
-	      if(dmap[rm] == dofs[i][dof]) // This dof (index=rm) has already been set
+	      if(form_rank > 1 && dmap[rm] == dofs[i][dof]) // This dof (index=rm) has already been set
 	      {
 		if(i == 0)
 		{

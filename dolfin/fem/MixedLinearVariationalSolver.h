@@ -1,4 +1,3 @@
-
 // Copyright (C) 2008-2011 Anders Logg and Garth N. Wells
 //
 // This file is part of DOLFIN.
@@ -45,6 +44,7 @@ namespace dolfin
       std::vector<std::shared_ptr<GenericVector>> > assembled_system_type;
 
     /// Create linear variational solver for given problem
+    explicit MixedLinearVariationalSolver();
     explicit MixedLinearVariationalSolver(std::shared_ptr<MixedLinearVariationalProblem> problem);
 
     /// Block-by-block assembly
@@ -52,7 +52,7 @@ namespace dolfin
 
     /// Solve variational problem
     void solve();
-    void solve(PETScNestMatrix const prec);
+    void solve(assembled_system_type assembled_system);
 
     /// Default parameter values
     static Parameters default_parameters()
