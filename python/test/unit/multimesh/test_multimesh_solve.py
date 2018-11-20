@@ -25,17 +25,13 @@ from dolfin import *
 
 from dolfin_utils.test import skip_in_parallel, fixture
 
-@fixture
-def exactsolution_2d():
+def exactsolution_2d_impl():
     return Expression("x[0] + x[1]", degree=1)
 
-@fixture
-def exactsolution_3d():
+def exactsolution_3d_impl():
     return Expression("x[0] + x[1] + x[2]", degree=1)
 
-@fixture
 def solve_multimesh_poisson(mesh_0, mesh_1, exactsolution):
-
     # Build multimesh
     multimesh = MultiMesh()
     multimesh.add(mesh_0)
@@ -81,9 +77,17 @@ def solve_multimesh_poisson(mesh_0, mesh_1, exactsolution):
 
     return uh
 
+@fixture
+def exactsolution_2d():
+    return exactsolution_2d_impl()
+
+@fixture
+def exactsolution_3d():
+    return exactsolution_3d_impl()
+
 @pytest.mark.slow
 @skip_in_parallel
-def test_multimesh_poisson_2d():
+def test_multimesh_poisson_2d(exactsolution_2d):
     # This tests solves a Poisson problem on two meshes in 2D with u =
     # x+y as exact solution
 
@@ -94,18 +98,17 @@ def test_multimesh_poisson_2d():
     mesh_1 = RectangleMesh(Point(0.1*DOLFIN_PI, 0.1*DOLFIN_PI),
                            Point(0.2*DOLFIN_PI, 0.2*DOLFIN_PI),
                            2, 2)
-
     # Solve multimesh Poisson
-    uh = solve_multimesh_poisson(mesh_0, mesh_1, exactsolution_2d())
+    uh = solve_multimesh_poisson(mesh_0, mesh_1, exactsolution_2d)
 
     # Check error
-    assert errornorm(exactsolution_2d(), uh, 'L2', degree_rise=1) < DOLFIN_EPS_LARGE
+    assert errornorm(exactsolution_2d, uh, 'L2', degree_rise=1) < DOLFIN_EPS_LARGE
 
 @pytest.mark.slow
 @pytest.mark.skip
 @skip_in_parallel
 @pytest.mark.skipif(True, reason="3D not fully implemented")
-def test_multimesh_poisson_3d():
+def test_multimesh_poisson_3d(exactsolution_3d):
     # This tests solves a Poisson problem on two meshes in 3D with u =
     # x+y+z as exact solution
 
@@ -118,7 +121,7 @@ def test_multimesh_poisson_3d():
                      2, 2, 2)
 
     # Solve multimesh Poisson
-    uh = solve_multimesh_poisson(mesh_0, mesh_1, exactsolution_3d())
+    uh = solve_multimesh_poisson(mesh_0, mesh_1, exactsolution_3d)
 
     # Check error
-    assert errornorm(exactsolution_3d(), uh, 'L2', degree_rise=1) < DOLFIN_EPS_LARGE
+    assert errornorm(exactsolution_3d, uh, 'L2', degree_rise=1) < DOLFIN_EPS_LARGE

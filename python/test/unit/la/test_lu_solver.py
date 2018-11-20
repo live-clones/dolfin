@@ -21,7 +21,7 @@ from dolfin import *
 import pytest
 from dolfin_utils.test import skip_if_not_PETSc, skip_in_parallel
 
-backends = ["PETSc", skip_in_parallel("Eigen")]
+backends = ["PETSc", pytest.param(("Eigen"), marks=skip_in_parallel)]
 
 @pytest.mark.parametrize('backend', backends)
 def test_lu_solver(backend):
