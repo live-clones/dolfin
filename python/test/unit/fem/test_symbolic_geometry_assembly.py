@@ -107,26 +107,20 @@ intervals.
 
 line_resolution = 8
 
-
-@fixture
-def line1d(request):
+def line1d_impl(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
     vertices = [(u**2,) for u in us]
     return create_line_mesh(vertices)
 
-
-@fixture
-def rline1d(request):
+def rline1d_impl(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
     vertices = [(u**2,) for u in us]
     vertices = list(reversed(vertices))  # same as line1d, just reversed here
     return create_line_mesh(vertices)
 
-
-@fixture
-def line2d(request):
+def line2d_impl(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
     vertices = [(cos(DOLFIN_PI*u), sin(DOLFIN_PI*u)) for u in us]
@@ -134,9 +128,7 @@ def line2d(request):
     mesh.init_cell_orientations(Expression(("0.0", "1.0"), degree=0))
     return mesh
 
-
-@fixture
-def rline2d(request):
+def rline2d_impl(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
     vertices = [(cos(DOLFIN_PI*u), sin(DOLFIN_PI*u)) for u in us]
@@ -145,9 +137,7 @@ def rline2d(request):
     mesh.init_cell_orientations(Expression(("0.0", "1.0"), degree=0))
     return mesh
 
-
-@fixture
-def line3d(request):
+def line3d_impl(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
     vertices = [(cos(4.0*DOLFIN_PI*u),
@@ -156,9 +146,7 @@ def line3d(request):
     mesh = create_line_mesh(vertices)
     return mesh
 
-
-@fixture
-def rline3d(request):
+def rline3d_impl(request):
     n = line_resolution
     us = [i/float(n-1) for i in range(n)]
     vertices = [(cos(4.0*DOLFIN_PI*u),
@@ -168,9 +156,7 @@ def rline3d(request):
     mesh = create_line_mesh(vertices)
     return mesh
 
-
-@fixture
-def square2d(request):
+def square2d_impl(request):
     cellname = "triangle"
     side = sqrt(sqrt(3.0))
     vertices = [
@@ -186,9 +172,7 @@ def square2d(request):
     mesh = create_mesh(vertices, cells)
     return mesh
 
-
-@fixture
-def square3d(request):
+def square3d_impl(request):
     cellname = "triangle"
     vertices = [
         (0.0, 0.0, 1.0),
@@ -205,6 +189,37 @@ def square3d(request):
 
     return mesh
 
+@fixture
+def line1d(request):
+    return line1d_impl(request)
+
+@fixture
+def rline1d(request):
+    return rline1d_impl(request)
+
+@fixture
+def line2d(request):
+    return line2d_impl(request)
+
+@fixture
+def rline2d(request):
+    return rline2d_impl(request)
+
+@fixture
+def line3d(request):
+    return line3d_impl(request)
+
+@fixture
+def rline3d(request):
+    return rline3d_impl(request)
+
+@fixture
+def square2d(request):
+    return square2d_impl(request)
+
+@fixture
+def square3d(request):
+    return square3d_impl(request)
 
 @skip_in_parallel
 def test_line_meshes(line1d, line2d, line3d, rline1d, rline2d, rline3d):
@@ -238,14 +253,14 @@ def test_write_line_meshes_to_files(line1d, line2d, line3d, rline1d, rline2d,
                                                                   "DG", 0))
 
 
-@skip_in_parallel
 @pytest.mark.parametrize("mesh", [
-    line1d(None),
-    line2d(None),
-    line3d(None),
-    rline1d(None),
-    rline2d(None),
-    rline3d(None), ])
+    line1d_impl(None),
+    line2d_impl(None),
+    line3d_impl(None),
+    rline1d_impl(None),
+    rline2d_impl(None),
+    rline3d_impl(None), ])
+@skip_in_parallel
 def test_manifold_line_geometry(mesh, uflacs_representation_only):
     assert uflacs_representation_only == "uflacs"
     assert parameters["form_compiler"]["representation"] == "uflacs"
@@ -907,21 +922,21 @@ xfail_jit = pytest.mark.xfail(raises=Exception, strict=True)
     (UnitCubeMesh, (2, 2, 2)),
     (UnitSquareMesh.create, (4, 4, CellType.Type.quadrilateral)),
     (UnitCubeMesh.create, (2, 2, 2, CellType.Type.hexahedron)),
-    (line1d, (None,)),
-    (line2d, (None,)),
-    (line3d, (None,)),
-    (rline1d, (None,)),
-    (rline2d, (None,)),
-    (rline3d, (None,)),
-    (square2d, (None,)),
-    (square3d, (None,)),
+    (line1d_impl, (None,)),
+    (line2d_impl, (None,)),
+    (line3d_impl, (None,)),
+    (rline1d_impl, (None,)),
+    (rline2d_impl, (None,)),
+    (rline3d_impl, (None,)),
+    (square2d_impl, (None,)),
+    (square3d_impl, (None,)),
     # Tested geometric quantities are not implemented for higher-order cells
-    xfail_jit((UnitDiscMesh.create, (MPI.comm_world, 4, 2, 2))),
-    xfail_jit((UnitDiscMesh.create, (MPI.comm_world, 4, 2, 3))),
-    xfail_jit((SphericalShellMesh.create, (MPI.comm_world, 2,))),
-])
+    pytest.param(((UnitDiscMesh.create, (MPI.comm_world, 4, 2, 2))), marks=xfail_jit),
+    pytest.param(((UnitDiscMesh.create, (MPI.comm_world, 4, 2, 3))), marks=xfail_jit),
+    pytest.param(((SphericalShellMesh.create, (MPI.comm_world, 2,))), marks=xfail_jit)])
 @skip_in_parallel
 def test_geometric_quantities(uflacs_representation_only, mesh_factory):
+
     func, args = mesh_factory
     mesh = func(*args)
 
