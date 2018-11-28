@@ -3,6 +3,7 @@
 import hashlib
 import dijitso
 import re
+import sys
 
 from dolfin.cpp.log import log, LogLevel
 from . import get_pybind_include
@@ -44,6 +45,12 @@ def compile_cpp_code(cpp_code, **kwargs):
     from distutils import sysconfig
     params = dijitso.params.default_params()
     pyversion = "python" + sysconfig.get_config_var("LDVERSION")
+    libpython = []
+    if sysconfig.get_config_var("Py_ENABLE_SHARED"):
+        # only link libpython if Python itself is dynamically linked.
+        # linking libpython when python itself statically links libpython
+        # can fail with e.g. Fatal Python error: PyThreadState_Get: no current thread
+        libpython = [pyversion]
     params['cache']['lib_prefix'] = ""
     params['cache']['lib_basename'] = ""
     params['cache']['lib_loader'] = "import"
@@ -55,10 +62,12 @@ def compile_cpp_code(cpp_code, **kwargs):
 
     # Include path and library info from DOLFIN (dolfin.pc)
     params['build']['include_dirs'] = dolfin_pc["include_dirs"] + extra_include_dirs + get_pybind_include() + [sysconfig.get_config_var("INCLUDEDIR") + "/" + pyversion]
-    params['build']['libs'] = dolfin_pc["libraries"] + extra_libraries + [pyversion]
+    params['build']['libs'] = dolfin_pc["libraries"] + extra_libraries + libpython
     params['build']['lib_dirs'] = dolfin_pc["library_dirs"] + extra_library_dirs + [sysconfig.get_config_var("LIBDIR")]
 
     params['build']['cxxflags'] += ('-fno-lto',)
+    if sys.platform == 'darwin':
+        params['build']['cxxflags'] += ('-undefined', 'dynamic_lookup')
 
     for flag in cppargs:
         params['build']['cxxflags'] += (flag,)
