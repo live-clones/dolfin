@@ -82,8 +82,6 @@ def gc_barrier():
     if MPI.size(MPI.comm_world) > 1:
         MPI.barrier(MPI.comm_world)
 
-
-@pytest.fixture
 def worker_id(request):
     """Returns thread id when running with pytest-xdist in parallel."""
     if hasattr(request.config, 'slaveinput'):
@@ -91,6 +89,9 @@ def worker_id(request):
     else:
         return 'master'
 
+@pytest.fixture
+def worker_id_fixture(request):
+    return worker_id(request)
 
 @pytest.yield_fixture(scope="function")
 def gc_barrier_fixture():
