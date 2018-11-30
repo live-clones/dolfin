@@ -45,7 +45,7 @@ MixedLinearVariationalProblem::MixedLinearVariationalProblem(
   {
       for (size_t j=0; j<_u.size(); ++j)
       {
-	if (_u[j]->in(*bcs[i]->function_space()))
+	if(_u[j]->function_space()->contains(*bcs[i]->function_space()))
 	  _bcs[j].push_back(bcs[i]);
       }
       
