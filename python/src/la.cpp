@@ -939,6 +939,7 @@ namespace dolfin_wrappers
           { return std::unique_ptr<dolfin::LUSolver>(new dolfin::LUSolver(comm.get(), A, method)); }),
           py::arg("comm"), py::arg("A"), py::arg("method") = "default")
       .def("set_operator", &dolfin::LUSolver::set_operator)
+      .def("default_parameters", &dolfin::LUSolver::default_parameters)
       .def("solve", (std::size_t (dolfin::LUSolver::*)(dolfin::GenericVector&,
                                                        const dolfin::GenericVector&))
            &dolfin::LUSolver::solve)
