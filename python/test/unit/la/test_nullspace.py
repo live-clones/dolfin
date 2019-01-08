@@ -21,7 +21,7 @@ from dolfin import *
 import pytest
 from dolfin_utils.test import *
 
-backends = ["PETSc", skip_in_parallel("Eigen")]
+backends = ["PETSc", pytest.param(("Eigen"), marks=skip_in_parallel)]
 
 def build_elastic_nullspace(V, x):
     """Function to build nullspace for 2D/3D elasticity"""

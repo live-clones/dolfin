@@ -42,7 +42,7 @@ __all__ = ["norm", "errornorm"]
 
 
 def norm(v, norm_type="L2", mesh=None):
-    """
+    r"""
     Return the norm of a given vector or function.
 
     *Arguments*
