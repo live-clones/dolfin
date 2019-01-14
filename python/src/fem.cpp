@@ -549,7 +549,8 @@ namespace dolfin_wrappers
                std::shared_ptr<dolfin::LinearVariationalSolver>,
                dolfin::Variable>(m, "LinearVariationalSolver")
       .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>())
-      .def("solve", &dolfin::LinearVariationalSolver::solve);
+      .def("solve", &dolfin::LinearVariationalSolver::solve)
+      .def("default_parameters", &dolfin::LinearVariationalSolver::default_parameters);
 
     // dolfin::NonlinearVariationalProblem
     py::class_<dolfin::NonlinearVariationalProblem,
