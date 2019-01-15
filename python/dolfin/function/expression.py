@@ -334,6 +334,12 @@ class CompiledExpression(BaseExpression):
             element = _select_element(family=None, cell=cell, degree=degree,
                                       value_shape=value_shape)
 
+        # FIXME: The below is invasive and fragile. Fix multistage so
+        #        this is not required.
+        # Store C++ code and user parameters because they are used by
+        # the the multistage module.
+        self._user_parameters = kwargs
+
         BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
                                 name=name, label=label)
 
