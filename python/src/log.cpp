@@ -64,6 +64,7 @@ namespace dolfin_wrappers
     m.def("log", [](dolfin::LogLevel level, std::string s){ dolfin::log(level, s); });
     m.def("begin", [](unsigned int debug_level, std::string msg){ dolfin::log(debug_level, msg);});
     m.def("error", [](std::string msg){ dolfin::error(msg);});
+    m.def("warning", [](std::string msg){ dolfin::warning(msg);});
     m.def("end", &dolfin::end);
 
     // dolfin::Progress
