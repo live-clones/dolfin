@@ -994,6 +994,7 @@ namespace dolfin_wrappers
           py::arg("comm"), py::arg("A"), py::arg("method") = "default", py::arg("preconditioner")="default")
       .def("set_operator", &dolfin::KrylovSolver::set_operator)
       .def("set_operators", &dolfin::KrylovSolver::set_operators)
+      .def("default_parameters", &dolfin::KrylovSolver::default_parameters)
       .def("solve", (std::size_t (dolfin::KrylovSolver::*)(dolfin::GenericVector&,
                                                            const dolfin::GenericVector&))
            &dolfin::KrylovSolver::solve)
