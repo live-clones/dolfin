@@ -37,9 +37,12 @@ class Form(cpp.fem.Form):
         # FIXME: move getting include paths to elsewhere
         if form_compiler_parameters is None:
             form_compiler_parameters = {"external_include_dirs": dolfin_pc["include_dirs"]}
-        else:
-            # FIXME: add paths if dict entry already exists
-            form_compiler_parameters["external_include_dirs"] = dolfin_pc["include_dirs"]
+        # FIXME: This does not work if form_compiler_parameters is dolfin::Parameters, as
+        # dolfin_pc["include_dirs"] is a list.
+        # else:
+        #     # FIXME: add paths if dict entry already exists
+        #     form_compiler_parameters["external_include_dirs"] = dolfin_pc["include_dirs"]
+
 
         ufc_form = ffc_jit(form, form_compiler_parameters=form_compiler_parameters,
                            mpi_comm=mesh.mpi_comm())
