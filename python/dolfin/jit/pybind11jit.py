@@ -3,6 +3,7 @@
 import hashlib
 import dijitso
 import re
+import sys
 
 from dolfin.cpp.log import log, LogLevel
 from . import get_pybind_include
@@ -55,10 +56,17 @@ def compile_cpp_code(cpp_code, **kwargs):
 
     # Include path and library info from DOLFIN (dolfin.pc)
     params['build']['include_dirs'] = dolfin_pc["include_dirs"] + extra_include_dirs + get_pybind_include() + [sysconfig.get_config_var("INCLUDEDIR") + "/" + pyversion]
-    params['build']['libs'] = dolfin_pc["libraries"] + extra_libraries + [pyversion]
+    params['build']['libs'] = dolfin_pc["libraries"] + extra_libraries
     params['build']['lib_dirs'] = dolfin_pc["library_dirs"] + extra_library_dirs + [sysconfig.get_config_var("LIBDIR")]
 
     params['build']['cxxflags'] += ('-fno-lto',)
+    if sys.platform == 'darwin':
+        # -undefined dynamic_lookup is needed because Python itself will resolve
+        # symbols in libpython at runtime.
+        # Linking libpython shouldn't be needed in general and doesn't work if Python
+        # itself statically links libpython.
+        # This should probably be in the default flags for dijitso.
+        params['build']['cxxflags'] += ('-undefined', 'dynamic_lookup')
 
     for flag in cppargs:
         params['build']['cxxflags'] += (flag,)
