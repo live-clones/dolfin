@@ -248,13 +248,20 @@ std::shared_ptr<GenericVector> Function::vector()
   dolfin_assert(_vector);
   dolfin_assert(_function_space->dofmap());
 
-  // Check that this is not a sub function.
-  if (_vector->size() != _function_space->dofmap()->global_dimension())
-  {
-    dolfin_error("Function.cpp",
-                 "access vector of degrees of freedom",
-                 "Cannot access a non-const vector from a subfunction");
-  }
+  // NOTE/FIXME : In case a processor doesn't own any entities of a mesh (could happen with a submesh
+  // that has no entities in its partition), it doesn't have the "global_dimension" info since
+  // this is obtained when numbering the entities.
+  // std::cout << "[Function] _function_space->dofmap()->global_dimension() = "
+  //           << _function_space->dofmap()->global_dimension() << std::endl;
+  // std::cout << "[Function] _vector->size() = " << _vector->size() << std::endl;
+  if (_function_space->dofmap()->global_dimension() != 0)
+    // Check that this is not a sub function.
+    if(_vector->size() != _function_space->dofmap()->global_dimension())
+    {
+      dolfin_error("Function.cpp",
+                   "access vector of degrees of freedom",
+                   "Cannot access a non-const vector from a subfunction");
+    }
 
   return _vector;
 }

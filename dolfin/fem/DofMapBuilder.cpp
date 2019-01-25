@@ -1074,10 +1074,13 @@ std::shared_ptr<const ufc::dofmap> DofMapBuilder::build_ufc_node_graph(
   {
     if (needs_entities[d])
     {
-      mesh.init(d);
-      DistributedMeshTools::number_entities(mesh, d);
-      num_mesh_entities_local[d]  = mesh.num_entities(d);
-      num_mesh_entities_global_unconstrained[d] = mesh.num_entities_global(d);
+      auto mesh_has_entities = mesh.init(d);
+      if(mesh_has_entities)
+      {
+        DistributedMeshTools::number_entities(mesh, d);
+        num_mesh_entities_local[d]  = mesh.num_entities(d);
+        num_mesh_entities_global_unconstrained[d] = mesh.num_entities_global(d);
+      }
     }
   }
 

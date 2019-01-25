@@ -146,7 +146,9 @@ std::size_t Mesh::init(std::size_t dim) const
   // Skip if mesh is empty
   if (num_cells() == 0)
   {
-    warning("Mesh is empty, unable to create entities of dimension %d.", dim);
+    //Do not display empty mesh warning if we are dealing with submeshes
+    if(_topology.mapping().empty())
+      warning("Mesh is empty, unable to create entities of dimension %d.", dim);
     return 0;
   }
 
@@ -188,7 +190,9 @@ void Mesh::init(std::size_t d0, std::size_t d1) const
   // Skip if mesh is empty
   if (num_cells() == 0)
   {
-    warning("Mesh is empty, unable to create connectivity %d --> %d.", d0, d1);
+    //Do not display empty mesh warning if we are dealing with submeshes
+    if(_topology.mapping().empty())
+      warning("Mesh is empty, unable to create connectivity %d --> %d.", d0, d1);
     return;
   }
 

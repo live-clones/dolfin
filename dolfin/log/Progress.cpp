@@ -36,7 +36,8 @@ Progress::Progress(std::string title, unsigned int n)
   : _title(title), _n(n), i(0), t_step(0.5), c_step(1), _p(0), _t(0), tc(0),
     always(false), finished(false), displayed(false), counter(0)
 {
-  if (n <= 0)
+  //if (n <= 0)
+  if (n < 0) // We can have procs with zero cells
   {
     dolfin_error("Progress.cpp",
                  "create progress bar",

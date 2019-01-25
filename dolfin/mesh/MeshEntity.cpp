@@ -51,7 +51,7 @@ void MeshEntity::init(const Mesh& mesh, std::size_t dim, std::size_t index)
   _mesh->init(dim);
 
   // Check index range again
-  if (index < _mesh->num_entities(dim))
+  if (index <= _mesh->num_entities(dim))
     return;
 
   // Illegal index range

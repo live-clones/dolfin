@@ -113,9 +113,10 @@ Mesh MeshView::create(const MeshFunction<std::size_t>& marker,
     }
     else
     {
+      // Dof is owned by the lowest rank process
+      std::size_t dest = *std::min_element(shared_it->second.begin(), shared_it->second.end());
       new_shared.insert({i, shared_it->second});
-      // Send to remote 'owner' for numbering.
-      std::size_t dest = *(shared_it->second.begin());
+
       if (dest > mpi_rank)
       {
         // Shared, but local - number locally
