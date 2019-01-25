@@ -40,6 +40,7 @@
 #include <dolfin/mesh/Cell.h>
 #include <dolfin/mesh/MeshEntityIterator.h>
 #include <dolfin/mesh/MeshFunction.h>
+#include <dolfin/mesh/MeshPartitioning.h>
 #include <dolfin/mesh/MeshValueCollection.h>
 #include <dolfin/mesh/MeshQuality.h>
 #include <dolfin/mesh/SubDomain.h>
@@ -544,6 +545,10 @@ namespace dolfin_wrappers
       .def_static("cell_colors", (dolfin::MeshFunction<std::size_t> (*)(std::shared_ptr<const dolfin::Mesh>, std::vector<std::size_t>))
                   &dolfin::MeshColoring::cell_colors)
       .def_static("color_cells", &dolfin::MeshColoring::color_cells);
+
+    // dolfin::MeshPartitioning
+    py::class_<dolfin::MeshPartitioning>(m, "MeshPartitioning")
+      .def_static("build_distributed_mesh", (void (*)(dolfin::Mesh&)) &dolfin::MeshPartitioning::build_distributed_mesh);
 
     // dolfin::MeshTransformation
     py::class_<dolfin::MeshTransformation>(m, "MeshTransformation")

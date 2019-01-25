@@ -116,7 +116,8 @@ from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        entities, vertices, SubDomain, BoundaryMesh,
                        MeshEditor, MeshQuality, SubMesh,
                        DomainBoundary, PeriodicBoundaryComputation,
-                       MeshTransformation, SubsetIterator, MultiMesh)
+                       MeshTransformation, SubsetIterator, MultiMesh,
+                       MeshPartitioning)
 
 from .cpp.nls import (NonlinearProblem, NewtonSolver, OptimisationProblem)
 from .cpp.refinement import refine, p_refine
