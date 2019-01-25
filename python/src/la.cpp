@@ -1131,5 +1131,6 @@ namespace dolfin_wrappers
                                     const dolfin::GenericVector&, std::string, std::string)) &dolfin::solve,
           py::arg("A"), py::arg("x"), py::arg("b"), py::arg("method")="lu",
           py::arg("preconditioner")="none");
+    m.def("residual", &dolfin::residual);
   }
 }

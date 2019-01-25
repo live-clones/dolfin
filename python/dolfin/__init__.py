@@ -86,7 +86,8 @@ from .cpp.la import (list_linear_algebra_backends,
                      krylov_solver_methods,
                      krylov_solver_preconditioners,
                      normalize,
-                     VectorSpaceBasis, in_nullspace)
+                     VectorSpaceBasis, in_nullspace,
+                     residual)
 
 if has_linear_algebra_backend('PETSc'):
     from .cpp.la import (PETScVector, PETScMatrix, PETScFactory,
