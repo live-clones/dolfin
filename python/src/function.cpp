@@ -57,6 +57,7 @@ namespace dolfin_wrappers
 
     // ufc::cell
     py::class_<ufc::cell, std::shared_ptr<ufc::cell>>(m, "ufc_cell")
+      .def(py::init<>())
       .def_readonly("cell_shape", &ufc::cell::cell_shape)
       .def_readonly("topological_dimension", &ufc::cell::topological_dimension)
       .def_readonly("geometric_dimension", &ufc::cell::geometric_dimension)
@@ -88,6 +89,7 @@ namespace dolfin_wrappers
                                                       Eigen::Ref<const Eigen::VectorXd>, const ufc::cell&) const)
            &dolfin::GenericFunction::eval,
            "Evaluate GenericFunction (cell version)")
+
       .def("eval", (void (dolfin::GenericFunction::*)(Eigen::Ref<Eigen::VectorXd>,
                                                       Eigen::Ref<const Eigen::VectorXd>) const)
            &dolfin::GenericFunction::eval, py::arg("values"), py::arg("x"), "Evaluate GenericFunction")
@@ -109,7 +111,25 @@ namespace dolfin_wrappers
              // FIXME: this causes a copy, we should rewrite the C++ interface to use Eigen when SWIG is removed
              return py::array_t<double>(values.size(), values.data());
            }, "Compute values at all mesh vertices by using the mesh function.function_space().mesh()")
-      .def("function_space", &dolfin::GenericFunction::function_space);
+      .def("function_space", &dolfin::GenericFunction::function_space)
+
+      .def("restrict", [](const dolfin::GenericFunction& self,
+                          const dolfin::FiniteElement& element,
+                          const dolfin::Cell& cell)
+                          {
+                              ufc::cell ufc_cell;
+                              cell.get_cell_data(ufc_cell);
+
+                              std::vector<double> coordinate_dofs;
+                              cell.get_coordinate_dofs(coordinate_dofs);
+
+                              std::size_t s_dim = element.space_dimension();
+                              Eigen::VectorXd w(s_dim);
+                              self.restrict(w.data(), element, cell,
+                                            coordinate_dofs.data(), ufc_cell);
+
+                              return w; // no copy
+                          });
 
     // Create dolfin::Expression from a JIT pointer
     m.def("make_dolfin_expression",
@@ -256,7 +276,7 @@ namespace dolfin_wrappers
              auto _v = v.attr("_cpp_object").cast<dolfin::Function*>();
              instance.extrapolate(*_v);
            })
-      .def("restrict", &dolfin::Function::restrict)
+
       .def("sub", &dolfin::Function::operator[])
       .def("get_allow_extrapolation", &dolfin::Function::get_allow_extrapolation)
       .def("interpolate", (void (dolfin::Function::*)(const dolfin::GenericFunction&))
