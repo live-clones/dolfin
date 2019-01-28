@@ -319,10 +319,10 @@ class CompiledExpression(BaseExpression):
                     raise KeyError("User Parameter key must be a string")
                 if not hasattr(self._cpp_object, k):
                     raise AttributeError("Compiled module does not have attribute %s", k)
-                if isinstance(val, Constant):
-                    setattr(self._cpp_object, k, val._cpp_object)
-                else:
+                try:
                     setattr(self._cpp_object, k, val)
+                except TypeError:
+                    setattr(self._cpp_object, k, val._cpp_object)
 
         if element and degree:
             raise RuntimeError("Cannot specify an element and a degree for Expressions.")
