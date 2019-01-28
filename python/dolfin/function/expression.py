@@ -15,7 +15,6 @@ from ufl.utils.indexflattening import (flatten_multiindex,
                                        shape_to_strides)
 import dolfin.cpp as cpp
 import dolfin.function.jit as jit
-from dolfin.function.constant import Constant
 
 __all__ = ["UserExpression"]
 
@@ -349,10 +348,10 @@ class CompiledExpression(BaseExpression):
         if name.startswith("_"):
             super().__setattr__(name, value)
         elif hasattr(self._cpp_object, name):
-            if isinstance(value, Constant):
-                setattr(self._cpp_object, name, value._cpp_object)
-            else:
+            try:
                 setattr(self._cpp_object, name, value)
+            except TypeError:
+                setattr(self._cpp_object, name, value._cpp_object)
 
 
 class Expression(BaseExpression):
