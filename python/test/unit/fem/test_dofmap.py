@@ -41,8 +41,8 @@ reorder_dofs = set_parameters_fixture("reorder_dofs_serial", [True, False])
                                           (UnitCubeMesh, (2, 2, 2)),
                                           # cell.contains(Point) does not work correctly
                                           # for quad/hex cells once it is fixed, this test will pass
-                                          xfail((UnitSquareMesh.create, (4, 4, CellType.Type.quadrilateral))),
-                                          xfail((UnitCubeMesh.create, (2, 2, 2, CellType.Type.hexahedron)))])
+                                          pytest.param(((UnitSquareMesh.create, (4, 4, CellType.Type.quadrilateral))), marks=xfail),
+                                          pytest.param(((UnitCubeMesh.create, (2, 2, 2, CellType.Type.hexahedron))), marks=xfail)])
 def test_tabulate_all_coordinates(mesh_factory):
     func, args = mesh_factory
     mesh = func(*args)
@@ -516,16 +516,16 @@ xfail_ffc = pytest.mark.xfail(raises=Exception, strict=True)
     "FunctionSpace(UnitCubeMesh.create(2, 2, 2, CellType.Type.hexahedron),             'DQ', 2)",
     "FunctionSpace(UnitSquareMesh.create(6, 6, CellType.Type.triangle),                'N1curl', 1)",
     "FunctionSpace(UnitCubeMesh.create(2, 2, 2, CellType.Type.tetrahedron),            'N1curl', 1)",
-    xfail_ffc("FunctionSpace(UnitSquareMesh.create(6, 6, CellType.Type.quadrilateral), 'N1curl', 1)"),
-    xfail_ffc("FunctionSpace(UnitCubeMesh.create(2, 2, 2, CellType.Type.hexahedron),   'N1curl', 1)"),
+    pytest.param(("FunctionSpace(UnitSquareMesh.create(6, 6, CellType.Type.quadrilateral), 'N1curl', 1)"), marks=xfail_ffc),
+    pytest.param(("FunctionSpace(UnitCubeMesh.create(2, 2, 2, CellType.Type.hexahedron),   'N1curl', 1)"), marks=xfail_ffc),
     "FunctionSpace(UnitSquareMesh.create(6, 6, CellType.Type.triangle),                'N1curl', 2)",
     "FunctionSpace(UnitCubeMesh.create(2, 2, 2, CellType.Type.tetrahedron),            'N1curl', 2)",
-    xfail_ffc("FunctionSpace(UnitSquareMesh.create(6, 6, CellType.Type.quadrilateral), 'N1curl', 2)"),
-    xfail_ffc("FunctionSpace(UnitCubeMesh.create(2, 2, 2, CellType.Type.hexahedron),   'N1curl', 2)"),
+    pytest.param(("FunctionSpace(UnitSquareMesh.create(6, 6, CellType.Type.quadrilateral), 'N1curl', 2)"), marks=xfail_ffc),
+    pytest.param(("FunctionSpace(UnitCubeMesh.create(2, 2, 2, CellType.Type.hexahedron),   'N1curl', 2)"), marks=xfail_ffc),
     "FunctionSpace(UnitSquareMesh.create(6, 6, CellType.Type.triangle),                'RT', 1)",
     "FunctionSpace(UnitCubeMesh.create(2, 2, 2, CellType.Type.tetrahedron),            'RT', 1)",
-    xfail_ffc("FunctionSpace(UnitSquareMesh.create(6, 6, CellType.Type.quadrilateral), 'RT', 1)"),
-    xfail_ffc("FunctionSpace(UnitCubeMesh.create(2, 2, 2, CellType.Type.hexahedron),   'RT', 1)"),
+    pytest.param(("FunctionSpace(UnitSquareMesh.create(6, 6, CellType.Type.quadrilateral), 'RT', 1)"), marks=xfail_ffc),
+    pytest.param(("FunctionSpace(UnitCubeMesh.create(2, 2, 2, CellType.Type.hexahedron),   'RT', 1)"), marks=xfail_ffc),
 ])
 def test_dofs_dim(space):
     """Test function GenericDofMap::dofs(mesh, dim)"""

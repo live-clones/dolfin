@@ -25,8 +25,7 @@ import pytest
 from dolfin_utils.test import skip_in_parallel
 
 # test case with interface-edge overlap
-@pytest.fixture
-def test_case_1(M, N):
+def case_1_impl(M, N):
     multimesh = MultiMesh()
     mesh0 = UnitSquareMesh(M, M)
     mesh1 = RectangleMesh(Point(0.25, 0.25), Point(0.75, 0.75), N, N)
@@ -36,8 +35,7 @@ def test_case_1(M, N):
     return multimesh
 
 # test case with squares on the diagonal
-@pytest.fixture
-def test_case_2(width, offset, Nx):
+def case_2_impl(width, offset, Nx):
 
     # Mesh width (must be less than 1)
     assert width < 1
@@ -65,8 +63,16 @@ def test_case_2(width, offset, Nx):
     multimesh.build()
     return multimesh
 
-test_cases = [test_case_1(4,3),
-              test_case_2(DOLFIN_PI/5, 0.1111, 3)]
+@pytest.fixture
+def case_1(M, N):
+    return case_1_impl(M,N)
+
+@pytest.fixture
+def case_2(width, offset, Nx):
+    return case_2_impl(width, offset, Nx)
+
+test_cases = [case_1_impl(4,3),
+              case_2_impl(DOLFIN_PI/5, 0.1111, 3)]
 
 @skip_in_parallel
 @pytest.mark.parametrize("multimesh", test_cases)

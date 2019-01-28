@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Patrick E. Farrell and Garth N. Wells
+// Copyright (C) 2016 Patrick E. Farrell, Garth N. Wells and Matteo Croci
 //
 // This file is part of DOLFIN.
 //
