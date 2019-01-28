@@ -330,7 +330,10 @@ class CompiledExpression(BaseExpression):
                     raise KeyError("User Parameter key must be a string")
                 if not hasattr(self._cpp_object, k):
                     raise AttributeError("Compiled module does not have attribute %s", k)
-                setattr(self._cpp_object, k, val)
+                try:
+                    setattr(self._cpp_object, k, val)
+                except TypeError:
+                    setattr(self._cpp_object, k, val._cpp_object)
 
         if element and degree:
             raise RuntimeError("Cannot specify an element and a degree for Expressions.")
@@ -357,7 +360,10 @@ class CompiledExpression(BaseExpression):
         if name.startswith("_"):
             super().__setattr__(name, value)
         elif hasattr(self._cpp_object, name):
-            setattr(self._cpp_object, name, value)
+            try:
+                setattr(self._cpp_object, name, value)
+            except TypeError:
+                setattr(self._cpp_object, name, value._cpp_object)
 
 
 class Expression(BaseExpression):
