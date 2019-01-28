@@ -165,34 +165,42 @@ namespace dolfin_wrappers
            {
              auto param = self.find_parameter(key);
              if (!param)
-               throw std::runtime_error("Parameter not found in Parameters object");
+               throw std::runtime_error("Parameter " + key + " not found in Parameters object");
              param->reset();
            }, "Reset Parameter (mark as unset) by setting to None.")
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, bool value)
            {
              auto param = self.find_parameter(key);
+             if (!param)
+               throw std::runtime_error("Parameter " + key + " not found in Parameters object");
              *param = value;
            }, py::arg(), py::arg().noconvert())
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, std::string value)
            {
              auto param = self.find_parameter(key);
              if (!param)
-               throw std::runtime_error("Parameter not found in Parameters object");
+               throw std::runtime_error("Parameter " + key + " not found in Parameters object");
              *param = value;
            })
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, int value)
            {
              auto param = self.find_parameter(key);
+             if (!param)
+               throw std::runtime_error("Parameter " + key + " not found in Parameters object");
              *param = value;
            })
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, double value)
            {
              auto param = self.find_parameter(key);
+             if (!param)
+               throw std::runtime_error("Parameter " + key + " not found in Parameters object");
              *param = value;
            })
       .def("__setitem__", [](dolfin::Parameters& self, std::string key, const dolfin::Parameters& other)
            {
              auto param = self.find_parameter_set(key);
+             if (!param)
+               throw std::runtime_error("Parameter " + key + " not found in Parameters object");
              *param = other;
            })
       .def("__getitem__", [](dolfin::Parameters& self, std::string key)
