@@ -11,21 +11,9 @@ def get_pybind_include():
         if (_check_pybind_path(p)):
             return [p]
 
-    # Try extracting from pybind11 module
-    try:
-        # Get include paths from module
-        import pybind11
-        return [pybind11.get_include(True), pybind11.get_include()]
-    except Exception:
-        pass
-
-    # Look in /usr/local/include and /usr/include
-    root = os.path.abspath(os.sep)
-    for p in (os.path.join(root, "usr", "local", "include"), os.path.join(root, "usr", "include")):
-        if (_check_pybind_path(p)):
-            return [p]
-
-    raise RuntimeError("Unable to locate pybind11 header files")
+    # Extract from pybind11 module
+    import pybind11
+    return [pybind11.get_include(True), pybind11.get_include()]
 
 
 def _check_pybind_path(root):
