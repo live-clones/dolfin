@@ -207,13 +207,16 @@ def test_compile_extension_module():
       VecExp(x);
     }
 
-    // Import PETScVector bindings
-    (void)pybind11::module::import("dolfin").attr("PETScVector");
-
     PYBIND11_MODULE(SIGNATURE, m)
     {
+      // Import PETScVector bindings
+      (void)pybind11::module::import("dolfin").attr("PETScVector");
 
-      m.def("PETSc_exp", &PETSc_exp);
+      m.def("PETSc_exp", [](pybind11::object obj)
+            {
+              auto vec = obj.cast<std::shared_ptr<dolfin::PETScVector>>();
+              PETSc_exp(vec);
+            });
     }
     """
 
