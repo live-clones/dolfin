@@ -931,6 +931,7 @@ namespace dolfin_wrappers
                dolfin::GenericLinearSolver>
       (m, "LUSolver", "DOLFIN LUSolver object")
       .def(py::init<>())
+      .def(py::init<std::string>())
       .def(py::init<std::shared_ptr<const dolfin::GenericLinearOperator>, std::string>(),
            py::arg("A"), py::arg("method")="default")
       .def(py::init([](const MPICommWrapper comm,

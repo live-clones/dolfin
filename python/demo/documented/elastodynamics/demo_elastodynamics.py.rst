@@ -348,7 +348,6 @@ much more efficiently. This is done by defining a ``LUSolver`` object and asking
  # Define solver for reusing factorization
  solver = LUSolver("mumps")
  solver.parameters["symmetric"] = True
- solver.parameters["reuse_factorization"] = True
  K, res = assemble_system(a_form, L_form, bc)
 
 We now initiate the time stepping loop. We will keep track of the beam vertical tip displacement over time as well as the different
@@ -415,7 +414,9 @@ performed: stresses are computed and written to the result file and the tip disp
 
      p.t = t
      # Record tip displacement and compute energies
-     u_tip[i+1] = u(1., 0.05, 0.)[1]
+     # Note: Only works in serial
+     if MPI.comm_world.size == 1:
+         u_tip[i+1] = u(1., 0.05, 0.)[1]
      E_elas = assemble(0.5*k(u_old, u_old))
      E_kin = assemble(0.5*m(v_old, v_old))
      E_damp += dt*assemble(c(v_old, v_old))
@@ -448,22 +449,24 @@ As for the work developed by the external forces, the contribution to the energy
 
 When the time evolution loop is finished, the evolution of the tip displacement as well as the different contributions of the energy are plotted as functions of time::
 
- # Plot tip displacement evolution
- plt.figure()
- plt.plot(time, u_tip)
- plt.xlabel("Time")
- plt.ylabel("Tip displacement")
- plt.ylim(-0.5, 0.5)
- plt.show()
+ if MPI.comm_world.size == 1:
+     # Plot tip displacement evolution
+     plt.figure()
+     plt.plot(time, u_tip)
+     plt.xlabel("Time")
+     plt.ylabel("Tip displacement")
+     plt.ylim(-0.5, 0.5)
+     plt.show()
 
- # Plot energies evolution
- plt.figure()
- plt.plot(time, energies)
- plt.legend(("elastic", "kinetic", "damping", "total"))
- plt.xlabel("Time")
- plt.ylabel("Energies")
- plt.ylim(0, 0.0011)
- plt.show()
+ if (MPI.comm_world.rank == 0):
+     # Plot energies evolution
+     plt.figure()
+     plt.plot(time, energies)
+     plt.legend(("elastic", "kinetic", "damping", "total"))
+     plt.xlabel("Time")
+     plt.ylabel("Energies")
+     plt.ylim(0, 0.0011)
+     plt.show()
 
 ---------------------
 Analyzing the results

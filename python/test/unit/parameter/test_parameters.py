@@ -191,12 +191,13 @@ def test_parse_parameters():
     pset.parse([""] + changed_command_line_args[1])
     check_pset_and_dict_args(pset, changed_pset_dict)
 
-@pytest.mark.parametrize('arg_factory', [xfail(True),
-                                         xfail(1),
-                                         xfail(1.),
-                                         xfail("string"),
-                                         xfail("none"),
-                                         xfail(parameters)])
+@pytest.mark.parametrize('arg_factory', [pytest.param(True, marks=xfail),
+                                         pytest.param(1, marks=xfail),
+                                         pytest.param(1., marks=xfail),
+                                         pytest.param("string", marks=xfail),
+                                         pytest.param("none", marks=xfail),
+                                         pytest.param(parameters, marks=xfail)
+                                         ])
 def test_wrong_parameters_setitem(arg_factory):
     value = arg_factory
     parameters["misplelled"] = arg_factory
