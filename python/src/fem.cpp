@@ -443,6 +443,8 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const ufc::form>,
                     std::vector<std::shared_ptr<const dolfin::FunctionSpace>>>())
       .def(py::init<std::size_t, std::size_t>())
+      .def("function_spaces", &dolfin::Form::function_spaces, "Return function spaces for arguments")
+      .def("function_space", &dolfin::Form::function_space, "Return function space for i-th argument")
       .def("num_coefficients", &dolfin::Form::num_coefficients, "Return number of coefficients in form")
       .def("original_coefficient_position", &dolfin::Form::original_coefficient_position)
       .def("set_coefficient", (void (dolfin::Form::*)(std::size_t, std::shared_ptr<const dolfin::GenericFunction>))
