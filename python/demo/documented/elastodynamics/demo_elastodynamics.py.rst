@@ -447,22 +447,23 @@ As for the work developed by the external forces, the contribution to the energy
 
 When the time evolution loop is finished, the evolution of the tip displacement as well as the different contributions of the energy are plotted as functions of time::
 
- # Plot tip displacement evolution
- plt.figure()
- plt.plot(time, u_tip)
- plt.xlabel("Time")
- plt.ylabel("Tip displacement")
- plt.ylim(-0.5, 0.5)
- plt.show()
+ if (MPI.comm_world.rank == 0):
+     # Plot tip displacement evolution
+     plt.figure()
+     plt.plot(time, u_tip)
+     plt.xlabel("Time")
+     plt.ylabel("Tip displacement")
+     plt.ylim(-0.5, 0.5)
+     plt.show()
 
- # Plot energies evolution
- plt.figure()
- plt.plot(time, energies)
- plt.legend(("elastic", "kinetic", "damping", "total"))
- plt.xlabel("Time")
- plt.ylabel("Energies")
- plt.ylim(0, 0.0011)
- plt.show()
+     # Plot energies evolution
+     plt.figure()
+     plt.plot(time, energies)
+     plt.legend(("elastic", "kinetic", "damping", "total"))
+     plt.xlabel("Time")
+     plt.ylabel("Energies")
+     plt.ylim(0, 0.0011)
+     plt.show()
 
 ---------------------
 Analyzing the results
