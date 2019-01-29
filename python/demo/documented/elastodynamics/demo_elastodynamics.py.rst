@@ -348,7 +348,6 @@ much more efficiently. This is done by defining a ``LUSolver`` object and asking
  # Define solver for reusing factorization
  solver = LUSolver("mumps")
  solver.parameters["symmetric"] = True
- solver.parameters["reuse_factorization"] = True
  K, res = assemble_system(a_form, L_form, bc)
 
 We now initiate the time stepping loop. We will keep track of the beam vertical tip displacement over time as well as the different
