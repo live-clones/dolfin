@@ -414,7 +414,9 @@ performed: stresses are computed and written to the result file and the tip disp
 
      p.t = t
      # Record tip displacement and compute energies
-     u_tip[i+1] = u(1., 0.05, 0.)[1]
+     # Note: Only works in serial
+     if MPI.comm_world.size == 1:
+         u_tip[i+1] = u(1., 0.05, 0.)[1]
      E_elas = assemble(0.5*k(u_old, u_old))
      E_kin = assemble(0.5*m(v_old, v_old))
      E_damp += dt*assemble(c(v_old, v_old))
@@ -447,7 +449,7 @@ As for the work developed by the external forces, the contribution to the energy
 
 When the time evolution loop is finished, the evolution of the tip displacement as well as the different contributions of the energy are plotted as functions of time::
 
- if (MPI.comm_world.rank == 0):
+ if MPI.comm_world.size == 1:
      # Plot tip displacement evolution
      plt.figure()
      plt.plot(time, u_tip)
@@ -456,6 +458,7 @@ When the time evolution loop is finished, the evolution of the tip displacement 
      plt.ylim(-0.5, 0.5)
      plt.show()
 
+ if (MPI.comm_world.rank == 0):
      # Plot energies evolution
      plt.figure()
      plt.plot(time, energies)
