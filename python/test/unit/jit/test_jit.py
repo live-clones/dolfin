@@ -194,20 +194,25 @@ def test_compile_extension_module():
 
     from numpy import arange, exp
     code = """
-      #include <pybind11/pybind11.h>
+    #include <pybind11/pybind11.h>
 
-      #include <petscvec.h>
-      #include <dolfin/la/PETScVector.h>
+    #include <petscvec.h>
+    #include <dolfin/la/PETScVector.h>
 
-      void PETSc_exp(std::shared_ptr<dolfin::PETScVector> vec)
-      {
-        Vec x = vec->vec();
-        assert(x);
-        VecExp(x);
-      }
+
+    void PETSc_exp(std::shared_ptr<dolfin::PETScVector> vec)
+    {
+      Vec x = vec->vec();
+      assert(x);
+      VecExp(x);
+    }
+
 
     PYBIND11_MODULE(SIGNATURE, m)
     {
+      // Import PETScVector bindings
+      (void)pybind11::module::import("dolfin").attr("PETScVector");
+
       m.def("PETSc_exp", &PETSc_exp);
     }
     """
