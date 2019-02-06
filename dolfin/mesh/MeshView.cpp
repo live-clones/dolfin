@@ -114,7 +114,8 @@ Mesh MeshView::create(const MeshFunction<std::size_t>& marker,
     else
     {
       // Dof is owned by the lowest rank process
-      std::size_t dest = *std::min_element(shared_it->second.begin(), shared_it->second.end());
+      //std::size_t dest = *std::min_element(shared_it->second.begin(), shared_it->second.end());
+      std::size_t dest = *(shared_it->second.begin());
       new_shared.insert({i, shared_it->second});
 
       if (dest > mpi_rank)
@@ -157,6 +158,15 @@ Mesh MeshView::create(const MeshFunction<std::size_t>& marker,
         const auto shared_it = mesh_shared.find(main_idx);
         dolfin_assert(shared_it != mesh_shared.end());
         new_shared.insert({vertex_num, shared_it->second});
+#if 0
+        // DEBUG : Print new shared vertex global index
+        for(auto ii=shared_it->second.begin(); ii!=shared_it->second.end(); ++ii)
+          std::cout << "new_shared - "
+                    << " new mesh index = " << vertex_num
+                    << ", vertex_global_index = " << local_count
+                    << ", main global index = " << q
+                    << ", owned by " << *ii << std::endl;
+#endif
         ++local_count;
         ++vertex_num;
       }

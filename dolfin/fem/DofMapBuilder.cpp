@@ -1076,11 +1076,10 @@ std::shared_ptr<const ufc::dofmap> DofMapBuilder::build_ufc_node_graph(
     {
       auto mesh_has_entities = mesh.init(d);
       if(mesh_has_entities)
-      {
         DistributedMeshTools::number_entities(mesh, d);
-        num_mesh_entities_local[d]  = mesh.num_entities(d);
-        num_mesh_entities_global_unconstrained[d] = mesh.num_entities_global(d);
-      }
+
+      num_mesh_entities_local[d]  = mesh.num_entities(d);
+      num_mesh_entities_global_unconstrained[d] = mesh.num_entities_global(d);
     }
   }
 
@@ -1155,6 +1154,13 @@ std::shared_ptr<const ufc::dofmap> DofMapBuilder::build_ufc_node_graph(
     }
 
   }
+
+  // Extra shared vertex/node that have no global index yet
+  const auto shared_vertices = mesh.topology().shared_entities(0);
+  const auto global_vertex_indices = mesh.topology().global_indices(0);
+  for(auto v = shared_vertices.begin(); v != shared_vertices.end(); ++v)
+    if(node_local_to_global[v->first] != global_vertex_indices[v->first])
+      node_local_to_global[v->first] = global_vertex_indices[v->first];
 
   return dofmaps[0];
 }
@@ -1471,6 +1477,11 @@ void DofMapBuilder::compute_shared_nodes(
         shared_nodes[facet_node_local] = 0;
     }
   }
+
+  const auto shared_vertices = mesh.topology().shared_entities(0);
+  for(auto v = shared_vertices.begin(); v != shared_vertices.end(); ++v)
+    if(shared_nodes[v->first] < 0)
+      shared_nodes[v->first] = 0;
 }
 //-----------------------------------------------------------------------------
 void DofMapBuilder::compute_node_reordering(

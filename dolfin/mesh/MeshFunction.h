@@ -641,8 +641,9 @@ namespace dolfin
   template <typename T>
   void MeshFunction<T>::set_all(const T& value)
   {
-    dolfin_assert(_values);
-    std::fill(_values.get(), _values.get() + _size, value);
+    //dolfin_assert(_values);
+    if(_values)
+      std::fill(_values.get(), _values.get() + _size, value);
   }
   //---------------------------------------------------------------------------
   template <typename T>
