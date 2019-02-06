@@ -1159,8 +1159,8 @@ std::shared_ptr<const ufc::dofmap> DofMapBuilder::build_ufc_node_graph(
   const auto shared_vertices = mesh.topology().shared_entities(0);
   const auto global_vertex_indices = mesh.topology().global_indices(0);
   for(auto v = shared_vertices.begin(); v != shared_vertices.end(); ++v)
-    if(node_local_to_global[v->first] != global_vertex_indices[v->first])
-      node_local_to_global[v->first] = global_vertex_indices[v->first];
+    if(node_local_to_global[v->first] != (std::size_t) global_vertex_indices[v->first])
+      node_local_to_global[v->first] = (std::size_t) global_vertex_indices[v->first];
 
   return dofmaps[0];
 }
