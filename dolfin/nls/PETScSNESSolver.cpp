@@ -48,7 +48,11 @@ PETScSNESSolver::_methods
 = { {"default",      {"default SNES method", ""}},
     {"newtonls",     {"Line search method", SNESNEWTONLS}},
     {"newtontr",     {"Trust region method", SNESNEWTONTR}},
+#if PETSC_VERSION_LT(3,9,0)
+    // SNESTEST functionality removed in petsc 3.9,
+    // symbol removed in 3.10.3
     {"test",         {"Tool to verify Jacobian approximation", SNESTEST}},
+#endif
     {"ngmres",       {"Nonlinear generalised minimum residual method",
                       SNESNGMRES}},
     {"nrichardson",  {"Richardson nonlinear method (Picard iteration)",
