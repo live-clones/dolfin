@@ -1124,8 +1124,6 @@ std::shared_ptr<const ufc::dofmap> DofMapBuilder::build_ufc_node_graph(
 
   // Resize local-to-global map
   node_local_to_global.resize(offset_local[1]);
-  // Set node_local_to_global as uninitialized
-  std::fill(node_local_to_global.begin(), node_local_to_global.end(), 0);
 
   // Build dofmaps from ufc::dofmap
   for (CellIterator cell(mesh, "all"); !cell.end(); ++cell)
@@ -1157,13 +1155,17 @@ std::shared_ptr<const ufc::dofmap> DofMapBuilder::build_ufc_node_graph(
 
   }
 
-  // Extra shared vertex/node that have no global index yet
-  const auto shared_vertices = mesh.topology().shared_entities(0);
-  const auto global_vertex_indices = mesh.topology().global_indices(0);
-  for(auto v = shared_vertices.begin(); v != shared_vertices.end(); ++v)
-    // Identify unmaped shared vertices (uninitialized node_local_to_global)
-    if(node_local_to_global[v->first] == 0)
-      node_local_to_global[v->first] = (std::size_t) global_vertex_indices[v->first];
+  if (!mesh.topology().mapping().empty()) // If mesh is built from MeshView
+  {
+    // Extra shared vertex/node that have no global index yet
+    const auto shared_vertices = mesh.topology().shared_entities(0);
+    const auto global_vertex_indices = mesh.topology().global_indices(0);
+    for(auto v = shared_vertices.begin(); v != shared_vertices.end(); ++v)
+      // Identify unmaped shared vertices (uninitialized node_local_to_global)
+      if(node_local_to_global[v->first] == 0)
+        node_local_to_global[v->first] = (std::size_t) global_vertex_indices[v->first];
+  }
+
 
   return dofmaps[0];
 }
@@ -1481,10 +1483,15 @@ void DofMapBuilder::compute_shared_nodes(
     }
   }
 
-  const auto shared_vertices = mesh.topology().shared_entities(0);
-  for(auto v = shared_vertices.begin(); v != shared_vertices.end(); ++v)
-    if(shared_nodes[v->first] < 0)
-      shared_nodes[v->first] = 0;
+  if (!mesh.topology().mapping().empty()) // If mesh is built from MeshView
+  {
+    const auto shared_vertices = mesh.topology().shared_entities(0);
+    for(auto v = shared_vertices.begin(); v != shared_vertices.end(); ++v)
+    {
+      if(shared_nodes[v->first] < 0)
+        shared_nodes[v->first] = 0;
+    }
+  }
 }
 //-----------------------------------------------------------------------------
 void DofMapBuilder::compute_node_reordering(
