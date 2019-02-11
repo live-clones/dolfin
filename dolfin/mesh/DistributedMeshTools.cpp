@@ -1205,9 +1205,11 @@ void DistributedMeshTools::reorder_values_by_global_indices(MPI_Comm mpi_comm,
 
   // Calculate size of overall global vector by finding max index value
   // anywhere
-  const std::size_t global_vector_size
-    = MPI::max(mpi_comm, *std::max_element(global_indices.begin(),
-                                           global_indices.end())) + 1;
+  std::size_t max_element = 0;
+  // NOTE : If mesh is empty on a process (MeshView), global_indices can be empty
+  if(global_indices.size() > 0)
+    max_element = *std::max_element(global_indices.begin(), global_indices.end());
+  const std::size_t global_vector_size = MPI::max(mpi_comm, max_element) + 1;
 
   // Send unwanted values off process
   const std::size_t mpi_size = MPI::size(mpi_comm);
