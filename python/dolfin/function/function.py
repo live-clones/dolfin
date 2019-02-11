@@ -239,7 +239,6 @@ class Function(ufl.Coefficient):
             ufl.Coefficient.__init__(self, V.ufl_function_space(), count=self._cpp_object.id())
         elif isinstance(args[0], FunctionSpaceProduct):
             V = args[0]
-            # self._functions = [Function(s) for s in V.sub_spaces()]  # Recursive call
             self._functions = [Function(s, i) for i, s in enumerate(V.sub_spaces())]
         else:
             raise TypeError("Expected a FunctionSpace or a Function as argument 1")
@@ -540,6 +539,8 @@ class Function(ufl.Coefficient):
             raise TypeError("expects an 'int' as first argument")
 
         if self._functions is not None:
+            # Note : Need a copy (especially when used in parallel)
+            self._functions[i] = self._functions[i].copy(True)
             return self._functions[i]
 
         num_sub_spaces = self.num_sub_spaces()
@@ -570,7 +571,7 @@ class Function(ufl.Coefficient):
 
         """
 
-        num_sub_spaces = self.function_space().num_sub_spaces()
+        num_sub_spaces = self.num_sub_spaces()
         if num_sub_spaces == 1:
             raise RuntimeError("No subfunctions to extract")
         return tuple(self.sub(i, deepcopy) for i in range(num_sub_spaces))

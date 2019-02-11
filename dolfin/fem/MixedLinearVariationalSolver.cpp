@@ -79,7 +79,7 @@ MixedLinearVariationalSolver::assemble_system()
   std::vector<std::shared_ptr<const IndexMap>> index_maps(2);
   bool has_ufc_form = false;
 
-  MPI_Comm comm = u[0]->vector()->mpi_comm(); // TO CHECK (not tested in //)
+  MPI_Comm comm = u[0]->vector()->mpi_comm();
 
   for (size_t i=0; i<u.size(); ++i)
   {
