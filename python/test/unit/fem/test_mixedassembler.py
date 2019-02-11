@@ -376,14 +376,16 @@ def test_mixed_assembly_diag(unit_marker_2D2D, unit_marker_3D2D):
         solve(_a2 == _L2, sol2, bcs=bc2)
         solve(_am == _Lm, sol, bcs=[bc1, bc2], solver_parameters=params())
 
-        assert len(sol1.vector()) == len(sol.sub(0).vector())
+        sol1_m = sol.sub(0)
+        sol2_m = sol.sub(1)
+        assert len(sol1.vector()) == len(sol1_m.vector())
         for i in range(len(sol1.vector())):
-            assert abs(sol1.vector()[i] - sol.sub(0).vector()[i]) < 1e-10
+            assert abs(sol1.vector()[i] - sol1_m.vector()[i]) < 1e-10
 
-        assert len(sol2.vector()) == len(sol.sub(1).vector())
+        assert len(sol2.vector()) == len(sol2_m.vector())
         for i in range(len(sol2.vector())):
-            assert abs(sol2.vector()[i] - sol.sub(1).vector()[i]) < 1e-10
+            assert abs(sol2.vector()[i] - sol2_m.vector()[i]) < 1e-10
 
 
-    #_compare_solutions(unit_marker_2D2D, [boundary1, boundary2])
+    _compare_solutions(unit_marker_2D2D, [boundary1, boundary2])
     _compare_solutions(unit_marker_3D2D, [boundary, boundary])
