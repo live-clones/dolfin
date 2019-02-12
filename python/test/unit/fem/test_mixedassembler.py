@@ -338,6 +338,7 @@ def test_mixed_assembly_interface(two_elements_with_interface):
     _check_vectorial(two_elements_with_interface, (1,2)) # CG1 - CG2
     _check_vectorial(two_elements_with_interface, (2,1)) # CG2 - CG1
 
+@skip_in_parallel
 def test_mixed_assembly_diag(unit_marker_2D2D, unit_marker_3D2D):
     def _compare_solutions(marker, boundaries):
         # Meshes
@@ -388,4 +389,4 @@ def test_mixed_assembly_diag(unit_marker_2D2D, unit_marker_3D2D):
 
 
     _compare_solutions(unit_marker_2D2D, [boundary1, boundary2])
-    #_compare_solutions(unit_marker_3D2D, [boundary, boundary])
+    _compare_solutions(unit_marker_3D2D, [boundary, boundary])

@@ -1141,7 +1141,11 @@ void DistributedMeshTools::reorder_values_by_global_indices(const Mesh& mesh,
 
   const std::size_t tdim = mesh.topology().dim();
   std::set<unsigned int> non_local_vertices;
-  if (mesh.topology().size(tdim) == mesh.topology().ghost_offset(tdim))
+  // NOTE : Disable exclusion of shared entities when using a Mesh built from MeshView
+  // The additional shared vertices which are not part of a cell are excluded while they
+  // shoudn't be - cause problems when writing IO files
+  bool mesh_view = !mesh.topology().mapping().empty();
+  if (mesh.topology().size(tdim) == mesh.topology().ghost_offset(tdim) && !mesh_view)
   {
     // No ghost cells - exclude shared entities which are on lower
     // rank processes
