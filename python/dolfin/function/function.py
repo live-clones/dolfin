@@ -540,8 +540,11 @@ class Function(ufl.Coefficient):
 
         if self._functions is not None:
             # Note : Need a copy (especially when used in parallel)
-            self._functions[i] = self._functions[i].copy(True)
-            return self._functions[i]
+            if deepcopy:
+                return self._functions[i].copy(True)
+            else:
+                print("Set 'deepcopy=True' when using sub() with FunctionSpaceProduct functions.")
+                raise NotImplementedError
 
         num_sub_spaces = self.num_sub_spaces()
         if num_sub_spaces == 1:

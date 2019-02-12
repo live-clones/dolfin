@@ -377,8 +377,8 @@ def test_mixed_assembly_diag(unit_marker_2D2D, unit_marker_3D2D):
         solve(_a2 == _L2, sol2, bcs=bc2)
         solve(_am == _Lm, sol, bcs=[bc1, bc2], solver_parameters=params())
 
-        sol1_m = sol.sub(0)
-        sol2_m = sol.sub(1)
+        sol1_m = sol.sub(0,deepcopy=True)
+        sol2_m = sol.sub(1,deepcopy=True)
         assert len(sol1.vector()) == len(sol1_m.vector())
         for i in range(len(sol1.vector())):
             assert abs(sol1.vector()[i] - sol1_m.vector()[i]) < 1e-10

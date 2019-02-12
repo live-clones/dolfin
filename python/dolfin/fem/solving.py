@@ -253,7 +253,7 @@ def _solve_varproblem(*args, **kwargs):
             # Extract blocks from the variational formulation
             eq_lhs_forms = extract_blocks(eq.lhs)
             eq_rhs_forms = extract_blocks(eq.rhs)
-            u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
+            u_comps = [u._functions[i] for i in range(u.num_sub_spaces())]
 
             # Create problem
             problem = MixedLinearVariationalProblem(eq_lhs_forms, eq_rhs_forms, u_comps, bcs,
@@ -471,7 +471,7 @@ def assemble_mixed_system(*args, **kwargs):
             # Extract blocks from the variational formulation
             eq_lhs_forms = extract_blocks(eq.lhs)
             eq_rhs_forms = extract_blocks(eq.rhs)
-            u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
+            u_comps = [u._functions[i] for i in range(u.num_sub_spaces())]
 
             # Create problem
             problem = MixedLinearVariationalProblem(eq_lhs_forms, eq_rhs_forms, u_comps, bcs,
