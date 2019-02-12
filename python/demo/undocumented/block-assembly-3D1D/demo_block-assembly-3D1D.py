@@ -49,11 +49,18 @@ print("******************************************************************")
 solve(a == L, sol, bcs=bcs, solver_parameters={"krylov_solver":{"relative_tolerance":rtol, "maximum_iterations":10000}})
 
 # extract components of the solution
-sol_3D = sol.sub(0)
-sol_1D = sol.sub(1)
+sol_3D = sol.sub(0, deepcopy=True)
+sol_1D = sol.sub(1, deepcopy=True)
 
-## Save solution in vtk format
-out_3D = File("block-assembly-3D1D-3Dsol.pvd")
-out_3D << sol_3D
-out_1D = File("block-assembly-3D1D-1Dsol.pvd")
-out_1D << sol_1D
+## Export result
+encoding = XDMFFile.Encoding.HDF5 if has_hdf5() else XDMFFile.Encoding.ASCII
+
+out_3D = XDMFFile(MPI.comm_world, "block-assembly-3D1D-3Dsol.xdmf")
+out_1D = XDMFFile(MPI.comm_world, "block-assembly-3D1D-1Dsol.xdmf")
+
+if MPI.size(MPI.comm_world) > 1 and encoding == XDMFFile.Encoding.ASCII:
+    print("XDMF file output not supported in parallel without HDF5")
+else:
+    out_3D.write(sol_3D, encoding)
+    out_1D.write(sol_1D, encoding)
+

@@ -43,8 +43,14 @@ L_2D = f*v_2D*dx
 u_2D = Function(V2)
 solve(a_2D == L_2D, u_2D, bc_2D)
 
-# Save solution in vtk format
-out_3D = File("meshview-mapping-3D2D-3Dsol.pvd")
-out_3D << u_3D
-out_2D = File("meshview-mapping-3D2D-2Dsol.pvd")
-out_2D << u_2D
+# ## Export result
+# encoding = XDMFFile.Encoding.HDF5 if has_hdf5() else XDMFFile.Encoding.ASCII
+
+# out_3D = XDMFFile(MPI.comm_world, "meshview-mapping-3D2D-3Dsol.xdmf")
+# out_2D = XDMFFile(MPI.comm_world, "meshview-mapping-3D2D-2Dsol.xdmf")
+
+# if MPI.size(MPI.comm_world) > 1 and encoding == XDMFFile.Encoding.ASCII:
+#     print("XDMF file output not supported in parallel without HDF5")
+# else:
+#     out_3D.write(u_3D, encoding)
+#     out_2D.write(u_2D, encoding)
