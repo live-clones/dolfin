@@ -109,7 +109,7 @@ from .cpp.la import (IndexMap, DefaultFactory, Matrix, Vector, Scalar,
                      BlockMatrix, BlockVector)
 from .cpp.la import GenericVector  # Remove when pybind11 transition complete
 from .cpp.log import (info, Table, set_log_level, get_log_level, LogLevel,
-                      Progress)
+                      Progress, begin, end, error, warning, set_log_active)
 from .cpp.math import ipow, near, between
 from .cpp.mesh import (Mesh, MeshTopology, MeshGeometry, MeshEntity,
                        MeshColoring, CellType, Cell, Facet, Face,
@@ -184,7 +184,8 @@ from .mesh.meshfunction import (MeshFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
 from .mesh.subdomain import CompiledSubDomain
 
-from .multistage.multistagescheme import (RK4, CN2, ExplicitMidPoint,
+from .multistage.multistagescheme import (RK4, CN2, CrankNicolson,
+                                          ExplicitMidPoint,
                                           ESDIRK3, ESDIRK4,
                                           ForwardEuler, BackwardEuler)
 from .multistage.multistagesolvers import PointIntegralSolver, RKSolver

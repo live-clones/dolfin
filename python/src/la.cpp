@@ -940,6 +940,7 @@ namespace dolfin_wrappers
           { return std::unique_ptr<dolfin::LUSolver>(new dolfin::LUSolver(comm.get(), A, method)); }),
           py::arg("comm"), py::arg("A"), py::arg("method") = "default")
       .def("set_operator", &dolfin::LUSolver::set_operator)
+      .def("default_parameters", &dolfin::LUSolver::default_parameters)
       .def("solve", (std::size_t (dolfin::LUSolver::*)(dolfin::GenericVector&,
                                                        const dolfin::GenericVector&))
            &dolfin::LUSolver::solve)
@@ -994,6 +995,7 @@ namespace dolfin_wrappers
           py::arg("comm"), py::arg("A"), py::arg("method") = "default", py::arg("preconditioner")="default")
       .def("set_operator", &dolfin::KrylovSolver::set_operator)
       .def("set_operators", &dolfin::KrylovSolver::set_operators)
+      .def("default_parameters", &dolfin::KrylovSolver::default_parameters)
       .def("solve", (std::size_t (dolfin::KrylovSolver::*)(dolfin::GenericVector&,
                                                            const dolfin::GenericVector&))
            &dolfin::KrylovSolver::solve)
@@ -1012,6 +1014,7 @@ namespace dolfin_wrappers
       .def(py::init<std::string, std::string>())
       .def(py::init<std::string, std::shared_ptr<dolfin::PETScPreconditioner>>())
       .def(py::init<KSP>())
+      .def("default_parameters", &dolfin::PETScKrylovSolver::default_parameters)
       .def("get_options_prefix", &dolfin::PETScKrylovSolver::get_options_prefix)
       .def("set_options_prefix", &dolfin::PETScKrylovSolver::set_options_prefix)
       .def("get_norm_type", (dolfin::PETScKrylovSolver::norm_type (dolfin::PETScKrylovSolver::*)() const)
