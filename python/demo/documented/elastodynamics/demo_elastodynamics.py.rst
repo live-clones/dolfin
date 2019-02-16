@@ -343,12 +343,12 @@ formulate the system to solve, involving the modified stiffness matrix :math:`[\
 
 Since the system matrix to solve is the same for each time step (constant time step), it is not necessary to factorize the system at each increment.
 It can be done once and for all and only perform assembly of the varying right-hand side and backsubstitution to obtain the solution 
-much more efficiently. This is done by defining a ``LUSolver`` object and asking for reusing the matrix factorization::
+much more efficiently. This is done by defining a ``LUSolver`` object while PETSc handles caching factorizations::
 
  # Define solver for reusing factorization
- solver = LUSolver("mumps")
- solver.parameters["symmetric"] = True
  K, res = assemble_system(a_form, L_form, bc)
+ solver = LUSolver(K, "mumps")
+ solver.parameters["symmetric"] = True
 
 We now initiate the time stepping loop. We will keep track of the beam vertical tip displacement over time as well as the different
 parts of the system total energy. We will also compute the stress field and save it, along with the displacement field, in a ``XDMFFile``.  
