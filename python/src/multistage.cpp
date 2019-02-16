@@ -66,7 +66,8 @@ namespace dolfin_wrappers
       .def("reset_newton_solver", &dolfin::PointIntegralSolver::reset_newton_solver)
       .def("reset_stage_solutions", &dolfin::PointIntegralSolver::reset_stage_solutions)
       .def("step", &dolfin::PointIntegralSolver::step)
-      .def("step_interval", &dolfin::PointIntegralSolver::step_interval);
+      .def("step_interval", &dolfin::PointIntegralSolver::step_interval)
+      .def("default_parameters", &dolfin::PointIntegralSolver::default_parameters);
 
   }
 }

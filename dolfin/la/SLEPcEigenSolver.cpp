@@ -259,15 +259,21 @@ void SLEPcEigenSolver::get_eigenpair(double& lr, double& lc,
 
   if (ii < num_computed_eigenvalues)
   {
-    // Get operators
-    Mat A, B;
     dolfin_assert(_eps);
-    EPSGetOperators(_eps, &A, &B);
 
-    // Wrap operator and initialize r and c
-    PETScMatrix A_wrapped(A);
-    A_wrapped.init_vector(r, 0);
-    A_wrapped.init_vector(c, 0);
+    if (r.empty() or c.empty())
+    {
+      // Get operators
+      Mat A, B;
+      EPSGetOperators(_eps, &A, &B);
+
+      // Wrap operator and initialize r and c
+      PETScMatrix A_wrapped(A);
+      if (r.empty())
+        A_wrapped.init_vector(r, 0);
+      if (c.empty())
+        A_wrapped.init_vector(c, 0);
+    }
 
     // Get eigen pairs
     EPSGetEigenpair(_eps, ii, &lr, &lc, r.vec(), c.vec());

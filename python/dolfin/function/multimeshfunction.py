@@ -27,7 +27,7 @@ from dolfin.function.function import Function
 
 
 class MultiMeshFunction(ufl.Coefficient):
-    """This class represents a multimeshfunction
+    r"""This class represents a multimeshfunction
     :math:`u_h=(u_{h,1}\cross \dots u_{h,N}` in a finite
     element multimeshfunction space
     :math:`V_h=V_{h,1}\cross \dots V_{h,N}`, given by

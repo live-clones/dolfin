@@ -117,10 +117,11 @@ def test_creation_and_marking():
         };
 
     PYBIND11_MODULE(SIGNATURE, m) {
-       py::class_<Left, std::shared_ptr<Left>, dolfin::SubDomain>(m, "Left").def(py::init<>());
-       py::class_<Right, std::shared_ptr<Right>, dolfin::SubDomain>(m, "Right").def(py::init<>());
-       py::class_<LeftOnBoundary, std::shared_ptr<LeftOnBoundary>, dolfin::SubDomain>(m, "LeftOnBoundary").def(py::init<>());
-       py::class_<RightOnBoundary, std::shared_ptr<RightOnBoundary>, dolfin::SubDomain>(m, "RightOnBoundary").def(py::init<>());
+       py::object SubDomain = (py::object) py::module::import("dolfin").attr("SubDomain");
+       py::class_<Left, std::shared_ptr<Left>>(m, "Left", SubDomain).def(py::init<>());
+       py::class_<Right, std::shared_ptr<Right>>(m, "Right", SubDomain).def(py::init<>());
+       py::class_<LeftOnBoundary, std::shared_ptr<LeftOnBoundary>>(m, "LeftOnBoundary", SubDomain).def(py::init<>());
+       py::class_<RightOnBoundary, std::shared_ptr<RightOnBoundary>>(m, "RightOnBoundary", SubDomain).def(py::init<>());
     }
     """
 
