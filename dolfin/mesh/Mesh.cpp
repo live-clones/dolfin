@@ -537,6 +537,7 @@ void Mesh::build_mapping(std::shared_ptr<const Mesh> other) const
       auto D = other->topology().dim();
       this->topology().mapping()[parent_id]->mesh()->init(D);
       this->topology().mapping()[parent_id]->mesh()->init(D - 1, D);
+      other->init(this->topology().dim());
 
       // Find a cell in <other> owning mesh_facet
       for(std::size_t j=0; j<mesh_facet.num_entities(D); j++)
@@ -565,7 +566,10 @@ void Mesh::build_mapping(std::shared_ptr<const Mesh> other) const
       }
     }
     else
-      std::cout << "[build_mapping] co-dimension not (yet) available" << std::endl;
+     dolfin_error("Mesh.cpp",
+                  "build_mapping",
+                  "The dimension of the mesh given as parameter (%d) cannot be lower than the dimension of the current mesh (%d)",
+                  other->topology().dim(), this->topology().dim());
 
     if(!new_idx_found)
       std::cout << "Error in building the mapping ("

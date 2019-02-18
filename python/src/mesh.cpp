@@ -209,7 +209,8 @@ namespace dolfin_wrappers
            py::return_value_policy::reference)
       .def("ufl_id", [](const dolfin::Mesh& self){ return self.id(); })
       .def("cell_name", [](const dolfin::Mesh& self)
-           { return dolfin::CellType::type2string(self.type().cell_type()); });
+           { return dolfin::CellType::type2string(self.type().cell_type()); })
+      .def("build_mapping", &dolfin::Mesh::build_mapping);
 
     // dolfin::MeshData
     py::class_<dolfin::MeshData, std::shared_ptr<dolfin::MeshData>, dolfin::Variable>
