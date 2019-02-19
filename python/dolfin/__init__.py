@@ -137,7 +137,7 @@ from .common import timer
 from .common.timer import Timer, timed
 from .common.plotting import plot
 
-from .fem.assembling import (assemble, assemble_system, assemble_multimesh,
+from .fem.assembling import (assemble, assemble_system, assemble_multimesh, assemble_mixed,
                              SystemAssembler, assemble_local)
 from .fem.form import Form
 from .fem.norms import norm, errornorm

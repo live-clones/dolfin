@@ -35,6 +35,7 @@
 #include <dolfin/fem/assemble_local.h>
 #include <dolfin/fem/Assembler.h>
 #include <dolfin/fem/MultiMeshAssembler.h>
+#include <dolfin/fem/MixedAssembler.h>
 #include <dolfin/fem/DirichletBC.h>
 #include <dolfin/fem/DiscreteOperators.h>
 #include <dolfin/fem/DofMap.h>
@@ -415,6 +416,12 @@ namespace dolfin_wrappers
       (m, "Assembler", "DOLFIN Assembler object")
       .def(py::init<>())
       .def("assemble", &dolfin::Assembler::assemble);
+
+    // dolfin::MixedAssembler
+    py::class_<dolfin::MixedAssembler, std::shared_ptr<dolfin::MixedAssembler>, dolfin::AssemblerBase>
+      (m, "MixedAssembler", "DOLFIN MixedAssembler object")
+      .def(py::init<>())
+      .def("assemble", &dolfin::MixedAssembler::assemble);
 
     // dolfin::SystemAssembler
     py::class_<dolfin::SystemAssembler, std::shared_ptr<dolfin::SystemAssembler>, dolfin::AssemblerBase>
