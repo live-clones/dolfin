@@ -240,9 +240,9 @@ void MixedLinearVariationalSolver::solve(MixedLinearVariationalSolver::assembled
   // Combine the matrices
   PETScNestMatrix A(As);
 
-  auto comm = us[0]->mpi_comm();
-  auto x = us[0]->factory().create_vector(comm);
-  auto b = us[0]->factory().create_vector(comm);
+  MPI_Comm comm = us[0]->mpi_comm();
+  std::shared_ptr<GenericVector> x = us[0]->factory().create_vector(comm);
+  std::shared_ptr<GenericVector> b = us[0]->factory().create_vector(comm);
   
   // Combine the vectors (solution and rhs)
   A.init_vectors(*x, us);
@@ -291,6 +291,9 @@ void MixedLinearVariationalSolver::solve(MixedLinearVariationalSolver::assembled
     solver.set_operator(A);
     solver.solve(*x,*b);
   }
+  // Ghost values have to be updated in parallel since they are not updated by solve
+  for(auto &u : us)
+    as_type<PETScVector>(u)->update_ghost_values();
 
 #if 0 // Configure PCFieldSplit (Not working yet)
   PETScOptions::set("pc_type", "fieldsplit");

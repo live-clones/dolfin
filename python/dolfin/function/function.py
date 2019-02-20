@@ -539,12 +539,10 @@ class Function(ufl.Coefficient):
             raise TypeError("expects an 'int' as first argument")
 
         if self._functions is not None:
-            # Note : Need a copy (especially when used in parallel)
             if deepcopy:
                 return self._functions[i].copy(True)
             else:
-                print("Set 'deepcopy=True' when using sub() with FunctionSpaceProduct functions.")
-                raise NotImplementedError
+                return self._functions[i]
 
         num_sub_spaces = self.num_sub_spaces()
         if num_sub_spaces == 1:

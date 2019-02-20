@@ -49,8 +49,8 @@ print("******************************************************************")
 solve(a == L, sol, bcs=bcs, solver_parameters={"krylov_solver":{"relative_tolerance":rtol, "maximum_iterations":10000}})
 
 # extract components of the solution
-sol_3D = sol.sub(0, deepcopy=True)
-sol_1D = sol.sub(1, deepcopy=True)
+sol_3D = sol.sub(0)
+sol_1D = sol.sub(1)
 
 ## Export result
 encoding = XDMFFile.Encoding.HDF5 if has_hdf5() else XDMFFile.Encoding.ASCII

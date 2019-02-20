@@ -68,8 +68,8 @@ sol = Function(V)
 
 # Direct solve
 solve(a == L, sol, bcs, solver_parameters={"linear_solver":"direct"})
-sol_3D = sol.sub(0, deepcopy=True)
-sol_2D = sol.sub(1, deepcopy=True)
+sol_3D = sol.sub(0)
+sol_2D = sol.sub(1)
 
 assert len(u_3D.vector()) == len(sol_3D.vector())
 for i in range(len(u_3D.vector())):

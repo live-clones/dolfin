@@ -66,8 +66,8 @@ L = f*v1_m*dx + f*v2_m*dx
 sol = Function(V)
 solve(a == L, sol, bcs, solver_parameters={"linear_solver":"direct"})
 
-sol1 = sol.sub(0, deepcopy=True)
-sol2 = sol.sub(1, deepcopy=True)
+sol1 = sol.sub(0)
+sol2 = sol.sub(1)
 
 assert len(u1.vector()) == len(sol1.vector())
 for i in range(len(u1.vector())):
