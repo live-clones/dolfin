@@ -424,7 +424,7 @@ namespace dolfin_wrappers
       .def("where_equal", &dolfin::MeshFunction<SCALAR>::where_equal) \
       .def("array", [](dolfin::MeshFunction<SCALAR>& self) \
            { return Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>(self.values(), self.size()); }, \
-           return_value_policy::reference_internal)
+           py::return_value_policy::reference_internal)
 
     MESHFUNCTION_MACRO(bool, Bool);
     MESHFUNCTION_MACRO(int, Int);
