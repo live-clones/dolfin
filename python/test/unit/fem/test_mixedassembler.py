@@ -20,9 +20,6 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 #
 # Modified by Cecile Daversin-Catty 2018
-#
-# First added:  2018-04-10
-# Last changed: 2018-04-10
 
 import pytest
 from dolfin import *
@@ -65,11 +62,6 @@ def two_elements_with_interface():
         markerf[f] = 0.5 - DOLFIN_EPS < f.midpoint().x() < 0.5 + DOLFIN_EPS and 0.5 - DOLFIN_EPS < f.midpoint().y() < 0.5 + DOLFIN_EPS
 
     return (markerc, markerf)
-
-# @fixture(scope='module', params=range(2))
-# def meshes(one_element, two_elements, request):
-#     mesh = [one_element, two_elements]
-#     return mesh[request.param]
 
 @fixture
 def unit_marker_2D2D():
@@ -129,8 +121,8 @@ def test_mixed_assembly(one_element, two_elements):
         f = Expression('x[0]+x[1]', degree=3)
         g = Expression('x[0]-x[1]', degree=3)
 
-        (u, p) = TrialFunction(W)
-        (v, q) = TestFunction(W)
+        (u, p) = TrialFunctions(W)
+        (v, q) = TestFunctions(W)
 
         dx_ = Measure('dx', domain=W.sub_space(1).mesh())
         ## Reference value
@@ -170,8 +162,8 @@ def test_mixed_assembly(one_element, two_elements):
         f = Expression(('x[0]+x[1]', 'x[0]-x[1]'), degree=3)
         g = Expression(('x[0]+3*x[1]', 'x[0]-2*x[1]'), degree=3)
 
-        (u, p) = TrialFunction(W)
-        (v, q) = TestFunction(W)
+        (u, p) = TrialFunctions(W)
+        (v, q) = TestFunctions(W)
         dx_ = Measure('dx', domain=W.sub_space(1).mesh())
         ## Reference value
         ref = assemble(inner(f, g)*dx_)
@@ -230,8 +222,8 @@ def test_mixed_assembly_interface(two_elements_with_interface):
         f = Expression('x[0]+x[1]', degree=3)
         g = Expression('x[0]-x[1]', degree=3)
 
-        (u0, u1, p) = TrialFunction(W)
-        (v0, v1, q) = TestFunction(W)
+        (u0, u1, p) = TrialFunctions(W)
+        (v0, v1, q) = TestFunctions(W)
 
         dx_ = Measure('dx', domain=W.sub_space(2).mesh())
         ## Reference value
@@ -285,8 +277,8 @@ def test_mixed_assembly_interface(two_elements_with_interface):
         f = Expression(('x[0]+x[1]', 'x[0]-x[1]'), degree=3)
         g = Expression(('x[0]+3*x[1]', 'x[0]-2*x[1]'), degree=3)
 
-        (u0, u1, p) = TrialFunction(W)
-        (v0, v1, q) = TestFunction(W)
+        (u0, u1, p) = TrialFunctions(W)
+        (v0, v1, q) = TestFunctions(W)
         dx_ = Measure('dx', domain=W.sub_space(2).mesh())
         ## Reference value
         ref = assemble(inner(f, g)*dx_)
@@ -351,11 +343,11 @@ def test_mixed_assembly_diag(unit_marker_2D2D, unit_marker_3D2D):
         # Trial functions
         _u1 = TrialFunction(_space1)
         _u2 = TrialFunction(_space2)
-        (_u1_m, _u2_m) = TrialFunction(_space_mixed)
+        (_u1_m, _u2_m) = TrialFunctions(_space_mixed)
         # Test functions
         _v1 = TestFunction(_space1)
         _v2 = TestFunction(_space2)
-        (_v1_m, _v2_m) = TestFunction(_space_mixed)
+        (_v1_m, _v2_m) = TestFunctions(_space_mixed)
         # Bilinear forms
         _a1 = a(_u1,_v1)
         _a2 = a(_u2,_v2)

@@ -55,11 +55,11 @@ def space(mesh1,mesh2):
 
 @fixture
 def u(space):
-    return TrialFunction(space)
+    return TrialFunctions(space)
 
 @fixture
 def v(space):
-    return TestFunction(space)
+    return TestFunctions(space)
 
 @fixture
 def a(u,v):
