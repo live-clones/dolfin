@@ -88,11 +88,7 @@ def TestFunction(V, part=None):
 
     This is the overloaded PyDOLFIN variant.
     """
-    if isinstance(V, FunctionSpaceProduct):
-        return [Argument(V.sub_space(i), 0, i)
-                for i in range(V.num_sub_spaces())]
-    else:
-        return Argument(V, 0, part)
+    return Argument(V, 0, part)
 
 
 def TrialFunction(V, part=None):
@@ -101,11 +97,7 @@ def TrialFunction(V, part=None):
     This is the overloaded PyDOLFIN variant.
 
     """
-    if isinstance(V, FunctionSpaceProduct):
-        return [Argument(V.sub_space(i), 1, i)
-                for i in range(V.num_sub_spaces())]
-    else:
-        return Argument(V, 1, part)
+    return Argument(V, 1, part)
 
 
 # --- TestFunctions and TrialFunctions ---
@@ -117,7 +109,11 @@ def Arguments(V, number):
     This is the overloaded PyDOLFIN variant.
 
     """
-    return ufl.split(Argument(V, number))
+    if isinstance(V, FunctionSpaceProduct):
+        return [Argument(V.sub_space(i), number, i)
+                for i in range(V.num_sub_spaces())]
+    else:
+        return ufl.split(Argument(V, number))
 
 
 def TestFunctions(V):
@@ -128,7 +124,7 @@ def TestFunctions(V):
     This is the overloaded PyDOLFIN variant.
 
     """
-    return ufl.split(TestFunction(V))
+    return Arguments(V, 0)
 
 
 def TrialFunctions(V):
@@ -139,4 +135,4 @@ def TrialFunctions(V):
     This is the overloaded PyDOLFIN variant.
 
     """
-    return ufl.split(TrialFunction(V))
+    return Arguments(V, 1)
