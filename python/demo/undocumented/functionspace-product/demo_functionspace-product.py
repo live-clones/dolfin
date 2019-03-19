@@ -33,8 +33,8 @@ bc2 = DirichletBC(V.sub_space(1), u0, boundarySub2)
 
 # Define variational problem
 # Use directly TrialFunction and TestFunction on the product space
-(u1,u2) = TrialFunction(V)
-(v1,v2) = TestFunction(V)
+(u1,u2) = TrialFunctions(V)
+(v1,v2) = TestFunctions(V)
 
 f = Expression("10*exp(-(pow(x[0] - 0.5, 2) + pow(x[1] - 0.5, 2)) / 0.02)", degree=2)
 

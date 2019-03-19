@@ -43,8 +43,8 @@ v1 = TestFunction(W1)
 u2 = TrialFunction(W2)
 v2 = TestFunction(W2)
 # Mixed
-(u1_m,u2_m) = TrialFunction(V)
-(v1_m,v2_m) = TestFunction(V)
+(u1_m,u2_m) = TrialFunctions(V)
+(v1_m,v2_m) = TestFunctions(V)
 
 f = Expression("10*exp(-(pow(x[0] - 0.5, 2) + pow(x[1] - 0.5, 2)) / 0.02)", degree=2)
 

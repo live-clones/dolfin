@@ -35,8 +35,8 @@ v_3D = TestFunction(W1)
 u_2D = TrialFunction(W2)
 v_2D = TestFunction(W2)
 # Use directly TrialFunction and TestFunction on the product space
-(u_3D_m,u_2D_m) = TrialFunction(V)
-(v_3D_m,v_2D_m) = TestFunction(V)
+(u_3D_m,u_2D_m) = TrialFunctions(V)
+(v_3D_m,v_2D_m) = TestFunctions(V)
 
 f = Expression("10*exp(-(pow(x[0] - 0.5, 2) + pow(x[1] - 0.5, 2) ) / 0.02)", degree=2)
 

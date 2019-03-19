@@ -29,8 +29,8 @@ bcs = [bc_3D,bc_1D]
 
 # Define variational problem
 # Use directly TrialFunction and TestFunction on the product space
-(u_3D,u_1D) = TrialFunction(V)
-(v_3D,v_1D) = TestFunction(V)
+(u_3D,u_1D) = TrialFunctions(V)
+(v_3D,v_1D) = TestFunctions(V)
 
 f = Expression("10*exp(-(pow(x[0] - 0.5, 2) ) / 0.02)", degree=2)
 
