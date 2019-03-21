@@ -31,6 +31,7 @@ set(TEST_SOURCES
 
 add_executable(unittests ${TEST_SOURCES})
 target_link_libraries(unittests PRIVATE Catch dolfin)
+target_include_directories(unittests PRIVATE ${DOLFIN_SOURCE_DIR} ${DOLFIN_SOURCE_DIR}/dolfin ${DOLFIN_BINARY_DIR})
 
 # Test target
 add_test(unittests unittests)
