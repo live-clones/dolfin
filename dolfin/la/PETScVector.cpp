@@ -749,7 +749,11 @@ void PETScVector::gather(GenericVector& y,
 
   // Perform scatter
   VecScatter scatter;
+#if PETSC_VERSION_GE(3,11,0)
+  ierr = VecScatterCreateWithData(_x, from, _y.vec(), to, &scatter);
+#else
   ierr = VecScatterCreate(_x, from, _y.vec(), to, &scatter);
+#endif
   CHECK_ERROR("VecScatterCreate");
   ierr = VecScatterBegin(scatter, _x, _y.vec(), INSERT_VALUES,
                          SCATTER_FORWARD);

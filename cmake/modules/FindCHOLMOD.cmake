@@ -42,7 +42,9 @@ set(CMAKE_LIBRARY_PATH ${LAPACK_DIR}/lib $ENV{LAPACK_DIR}/lib ${CMAKE_LIBRARY_PA
 find_package(AMD QUIET)
 find_package(BLAS QUIET)
 find_package(LAPACK QUIET)
-find_package(ParMETIS 4.0.2 QUIET)
+if (DOLFIN_ENABLE_PARMETIS)
+  find_package(ParMETIS 4.0.2 QUIET)
+endif()
 
 # FIXME: Should we have separate FindXX modules for CAMD, COLAMD, and CCOLAMD?
 # FIXME: find_package(CAMD)

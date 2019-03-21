@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.5)
 # Find DOLFIN config file (not used here, but check that the demo will
 # be able to find it
 #find_package(DOLFIN PATHS ${CMAKE_BINARY_DIR} REQUIRED)
+include_directories(${DOLFIN_SOURCE_DIR} ${DOLFIN_SOURCE_DIR}/dolfin ${DOLFIN_BINARY_DIR})
 
 # Documented demos
 add_subdirectory(documented/auto-adaptive-poisson/cpp)
