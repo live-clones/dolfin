@@ -12,8 +12,8 @@ submesh = MeshView.create(marker, 1)
 W1 = FunctionSpace(mesh, "Lagrange", 1) ## 3D
 W2 = FunctionSpace(submesh, "Lagrange", 1) ## 1D
 
-# Define the product function space
-V = FunctionSpaceProduct( W1, W2 )
+# Define the mixed function space
+V = MixedFunctionSpace( W1, W2 )
 
 # Define Dirichlet boundary (x = 0 or x = 1)
 def boundary(x):

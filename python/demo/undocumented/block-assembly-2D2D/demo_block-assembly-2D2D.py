@@ -23,8 +23,8 @@ def boundarySub2(x):
 #element2D = FiniteElement("Lagrange", triangle, 1)
 W1 = FunctionSpace(submesh1, "Lagrange", 1)
 W2 = FunctionSpace(submesh2, "Lagrange", 1)
-# Define the product function space
-V = FunctionSpaceProduct( W1, W2 )
+# Define the mixed function space
+V = MixedFunctionSpace( W1, W2 )
 
 # Define boundary conditions
 u0 = Constant(0.0)

@@ -116,7 +116,7 @@ def test_mixed_assembly(one_element, two_elements):
 
         V = FunctionSpace(mesh, 'CG', order[0])
         Q = FunctionSpace(submesh, 'CG', order[1])
-        W = FunctionSpaceProduct(V, Q)
+        W = MixedFunctionSpace(V, Q)
 
         f = Expression('x[0]+x[1]', degree=3)
         g = Expression('x[0]-x[1]', degree=3)
@@ -157,7 +157,7 @@ def test_mixed_assembly(one_element, two_elements):
 
         V = VectorFunctionSpace(mesh, 'CG', order[0])
         Q = VectorFunctionSpace(submesh, 'CG', order[1])
-        W = FunctionSpaceProduct(V, Q)
+        W = MixedFunctionSpace(V, Q)
 
         f = Expression(('x[0]+x[1]', 'x[0]-x[1]'), degree=3)
         g = Expression(('x[0]+3*x[1]', 'x[0]-2*x[1]'), degree=3)
@@ -217,7 +217,7 @@ def test_mixed_assembly_interface(two_elements_with_interface):
         V0 = FunctionSpace(mesh0, 'CG', order[0])
         V1 = FunctionSpace(mesh1, 'CG', order[0])
         Q = FunctionSpace(submesh, 'CG', order[1])
-        W = FunctionSpaceProduct(V0, V1, Q)
+        W = MixedFunctionSpace(V0, V1, Q)
 
         f = Expression('x[0]+x[1]', degree=3)
         g = Expression('x[0]-x[1]', degree=3)
@@ -272,7 +272,7 @@ def test_mixed_assembly_interface(two_elements_with_interface):
         V0 = VectorFunctionSpace(mesh0, 'CG', order[0])
         V1 = VectorFunctionSpace(mesh1, 'CG', order[0])
         Q = VectorFunctionSpace(submesh, 'CG', order[1])
-        W = FunctionSpaceProduct(V0, V1, Q)
+        W = MixedFunctionSpace(V0, V1, Q)
 
         f = Expression(('x[0]+x[1]', 'x[0]-x[1]'), degree=3)
         g = Expression(('x[0]+3*x[1]', 'x[0]-2*x[1]'), degree=3)
@@ -339,7 +339,7 @@ def test_mixed_assembly_diag(unit_marker_2D2D, unit_marker_3D2D):
         # Spaces
         _space1 = space(_mesh1)
         _space2 = space(_mesh2)
-        _space_mixed = FunctionSpaceProduct(_space1, _space2)
+        _space_mixed = MixedFunctionSpace(_space1, _space2)
         # Trial functions
         _u1 = TrialFunction(_space1)
         _u2 = TrialFunction(_space2)

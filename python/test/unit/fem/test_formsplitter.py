@@ -51,7 +51,7 @@ def mesh2(marker):
 def space(mesh1,mesh2):
     W1 = FunctionSpace(mesh1, "Lagrange", 1)
     W2 = FunctionSpace(mesh2, "Lagrange", 2)
-    return FunctionSpaceProduct( W1, W2 )
+    return MixedFunctionSpace( W1, W2 )
 
 @fixture
 def u(space):
