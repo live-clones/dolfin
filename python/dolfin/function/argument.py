@@ -20,7 +20,7 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import ufl
-from .functionspace import FunctionSpace, FunctionSpaceProduct
+from .functionspace import FunctionSpace, MixedFunctionSpace
 from .multimeshfunctionspace import MultiMeshFunctionSpace
 
 
@@ -109,7 +109,7 @@ def Arguments(V, number):
     This is the overloaded PyDOLFIN variant.
 
     """
-    if isinstance(V, FunctionSpaceProduct):
+    if isinstance(V, MixedFunctionSpace):
         return [Argument(V.sub_space(i), number, i)
                 for i in range(V.num_sub_spaces())]
     else:

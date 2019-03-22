@@ -159,7 +159,7 @@ from .function.multimeshfunctionspace import (MultiMeshFunctionSpace,
                                               MultiMeshVectorFunctionSpace,
                                               MultiMeshTensorFunctionSpace)
 from .function.functionspace import (FunctionSpace,
-                                     FunctionSpaceProduct,
+                                     MixedFunctionSpace,
                                      VectorFunctionSpace, 
                                      TensorFunctionSpace)
 
