@@ -278,7 +278,6 @@ def _solve_varproblem(*args, **kwargs):
         if u._functions is not None:
             # Extract blocks from the variational formulation
             eq_lhs_forms = extract_blocks(eq.lhs)
-            u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
 
             if J is None:
                 cpp.log.info("No Jacobian form specified for nonlinear mixed variational problem.")
@@ -286,13 +285,12 @@ def _solve_varproblem(*args, **kwargs):
                 # Give the list of jacobian for each eq_lhs
                 Js = []
                 for Fi in eq_lhs_forms:
-                    for uj in u_comps:
+                    for uj in u._functions:
                         derivative = formmanipulations.derivative(Fi, uj)
                         derivative = expand_derivatives(derivative)
                         Js.append(derivative)
 
-            # Create problem
-            problem = MixedNonlinearVariationalProblem(eq_lhs_forms, u_comps, bcs, Js,
+            problem = MixedNonlinearVariationalProblem(eq_lhs_forms, u._functions, bcs, Js,
                                                        form_compiler_parameters=form_compiler_parameters)
             # Create solver and call solve
             solver = MixedNonlinearVariationalSolver(problem)
@@ -305,7 +303,6 @@ def _solve_varproblem(*args, **kwargs):
                 cpp.log.info("Differentiating residual form F to obtain Jacobian J = F'.")
                 F = eq.lhs
                 J = formmanipulations.derivative(F, u)
-                print("Jacobian form = ", J)
 
             # Create problem
             problem = NonlinearVariationalProblem(eq.lhs, u, bcs, J,
@@ -481,9 +478,9 @@ def assemble_mixed_system(*args, **kwargs):
             system = solver.assemble_system()
             return system
         else:
+            raise RuntimeError("assemble_mixed_system is not available for non-linear problems yet")
             # Extract blocks from the variational formulation
             eq_lhs_forms = extract_blocks(eq.lhs)
-            u_comps = [u.sub(i) for i in range(u.num_sub_spaces())]
 
             if J is None:
                 cpp.log.info("No Jacobian form specified for nonlinear variational problem.")
@@ -491,11 +488,12 @@ def assemble_mixed_system(*args, **kwargs):
                 # Give the list of jacobian for each eq_lhs
                 Js = []
                 for Fi in eq_lhs_forms:
-                    for uj in u_comps:
-                        Js.append(formmanipulations.derivative(Fi, uj))
+                    for uj in u._functions:
+                        derivative = formmanipulations.derivative(Fi, uj)
+                        derivative = expand_derivatives(derivative)
+                        Js.append(derivative)
 
-            # Create problem
-            problem = MixedNonlinearVariationalProblem(eq_lhs_forms, u_comps, bcs, Js,
+            problem = MixedNonlinearVariationalProblem(eq_lhs_forms, u._functions, bcs, Js,
                                                        form_compiler_parameters=form_compiler_parameters)
             # Create solver and call solve
             solver = MixedNonlinearVariationalSolver(problem)

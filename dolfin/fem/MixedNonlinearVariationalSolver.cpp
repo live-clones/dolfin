@@ -91,17 +91,26 @@ std::pair<std::size_t, bool> MixedNonlinearVariationalSolver::solve()
   } 
 
   std::vector<std::shared_ptr<GenericVector>> us;
+  MPI_Comm comm = u[0]->vector()->mpi_comm();
   std::vector<std::shared_ptr<const IndexMap>> index_maps(2);
-  MPI_Comm comm = u[0]->vector()->mpi_comm(); // TO CHECK (not tested in //)
 
   for (size_t i=0; i<u.size(); ++i)
   {
     dolfin_assert(u[i]->vector());
-    dolfin_assert(u[i]->function_space()->mesh());
     us.push_back(u[i]->vector());
-    
+
+    dolfin_assert(u[i]->function_space()->mesh());
     index_maps[0] = u[i]->function_space()->dofmap().get()->index_map();
-    // Create the layout of the jacobian so that we can have J.init_vectors()
+
+    // Initialize _bs[i] with the appropriate layout for each block i
+    std::shared_ptr<GenericVector> _b = u[i]->vector()->factory().create_vector(comm);
+    auto tensor_layout = _b->factory().create_layout(comm, 1);
+    tensor_layout->init(index_maps, TensorLayout::Ghosts::UNGHOSTED);
+    _b->init(*tensor_layout);
+    _b->zero();
+    nonlinear_problem->_bs.push_back(_b);
+
+    // Initialize _Js[i,j] with the appropriate layout for each block (i,j)
     for (size_t j=0; j<u.size(); ++j)
     {
       std::shared_ptr<GenericMatrix> _J = u[j]->vector()->factory().create_matrix(comm);
@@ -114,11 +123,12 @@ std::pair<std::size_t, bool> MixedNonlinearVariationalSolver::solve()
       nonlinear_problem->_Js.push_back(_J);
     }
   }
+
   auto x = u[0]->vector()->factory().create_vector(comm);
-  // FIXME : We should not need to create a new PETScNestMatrix here
   PETScNestMatrix J(nonlinear_problem->_Js);
+  // Recombine x = [ u[i]->vector for each block i ]
   J.init_vectors(*x, us);
-  
+
   std::pair<std::size_t, bool> ret;
   if (std::string(parameters["nonlinear_solver"]) == "newton")
   {
@@ -138,12 +148,12 @@ std::pair<std::size_t, bool> MixedNonlinearVariationalSolver::solve()
 
     // Pass parameters to Newton solver
     dolfin_assert(newton_solver);
-    // FIXME - TEMPORARY : convergence_criterion set to incremental
-    // Default criterion is residual but need to call converged()
-    // and this function is not "compatible" with MixedNLSolver (yet)
     newton_solver->parameters.update(parameters("newton_solver"));
-    newton_solver->parameters.remove("convergence_criterion");
-    newton_solver->parameters.add("convergence_criterion", "incremental");
+
+    // KSPSolve needs GMRES to be used with VecNest objects
+    warning("Imposing linear_solver = GMRES, to be used with nested vectors");
+    newton_solver->parameters.remove("linear_solver");
+    newton_solver->parameters.add("linear_solver", "gmres");
 
     // Solve nonlinear problem using Newton's method    
     dolfin_assert(nonlinear_problem);
@@ -208,17 +218,12 @@ MixedNonlinearVariationalSolver::MixedNonlinearDiscreteProblem::~MixedNonlinearD
 void MixedNonlinearVariationalSolver::
 MixedNonlinearDiscreteProblem::F(GenericVector& b, const GenericVector& x)
 {
-  std::cout << "[MixedNonlinearDiscreteProblem::F] - Implementation in progress... " << std::endl;
   const auto bform = _problem->residual_form();
   auto u = _problem->solution();
   auto bcs = _problem->bcs();
-
-  std::vector<std::shared_ptr<GenericVector>> bs;
-  std::vector<std::shared_ptr<GenericVector>> us;
   
   bool has_ufc_form = false;
-  std::vector<std::shared_ptr<const IndexMap>> index_maps(2);
-  MPI_Comm comm = u[0]->vector()->mpi_comm(); // TO CHECK (not tested in //)
+  MPI_Comm comm = u[0]->vector()->mpi_comm();
 
   for(size_t i=0; i<u.size(); ++i)
   {
@@ -233,89 +238,51 @@ MixedNonlinearDiscreteProblem::F(GenericVector& b, const GenericVector& x)
 	assemble_mixed(*(_b), *(bform[i][j]), bool(j>0));
       }
     }
-    
-    if(!has_ufc_form)
-    {
-      auto tensor_layout = _b->factory().create_layout(comm, 1);
-      tensor_layout->init(index_maps, TensorLayout::Ghosts::UNGHOSTED);
-      _b->init(*tensor_layout);
-      _b->zero();
-    }
-    
-#if 0 // Create a dedicated function here ?
-    // Get boundary values for Dirichlet BC
-    std::vector<DirichletBC::Map> boundary_values(bcs[i].size());
-    for (unsigned int c = 0; c != bcs[i].size(); ++c)
-    {
-      bcs[i][c]->get_boundary_values(boundary_values[c]);
-      if (MPI::size(comm) > 1 && bcs[i][c]->method() != "pointwise")
-	bcs[i][c]->gather(boundary_values[c]);
-    }
 
-    // Impose Dirichlet BC for the current block (if needed)
-    if(!bcs[i].empty())
-    {
-      const std::size_t num_bc_dofs = boundary_values[0].size();
-      std::vector<dolfin::la_index> bc_indices;
-      std::vector<double> bc_values;
-      bc_indices.reserve(num_bc_dofs);
-      bc_values.reserve(num_bc_dofs);
-
-      // Build list of boundary dofs and values
-      for (const auto &bv : boundary_values[0])
-      {
-	bc_indices.push_back(bv.first);
-	bc_values.push_back(bv.second);
-      }
-    
-      // Modify bc values
-      std::vector<double> x_values(num_bc_dofs);
-      u[i]->vector()->get_local(x_values.data(), num_bc_dofs, bc_indices.data());
-      for (std::size_t i = 0; i < num_bc_dofs; i++)
-	boundary_values[0][bc_indices[i]] = x_values[i] - bc_values[i];
-    }
-    // Need to change the matrix and the vecctor here from the boundary values that we got
-    // Apply_bc is defined in the SystemAssembler class
-    // apply_bc(ufc[0]->macro_A.data(), ufc[1]->macro_A.data(), boundary_values,
-    // 	     mdofs0, mdofs1);
-    
-#endif
-    us.push_back(u[i]->vector());
-    bs.push_back(_b);
+    // Update _bs
+    if(has_ufc_form)
+      _bs[i] = _b;
   }
-  // Combine the vectors
-  // FIXME : We should not need to create a new PETScNestMatrix here
+
+  // Boundary conditions
   PETScNestMatrix J(_Js);
-  J.init_vectors(b, bs);
-  #if 0
-  for(size_t i=0; i<b.size(); i++)
-    std::cout << "[MixedNLSolver] b[" << i << "] = " << b[i] << std::endl;
-  #endif
+  std::vector<IS> is(u.size());
+  MatNestGetISs(as_type<const PETScMatrix>(J).mat(), is.data(), NULL);
+
+  for(size_t i=0; i<u.size(); ++i)
+  {
+    // Extract the subvector x[i] of x corresponding to block i
+    Vec __x;
+    VecGetSubVector(as_type<const PETScVector>(x).vec(),is[i], &__x);
+    PETScVector _x(__x);
+    
+    for (size_t c = 0; c < bcs[i].size(); c++)
+    {
+      dolfin_assert(bcs[i][c]);
+      bcs[i][c]->apply(*_bs[i], _x);
+    }
+  }
+
+  // Update b from _bs[]
+  J.init_vectors(b, _bs);
 }
 //-----------------------------------------------------------------------------
 void MixedNonlinearVariationalSolver::
 MixedNonlinearDiscreteProblem::J(GenericMatrix& A, const GenericVector& x)
 {
-  std::cout << "[MixedNonlinearDiscreteProblem::J] - Implementation in progress... " << std::endl;
   const auto jform = _problem->jacobian_form();
   auto u = _problem->solution();
   auto bcs = _problem->bcs();
 
-  //std::vector<std::shared_ptr<GenericMatrix>> Js;
-  std::vector<Mat> petsc_mats(u.size()*u.size());
-  
   bool has_ufc_form = false;
-  std::vector<std::shared_ptr<const IndexMap>> index_maps(2);
   MPI_Comm comm = u[0]->vector()->mpi_comm();
 
   for (size_t i=0; i<u.size(); ++i)
   {
-    index_maps[0] = u[i]->function_space()->dofmap().get()->index_map();
     for (size_t j=0; j<u.size(); ++j)
     {
       has_ufc_form = false;
       std::shared_ptr<GenericMatrix> _J = u[j]->vector()->factory().create_matrix(comm);
-      index_maps[1] = u[j]->function_space()->dofmap().get()->index_map();
 
       for(size_t k=0; k<jform[i*u.size() + j].size(); ++k)
       {
@@ -326,42 +293,40 @@ MixedNonlinearDiscreteProblem::J(GenericMatrix& A, const GenericVector& x)
 	}
       }
 
-      if(!has_ufc_form)
-      {
-	auto tensor_layout = _J->factory().create_layout(comm, 2);
-	tensor_layout->init(index_maps, TensorLayout::Ghosts::UNGHOSTED);
-	_J->init(*tensor_layout);
-	_J->zero();
-	_J->apply("add");
-      }
-
-      _Js[i*u.size() + j] = _J;
-      petsc_mats[i*u.size() + j] = as_type<const PETScMatrix>(_J)->mat();
+      if(has_ufc_form)
+        _Js[i*u.size() + j] = _J;
     }
   }
-  // TODO : Impose the eventual Dirichlet BC here !
 
-  // Initialize or update the nested matrix
+  // Boundary conditions
+  PETScNestMatrix J(_Js);
+  std::vector<IS> is(u.size());
+  MatNestGetISs(as_type<const PETScMatrix>(J).mat(), is.data(), NULL);
+
+  for(size_t i=0; i<u.size(); ++i)
+  {
+    Vec __x;
+    VecGetSubVector(as_type<const PETScVector>(x).vec(),is[i], &__x);
+    PETScVector _x(__x);
+
+    for (size_t c = 0; c < bcs[i].size(); c++)
+    {
+      dolfin_assert(bcs[i][c]);
+      for (size_t j=0; j<u.size(); ++j)
+      {
+        if(i!=j && jform[i*u.size() + j][0]->ufc_form())
+          bcs[i][c]->zero_columns(*(_Js[i*u.size() + j]), *(_bs[i]), 0, true);
+        else
+          bcs[i][c]->apply(*(_Js[i*u.size() + i]), *(_bs[i]), _x);
+      }
+    }
+  }
+
+  // Update A from _Js, as a PETScNestMatrix
+  // FIXME : We should not need petsc_mats and find a way to call set_nest on _Js
+  std::vector<Mat> petsc_mats(u.size()*u.size());
+  for(size_t i=0; i<u.size(); ++i)
+    for(size_t j=0; j<u.size(); ++j)
+      petsc_mats[i*u.size() + j] = as_type<const PETScMatrix>(_Js[i*u.size() + j])->mat();
   as_type<PETScMatrix>(A).set_nest(petsc_mats);
-  
-# if 0 // /!\ DEBUG /!\ Print each blocks to a file
-  Mat A00,A01,A10,A11;
-  std::vector<IS> is(2);
-  MatNestGetISs(as_type<const PETScMatrix>(A).mat(), is.data(), NULL);
-  MatGetLocalSubMatrix(as_type<const PETScMatrix>(A).mat(),is[0],is[0],&A00);
-  MatGetLocalSubMatrix(as_type<const PETScMatrix>(A).mat(),is[0],is[1],&A01);
-  MatGetLocalSubMatrix(as_type<const PETScMatrix>(A).mat(),is[1],is[0],&A10);
-  MatGetLocalSubMatrix(as_type<const PETScMatrix>(A).mat(),is[1],is[1],&A11);
-
-  PetscViewer viewer;
-  //PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);
-  PetscViewerASCIIOpen(MPI_COMM_WORLD, "A00.m", &viewer);
-  MatView(A00,viewer);
-  PetscViewerASCIIOpen(MPI_COMM_WORLD, "A01.m", &viewer);
-  MatView(A01,viewer);
-  PetscViewerASCIIOpen(MPI_COMM_WORLD, "A10.m", &viewer);
-  MatView(A10,viewer);
-  PetscViewerASCIIOpen(MPI_COMM_WORLD, "A11.m", &viewer);
-  MatView(A11,viewer);
-#endif
 }

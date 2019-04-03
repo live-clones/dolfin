@@ -94,14 +94,16 @@ namespace dolfin
       // Compute J = F' at current point x
       virtual void J(GenericMatrix& A, const GenericVector& x);
 
-      std::vector<std::shared_ptr<GenericMatrix>> _Js;
-
     private:
+      friend class MixedNonlinearVariationalSolver;
 
       // Problem and solver objects
       std::shared_ptr<const MixedNonlinearVariationalProblem> _problem;
       std::shared_ptr<const MixedNonlinearVariationalSolver> _solver;
 
+      // Store J(i,j) and F(i) for each block (i,j)
+      std::vector<std::shared_ptr<GenericMatrix>> _Js;
+      std::vector<std::shared_ptr<GenericVector>> _bs;
     };
 
     // The nonlinear problem
