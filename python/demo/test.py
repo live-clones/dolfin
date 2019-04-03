@@ -62,6 +62,7 @@ def test_demos(mpiexec, num_proc, path, name):
                   'demo_meshview-3D2D.py',
                   'demo_meshview-3D1D.py',
                   'demo_block-assembly-2D2D.py',
+                  'demo_block-assembly-2D2D-nonlinear.py',
                   'demo_block-assembly-3D2D.py',
                   'demo_block-assembly-3D1D.py',
                   'demo_functionspace-product.py',
