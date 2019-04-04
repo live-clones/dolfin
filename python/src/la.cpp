@@ -862,7 +862,8 @@ namespace dolfin_wrappers
       .def("get_options_prefix", &dolfin::PETScMatrix::get_options_prefix)
       .def("set_options_prefix", &dolfin::PETScMatrix::set_options_prefix)
       .def("set_nullspace", &dolfin::PETScMatrix::set_nullspace)
-      .def("set_near_nullspace", &dolfin::PETScMatrix::set_near_nullspace);
+      .def("set_near_nullspace", &dolfin::PETScMatrix::set_near_nullspace)
+      .def("setrow", &dolfin::PETScMatrix::setrow);
 
     py::class_<dolfin::PETScPreconditioner, std::shared_ptr<dolfin::PETScPreconditioner>,
                dolfin::Variable>
