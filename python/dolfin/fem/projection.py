@@ -109,7 +109,7 @@ def project(v, V=None, bcs=None, mesh=None,
         # Assemble linear system
         A = assemble_multimesh(a, form_compiler_parameters=form_compiler_parameters)
         b = assemble_multimesh(L, form_compiler_parameters=form_compiler_parameters)
-
+        V.lock_inactive_dofs(A, b)
         # Solve linear system for projection
         if function is None:
             function = MultiMeshFunction(V)

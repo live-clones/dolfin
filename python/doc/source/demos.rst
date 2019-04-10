@@ -62,3 +62,4 @@ All documented demos
    demos/neumann-poisson/demo_neumann-poisson.py.rst
    demos/nonmatching-interpolation/demo_nonmatching-interpolation.py.rst
    demos/stokes-iterative/demo_stokes-iterative.py.rst
+   demos/elastodynamics/demo_elastodynamics.py.rst

@@ -48,7 +48,11 @@ PETScSNESSolver::_methods
 = { {"default",      {"default SNES method", ""}},
     {"newtonls",     {"Line search method", SNESNEWTONLS}},
     {"newtontr",     {"Trust region method", SNESNEWTONTR}},
+#if PETSC_VERSION_LT(3,9,0)
+    // SNESTEST functionality removed in petsc 3.9,
+    // symbol removed in 3.10.3
     {"test",         {"Tool to verify Jacobian approximation", SNESTEST}},
+#endif
     {"ngmres",       {"Nonlinear generalised minimum residual method",
                       SNESNGMRES}},
     {"nrichardson",  {"Richardson nonlinear method (Picard iteration)",
@@ -181,6 +185,8 @@ void PETScSNESSolver::init(NonlinearProblem& nonlinear_problem,
   // FIXME: We are duplicating ghosted vector, while we don't need ghosted
   // NOTE: Seems that we can get rid of f_tmp and use working vec obtained by
   //       SNESLineSearchGetVecs
+  if (_snes_ctx.f_tmp)
+    VecDestroy(&_snes_ctx.f_tmp);
   ierr = VecDuplicate(_snes_ctx.x->vec(), &_snes_ctx.f_tmp);
   if (ierr != 0) petsc_error(ierr, __FILE__, "VecDuplicate");
 

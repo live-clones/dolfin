@@ -557,16 +557,16 @@ mesh_factories_broken_shared_entities = [
     (UnitIntervalMesh, (8,)),
     (UnitSquareMesh, (4, 4)),
     # FIXME: Problem in test_shared_entities
-    xfail_in_parallel((UnitDiscMesh.create, (MPI.comm_world, 10, 1, 2))),
-    xfail_in_parallel((UnitDiscMesh.create, (MPI.comm_world, 10, 2, 2))),
-    xfail_in_parallel((UnitDiscMesh.create, (MPI.comm_world, 10, 1, 3))),
-    xfail_in_parallel((UnitDiscMesh.create, (MPI.comm_world, 10, 2, 3))),
-    xfail_in_parallel((SphericalShellMesh.create, (MPI.comm_world, 1,))),
-    xfail_in_parallel((SphericalShellMesh.create, (MPI.comm_world, 2,))),
+    pytest.param(((UnitDiscMesh.create, (MPI.comm_world, 10, 1, 2))), marks=xfail_in_parallel),
+    pytest.param(((UnitDiscMesh.create, (MPI.comm_world, 10, 2, 2))), marks=xfail_in_parallel),
+    pytest.param(((UnitDiscMesh.create, (MPI.comm_world, 10, 1, 3))), marks=xfail_in_parallel),
+    pytest.param(((UnitDiscMesh.create, (MPI.comm_world, 10, 2, 3))), marks=xfail_in_parallel),
+    pytest.param(((SphericalShellMesh.create, (MPI.comm_world, 1,))), marks=xfail_in_parallel),
+    pytest.param(((SphericalShellMesh.create, (MPI.comm_world, 2,))), marks=xfail_in_parallel),
     (UnitCubeMesh, (2, 2, 2)),
     (UnitSquareMesh.create, (4, 4, CellType.Type.quadrilateral)),
     (UnitCubeMesh.create, (2, 2, 2, CellType.Type.hexahedron)),
-    xfail_in_parallel((create_two_good_quads, ())),
+    pytest.param(((create_two_good_quads, ())), marks=xfail_in_parallel),
 ]
 
 # FIXME: Fix this xfail
@@ -720,6 +720,18 @@ def test_mesh_topology_lifetime():
     topology = mesh.topology()
     assert sys.getrefcount(mesh) == rc + 1
     del topology
+    assert sys.getrefcount(mesh) == rc
+
+
+def test_mesh_coordinates_lifetime():
+    """Check that lifetime of Mesh.coordinates() is bound to
+    underlying mesh object"""
+    mesh = UnitSquareMesh(4, 4)
+
+    rc = sys.getrefcount(mesh)
+    coordinates = mesh.coordinates()
+    assert sys.getrefcount(mesh) == rc + 1
+    del coordinates
     assert sys.getrefcount(mesh) == rc
 
 

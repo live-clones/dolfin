@@ -217,6 +217,18 @@ class BaseExpression(ufl.Coefficient):
     def cpp_object(self):
         return self._cpp_object
 
+    def restrict(self, element, cell):
+        """
+        Returns expansion coefficients of expression restricted to local cell.
+
+        *Arguments*
+             element : cpp.fem.FiniteElement
+                 The element.
+             dolfin : Cell
+                 The cell.
+        """
+        return self._cpp_object.restrict(element, cell)
+
     def compute_vertex_values(self, mesh):
         return self._cpp_object.compute_vertex_values(mesh)
 
@@ -318,7 +330,10 @@ class CompiledExpression(BaseExpression):
                     raise KeyError("User Parameter key must be a string")
                 if not hasattr(self._cpp_object, k):
                     raise AttributeError("Compiled module does not have attribute %s", k)
-                setattr(self._cpp_object, k, val)
+                try:
+                    setattr(self._cpp_object, k, val)
+                except TypeError:
+                    setattr(self._cpp_object, k, val._cpp_object)
 
         if element and degree:
             raise RuntimeError("Cannot specify an element and a degree for Expressions.")
@@ -334,6 +349,12 @@ class CompiledExpression(BaseExpression):
             element = _select_element(family=None, cell=cell, degree=degree,
                                       value_shape=value_shape)
 
+        # FIXME: The below is invasive and fragile. Fix multistage so
+        #        this is not required.
+        # Store C++ code and user parameters because they are used by
+        # the the multistage module.
+        self._user_parameters = kwargs
+
         BaseExpression.__init__(self, cell=cell, element=element, domain=domain,
                                 name=name, label=label)
 
@@ -345,7 +366,10 @@ class CompiledExpression(BaseExpression):
         if name.startswith("_"):
             super().__setattr__(name, value)
         elif hasattr(self._cpp_object, name):
-            setattr(self._cpp_object, name, value)
+            try:
+                setattr(self._cpp_object, name, value)
+            except TypeError:
+                setattr(self._cpp_object, name, value._cpp_object)
 
 
 class Expression(BaseExpression):

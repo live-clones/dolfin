@@ -10,6 +10,7 @@ DOLFIN documentation
    api
    developer
    contributing
+   ChangeLog
 
 
 Indices and tables

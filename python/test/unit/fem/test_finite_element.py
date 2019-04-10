@@ -34,7 +34,7 @@ xfail = pytest.mark.xfail(strict=True)
                                           (UnitSquareMesh.create, (4, 4, CellType.Type.quadrilateral)),
                                           # cell_normal has not been implemented for hex cell
                                           # cell.orientation() does not work
-                                          xfail((UnitCubeMesh.create, (2, 2, 2, CellType.Type.hexahedron)))])
+                                          pytest.param(((UnitCubeMesh.create, (2, 2, 2, CellType.Type.hexahedron))), marks=xfail)])
 def test_evaluate_dofs(mesh_factory):
 
     func, args = mesh_factory

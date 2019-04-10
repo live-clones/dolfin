@@ -40,6 +40,7 @@
 #include <dolfin/mesh/Cell.h>
 #include <dolfin/mesh/MeshEntityIterator.h>
 #include <dolfin/mesh/MeshFunction.h>
+#include <dolfin/mesh/MeshPartitioning.h>
 #include <dolfin/mesh/MeshValueCollection.h>
 #include <dolfin/mesh/MeshQuality.h>
 #include <dolfin/mesh/SubDomain.h>
@@ -102,6 +103,9 @@ namespace dolfin_wrappers
       .def("init", (void (dolfin::MeshTopology::*)(std::size_t)) &dolfin::MeshTopology::init)
       .def("init", (void (dolfin::MeshTopology::*)(std::size_t, std::size_t, std::size_t))
            &dolfin::MeshTopology::init)
+      .def("clear", (void (dolfin::MeshTopology::*)()) &dolfin::MeshTopology::clear)
+      .def("clear", (void (dolfin::MeshTopology::*)(std::size_t, std::size_t))
+           &dolfin::MeshTopology::clear)
       .def("__call__", (const dolfin::MeshConnectivity& (dolfin::MeshTopology::*)(std::size_t, std::size_t) const)
            &dolfin::MeshTopology::operator(), py::return_value_policy::reference_internal)
       .def("size", &dolfin::MeshTopology::size)
@@ -147,7 +151,8 @@ namespace dolfin_wrappers
                (self.geometry().x().data(),
                 self.geometry().num_points(),
                 self.geometry().dim());
-           })
+           },
+           py::return_value_policy::reference_internal)
       .def("domains", (dolfin::MeshDomains& (dolfin::Mesh::*)())
            &dolfin::Mesh::domains, py::return_value_policy::reference_internal)
       .def("data", (dolfin::MeshData& (dolfin::Mesh::*)())
@@ -315,6 +320,12 @@ namespace dolfin_wrappers
           std::vector<double> x;
           self.get_vertex_coordinates(x);
           return x; }, "Get cell vertex coordinates")
+      .def("get_coordinate_dofs", [](const dolfin::Cell& self){
+          std::vector<double> x;
+          self.get_coordinate_dofs(x);
+          return x; }, "Get the coordinates of the dofs in this cell")
+      .def("get_cell_data", &dolfin::Cell::get_cell_data)
+      .def("get_cell_topology", &dolfin::Cell::get_cell_topology)
       .def("orientation", (std::size_t (dolfin::Cell::*)() const) &dolfin::Cell::orientation)
       .def("orientation", (std::size_t (dolfin::Cell::*)(const dolfin::Point&) const) &dolfin::Cell::orientation);
 
@@ -412,7 +423,8 @@ namespace dolfin_wrappers
 	   &dolfin::MeshFunction<SCALAR>::set_value) \
       .def("where_equal", &dolfin::MeshFunction<SCALAR>::where_equal) \
       .def("array", [](dolfin::MeshFunction<SCALAR>& self) \
-           { return Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>(self.values(), self.size()); })
+           { return Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>(self.values(), self.size()); }, \
+           py::return_value_policy::reference_internal)
 
     MESHFUNCTION_MACRO(bool, Bool);
     MESHFUNCTION_MACRO(int, Int);
@@ -505,7 +517,7 @@ namespace dolfin_wrappers
     // dolfin::SubDomian
     py::class_<dolfin::SubDomain, std::shared_ptr<dolfin::SubDomain>, PySubDomain>
       (m, "SubDomain", "DOLFIN SubDomain object")
-      .def(py::init<double>(), py::arg("map_tol")=DOLFIN_EPS)
+      .def(py::init<double>(), py::arg("map_tol")=1.0e-10)
       .def("inside", (bool (dolfin::SubDomain::*)(Eigen::Ref<const Eigen::VectorXd>, bool) const)
            &dolfin::SubDomain::inside)
       .def("map", (void (dolfin::SubDomain::*)(Eigen::Ref<const Eigen::VectorXd>, Eigen::Ref<Eigen::VectorXd>) const)
@@ -540,6 +552,10 @@ namespace dolfin_wrappers
       .def_static("cell_colors", (dolfin::MeshFunction<std::size_t> (*)(std::shared_ptr<const dolfin::Mesh>, std::vector<std::size_t>))
                   &dolfin::MeshColoring::cell_colors)
       .def_static("color_cells", &dolfin::MeshColoring::color_cells);
+
+    // dolfin::MeshPartitioning
+    py::class_<dolfin::MeshPartitioning>(m, "MeshPartitioning")
+      .def_static("build_distributed_mesh", (void (*)(dolfin::Mesh&)) &dolfin::MeshPartitioning::build_distributed_mesh);
 
     // dolfin::MeshTransformation
     py::class_<dolfin::MeshTransformation>(m, "MeshTransformation")

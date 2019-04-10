@@ -1,6 +1,16 @@
 Change log
 ==========
 
+2019.1.0 (2019-04-19)
+---------------------
+
+- Support for shape calculus operations, see file:
+  ``python/test/unit/fem/test_coordinatederivative.py``
+- Support for PETSc and SLEPc 3.10.
+- Documented Python elastodynamics demo.
+- Various bug fixes, e.g. memory leaks, build issues.
+- Enhancements and additions to pybind11-based Python interface.
+
 2018.1.0 (2018-06-14)
 ---------------------
 

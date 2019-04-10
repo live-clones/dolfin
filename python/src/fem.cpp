@@ -314,6 +314,7 @@ namespace dolfin_wrappers
       .def("homogenize", &dolfin::DirichletBC::homogenize)
       .def("method", &dolfin::DirichletBC::method)
       .def("zero", &dolfin::DirichletBC::zero)
+      .def("markers", &dolfin::DirichletBC::markers)
       .def("zero_columns", &dolfin::DirichletBC::zero_columns,
            py::arg("A"), py::arg("b"), py::arg("diagonal_value")=0.0)
       .def("get_boundary_values", [](const dolfin::DirichletBC& instance)
@@ -332,7 +333,7 @@ namespace dolfin_wrappers
            &dolfin::DirichletBC::apply)
       .def("apply", (void (dolfin::DirichletBC::*)(dolfin::GenericMatrix&, dolfin::GenericVector&, const dolfin::GenericVector&) const)
            &dolfin::DirichletBC::apply)
-      .def("user_subdomain", &dolfin::DirichletBC::user_sub_domain)
+      .def("user_sub_domain", &dolfin::DirichletBC::user_sub_domain)
       .def("set_value", &dolfin::DirichletBC::set_value)
       .def("set_value", [](dolfin::DirichletBC& self, py::object value)
            {
@@ -377,6 +378,12 @@ namespace dolfin_wrappers
            std::size_t, std::size_t, std::string>(),
            py::arg("V"), py::arg("g"), py::arg("sub_domains"),
            py::arg("sub_domain"), py::arg("part"), py::arg("method")="topological")
+      .def(py::init<std::shared_ptr<const dolfin::MultiMeshFunctionSpace>,
+           std::shared_ptr<const dolfin::GenericFunction>,
+           std::shared_ptr<const dolfin::SubDomain>, std::size_t, std::string, bool, bool>(),
+           py::arg("V"), py::arg("g"), py::arg("sub_domain"), py::arg("part"),
+           py::arg("method")="topological", py::arg("check_midpoint")=true,
+           py::arg("exclude_overlapped_boundaries")=true)
       .def("function_space", &dolfin::MultiMeshDirichletBC::function_space)
       .def("homogenize", &dolfin::MultiMeshDirichletBC::homogenize)
       .def("zero", &dolfin::MultiMeshDirichletBC::zero)
@@ -436,6 +443,8 @@ namespace dolfin_wrappers
       .def(py::init<std::shared_ptr<const ufc::form>,
                     std::vector<std::shared_ptr<const dolfin::FunctionSpace>>>())
       .def(py::init<std::size_t, std::size_t>())
+      .def("function_spaces", &dolfin::Form::function_spaces, "Return function spaces for arguments")
+      .def("function_space", &dolfin::Form::function_space, "Return function space for i-th argument")
       .def("num_coefficients", &dolfin::Form::num_coefficients, "Return number of coefficients in form")
       .def("original_coefficient_position", &dolfin::Form::original_coefficient_position)
       .def("set_coefficient", (void (dolfin::Form::*)(std::size_t, std::shared_ptr<const dolfin::GenericFunction>))
@@ -549,7 +558,8 @@ namespace dolfin_wrappers
                std::shared_ptr<dolfin::LinearVariationalSolver>,
                dolfin::Variable>(m, "LinearVariationalSolver")
       .def(py::init<std::shared_ptr<dolfin::LinearVariationalProblem>>())
-      .def("solve", &dolfin::LinearVariationalSolver::solve);
+      .def("solve", &dolfin::LinearVariationalSolver::solve)
+      .def("default_parameters", &dolfin::LinearVariationalSolver::default_parameters);
 
     // dolfin::NonlinearVariationalProblem
     py::class_<dolfin::NonlinearVariationalProblem,
