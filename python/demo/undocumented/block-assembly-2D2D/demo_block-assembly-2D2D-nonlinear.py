@@ -8,6 +8,10 @@ class DirichletBoundary2(SubDomain):
     def inside(self, x, on_boundary):
         return abs(x[0] - 1.0) < DOLFIN_EPS and on_boundary
 
+def newton_solver_parameters():
+    return{"nonlinear_solver": "newton",
+           "newton_solver": {"linear_solver": "gmres"}}
+
 # Create meshes
 n = 16
 mesh = UnitSquareMesh(n, n)
@@ -53,7 +57,7 @@ solve(F2 == 0, u2, bc2)
 u2_ref = u2.copy(deepcopy=True)
 
 # Compute solution - mixed-domains problem
-solve(F == 0, u, bcs) # Default solver = newton
+solve(F == 0, u, bcs, solver_parameters=newton_solver_parameters())
 # solve(F == 0, u, bcs, solver_parameters={"nonlinear_solver":"snes"}) # Not available yet
 
 for i in range(len(u1.vector())):
