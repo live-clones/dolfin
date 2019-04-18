@@ -13,8 +13,8 @@ if sys.version_info < (3, 5):
     print("Python 3.5 or higher required, please upgrade.")
     sys.exit(1)
 
-VERSION = "2019.1.0"
-RESTRICT_REQUIREMENTS = ">=2019.1.0,<2019.2"
+VERSION = "2019.2.0.dev0"
+RESTRICT_REQUIREMENTS = ">=2019.2.0.dev0,<2019.3"
 
 REQUIREMENTS = ["numpy",
                 "pkgconfig",
