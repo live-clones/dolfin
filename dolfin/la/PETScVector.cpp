@@ -689,6 +689,12 @@ std::string PETScVector::str(bool verbose) const
       ierr = VecView(_x, PETSC_VIEWER_STDOUT_WORLD);
       CHECK_ERROR("VecView");
     }
+    else if (strcmp(petsc_type, VECNEST) == 0)
+    {
+      ierr = VecView(_x, PETSC_VIEWER_STDOUT_WORLD);
+      CHECK_ERROR("VecView");
+    }
+
   }
   else
     s << "<PETScVector of size " << size() << ">";

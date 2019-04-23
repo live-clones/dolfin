@@ -30,8 +30,10 @@
 #include <dolfin/la/GenericLinearSolver.h>
 #include <dolfin/la/DefaultFactory.h>
 #include <dolfin/la/LinearSolver.h>
+#include <dolfin/la/PETScLUSolver.h>
 #include <dolfin/la/GenericMatrix.h>
 #include <dolfin/la/GenericVector.h>
+#include <dolfin/la/PETScNestMatrix.h>
 #include <dolfin/la/LUSolver.h>
 #include <dolfin/la/KrylovSolver.h>
 #include <dolfin/log/log.h>
@@ -166,7 +168,18 @@ NewtonSolver::solve(NonlinearProblem& nonlinear_problem,
     // iterations
     if (!_dx->empty())
       _dx->zero();
-    _krylov_iterations += _solver->solve(*_dx, *_b);
+
+    // FIXME : MATNEST-type matrices need a PETScLUSolver
+    PetscBool nest;
+    PetscObjectTypeCompare((PetscObject)as_type<PETScMatrix>(*_matA).mat(), MATNEST, &nest);
+    if(solver_type == "lu" && nest)
+    {
+      auto lu_solver = std::make_shared<PETScLUSolver>(x.mpi_comm(), "default");
+      lu_solver->set_operator(as_type<PETScMatrix>(*_matA));
+      _krylov_iterations += lu_solver->solve(*_dx, *_b);
+    }
+    else
+      _krylov_iterations += _solver->solve(*_dx, *_b);
 
     // Update solution
     update_solution(x, *_dx, _relaxation_parameter,
@@ -307,7 +320,7 @@ bool NewtonSolver::converged(const GenericVector& r,
 void NewtonSolver::solver_setup(std::shared_ptr<const GenericMatrix> A,
                                 std::shared_ptr<const GenericMatrix> P,
                                 const NonlinearProblem& nonlinear_problem,
-                                std::size_t interation)
+                                std::size_t iteration)
 {
   // Update Jacobian in linear solver (and preconditioner if given)
   if (_matP->empty())
@@ -324,7 +337,7 @@ void NewtonSolver::solver_setup(std::shared_ptr<const GenericMatrix> A,
 void NewtonSolver::update_solution(GenericVector& x, const GenericVector& dx,
                                    double relaxation_parameter,
                                    const NonlinearProblem& nonlinear_problem,
-                                   std::size_t interation)
+                                   std::size_t iteration)
 {
   if (relaxation_parameter == 1.0)
     x -= dx;
