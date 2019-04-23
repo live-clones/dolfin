@@ -127,6 +127,8 @@ std::pair<std::size_t, bool> MixedNonlinearVariationalSolver::solve()
   auto x = u[0]->vector()->factory().create_vector(comm);
   PETScNestMatrix J(nonlinear_problem->_Js);
   // Recombine x = [ u[i]->vector for each block i ]
+  // for(auto &u : us) //TO CHECK
+  //   as_type<PETScVector>(u)->update_ghost_values();
   J.init_vectors(*x, us);
 
   std::pair<std::size_t, bool> ret;
@@ -149,11 +151,6 @@ std::pair<std::size_t, bool> MixedNonlinearVariationalSolver::solve()
     // Pass parameters to Newton solver
     dolfin_assert(newton_solver);
     newton_solver->parameters.update(parameters("newton_solver"));
-
-    // KSPSolve needs GMRES to be used with VecNest objects
-    warning("Imposing linear_solver = GMRES, to be used with nested vectors");
-    newton_solver->parameters.remove("linear_solver");
-    newton_solver->parameters.add("linear_solver", "gmres");
 
     // Solve nonlinear problem using Newton's method    
     dolfin_assert(nonlinear_problem);
@@ -247,7 +244,7 @@ MixedNonlinearDiscreteProblem::F(GenericVector& b, const GenericVector& x)
   // Boundary conditions
   PETScNestMatrix J(_Js);
   std::vector<IS> is(u.size());
-  MatNestGetISs(as_type<const PETScMatrix>(J).mat(), is.data(), NULL);
+  MatNestGetISs(J.mat(), is.data(), NULL);
 
   for(size_t i=0; i<u.size(); ++i)
   {
@@ -281,27 +278,21 @@ MixedNonlinearDiscreteProblem::J(GenericMatrix& A, const GenericVector& x)
   {
     for (size_t j=0; j<u.size(); ++j)
     {
-      has_ufc_form = false;
-      std::shared_ptr<GenericMatrix> _J = u[j]->vector()->factory().create_matrix(comm);
-
       for(size_t k=0; k<jform[i*u.size() + j].size(); ++k)
       {
 	if(jform[i*u.size() + j][k]->ufc_form()) // If block(i,j) not empty
 	{
-	  has_ufc_form = true;
-	  assemble_mixed(*(_J), *(jform[i*u.size() + j][k]), bool(k>0));
+          _Js[i*u.size() + j] = u[j]->vector()->factory().create_matrix(comm);
+          assemble_mixed(*(_Js[i*u.size() + j]), *(jform[i*u.size() + j][k]), bool(k>0));
 	}
       }
-
-      if(has_ufc_form)
-        _Js[i*u.size() + j] = _J;
     }
   }
 
   // Boundary conditions
   PETScNestMatrix J(_Js);
   std::vector<IS> is(u.size());
-  MatNestGetISs(as_type<const PETScMatrix>(J).mat(), is.data(), NULL);
+  MatNestGetISs(J.mat(), is.data(), NULL);
 
   for(size_t i=0; i<u.size(); ++i)
   {
@@ -327,6 +318,6 @@ MixedNonlinearDiscreteProblem::J(GenericMatrix& A, const GenericVector& x)
   std::vector<Mat> petsc_mats(u.size()*u.size());
   for(size_t i=0; i<u.size(); ++i)
     for(size_t j=0; j<u.size(); ++j)
-      petsc_mats[i*u.size() + j] = as_type<const PETScMatrix>(_Js[i*u.size() + j])->mat();
+      petsc_mats[i*u.size() + j] = as_type<PETScMatrix>(_Js[i*u.size() + j])->mat();
   as_type<PETScMatrix>(A).set_nest(petsc_mats);
 }
