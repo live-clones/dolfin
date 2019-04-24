@@ -271,7 +271,6 @@ MixedNonlinearDiscreteProblem::J(GenericMatrix& A, const GenericVector& x)
   auto u = _problem->solution();
   auto bcs = _problem->bcs();
 
-  bool has_ufc_form = false;
   MPI_Comm comm = u[0]->vector()->mpi_comm();
 
   for (size_t i=0; i<u.size(); ++i)
