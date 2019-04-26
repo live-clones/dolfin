@@ -22,7 +22,7 @@
 
 #include <string>
 #include <boost/lexical_cast.hpp>
-#include <petscsys.h>
+#include <petscoptions.h>
 #include <dolfin/common/SubSystemsManager.h>
 #include <dolfin/log/log.h>
 #include "PETScObject.h"
