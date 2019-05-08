@@ -281,6 +281,8 @@ namespace dolfin_wrappers
       .def("get_allow_extrapolation", &dolfin::Function::get_allow_extrapolation)
       .def("interpolate", (void (dolfin::Function::*)(const dolfin::GenericFunction&))
            &dolfin::Function::interpolate, "Interpolate the function u")
+      .def("fwd_interpolate", (void (dolfin::Function::*)(const dolfin::GenericFunction&))
+           &dolfin::Function::fwd_interpolate, "Interpolate the function u")
       .def("interpolate", [](dolfin::Function& instance, const py::object v)
            {
              auto _v = v.attr("_cpp_object").cast<dolfin::GenericFunction*>();

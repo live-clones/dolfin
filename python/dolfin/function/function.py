@@ -364,6 +364,12 @@ class Function(ufl.Coefficient):
         else:
             self._cpp_object.interpolate(u)
 
+    def fwd_interpolate(self, u):
+        if isinstance(u, ufl.Coefficient):
+            self._cpp_object.fwd_interpolate(u._cpp_object)
+        else:
+            self._cpp_object.fwd_interpolate(u)
+
     def compute_vertex_values(self, mesh=None):
         if mesh is not None:
             return self._cpp_object.compute_vertex_values(mesh)

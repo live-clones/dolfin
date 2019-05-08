@@ -389,6 +389,15 @@ void Function::interpolate(const GenericFunction& v)
   _function_space->interpolate(*_vector, v);
 }
 //-----------------------------------------------------------------------------
+void Function::fwd_interpolate(const GenericFunction& v)
+{
+  dolfin_assert(_vector);
+  dolfin_assert(_function_space);
+
+  // Interpolate
+  _function_space->fwd_interpolate(*_vector, v);
+}
+//-----------------------------------------------------------------------------
 void Function::extrapolate(const Function& v)
 {
   Extrapolation::extrapolate(*this, v);

@@ -73,3 +73,8 @@ def interpolate(v, V):
         Pv.interpolate(v)
 
     return Pv
+
+def fwd_interpolate(v, V):
+    Pv = Function(V)
+    Pv.fwd_interpolate(v)
+    return Pv;

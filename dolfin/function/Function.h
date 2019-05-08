@@ -245,6 +245,12 @@ namespace dolfin
     ///         The function to be interpolated.
     void interpolate(const GenericFunction& v);
 
+    /// Interpolate function (on possibly non-matching meshes)
+    ///
+    /// @param    v (GenericFunction)
+    ///         The function to be interpolated.
+    void fwd_interpolate(const GenericFunction& v);
+
     /// Extrapolate function (from a possibly lower-degree function space)
     ///
     /// *Arguments*

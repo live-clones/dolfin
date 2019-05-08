@@ -145,7 +145,7 @@ from .fem.form import Form
 from .fem.norms import norm, errornorm
 from .fem.dirichletbc import DirichletBC, AutoSubDomain
 from .fem.multimeshdirichletbc import MultiMeshDirichletBC
-from .fem.interpolation import interpolate
+from .fem.interpolation import interpolate, fwd_interpolate
 from .fem.projection import project
 from .fem.solvers import LocalSolver
 from .fem.solving import (solve, LinearVariationalProblem,

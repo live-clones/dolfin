@@ -256,6 +256,121 @@ void FunctionSpace::interpolate(GenericVector& expansion_coefficients,
   expansion_coefficients.apply("insert");
 }
 //-----------------------------------------------------------------------------
+void FunctionSpace::fwd_interpolate(GenericVector& target_coefficients,
+                                    const GenericFunction& src_function) const
+{
+  boost::multi_array<double, 2> target_coordinates, src_coordinates;
+  std::vector<double> target_coordinate_dofs, src_coordinate_dofs;
+  std::vector<dolfin::la_index> target_visited, src_visited;
+
+  auto src_fs = src_function.function_space();
+  auto src_dofmap = src_fs->dofmap();
+  auto src_mesh = src_fs->mesh();
+  auto src_element = src_fs->element();
+
+  for (CellIterator target_cell(*_mesh); !target_cell.end(); ++target_cell)
+  {
+    // target cell dofs
+    ArrayView<const dolfin::la_index> target_dofs;
+    auto target_dmap = _dofmap->cell_dofs(target_cell->index());
+    target_dofs.set(target_dmap.size(), target_dmap.data());
+
+    // Get target cell info
+    ufc::cell ufc_cell;
+    target_cell->get_cell_data(ufc_cell);
+    target_cell->get_coordinate_dofs(target_coordinate_dofs);
+
+    // Tabulate target dof coordinates
+    _element->tabulate_dof_coordinates(target_coordinates, target_coordinate_dofs, *target_cell);
+
+    std::vector<double> target_basis(_element->space_dimension());
+    dolfin::la_index target_ref_dof = 0;
+    for(auto target_dof = target_dofs.begin(); target_dof!= target_dofs.end(); target_dof++)
+    {
+      double target_coeff = 0;
+      // Check if this target dof has been visited
+      if(std::find(target_visited.begin(), target_visited.end(), *target_dof) != target_visited.end())
+      {
+        target_ref_dof++;
+        continue;
+      }
+      target_visited.push_back(*target_dof);
+
+      // FIXME (not elegant) : Convert target_coordinates (boost multi-array to std::vector)
+      std::vector<double> target_coords;
+      for(int i=0; i<target_coordinates[target_ref_dof].size();++i)
+        target_coords.push_back(target_coordinates[target_ref_dof][i]);
+
+      _element->evaluate_basis(target_ref_dof,
+                               target_basis.data(),
+                               target_coords.data(),
+                               target_coordinate_dofs.data(),
+                               ufc_cell.orientation);
+
+      // Point object corresponding to target dof
+      auto p = Point(target_coords.size(), target_coords.data());
+
+      // Iterations over src mesh cells
+      src_visited.clear();
+      for (CellIterator src_cell(*src_mesh); !src_cell.end(); ++src_cell)
+      {
+        if(src_cell->contains(p))
+        {
+          // src cell dofs
+          ArrayView<const dolfin::la_index> src_dofs;
+          auto src_dmap = src_dofmap->cell_dofs(src_cell->index());
+          src_dofs.set(src_dmap.size(), src_dmap.data());
+
+          // get src cell info
+          ufc::cell ufc_cell_src;
+          src_cell->get_cell_data(ufc_cell_src);
+          src_cell->get_coordinate_dofs(src_coordinate_dofs);
+
+          // tabulate dofs (src_cell)
+          src_element->tabulate_dof_coordinates(src_coordinates, src_coordinate_dofs, *src_cell);
+
+          // Compute src_function coefficient in the current src_cell
+          std::vector<double> src_coefficients(src_element->space_dimension());
+          src_function.restrict(src_coefficients.data(),
+                                *src_element,
+                                *src_cell,
+                                src_coordinate_dofs.data(),
+                                ufc_cell_src);
+
+          std::vector<double> src_basis(src_element->space_dimension());
+          dolfin::la_index src_ref_dof = 0;
+          for(auto src_dof = src_dofs.begin(); src_dof!= src_dofs.end(); src_dof++)
+          {
+            // Check if this dof has been visited
+            if(std::find(src_visited.begin(), src_visited.end(), *src_dof) != src_visited.end())
+            {
+              src_ref_dof++;
+              continue;
+            }
+            src_visited.push_back(*src_dof);
+
+            // Evaluate src basis at target point
+            src_element->evaluate_basis(src_ref_dof,
+                                        src_basis.data(),
+                                        target_coords.data(),
+                                        src_coordinate_dofs.data(),
+                                        ufc_cell_src.orientation);
+
+            double dot_product = std::inner_product(target_basis.begin(), target_basis.end(),
+                                                    src_basis.begin(), 0.0);
+
+            target_coeff += dot_product*src_coefficients[src_ref_dof];
+            src_ref_dof++;
+          }
+        }
+      }
+      target_coefficients.setitem(*target_dof, target_coeff);
+      target_ref_dof++;
+    }
+  }
+  target_coefficients.apply("insert");
+}
+//-----------------------------------------------------------------------------
 std::shared_ptr<FunctionSpace> FunctionSpace::operator[] (std::size_t i) const
 {
   std::vector<std::size_t> component;

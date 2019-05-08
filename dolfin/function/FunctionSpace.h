@@ -168,6 +168,17 @@ namespace dolfin
     void interpolate(GenericVector& expansion_coefficients,
                      const GenericFunction& v) const;
 
+    /// Interpolate function v into function space, returning the
+    /// vector of expansion coefficients
+    ///
+    /// *Arguments*
+    ///     expansion_coefficients (_GenericVector_)
+    ///         The expansion coefficients.
+    ///     v (_GenericFunction_)
+    ///         The function to be interpolated.
+    void fwd_interpolate(GenericVector& target_coefficients,
+                         const GenericFunction& src_function) const;
+
     /// Extract subspace for component
     ///
     /// *Arguments*
