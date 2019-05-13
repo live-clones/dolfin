@@ -1014,6 +1014,12 @@ namespace dolfin_wrappers
       .def(py::init<std::string, std::string>())
       .def(py::init<std::string, std::shared_ptr<dolfin::PETScPreconditioner>>())
       .def(py::init<KSP>())
+      .def(py::init([](const MPICommWrapper comm,
+                       std::string method="default",
+                       std::string preconditioner="default")
+          { return std::unique_ptr<dolfin::PETScKrylovSolver>(new dolfin::PETScKrylovSolver(comm.get(),
+              method, preconditioner)); }),
+          py::arg("comm"), py::arg("method") = "default", py::arg("preconditioner")="default")
       .def("default_parameters", &dolfin::PETScKrylovSolver::default_parameters)
       .def("get_options_prefix", &dolfin::PETScKrylovSolver::get_options_prefix)
       .def("set_options_prefix", &dolfin::PETScKrylovSolver::set_options_prefix)
