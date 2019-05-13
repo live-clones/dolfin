@@ -966,6 +966,8 @@ namespace dolfin_wrappers
           py::arg("comm"), py::arg("A"), py::arg("method") = "default")
       .def(py::init<std::shared_ptr<const dolfin::PETScMatrix>, std::string>(),
            py::arg("A"), py::arg("method")="default")
+      .def("set_operator",  (void (dolfin::PETScLUSolver::*)(std::shared_ptr<const dolfin::GenericLinearOperator>))
+           &dolfin::PETScLUSolver::set_operator)
       .def("get_options_prefix", &dolfin::PETScLUSolver::get_options_prefix)
       .def("set_options_prefix", &dolfin::PETScLUSolver::set_options_prefix)
       .def("solve", (std::size_t (dolfin::PETScLUSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
