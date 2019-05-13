@@ -939,6 +939,10 @@ namespace dolfin_wrappers
                        std::string method="default")
           { return std::unique_ptr<dolfin::LUSolver>(new dolfin::LUSolver(comm.get(), A, method)); }),
           py::arg("comm"), py::arg("A"), py::arg("method") = "default")
+      .def(py::init([](const MPICommWrapper comm,
+                       std::string method="default")
+          { return std::unique_ptr<dolfin::LUSolver>(new dolfin::LUSolver(comm.get(), method)); }),
+          py::arg("comm"), py::arg("method") = "default")
       .def("set_operator", &dolfin::LUSolver::set_operator)
       .def("default_parameters", &dolfin::LUSolver::default_parameters)
       .def("solve", (std::size_t (dolfin::LUSolver::*)(dolfin::GenericVector&,
@@ -995,6 +999,12 @@ namespace dolfin_wrappers
           { return std::unique_ptr<dolfin::KrylovSolver>(new dolfin::KrylovSolver(comm.get(), A,
               method, preconditioner)); }),
           py::arg("comm"), py::arg("A"), py::arg("method") = "default", py::arg("preconditioner")="default")
+      .def(py::init([](const MPICommWrapper comm,
+                       std::string method="default",
+                       std::string preconditioner="default")
+          { return std::unique_ptr<dolfin::KrylovSolver>(new dolfin::KrylovSolver(comm.get(),
+              method, preconditioner)); }),
+          py::arg("comm"), py::arg("method") = "default", py::arg("preconditioner")="default")
       .def("set_operator", &dolfin::KrylovSolver::set_operator)
       .def("set_operators", &dolfin::KrylovSolver::set_operators)
       .def("default_parameters", &dolfin::KrylovSolver::default_parameters)
