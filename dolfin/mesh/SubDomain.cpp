@@ -77,6 +77,19 @@ void SubDomain::map(Eigen::Ref<const Eigen::VectorXd> x,
                "Function map() not implemented by user. (Required for periodic boundary conditions)");
 }
 //-----------------------------------------------------------------------------
+void SubDomain::snap(Array<double>& x) const
+{
+  const Eigen::Map<Eigen::VectorXd> _x(x.data(), x.size());
+  return snap(_x);
+}
+//-----------------------------------------------------------------------------
+void SubDomain::snap(Eigen::Ref<Eigen::VectorXd> x) const
+{
+  dolfin_error("SubDomain.cpp",
+               "snap coordinate to boundary of subdomain",
+               "Function snap() not implemented by user");
+}
+//-----------------------------------------------------------------------------
 void SubDomain::mark_cells(Mesh& mesh,
                            std::size_t sub_domain,
                            bool check_midpoint) const

@@ -512,6 +512,9 @@ namespace dolfin_wrappers
 
       void map(Eigen::Ref<const Eigen::VectorXd> x, Eigen::Ref<Eigen::VectorXd> y) const override
       { PYBIND11_OVERLOAD(void, dolfin::SubDomain, map, x, y); }
+
+      void snap(Eigen::Ref<Eigen::VectorXd> x) const override
+      { PYBIND11_OVERLOAD(void, dolfin::SubDomain, snap, x); }
     };
 
     // dolfin::SubDomian
@@ -522,6 +525,8 @@ namespace dolfin_wrappers
            &dolfin::SubDomain::inside)
       .def("map", (void (dolfin::SubDomain::*)(Eigen::Ref<const Eigen::VectorXd>, Eigen::Ref<Eigen::VectorXd>) const)
            &dolfin::SubDomain::map)
+      .def("snap", (void (dolfin::SubDomain::*)(Eigen::Ref<Eigen::VectorXd>) const)
+           &dolfin::SubDomain::snap)
       .def("set_property", &dolfin::SubDomain::set_property)
       .def("get_property", &dolfin::SubDomain::get_property)
       .def("mark_cells", (void (dolfin::SubDomain::*)(dolfin::Mesh&, std::size_t, bool) const)
