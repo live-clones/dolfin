@@ -197,3 +197,34 @@ def test_creation_and_marking():
             # Check that the number of marked entities is correct
             assert sum(f.array() == 1) == 0
             assert sum(f.array() == 2) == mesh.num_entities(f_dim)
+
+# Skipping in parallel due to lack of parallel support for SubMesh
+@skip_in_parallel
+def test_snap_boundary():
+
+    # This test checks whether the expected modifications are made
+    # to mesh vertex coordinates when snap_boundary is called.
+
+    for ind, MeshClass in enumerate([UnitIntervalMesh, UnitSquareMesh,
+                                     UnitCubeMesh]):
+        # SubDomain whose snap method modifies all coordinate components
+        # to be zero.
+        dim = ind+1
+        class ZeroSnap(SubDomain):
+            def inside(self,x,on_boundary):
+                return True
+            def snap(self,x):
+                for i in range(0,dim):
+                    x[i] = 0.0
+
+        # Create mesh and modify coordinates via snapping.  Note that all vertices
+        # are on the boundary.
+        args = [1,]*dim
+        mesh = MeshClass(*args)
+        mesh.snap_boundary(ZeroSnap())
+
+        # Verify that all mesh coordinates are now zero.
+        for x in mesh.coordinates():
+            for x_i in x:
+                assert x_i==0.0
+    
