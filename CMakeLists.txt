@@ -13,7 +13,7 @@ set(DOLFIN_VERSION_MINOR "2")
 set(DOLFIN_VERSION_MICRO "0")
 set(DOLFIN_VERSION "${DOLFIN_VERSION_MAJOR}.${DOLFIN_VERSION_MINOR}.${DOLFIN_VERSION_MICRO}")
 if (NOT DOLFIN_VERSION_RELEASE)
-  set(DOLFIN_VERSION "${DOLFIN_VERSION}.dev0_rans")
+  set(DOLFIN_VERSION "${DOLFIN_VERSION}.dev0")
 endif()
 
 #------------------------------------------------------------------------------
