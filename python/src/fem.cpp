@@ -652,7 +652,7 @@ namespace dolfin_wrappers
                std::shared_ptr<dolfin::MixedNonlinearVariationalSolver>,
                dolfin::Variable>(m, "MixedNonlinearVariationalSolver")
       .def(py::init<std::shared_ptr<dolfin::MixedNonlinearVariationalProblem>>())
-      .def("solve", (void (dolfin::MixedNonlinearVariationalSolver::*)())&dolfin::MixedNonlinearVariationalSolver::solve);
+      .def("solve", &dolfin::MixedNonlinearVariationalSolver::solve);
 
     // dolfin::LocalSolver
     py::class_<dolfin::LocalSolver, std::shared_ptr<dolfin::LocalSolver>>
