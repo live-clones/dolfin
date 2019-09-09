@@ -57,6 +57,8 @@ from .cpp.fem import (FiniteElement, DofMap, Assembler, MultiMeshAssembler,
                       PointSource, DiscreteOperators,
                       LinearVariationalSolver,
                       NonlinearVariationalSolver,
+                      MixedLinearVariationalSolver,
+                      MixedNonlinearVariationalSolver,
                       SparsityPatternBuilder,
                       MultiMeshDirichletBC, adapt)
 
@@ -147,7 +149,9 @@ from .fem.interpolation import interpolate
 from .fem.projection import project
 from .fem.solvers import LocalSolver
 from .fem.solving import (solve, LinearVariationalProblem,
-                          NonlinearVariationalProblem)
+                          NonlinearVariationalProblem,
+                          MixedLinearVariationalProblem,
+                          MixedNonlinearVariationalProblem)
 from .fem.solving import assemble_mixed_system, solve_mixed_system
 from .fem.formmanipulations import (derivative, adjoint, increase_order, tear, extract_blocks)
 
