@@ -179,9 +179,6 @@ void MixedAssembler::assemble_cells(
     for (size_t i = 0; i < form_rank; ++i)
     {
       cell_index[i].push_back(cell->index());
-      // NOTE : A similar cell_index vector is already
-      // filled by the SparsityBuilder
-      // Could it be re-used here ?
 
       if (mesh_id[i] != mesh.id() && mapping_map[mesh_id[i]])
       {
@@ -210,7 +207,7 @@ void MixedAssembler::assemble_cells(
 	  }
 	}
 	else if(codim[i] == 2) // 3D-1D (cells - edges relationships)
-	  std::cout << "[MixedAssembler] codim 2 - Not implemented" << std::endl;
+	  std::cout << "[MixedAssembler] codim 2 - Not implemented (yet)" << std::endl;
       }
     }
 
@@ -247,23 +244,24 @@ void MixedAssembler::assemble_cells(
 
 	for(std::size_t i=0; i<form_rank; ++i)
 	{
-	  std::size_t jidx  = (codim[i] != 0) ? j:0;
-	  auto dmap = dofmaps[i]->cell_dofs(cell_index[i][jidx]);
+          std::size_t jidx = (cell_index[i].size() > 1) ? j:0;
 
-	  // If there is more than one higher-dimensional contrib, do not consider the same dof twice
-	  // #FIXME : This could be more elegant
+          auto dmap = dofmaps[i]->cell_dofs(cell_index[i][jidx]);
+
+          // If there is more than one higher-dimensional contrib, do not consider the same dof twice
+          // #FIXME : This could be more elegant
 	  for(std::size_t dof=0; jidx != 0 && dof<dofs[i].size(); ++dof)
 	  {
 	    for(int rm = 0; rm<dmap.size(); rm++)
 	    {
-	      if(form_rank > 1 && dmap[rm] == dofs[i][dof]) // This dof (index=rm) has already been set
+              if(form_rank > 1 && dmap[rm] == dofs[i][dof]) // This dof (index=rm) has already been set
 	      {
 		if(i == 0)
 		{
 		  for(std::size_t col=0; col<dofmaps[1]->max_element_dofs(); ++col)
 		    ufc.A[rm*dofmaps[1]->max_element_dofs() + col] = 0.0;
 		}
-		else if(i == 1)
+	        if(i == 1)
 		{
 		  for(std::size_t row=0; row<dofmaps[0]->max_element_dofs(); ++row)
 		    ufc.A[row*dofmaps[1]->max_element_dofs() + rm] = 0.0;
@@ -274,6 +272,11 @@ void MixedAssembler::assemble_cells(
 
 	  dofs[i].set(dmap.size(), dmap.data());
 	}
+
+        // TO CHECK/IMPROVE : If we have contributions from adjacent cells from different meshes
+        if(local_ldim.size() > 1 && cell_index[0].size() <= 1 && cell_index[form_rank - 1].size() <= 1)
+          for(auto& m: ufc.A)
+            m/=local_ldim.size();
 
 	if (is_cell_functional)
 	  (*values)[cell->index()] = ufc.A[0];

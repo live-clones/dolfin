@@ -52,14 +52,14 @@ def two_elements():
 
 @fixture
 def two_elements_with_interface():
-    mesh = UnitSquareMesh(1, 1, "left")
+    mesh = UnitSquareMesh(1, 1)
 
     markerc = MeshFunction('size_t', mesh, mesh.topology().dim(), 0)
     markerf = MeshFunction('size_t', mesh, mesh.topology().dim()-1, 0)
     for c in cells(mesh):
-        markerc[c] = 0.5 - DOLFIN_EPS < c.midpoint().x()
+        markerc[c] = c.midpoint().y() > c.midpoint().x()
     for f in facets(mesh):
-        markerf[f] = 0.5 - DOLFIN_EPS < f.midpoint().x() < 0.5 + DOLFIN_EPS and 0.5 - DOLFIN_EPS < f.midpoint().y() < 0.5 + DOLFIN_EPS
+        markerf[f] = abs(f.midpoint().x() - f.midpoint().y()) < 1e-10
 
     return (markerc, markerf)
 
@@ -97,10 +97,10 @@ def boundary(x):
     return x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS
 
 def boundary1(x):
-    return x[0] < DOLFIN_EPS
+    return x[0] > 1.0 - DOLFIN_EPS
 
 def boundary2(x):
-    return x[0] > 1.0 - DOLFIN_EPS
+    return x[0] < DOLFIN_EPS
 
 def params():
     return dict({"linear_solver":"direct"})
@@ -215,8 +215,8 @@ def test_mixed_assembly_interface(two_elements_with_interface):
         submesh = MeshView.create(case[1], 1)
 
         V0 = FunctionSpace(mesh0, 'CG', order[0])
-        V1 = FunctionSpace(mesh1, 'CG', order[0])
-        Q = FunctionSpace(submesh, 'CG', order[1])
+        V1 = FunctionSpace(mesh1, 'CG', order[1])
+        Q = FunctionSpace(submesh, 'CG', order[2])
         W = MixedFunctionSpace(V0, V1, Q)
 
         f = Expression('x[0]+x[1]', degree=3)
@@ -226,18 +226,28 @@ def test_mixed_assembly_interface(two_elements_with_interface):
         (v0, v1, q) = TestFunctions(W)
 
         dx_ = Measure('dx', domain=W.sub_space(2).mesh())
-        ## Reference value
-        ref = assemble(inner(f, g)*dx_)
+        # Reference value
+        ref_fg = assemble(inner(f, g)*dx_)
+        ref_ff = assemble(inner(f, f)*dx_)
 
-        trace_form = inner(u0, q)*dx_ + inner(u1, q)*dx_ + inner(u0, v0)*dx + inner(u1, v1)*dx + inner(p, v0)*dx_ + inner(p, v1)*dx_ + inner(p, q)*dx_
+        # Diagonal blocks
+        trace_form = inner(u0, v0)*dx + inner(u1, v1)*dx + inner(p, q)*dx_
+        # Mixed-dimensional coupling
+        trace_form += inner(u0, q)*dx_ + inner(u1, q)*dx_ + inner(p, v0)*dx_ + inner(p, v1)*dx_
+        # Integration of common
+        trace_form += inner(u0, v1)*dx_ + inner(u1,v0)*dx_
         rhs = inner(Constant(0), v0)*dx + inner(Constant(0), v1)*dx + inner(Constant(0), q)*dx_
 
         AA, bb, _ = assemble_mixed_system(trace_form == rhs, Function(W))
 
-        T0 = AA[6]
-        T1 = AA[7]
-        Tt0 = AA[2]
-        Tt1 = AA[5]
+        # Mixed-dimensional coupling
+        T0 = AA[6] # u0*q
+        T1 = AA[7] # u1*q
+        Tt0 = AA[2] # p*v0
+        Tt1 = AA[5] # p*v1
+        # Integration of common interface
+        I = AA[3] # u0*v1
+        It = AA[1] # u1*v0
 
         v0 = interpolate(f, W.sub_space(0))
         v1 = interpolate(f, W.sub_space(1))
@@ -252,17 +262,32 @@ def test_mixed_assembly_interface(two_elements_with_interface):
         Tt0.mult(q.vector(), qT0)
         Tt1.mult(q.vector(), qT1)
 
+        Iv0 = Function(V1).vector()
+        Iv1 = Function(V0).vector()
+        I.mult(v0.vector(), Iv0)
+        It.mult(v1.vector(), Iv1)
+
         v0qT0 = v0.vector().inner(qT0)
         v1qT1 = v1.vector().inner(qT1)
         qTv0 = q.vector().inner(Tv0)
         qTv1 = q.vector().inner(Tv1)
 
-        assert(abs(v0qT0 - ref) <= 1e-12)
-        assert(abs(v1qT1 - ref) <= 1e-12)
-        assert(abs(qTv0 - ref) <= 1e-12)
-        assert(abs(qTv1 - ref) <= 1e-12)
+        v1Iv0 = v1.vector().inner(Iv0)
+        v0Iv1 = v0.vector().inner(Iv1)
+
+        assert(abs(v0qT0 - ref_fg) <= 1e-12)
+        assert(abs(v1qT1 - ref_fg) <= 1e-12)
+        assert(abs(qTv0 - ref_fg) <= 1e-12)
+        assert(abs(qTv1 - ref_fg) <= 1e-12)
         assert(abs(qTv0 - v0qT0) <= 1e-12)
         assert(abs(qTv1 - v1qT1) <= 1e-12)
+
+        assert(abs(v1Iv0 - ref_ff) <= 1e-12)
+        assert(abs(v0Iv1 - ref_ff) <= 1e-12)
+
+        # print("[scalar] v1Iv0 = ", v1Iv0, " while ref_ff = ", ref_ff)
+        # print("[scalar] v0Iv1 = ", v0Iv1, " while ref_ff = ", ref_ff)
+
 
     def _check_vectorial(case, order):
         mesh0 = MeshView.create(case[0], 0)
@@ -270,8 +295,8 @@ def test_mixed_assembly_interface(two_elements_with_interface):
         submesh = MeshView.create(case[1], 1)
 
         V0 = VectorFunctionSpace(mesh0, 'CG', order[0])
-        V1 = VectorFunctionSpace(mesh1, 'CG', order[0])
-        Q = VectorFunctionSpace(submesh, 'CG', order[1])
+        V1 = VectorFunctionSpace(mesh1, 'CG', order[1])
+        Q = VectorFunctionSpace(submesh, 'CG', order[2])
         W = MixedFunctionSpace(V0, V1, Q)
 
         f = Expression(('x[0]+x[1]', 'x[0]-x[1]'), degree=3)
@@ -281,21 +306,27 @@ def test_mixed_assembly_interface(two_elements_with_interface):
         (v0, v1, q) = TestFunctions(W)
         dx_ = Measure('dx', domain=W.sub_space(2).mesh())
         ## Reference value
-        ref = assemble(inner(f, g)*dx_)
+        ref_fg = assemble(inner(f, g)*dx_)
+        ref_ff = assemble(inner(f, f)*dx_)
 
-        trace_form = inner(u0, q)*dx_ + inner(u1, q)*dx_ + inner(u0, v0)*dx + inner(u1, v1)*dx + inner(p, v0)*dx_ + inner(p, v1)*dx_ + inner(p, q)*dx_
+        # Diagonal blocks
+        trace_form = inner(u0, v0)*dx + inner(u1, v1)*dx + inner(p, q)*dx_
+        # Mixed-dimensional coupling
+        trace_form += inner(u0, q)*dx_ + inner(u1, q)*dx_ + inner(p, v0)*dx_ + inner(p, v1)*dx_
+        # Integration of common interface
+        trace_form += inner(u0, v1)*dx_ + inner(u1, v0)*dx_
         rhs = inner(Constant((0, 0)), v0)*dx + inner(Constant((0, 0)), v1)*dx + inner(Constant((0, 0)), q)*dx_
 
         AA, bb, _ = assemble_mixed_system(trace_form == rhs, Function(W))
 
+        # Mixed-dimensional coupling
         T0 = AA[6]
         T1 = AA[7]
         Tt0 = AA[2]
         Tt1 = AA[5]
-
-        v0 = interpolate(f, W.sub_space(0))
-        v1 = interpolate(f, W.sub_space(1))
-        q = interpolate(g, W.sub_space(2))
+        # Integration of common interface
+        I = AA[3] # u0*v1
+        It = AA[1] # u1*v0
 
         v0 = interpolate(f, W.sub_space(0))
         v1 = interpolate(f, W.sub_space(1))
@@ -310,25 +341,47 @@ def test_mixed_assembly_interface(two_elements_with_interface):
         Tt0.mult(q.vector(), qT0)
         Tt1.mult(q.vector(), qT1)
 
+        Iv0 = Function(V1).vector()
+        Iv1 = Function(V0).vector()
+        I.mult(v0.vector(), Iv0)
+        It.mult(v1.vector(), Iv1)
+
         v0qT0 = v0.vector().inner(qT0)
         v1qT1 = v1.vector().inner(qT1)
         qTv0 = q.vector().inner(Tv0)
         qTv1 = q.vector().inner(Tv1)
 
-        assert(abs(v0qT0 - ref) <= 1e-12)
-        assert(abs(v1qT1 - ref) <= 1e-12)
-        assert(abs(qTv0 - ref) <= 1e-12)
-        assert(abs(qTv1 - ref) <= 1e-12)
+        v1Iv0 = v1.vector().inner(Iv0)
+        v0Iv1 = v0.vector().inner(Iv1)
+
+        assert(abs(v0qT0 - ref_fg) <= 1e-12)
+        assert(abs(v1qT1 - ref_fg) <= 1e-12)
+        assert(abs(qTv0 - ref_fg) <= 1e-12)
+        assert(abs(qTv1 - ref_fg) <= 1e-12)
         assert(abs(qTv0 - v0qT0) <= 1e-12)
         assert(abs(qTv1 - v1qT1) <= 1e-12)
 
+        assert(abs(v1Iv0 - ref_ff) <= 1e-12)
+        assert(abs(v0Iv1 - ref_ff) <= 1e-12)
+
+        # print("[vectorial] v1Iv0 = ", v1Iv0, " while ref_ff = ", ref_ff)
+        # print("[vectorial] v0Iv1 = ", v0Iv1, " while ref_ff = ", ref_ff)
 
     # Scalar case - Two elements + Lagrange mult on interior facet
-    _check_scalar(two_elements_with_interface, (1,2)) # CG1 - CG2
-    _check_scalar(two_elements_with_interface, (2,1)) # CG2 - CG1
+    _check_scalar(two_elements_with_interface, (1,1,1)) # CG1 - CG1 - CG2
+    _check_scalar(two_elements_with_interface, (2,2,1)) # CG2 - CG2 - CG1
+    _check_scalar(two_elements_with_interface, (1,1,2)) # CG1 - CG1- CG2
+    _check_scalar(two_elements_with_interface, (2,2,2)) # CG2 - CG2- CG1
+    _check_scalar(two_elements_with_interface, (1,1,2)) # CG2 - CG1- CG1
+    _check_scalar(two_elements_with_interface, (1,2,1)) # CG1 - CG2- CG2
+    _check_scalar(two_elements_with_interface, (2,1,1)) # CG1 - CG2- CG2
     # Vectorial case - Two elements + Lagrange mult on interior facet
-    _check_vectorial(two_elements_with_interface, (1,2)) # CG1 - CG2
-    _check_vectorial(two_elements_with_interface, (2,1)) # CG2 - CG1
+    _check_vectorial(two_elements_with_interface, (1,1,2)) # CG1 - CG1 - CG2
+    _check_vectorial(two_elements_with_interface, (2,2,1)) # CG2 - CG2 - CG1
+    _check_vectorial(two_elements_with_interface, (1,1,2)) # CG1 - CG1- CG2
+    _check_vectorial(two_elements_with_interface, (2,2,1)) # CG2 - CG2- CG1
+    _check_vectorial(two_elements_with_interface, (2,1,1)) # CG2 - CG1- CG1
+    _check_vectorial(two_elements_with_interface, (1,2,1)) # CG1 - CG2- CG2
 
 @skip_in_parallel
 def test_mixed_assembly_diag(unit_marker_2D2D, unit_marker_3D2D):
