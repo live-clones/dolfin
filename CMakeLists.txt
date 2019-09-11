@@ -88,6 +88,7 @@ option(DOLFIN_ENABLE_DOCS "Enable generation of documentation." ON)
 option(DOLFIN_SKIP_BUILD_TESTS "Skip build tests for testing usability of dependency packages." OFF)
 option(DOLFIN_WITH_LIBRARY_VERSION "Build with library version information." ON)
 option(DOLFIN_ENABLE_GEOMETRY_DEBUGGING "Enable geometry debugging (developers only; requires libcgal-dev and libcgal-qt5-dev)." OFF)
+option(DOLFIN_SKIP_BUILD_CPP_DEMOS "Skip build cpp and cmake files for cpp demos." OFF)
 
 add_feature_info(BUILD_SHARED_LIBS BUILD_SHARED_LIBS "Build DOLFIN with shared libraries.")
 add_feature_info(CMAKE_USE_RELATIVE_PATHS CMAKE_USE_RELATIVE_PATHS "Use relative paths in makefiles and projects.")
@@ -606,7 +607,7 @@ endif()
 # bench, demo and tests
 
 set(COPY_DEMO_TEST_DEMO_DATA FALSE)
-if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/Poisson.h)
+if (NOT DOLFIN_SKIP_BUILD_CPP_DEMOS AND NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/Poisson.h)
   message(STATUS "")
   message(STATUS "Generating form files in demo, test and bench directories. May take some time...")
   message(STATUS "----------------------------------------------------------------------------------------")
@@ -634,7 +635,7 @@ endif()
 # FIXME: Generate files in Build directory instead?
 # NOTE: We need to call this script after generate-formfiles
 
-if (NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
+if (NOT DOLFIN_SKIP_BUILD_CPP_DEMOS AND NOT EXISTS ${DOLFIN_SOURCE_DIR}/demo/documented/poisson/cpp/CMakeLists.txt)
   message(STATUS "")
   message(STATUS "Generating CMakeLists.txt files in demo, test and bench directories")
   message(STATUS "-------------------------------------------------------------------")
