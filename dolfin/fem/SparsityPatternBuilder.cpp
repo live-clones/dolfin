@@ -159,11 +159,11 @@ SparsityPatternBuilder::build_mixed(SparsityPattern& sparsity_pattern,
 	}
       }
 
-      std::size_t nlocal_ldim = cell_index[0].size();
+      std::size_t nlocal_facets = cell_index[0].size();
       if(rank > 1)
-	nlocal_ldim = std::max(cell_index[0].size(), cell_index[1].size());
+	nlocal_facets = std::max(cell_index[0].size(), cell_index[1].size());
 
-      for(std::size_t j=0; j<nlocal_ldim; ++j)
+      for(std::size_t j=0; j<nlocal_facets; ++j)
       {
 	for(std::size_t i=0; i<rank; ++i)
 	{

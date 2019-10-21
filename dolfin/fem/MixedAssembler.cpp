@@ -174,7 +174,7 @@ void MixedAssembler::assemble_cells(
     std::vector<std::vector<std::size_t>> cell_index(form_rank);
     // Mixed-dimensional
     std::vector<std::size_t> codim(form_rank);
-    std::vector<int> local_ldim;
+    std::vector<int> local_facets;
 
     for (size_t i = 0; i < form_rank; ++i)
     {
@@ -198,7 +198,7 @@ void MixedAssembler::assemble_cells(
 	  for(std::size_t j=0; j<mesh_facet.num_entities(D);j++)
 	  {
 	    Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[j]);
-	    local_ldim.push_back(mesh_cell.index(mesh_facet));
+	    local_facets.push_back(mesh_cell.index(mesh_facet));
 
 	    if(j==0)
 	      cell_index[i][0] = mesh_cell.index();
@@ -214,7 +214,7 @@ void MixedAssembler::assemble_cells(
     if (empty_dofmap)
       continue;
 
-    if(local_ldim.empty()) // Not mixed-dimensional - Standard case
+    if(local_facets.empty()) // Not mixed-dimensional - Standard case
     {
       integral->tabulate_tensor(ufc.A.data(),
 				ufc.w(),
@@ -234,13 +234,13 @@ void MixedAssembler::assemble_cells(
     }
     else // Mixed-dimensional integrals
     {
-      for(std::size_t j=0; j<local_ldim.size(); ++j)
+      for(std::size_t j=0; j<local_facets.size(); ++j)
       {
 	integral->tabulate_tensor(ufc.A.data(),
 				  ufc.w(),
 				  coordinate_dofs.data(),
 				  ufc_cell.orientation,
-				  local_ldim[j]); // local index of the lower dim entity involved
+				  local_facets[j]); // local index of the lower dim entity involved
 
 	for(std::size_t i=0; i<form_rank; ++i)
 	{
@@ -274,9 +274,9 @@ void MixedAssembler::assemble_cells(
 	}
 
         // TO CHECK/IMPROVE : If we have contributions from adjacent cells from different meshes
-        if(local_ldim.size() > 1 && cell_index[0].size() <= 1 && cell_index[form_rank - 1].size() <= 1)
+        if(local_facets.size() > 1 && cell_index[0].size() <= 1 && cell_index[form_rank - 1].size() <= 1)
           for(auto& m: ufc.A)
-            m/=local_ldim.size();
+            m/=local_facets.size();
 
 	if (is_cell_functional)
 	  (*values)[cell->index()] = ufc.A[0];

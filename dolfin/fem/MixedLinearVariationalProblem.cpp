@@ -205,7 +205,7 @@ MixedLinearVariationalProblem::build_mappings()
       {
 	std::cout << "Build mapping between " << _l[i][j]->mesh()->id()
 		  << " and " << mesh0->id() << std::endl;
-	_a[i][j]->mesh()->build_mapping(mesh0);
+        _l[i][j]->mesh()->build_mapping(mesh0);
       }
     }
   }
