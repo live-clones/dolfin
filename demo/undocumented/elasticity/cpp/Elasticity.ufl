@@ -26,13 +26,14 @@
 
 cell = tetrahedron
 element = VectorElement("Lagrange", cell, 1)
+R = FiniteElement("Real", cell, 0)
 
 u = TrialFunction(element)
 v = TestFunction(element)
 f = Coefficient(element)
 
-mu    = Constant(cell)
-lmbda = Constant(cell)
+mu    = Coefficient(R)
+lmbda = Coefficient(R)
 
 def epsilon(v):
     return 0.5*(grad(v) + grad(v).T)
