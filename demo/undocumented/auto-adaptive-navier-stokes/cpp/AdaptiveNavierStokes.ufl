@@ -23,6 +23,7 @@
 cell = triangle
 V = VectorElement("CG", cell, 2)
 Q = FiniteElement("CG", cell, 1)
+R = FiniteElement("Real", cell, 0)
 W = V * Q
 
 w = Coefficient(W)
@@ -34,7 +35,7 @@ T = FiniteElement("CG", cell, 1)
 p0 = Coefficient(T)
 
 # Prescribed viscosity
-nu = Constant(cell)
+nu = Coefficient(R)
 
 # Define FacetNormal
 n = FacetNormal(cell)

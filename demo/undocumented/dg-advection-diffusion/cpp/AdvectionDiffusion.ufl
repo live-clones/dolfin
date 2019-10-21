@@ -25,6 +25,7 @@ cell = triangle
 scalar = FiniteElement("Discontinuous Lagrange", cell, 1)
 vector = VectorElement("Lagrange", cell, 2)
 constant = FiniteElement("Discontinuous Lagrange", cell, 0)
+R = FiniteElement("Real", cell, 0)
 
 # Trial and test functions
 phi = TrialFunction(scalar)
@@ -36,8 +37,8 @@ h = CellDiameter(cell)
 h_avg = (h('+') + h('-'))/2
 n = FacetNormal(cell)
 
-kappa = Constant(cell)
-alpha = Constant(cell)
+kappa = Coefficient(R)
+alpha = Coefficient(R)
 
 # ( dot(v, n) + |dot(v, n)| )/2.0
 un = (dot(u, n) + abs(dot(u, n)))/2.0
