@@ -904,6 +904,7 @@ namespace dolfin_wrappers
 	 return   py::array_t<dolfin::la_index>(dofs.size(), dofs.data());
        }, py::arg("idx"))
 
+      .def("convert_to_aij", &dolfin::PETScNestMatrix::convert_to_aij)
       .def("size", (std::size_t (dolfin::PETScBaseMatrix::*)(std::size_t) const) &dolfin::PETScNestMatrix::size)
       .def("str", &dolfin::PETScNestMatrix::str); 
 
@@ -1011,6 +1012,9 @@ namespace dolfin_wrappers
            py::arg("A"), py::arg("method")="default")
       .def("get_options_prefix", &dolfin::PETScLUSolver::get_options_prefix)
       .def("set_options_prefix", &dolfin::PETScLUSolver::set_options_prefix)
+      .def("set_operator",  (void (dolfin::PETScLUSolver::*)(std::shared_ptr<const dolfin::GenericLinearOperator>))
+           &dolfin::PETScLUSolver::set_operator)
+      .def("set_from_options", &dolfin::PETScLUSolver::set_from_options)
       .def("solve", (std::size_t (dolfin::PETScLUSolver::*)(dolfin::GenericVector&, const dolfin::GenericVector&))
            &dolfin::PETScLUSolver::solve)
       .def("solve", (std::size_t (dolfin::PETScLUSolver::*)(const dolfin::GenericLinearOperator&,

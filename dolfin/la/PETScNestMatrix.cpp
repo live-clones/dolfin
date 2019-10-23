@@ -210,4 +210,10 @@ void PETScNestMatrix::get_block_dofs
   ierr = ISRestoreIndices(is[idx], &ptr);
   if (ierr != 0) petsc_error(ierr, __FILE__, "ISRestoreIndices");
 }
+//-----------------------------------------------------------------------------
+void PETScNestMatrix::convert_to_aij()
+{
+  PetscErrorCode ierr = MatConvert(_matA, MATAIJ, MAT_INITIAL_MATRIX, &_matA);
+  if (ierr != 0) PETScObject::petsc_error(ierr, __FILE__, "MatConvert");
+}
 #endif

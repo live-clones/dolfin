@@ -280,7 +280,8 @@ void MixedLinearVariationalSolver::solve(MixedLinearVariationalSolver::assembled
   {
     solver_type = "default";
     PETScLUSolver solver(comm, solver_type);
-    // Note : set_operator converts our PETScNestMatrix into a AIJ matrix
+    // Convert from MATNEST to AIJ matrix type
+    A.convert_to_aij();
     solver.set_operator(A);
     solver.solve(*x,*b);
   }

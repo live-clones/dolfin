@@ -223,21 +223,7 @@ PETScLUSolver::set_operator(std::shared_ptr<const GenericLinearOperator> A)
 //-----------------------------------------------------------------------------
 void PETScLUSolver::set_operator(const PETScMatrix& A)
 {
-  // LUSolver cannot be used directly on a MATNEST-type matrix
-  // When A is a nested matrix, we convert it into a AIJ matrix
-  PetscBool nest;
-  PetscObjectTypeCompare((PetscObject)A.mat(), MATNEST, &nest);
-
-  if(nest)
-  {
-    Mat _newA;
-    PetscErrorCode ierr = MatConvert(A.mat(), MATAIJ, MAT_INITIAL_MATRIX, &_newA);
-    if (ierr != 0) PETScObject::petsc_error(ierr, __FILE__, "MatConvert");
-    auto newA = PETScMatrix(_newA);
-    _solver.set_operator(newA);
-  }
-  else
-    _solver.set_operator(A);
+  _solver.set_operator(A);
 }
 //-----------------------------------------------------------------------------
 std::size_t PETScLUSolver::solve(GenericVector& x, const GenericVector& b)
