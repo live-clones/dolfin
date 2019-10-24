@@ -233,17 +233,24 @@ def assemble_mixed(form,
                    backend=None):
 
     # Create dolfin Form object referencing all data needed by assembler
-    dolfin_form = _create_dolfin_form(form, form_compiler_parameters)
+    if isinstance(form, cpp.fem.Form):
+        dolfin_form = form
+    else:
+        dolfin_form = _create_dolfin_form(form, form_compiler_parameters)
 
     # Create tensor
     comm = dolfin_form.mesh().mpi_comm()
     tensor = _create_tensor(comm, form, dolfin_form.rank(), backend, tensor)
 
-    # Call C++ assemble function
+    # Create C++ mixed assembler
     assembler = cpp.fem.MixedAssembler()
+
+    # Set assembler options
     assembler.add_values = add_values
     assembler.finalize_tensor = finalize_tensor
     assembler.keep_diagonal = keep_diagonal
+
+    # Call C++ assemble
     assembler.assemble(tensor, dolfin_form)
 
     # Convert to float for scalars
