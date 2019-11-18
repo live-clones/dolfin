@@ -469,7 +469,7 @@ void Function::restrict(double* w, const FiniteElement& element,
     // Pick values from vector(s)
     _vector->get_local(w, dofs.size(), dofs.data());
   }
-  else if(!dolfin_cell.mesh().topology().mapping().empty()) // FIXME
+  else if(!dolfin_cell.mesh().topology().mapping().empty())
   {
     std::vector<double> coordinate_dofs_;
     auto mapping = dolfin_cell.mesh().topology().mapping()[_function_space->mesh()->id()];

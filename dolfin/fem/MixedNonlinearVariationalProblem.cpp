@@ -205,18 +205,35 @@ MixedNonlinearVariationalProblem::build_mappings()
       if(!_residual[i][j]->ufc_form())
 	break;
 
-      auto mesh_mapping = _residual[i][j]->mesh()->topology().mapping();
       // Get meshes associated with the test function
       auto mesh0 = _residual[i][j]->function_space(0)->mesh();
-
-      if(_residual[i][j]->mesh()->id() != mesh0->id() && mesh_mapping.count(mesh0->id()) == 0)
+      if(_residual[i][j]->mesh()->id() != mesh0->id()
+         && _residual[i][j]->mesh()->topology().mapping().count(mesh0->id()) == 0)
       {
 	std::cout << "Build mapping between " << _residual[i][j]->mesh()->id()
 		  << " and " << mesh0->id() << std::endl;
 	_residual[i][j]->mesh()->build_mapping(mesh0);
       }
+
+      // Get meshes associated with coefficients (trial)
+      auto coefficients = _residual[i][j]->coefficients();
+      for(size_t k=0; k<coefficients.size(); ++k)
+      {
+        if(coefficients[k]->function_space())
+        {
+          auto mesh1  = coefficients[k]->function_space()->mesh();
+          if(_residual[i][j]->mesh()->id() != mesh1->id()
+             && _residual[i][j]->mesh()->topology().mapping().count(mesh1->id()) == 0)
+          {
+            std::cout << "Build mapping between " << _residual[i][j]->mesh()->id()
+                      << " and " << mesh1->id() << std::endl;
+            _residual[i][j]->mesh()->build_mapping(mesh1);
+          }
+        }
+      }
     }
   }
+
   // Jacobian
   for (size_t i=0; i<_jacobian.size(); ++i)
   {
@@ -229,7 +246,6 @@ MixedNonlinearVariationalProblem::build_mappings()
       auto mesh_mapping = _jacobian[i][j]->mesh()->topology().mapping();
       // Get meshes associated with the test function
       auto mesh0 = _jacobian[i][j]->function_space(0)->mesh();
-
       if(_jacobian[i][j]->mesh()->id() != mesh0->id() && mesh_mapping.count(mesh0->id()) == 0)
       {
 	std::cout << "Build mapping between " << _jacobian[i][j]->mesh()->id()
