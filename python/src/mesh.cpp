@@ -214,7 +214,8 @@ namespace dolfin_wrappers
              const std::vector<std::size_t>& a = self.array(key, i);
              return py::array_t<std::size_t>(a.size(), a.data());
            })
-      .def("create_array", &dolfin::MeshData::create_array);
+      .def("create_array", &dolfin::MeshData::create_array)
+      .def("exists", &dolfin::MeshData::exists);
 
     // dolfin::MeshDomain
     py::class_<dolfin::MeshDomains, std::shared_ptr<dolfin::MeshDomains>>(m, "MeshDomains", "Mesh domains object")
