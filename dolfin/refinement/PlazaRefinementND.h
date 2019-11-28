@@ -141,6 +141,7 @@ namespace dolfin
     // of each face must be marked, if any edge of face is marked)
     static void enforce_rules(ParallelRefinement& p_ref,
                               const Mesh& mesh,
+                              const MeshFunction<bool>& refinement_marker,
                               const std::vector<unsigned int>& long_edge);
 
     // Add parent facet markers to new mesh, based on new vertices

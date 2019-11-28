@@ -277,13 +277,36 @@ void PlazaRefinementND::face_long_edge(std::vector<unsigned int>& long_edge,
 //-----------------------------------------------------------------------------
 void PlazaRefinementND::enforce_rules(ParallelRefinement& p_ref,
                                       const Mesh& mesh,
+                                      const MeshFunction<bool>& refinement_marker,
                                       const std::vector<unsigned int>& long_edge)
 {
   Timer t0("PLAZA: Enforce rules");
 
+  // Enforce rule, that if any cell is marked, the edges attached to the
+  // vertices of that cell must also be marked
+  // TODO: Not tested in tdim == 3.
+  assert(mesh.tdim() == 2);
+  mesh.init(0, 2);
+  mesh.init(2, 1);
+  for (CellIterator c(mesh); !c.end(); ++c)
+  {
+    if (refinement_marker[c->index()] == true)
+    {
+      std::cout << "Cell index: " << c->index() << std::endl;
+      for (VertexIterator v(*c); !v.end(); ++v) 
+      {
+        std::cout << "Vertex index: " << v->index() << std::endl;
+        for (EdgeIterator e(*v); !e.end(); ++e) 
+        {
+          std::cout << "Edge index: " << e->index() << std::endl;
+          p_ref.mark(e->index());
+        }
+      }
+    }
+  }
+
   // Enforce rule, that if any edge of a face is marked, longest edge
   // must also be marked
-
   std::size_t update_count = 1;
   while (update_count != 0)
   {
@@ -355,7 +378,7 @@ void PlazaRefinementND::refine(Mesh& new_mesh, const Mesh& mesh,
   ParallelRefinement p_ref(mesh);
   p_ref.mark(refinement_marker);
 
-  enforce_rules(p_ref, mesh, long_edge);
+  enforce_rules(p_ref, mesh, refinement_marker, long_edge);
 
   MeshRelation mesh_relation;
   do_refine(new_mesh, mesh, p_ref, long_edge, edge_ratio_ok, redistribute,
@@ -383,7 +406,7 @@ void PlazaRefinementND::refine(Mesh& new_mesh, const Mesh& mesh,
   ParallelRefinement p_ref(mesh);
   p_ref.mark(refinement_marker);
 
-  enforce_rules(p_ref, mesh, long_edge);
+  enforce_rules(p_ref, mesh, refinement_marker, long_edge);
 
   do_refine(new_mesh, mesh, p_ref, long_edge, edge_ratio_ok, false,
             calculate_parent_facets, mesh_relation);
