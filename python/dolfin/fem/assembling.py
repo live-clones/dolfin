@@ -238,6 +238,9 @@ def assemble_mixed(form,
     else:
         dolfin_form = _create_dolfin_form(form, form_compiler_parameters)
 
+    if dolfin_form is None:
+        return dolfin_form
+
     # Create tensor
     comm = dolfin_form.mesh().mpi_comm()
     tensor = _create_tensor(comm, form, dolfin_form.rank(), backend, tensor)
