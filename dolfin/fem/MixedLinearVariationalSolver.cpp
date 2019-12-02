@@ -231,7 +231,6 @@ void MixedLinearVariationalSolver::solve(MixedLinearVariationalSolver::assembled
   // Get parameters
   std::string solver_type   = parameters["linear_solver"];
   const std::string pc_type = parameters["preconditioner"];
-  // const bool symmetric      = parameters["symmetric"];
 
   auto As = std::get<0>(assembled_system);
   auto bs = std::get<1>(assembled_system);
@@ -281,6 +280,7 @@ void MixedLinearVariationalSolver::solve(MixedLinearVariationalSolver::assembled
     solver_type = "default";
     PETScLUSolver solver(comm, solver_type);
     // Convert from MATNEST to AIJ matrix type
+    std::cout << "Converting PETScNestMatrix into AIJ (due to direct solver)" << std::endl;
     A.convert_to_aij();
     solver.set_operator(A);
     solver.solve(*x,*b);
@@ -289,6 +289,12 @@ void MixedLinearVariationalSolver::solve(MixedLinearVariationalSolver::assembled
   {
     PETScKrylovSolver solver(comm, solver_type, pc_type);
     solver.parameters.update(parameters("krylov_solver"));
+    if(pc_type != "default")
+    {
+      std::cout << "Converting PETScNestMatrix into AIJ (due to "
+                << pc_type  << " preconditioner)" << std::endl;
+      A.convert_to_aij();
+    }
     solver.set_operator(A);
     solver.solve(*x,*b);
   }
