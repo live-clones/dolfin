@@ -201,7 +201,6 @@ class MixedNonlinearVariationalProblem(cpp.fem.MixedNonlinearVariationalProblem)
 
         # Create list of forms/blocks
         F_list = list()
-        print("[problem.py] size F = ", len(F))
         for Fi in F:
             if Fi is None:
                 F_list.append([cpp.fem.Form(1, 0)])
@@ -222,7 +221,6 @@ class MixedNonlinearVariationalProblem(cpp.fem.MixedNonlinearVariationalProblem)
         J_list = None
         if J is not None:
             J_list = list()
-            print("[problem.py] size J = ", len(J))
             for Ji in J:
                 if Ji is None:
                     J_list.append([cpp.fem.Form(2, 0)])

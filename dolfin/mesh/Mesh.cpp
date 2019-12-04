@@ -498,7 +498,8 @@ void Mesh::build_mapping(std::shared_ptr<const Mesh> other) const
     other_keys.push_back(mapping.first);
   std::set_intersection(current_keys.begin(),current_keys.end(),other_keys.begin(),other_keys.end(),back_inserter(common_keys));
 
-  dolfin_assert(common_keys.size() > 0);
+  if (common_keys.size() == 0)
+    throw std::logic_error("Cannot find common parent mesh");
   unsigned parent_id = common_keys[0];
 
   // NOTE : This function is only used in MixedAssembler
