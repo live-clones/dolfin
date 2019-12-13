@@ -41,7 +41,8 @@ MeshTopology::MeshTopology(const MeshTopology& topology)
     global_num_entities(topology.global_num_entities),
     _global_indices(topology._global_indices),
     _shared_entities(topology._shared_entities),
-    connectivity(topology.connectivity)
+    connectivity(topology.connectivity),
+    _mapping(topology._mapping)
 {
   // Do nothing
 }
@@ -111,6 +112,7 @@ void MeshTopology::clear()
   _global_indices.clear();
   _shared_entities.clear();
   connectivity.clear();
+  _mapping.clear();
 }
 //-----------------------------------------------------------------------------
 void MeshTopology::clear(std::size_t d0, std::size_t d1)

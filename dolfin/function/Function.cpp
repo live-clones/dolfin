@@ -469,11 +469,13 @@ void Function::restrict(double* w, const FiniteElement& element,
     // Pick values from vector(s)
     _vector->get_local(w, dofs.size(), dofs.data());
   }
+#if 0 //FIXME
   else if(!dolfin_cell.mesh().topology().mapping().empty())
   {
     std::vector<double> coordinate_dofs_;
     auto mapping = dolfin_cell.mesh().topology().mapping()[_function_space->mesh()->id()];
     dolfin_assert(mapping->mesh()->id() == dolfin_cell.mesh().id());
+
     if(_function_space->mesh()->id() != dolfin_cell.mesh().id())
     {
       auto codim = mapping->mesh()->topology().dim() - dolfin_cell.mesh().topology().dim();
@@ -501,6 +503,7 @@ void Function::restrict(double* w, const FiniteElement& element,
       }
     }
   }
+#endif
   else
   {
     // Restrict as UFC function (by calling eval)

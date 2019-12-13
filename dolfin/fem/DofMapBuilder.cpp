@@ -120,7 +120,8 @@ void DofMapBuilder::build(DofMap& dofmap, const Mesh& mesh,
   if (!constrained_domain)
   {
     ufc_node_dofmap
-      = build_ufc_node_graph(node_graph0, node_local_to_global0,
+      = build_ufc_node_graph(node_graph0,
+                             node_local_to_global0,
                              dofmap._num_mesh_entities_global,
                              dofmap._ufc_dofmap,
                              mesh, constrained_domain, bs);
@@ -1155,7 +1156,8 @@ std::shared_ptr<const ufc::dofmap> DofMapBuilder::build_ufc_node_graph(
 
   }
 
-  if (!mesh.topology().mapping().empty()) // If mesh is built from MeshView
+  // If mesh is built from MeshView
+  if (!mesh.topology().mapping().empty() && needs_entities[D])
   {
     // Extra shared vertex/node that have no global index yet
     const auto shared_vertices = mesh.topology().shared_entities(0);
@@ -1165,7 +1167,6 @@ std::shared_ptr<const ufc::dofmap> DofMapBuilder::build_ufc_node_graph(
       if(node_local_to_global[v->first] == 0)
         node_local_to_global[v->first] = (std::size_t) global_vertex_indices[v->first];
   }
-
 
   return dofmaps[0];
 }
