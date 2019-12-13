@@ -36,13 +36,14 @@ MeshTopology::MeshTopology() : Variable("topology", "mesh topology")
 //-----------------------------------------------------------------------------
 MeshTopology::MeshTopology(const MeshTopology& topology)
   : Variable("topology", "mesh topology"),
-    coloring(topology.coloring), num_entities(topology.num_entities),
+    coloring(topology.coloring),
+    _mapping(topology._mapping),
+    num_entities(topology.num_entities),
     ghost_offset_index(topology.ghost_offset_index),
     global_num_entities(topology.global_num_entities),
     _global_indices(topology._global_indices),
     _shared_entities(topology._shared_entities),
-    connectivity(topology.connectivity),
-    _mapping(topology._mapping)
+    connectivity(topology.connectivity)
 {
   // Do nothing
 }
@@ -106,13 +107,13 @@ void MeshTopology::clear()
 {
   // Clear data
   coloring.clear();
+  _mapping.clear();
   num_entities.clear();
   global_num_entities.clear();
   ghost_offset_index.clear();
   _global_indices.clear();
   _shared_entities.clear();
   connectivity.clear();
-  _mapping.clear();
 }
 //-----------------------------------------------------------------------------
 void MeshTopology::clear(std::size_t d0, std::size_t d1)
