@@ -11,6 +11,7 @@ trial and test functions on this space::
 
     # Function spaces
     element = VectorElement("Lagrange", tetrahedron, 1)
+    R = FiniteElement("Real", tetrahedron, 0)
 
     # Trial and test functions
     du = TrialFunction(element)     # Incremental displacement
@@ -46,8 +47,8 @@ energy, it only remains to specify constants for the elasticity
 parameters::
 
     # Elasticity parameters
-    mu    = Constant(tetrahedron)
-    lmbda = Constant(tetrahedron)
+    mu    = Coefficient(R)
+    lmbda = Coefficient(R)
 
 Both the first variation of the potential energy, and the Jacobian of
 the variation, can be automatically computed by a call to

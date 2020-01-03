@@ -27,6 +27,7 @@
 
 # Function spaces
 element = VectorElement("Lagrange", triangle, 1)
+R = FiniteElement("Real", triangle, 0)
 
 # Trial and test functions
 du = TrialFunction(element)     # Incremental displacement
@@ -46,8 +47,8 @@ Ic = tr(C)
 J  = det(F)
 
 # Elasticity parameters
-mu    = Constant(triangle)
-lmbda = Constant(triangle)
+mu    = Coefficient(R)
+lmbda = Coefficient(R)
 
 # Stored strain energy density (compressible neo-Hookean model)
 psi = (mu/2)*(Ic - 2) - mu*ln(J) + (lmbda/2)*(ln(J))**2
