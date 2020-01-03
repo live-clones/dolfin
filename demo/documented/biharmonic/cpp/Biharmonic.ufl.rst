@@ -28,7 +28,7 @@ regenerating the code. ::
    h_avg = (h('+') + h('-'))/2
 
    # Parameters
-   alpha = Constant(triangle)
+   alpha = Coefficient(FiniteElement("Real", triangle, 0))
 
 Finally the bilinear and linear forms are defined. Integrals over
 internal facets are indicated by ``*dS``. ::
@@ -47,4 +47,4 @@ compiled using FFC by running (on the command-line):
 
 .. code-block:: sh
 
-   ffc -l dolfin Poisson.ufl
+   ffc -l dolfin Biharmonic.ufl
