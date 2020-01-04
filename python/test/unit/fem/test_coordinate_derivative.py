@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 #
-# Modified by Florian Wechsung 2018
+# Modified by Florian Wechsung 2018 and Jørgen S. Dokken 2020
 
 import pytest
 import numpy as np
@@ -68,7 +68,7 @@ def test_mixed_derivatives():
     X = SpatialCoordinate(mesh)
     x, y = X
     V = FunctionSpace(mesh, "CG", 1)
-    u = project(x*x+y*x+y*y+sin(x)+cos(x), V)
+    u = project(x * x + y * x + y * y + sin(x) + cos(x), V)
     v = TrialFunction(V)
     dX = TestFunction(VectorFunctionSpace(mesh, "Lagrange", 1))
     dX_ = TrialFunction(VectorFunctionSpace(mesh, "Lagrange", 1))
@@ -95,7 +95,7 @@ def test_mixed_derivatives():
         - 2*inner(grad(u), dot(nabla_grad(dX), grad(v))) * dx
     test_mixed(Jb, dJb)
 
-    J = Ja+Jb
+    J = Ja + Jb
     dJ = dJa + dJb
     test_mixed(J, dJ)
 
@@ -106,7 +106,7 @@ def test_second_shape_derivative():
     V = FunctionSpace(mesh, "CG", 1)
     X = SpatialCoordinate(mesh)
     x, y = X
-    u = project(x*x+y*x+y*y+sin(x)+cos(x), V)
+    u = project(x * x + y * x + y * y + sin(x) + cos(x), V)
     Z = VectorFunctionSpace(mesh, "Lagrange", 1)
     dX1 = TestFunction(Z)
     dX2 = TrialFunction(Z)
@@ -170,7 +170,7 @@ def test_different_interval_quadratures():
     F = a - l
     J = uh**2 * dx
 
-    # Adjoint eq disregarding Dirichlet BC
+    # Adjoint equation disregarding Dirichlet BC adjoint
     dJdu = derivative(J, uh)
     dFdu = derivative(action(F, uh), uh)
     bc_hom = DirichletBC(V, Constant(0), "on_boundary")
@@ -179,7 +179,7 @@ def test_different_interval_quadratures():
     F = replace(F, {u: uh})
     dJdu = replace(dJdu, {u: uh})
 
-    # Parts of second order adjoint eq:
+    # Parts of second order adjoint equation:
     S = VectorFunctionSpace(mesh, "CG", 1)
     s = Function(S)
     F = replace(F, {v: lmbd})
