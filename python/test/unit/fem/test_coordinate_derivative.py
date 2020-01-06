@@ -155,7 +155,8 @@ def test_integral_scaling_edge_case():
 def test_different_quadratures():
     """
     Checking that expressions with different quadrature rules
-    can be assembled as a sum
+    can be assembled as a sum, using the higher order quadrature for all
+    terms
     """
     mesh = UnitIntervalMesh(10)
     x = SpatialCoordinate(mesh)
