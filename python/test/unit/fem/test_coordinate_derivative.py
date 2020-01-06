@@ -152,10 +152,10 @@ def test_integral_scaling_edge_case():
         assemble(Constant(2.0) * derivative(derivative(J, X), X))
 
 
-def test_different_interval_quadratures():
+def test_different_quadratures():
     """
     Checking that expressions with different quadrature rules
-    (Special case for intervals) can be assembled as a sum
+    can be assembled as a sum
     """
     mesh = UnitIntervalMesh(10)
     x = SpatialCoordinate(mesh)
@@ -189,6 +189,39 @@ def test_different_interval_quadratures():
     soas_separated = assemble(d2Fdm2) + assemble(dFdm)
 
     soa = d2Fdm2 + dFdm
+    soas = assemble(soa)
+    assert np.isclose(soas_separated.norm("l2"), soas.norm("l2"))
+
+    # 2D test for triangles with quadrature degree 3 and 4
+    mesh = UnitSquareMesh(5, 5)
+    x = SpatialCoordinate(mesh)
+    V = FunctionSpace(mesh, "CG", 1)
+    u0 = cos(pi*x[0])*sin(pi*x[1])
+
+    u, v = TrialFunction(V), TestFunction(V)
+    F = inner(u - u0, v)*dx
+    uh = Function(V)
+    solve(lhs(F) == rhs(F), uh)
+    J = uh**2*dx
+
+    # adjoint eq disregarding Dirichlet BC
+    dJdu = derivative(J, uh)
+    dFdu = derivative(action(F, uh), uh)
+    bc_hom = DirichletBC(V, Constant(0), "on_boundary")
+    lmbd = Function(V)
+    solve(dFdu==-dJdu, lmbd, bc_hom)
+    F = replace(F, {u:uh})
+    dJdu = replace(dJdu, {u: uh})
+    # Parts of second order adjoint eq:
+    S = VectorFunctionSpace(mesh, "CG", 1)
+    s = Function(S)
+    F = replace(F, {v: lmbd})
+    ds = TestFunction(S)
+    dFdm = derivative(F, x, ds)
+    d2Fdm2 = derivative(dFdm, x, s)
+    d2Fdudm = derivative(dFdm, uh, lmbd)
+    soas_separated = assemble(d2Fdm2) + assemble(dFdm) + assemble(d2Fdudm)
+    soa = d2Fdm2 + d2Fdudm + dFdm
     soas = assemble(soa)
     assert np.isclose(soas_separated.norm("l2"), soas.norm("l2"))
 
