@@ -27,6 +27,7 @@
 cell = quadrilateral
 
 P1 = FiniteElement("Lagrange", cell, 1)
+R = FiniteElement("Real", cell, 0)
 ME = P1*P1
 
 du   = TrialFunction(ME)
@@ -40,9 +41,9 @@ dc, dmu = split(du)
 c,  mu  = split(u)
 c0, mu0 = split(u0)
 
-lmbda = Constant(cell) # surface energy parameter
-dt = Constant(cell) # time step
-theta = Constant(cell) # time stepping parameter
+lmbda = Coefficient(R) # surface energy parameter
+dt = Coefficient(R) # time step
+theta = Coefficient(R) # time stepping parameter
 
 # mu_(n+theta)
 mu_mid = (1-theta)*mu0 + theta*mu

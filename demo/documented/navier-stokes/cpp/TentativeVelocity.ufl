@@ -27,13 +27,14 @@
 # Define function spaces (P2-P1)
 V = VectorElement("Lagrange", triangle, 2)
 Q = FiniteElement("Lagrange", triangle, 1)
+R = FiniteElement("Real", triangle, 0)
 
 # Define trial and test functions
 u = TrialFunction(V)
 v = TestFunction(V)
 
 # Define coefficients
-k  = Constant(triangle)
+k  = Coefficient(R)
 u0 = Coefficient(V)
 f  = Coefficient(V)
 nu = 0.01
