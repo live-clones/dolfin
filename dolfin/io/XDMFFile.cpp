@@ -276,7 +276,7 @@ void XDMFFile::write_checkpoint(const Function& u,
   mesh_grid_node.attribute("Name") = function_time_name.c_str();
 
   pugi::xml_node time_node = mesh_grid_node.append_child("Time");
-  time_node.append_attribute("Value") = std::to_string(time_step).c_str();
+  time_node.append_attribute("Value") = time_step_to_string(time_step).c_str();
 
   //
   // Write function
@@ -451,7 +451,7 @@ void XDMFFile::write(const Function& u, double time_step,
 
   // Look for existing time series grid node with Name == tg_name
   bool new_timegrid = false;
-  std::string time_step_str = boost::lexical_cast<std::string>(time_step);
+  std::string time_step_str = time_step_to_string(time_step);
   pugi::xml_node timegrid_node, mesh_node;
   timegrid_node = domain_node.find_child_by_attribute("Grid", "Name", tg_name.c_str());
 
@@ -3176,3 +3176,12 @@ std::string XDMFFile::rank_to_string(std::size_t value_rank)
   return "Tensor";
 }
 //-----------------------------------------------------------------------------
+std::string XDMFFile::time_step_to_string(const double time_step)
+{
+  std::stringstream time_step_string_steam;
+  time_step_string_steam << std::scientific <<
+                         std::setprecision(15) << time_step;
+  return time_step_string_steam.str();
+}
+//-----------------------------------------------------------------------------
+

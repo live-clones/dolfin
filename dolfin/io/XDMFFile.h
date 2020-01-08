@@ -570,6 +570,10 @@ namespace dolfin
     // Vector, Tensor)
     static std::string rank_to_string(std::size_t value_rank);
 
+    // Convert a time step of double precision to scientific notation string
+    // with precision appropriate for XDMF time step indices
+    static std::string time_step_to_string(const double time_step);
+
     // MPI communicator
     dolfin::MPI::Comm _mpi_comm;
 

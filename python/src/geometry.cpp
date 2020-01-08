@@ -46,6 +46,8 @@ namespace dolfin_wrappers
            &dolfin::BoundingBoxTree::build)
       .def("build", (void (dolfin::BoundingBoxTree::*)(const dolfin::Mesh&, std::size_t))
            &dolfin::BoundingBoxTree::build)
+      .def("build", (void (dolfin::BoundingBoxTree::*)(const std::vector<dolfin::Point>&, std::size_t))
+           &dolfin::BoundingBoxTree::build)
       .def("compute_collisions", (std::vector<unsigned int> (dolfin::BoundingBoxTree::*)(const dolfin::Point&) const)
            &dolfin::BoundingBoxTree::compute_collisions)
       .def("compute_collisions",
