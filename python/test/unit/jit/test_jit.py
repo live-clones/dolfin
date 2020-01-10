@@ -184,7 +184,7 @@ def test_pass_array_double():
     assert abs(arr.sum() - 15) < 1e-15
     assert abs(ans - 15) < 1e-15
 
-
+@pytest.mark.skip
 @skip_if_not_PETSc
 def test_compile_extension_module():
 
