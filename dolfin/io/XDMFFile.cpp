@@ -146,7 +146,7 @@ void XDMFFile::write_checkpoint(const Function& u,
   // load it to member _xml_doc
   if (boost::filesystem::exists(_filename) and append == true)
   {
-    log(WARNING, "Appending to an existing XDMF XML file \"%s\".",
+    log(PROGRESS, "Appending to an existing XDMF XML file \"%s\".",
         _filename.c_str());
 
     pugi::xml_parse_result result = _xml_doc->load_file(_filename.c_str());
@@ -154,7 +154,7 @@ void XDMFFile::write_checkpoint(const Function& u,
 
     if (_xml_doc->select_node("/Xdmf/Domain").node().empty())
     {
-      log(WARNING, "File \"%s\" contains invalid XDMF. Writing new XDMF.",
+      log(PROGRESS, "File \"%s\" contains invalid XDMF. Writing new XDMF.",
           _filename.c_str());
     }
   }
@@ -170,7 +170,7 @@ void XDMFFile::write_checkpoint(const Function& u,
     // If we will reset the XDMF file that exists
     if (boost::filesystem::exists(_filename))
     {
-      log(WARNING, "XDMF file \"%s\" will be overwritten.",
+      log(PROGRESS, "XDMF file \"%s\" will be overwritten.",
           _filename.c_str());
     }
 
@@ -189,7 +189,7 @@ void XDMFFile::write_checkpoint(const Function& u,
 
   if (truncate_hdf and boost::filesystem::exists(get_hdf5_filename(_filename)))
   {
-    log(WARNING, "HDF file \"%s\" will be overwritten.",
+    log(PROGRESS, "HDF file \"%s\" will be overwritten.",
         get_hdf5_filename(_filename).c_str());
   }
 
@@ -200,10 +200,14 @@ void XDMFFile::write_checkpoint(const Function& u,
   {
     if (truncate_hdf)
     {
-      // We are writing for the first time, any HDF file must be overwritten
-      _hdf5_file.reset(new HDF5File(_mpi_comm.comm(),
-                                    get_hdf5_filename(_filename),
-                                    "w"));
+      // Any HDF file must be overwritten
+      // By resetting the pointer we destruct and close HDF file
+      _hdf5_file.reset();
+      // And new HDF file is opened, overwritting existing
+      _hdf5_file = 
+        std::unique_ptr<HDF5File>(new HDF5File(_mpi_comm.comm(),
+                                               get_hdf5_filename(_filename),
+                                               "w"));
     }
     else if (_hdf5_file)
     {
@@ -272,7 +276,7 @@ void XDMFFile::write_checkpoint(const Function& u,
   mesh_grid_node.attribute("Name") = function_time_name.c_str();
 
   pugi::xml_node time_node = mesh_grid_node.append_child("Time");
-  time_node.append_attribute("Value") = std::to_string(time_step).c_str();
+  time_node.append_attribute("Value") = time_step_to_string(time_step).c_str();
 
   //
   // Write function
@@ -447,7 +451,7 @@ void XDMFFile::write(const Function& u, double time_step,
 
   // Look for existing time series grid node with Name == tg_name
   bool new_timegrid = false;
-  std::string time_step_str = boost::lexical_cast<std::string>(time_step);
+  std::string time_step_str = time_step_to_string(time_step);
   pugi::xml_node timegrid_node, mesh_node;
   timegrid_node = domain_node.find_child_by_attribute("Grid", "Name", tg_name.c_str());
 
@@ -2168,7 +2172,8 @@ XDMFFile::get_cell_type(const pugi::xml_node& topology_node)
     {"triangle_6", {"triangle", 2}},
     {"tetrahedron", {"tetrahedron", 1}},
     {"tet_10", {"tetrahedron", 2}},
-    {"quadrilateral", {"quadrilateral", 1}}
+    {"quadrilateral", {"quadrilateral", 1}},
+    {"hexahedron", {"hexahedron", 1}},
   };
 
   // Convert XDMF cell type string to DOLFIN cell type string
@@ -2912,7 +2917,8 @@ std::vector<double> XDMFFile::get_point_data_values(const Function& u)
 
   std::int64_t width = get_padded_width(u);
 
-  if (u.value_rank() > 0)
+  const std::size_t value_rank = u.value_rank();
+  if (value_rank > 0)
   {
     // Transpose vector/tensor data arrays
     const std::size_t num_local_vertices = mesh->num_entities(0);
@@ -2922,7 +2928,8 @@ std::vector<double> XDMFFile::get_point_data_values(const Function& u)
     {
       for (std::size_t j = 0; j < value_size; j++)
       {
-        std::size_t tensor_2d_offset = (j > 1 && value_size == 4) ? 1 : 0;
+        std::size_t tensor_2d_offset
+            = (j > 1 && value_rank == 2 && value_size == 4) ? 1 : 0;
         _data_values[i*width + j + tensor_2d_offset]
           = data_values[i + j*num_local_vertices];
       }
@@ -3169,3 +3176,12 @@ std::string XDMFFile::rank_to_string(std::size_t value_rank)
   return "Tensor";
 }
 //-----------------------------------------------------------------------------
+std::string XDMFFile::time_step_to_string(const double time_step)
+{
+  std::stringstream time_step_string_steam;
+  time_step_string_steam << std::scientific <<
+                         std::setprecision(15) << time_step;
+  return time_step_string_steam.str();
+}
+//-----------------------------------------------------------------------------
+

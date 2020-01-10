@@ -279,7 +279,7 @@ def _plot_matplotlib(obj, mesh, kwargs):
         ax = plt.gca(projection='3d')
     else:
         ax = plt.gca()
-    ax.set_aspect('equal')
+        ax.set_aspect('equal')
 
     title = kwargs.pop("title", None)
     if title is not None:

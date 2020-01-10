@@ -498,24 +498,17 @@ class Function(ufl.Coefficient):
     def cpp_object(self):
         return self._cpp_object
 
-    def restrict(self, w, element, cell, coordinate_dofs, ufc_cell):
+    def restrict(self, element, cell):
         """
-        Restrict function to local cell (compute expansion coefficients w)
+        Returns expansion coefficients of function restricted to local cell.
 
         *Arguments*
-             w : list(double)
-                 Expansion coefficients.
-             element : FiniteElement
+             element : cpp.fem.FiniteElement
                  The element.
-             dolfin_cell : Cell
+             cell : Cell
                  The cell.
-             coordinate_dofs : list(double)
-                 The coordinates.
-             ufc_cell : ufc::cell.
-                 The ufc::cell.
-
         """
-        self._cpp_object.restrict(w, element, cell, coordinate_dofs, ufc_cell)
+        return self._cpp_object.restrict(element, cell)
 
     def num_sub_spaces(self):
         if self._functions is not None:

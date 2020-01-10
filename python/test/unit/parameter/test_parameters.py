@@ -23,6 +23,8 @@ import os
 from dolfin import *
 from dolfin_utils.test import *
 
+xfail = pytest.mark.xfail(strict=True)
+
 @skip_in_parallel
 def test_simple(tempdir):
 
@@ -188,3 +190,18 @@ def test_parse_parameters():
     check_pset_and_dict_args(pset, changed_pset_dict)
     pset.parse([""] + changed_command_line_args[1])
     check_pset_and_dict_args(pset, changed_pset_dict)
+
+@pytest.mark.parametrize('arg_factory', [pytest.param(True, marks=xfail),
+                                         pytest.param(1, marks=xfail),
+                                         pytest.param(1., marks=xfail),
+                                         pytest.param("string", marks=xfail),
+                                         pytest.param("none", marks=xfail),
+                                         pytest.param(parameters, marks=xfail)
+                                         ])
+def test_wrong_parameters_setitem(arg_factory):
+    value = arg_factory
+    parameters["misplelled"] = arg_factory
+
+@xfail
+def test_wrong_parameters_getitem(arg_factory):
+    parameters["misplelled"]

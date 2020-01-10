@@ -60,8 +60,14 @@ namespace dolfin_wrappers
     m.def("info", [](const dolfin::MultiStageScheme& mms, bool verbose){ dolfin::info(mms, verbose); },
           py::arg("scheme"), py::arg("verbose")=false);
     m.def("set_log_level", &dolfin::set_log_level);
+    m.def("set_log_active", &dolfin::set_log_active);
     m.def("get_log_level", &dolfin::get_log_level);
     m.def("log", [](dolfin::LogLevel level, std::string s){ dolfin::log(level, s); });
+    m.def("begin", [](unsigned int debug_level, std::string msg){ dolfin::begin(debug_level, msg);});
+    m.def("begin", [](std::string msg){ dolfin::begin(msg);});
+    m.def("error", [](std::string msg){ dolfin::error(msg);});
+    m.def("warning", [](std::string msg){ dolfin::warning(msg);});
+    m.def("end", &dolfin::end);
 
     // dolfin::Progress
     py::class_<dolfin::Progress, std::shared_ptr<dolfin::Progress>>

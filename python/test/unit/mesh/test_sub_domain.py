@@ -117,10 +117,11 @@ def test_creation_and_marking():
         };
 
     PYBIND11_MODULE(SIGNATURE, m) {
-       py::class_<Left, std::shared_ptr<Left>, dolfin::SubDomain>(m, "Left").def(py::init<>());
-       py::class_<Right, std::shared_ptr<Right>, dolfin::SubDomain>(m, "Right").def(py::init<>());
-       py::class_<LeftOnBoundary, std::shared_ptr<LeftOnBoundary>, dolfin::SubDomain>(m, "LeftOnBoundary").def(py::init<>());
-       py::class_<RightOnBoundary, std::shared_ptr<RightOnBoundary>, dolfin::SubDomain>(m, "RightOnBoundary").def(py::init<>());
+       py::object SubDomain = (py::object) py::module::import("dolfin").attr("SubDomain");
+       py::class_<Left, std::shared_ptr<Left>>(m, "Left", SubDomain).def(py::init<>());
+       py::class_<Right, std::shared_ptr<Right>>(m, "Right", SubDomain).def(py::init<>());
+       py::class_<LeftOnBoundary, std::shared_ptr<LeftOnBoundary>>(m, "LeftOnBoundary", SubDomain).def(py::init<>());
+       py::class_<RightOnBoundary, std::shared_ptr<RightOnBoundary>>(m, "RightOnBoundary", SubDomain).def(py::init<>());
     }
     """
 
@@ -132,10 +133,10 @@ def test_creation_and_marking():
                         AutoSubDomain(lambda x, on_boundary: x[0] > 1.0 - DOLFIN_EPS)),
                        (AutoSubDomain(lambda x, on_boundary: x[0] < DOLFIN_EPS and on_boundary),
                         AutoSubDomain(lambda x, on_boundary: x[0] > 1.0 - DOLFIN_EPS and on_boundary)),
-                       (CompiledSubDomain("near(x[0], a)", a=0.0),
-                        CompiledSubDomain("near(x[0], a)", a=1.0)),
-                       (CompiledSubDomain("near(x[0], a) and on_boundary", a=0.0),
-                        CompiledSubDomain("near(x[0], a) and on_boundary", a=1.0)),
+                       (CompiledSubDomain("near(x[0], _a)", _a=0.0),
+                        CompiledSubDomain("near(x[0], _a)", _a=1.0)),
+                       (CompiledSubDomain("near(x[0], _a) and on_boundary", _a=0.0),
+                        CompiledSubDomain("near(x[0], _a) and on_boundary", _a=1.0)),
                        (CompiledSubDomain("near(x[0], 0.0)"),
                         CompiledSubDomain("near(x[0], 1.0)")),
                        (CompiledSubDomain("near(x[0], 0.0) and on_boundary"),
@@ -168,7 +169,6 @@ def test_creation_and_marking():
                 right.mark(f, 2)
 
                 correct = {(1, 0): 1,
-                           (1, 0): 1,
                            (1, 1): 0,
                            (2, 0): 11,
                            (2, 1): 10,
@@ -196,3 +196,34 @@ def test_creation_and_marking():
             # Check that the number of marked entities is correct
             assert sum(f.array() == 1) == 0
             assert sum(f.array() == 2) == mesh.num_entities(f_dim)
+
+# Skipping in parallel due to lack of parallel support for SubMesh
+@skip_in_parallel
+def test_snap_boundary():
+
+    # This test checks whether the expected modifications are made
+    # to mesh vertex coordinates when snap_boundary is called.
+
+    for ind, MeshClass in enumerate([UnitIntervalMesh, UnitSquareMesh,
+                                     UnitCubeMesh]):
+        # SubDomain whose snap method modifies all coordinate components
+        # to be zero.
+        dim = ind+1
+        class ZeroSnap(SubDomain):
+            def inside(self,x,on_boundary):
+                return True
+            def snap(self,x):
+                for i in range(0,dim):
+                    x[i] = 0.0
+
+        # Create mesh and modify coordinates via snapping.  Note that all vertices
+        # are on the boundary.
+        args = [1,]*dim
+        mesh = MeshClass(*args)
+        mesh.snap_boundary(ZeroSnap())
+
+        # Verify that all mesh coordinates are now zero.
+        for x in mesh.coordinates():
+            for x_i in x:
+                assert x_i==0.0
+    

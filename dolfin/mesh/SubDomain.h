@@ -94,13 +94,19 @@ namespace dolfin
     ///         The coordinates in domain G.
     virtual void map(Eigen::Ref<const Eigen::VectorXd> x, Eigen::Ref<Eigen::VectorXd> y) const;
 
-
+    
     /// Snap coordinate to boundary of subdomain
     ///
     /// @param x (Array<double>)
     ///         The coordinates.
-    virtual void snap(Array<double>& x) const {}
+    virtual void snap(Array<double>& x) const;
 
+    /// Snap coordinate to boundary of subdomain
+    ///
+    /// @param x (Eigen::Ref<const Eigen::VectorXd>)
+    ///         The coordinates.
+    virtual void snap(Eigen::Ref<Eigen::VectorXd> x) const;
+    
     //--- Marking of Mesh ---
 
     /// Set subdomain markers (std::size_t) on cells for given subdomain number

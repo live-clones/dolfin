@@ -38,7 +38,7 @@ using namespace dolfin;
 //-----------------------------------------------------------------------------
 dolfin::Mesh dolfin::refine(const Mesh& mesh, bool redistribute)
 {
-  Mesh refined_mesh;
+  Mesh refined_mesh(mesh.mpi_comm());
   refine(refined_mesh, mesh, redistribute);
   return refined_mesh;
 }

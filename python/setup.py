@@ -18,6 +18,7 @@ RESTRICT_REQUIREMENTS = ">=2019.2.0.dev0,<2019.3"
 
 REQUIREMENTS = ["numpy",
                 "pkgconfig",
+                "pybind11==2.2.4",
                 "fenics-ffc{}".format(RESTRICT_REQUIREMENTS),
                 "fenics-ufl{}".format(RESTRICT_REQUIREMENTS),
                 "fenics-dijitso{}".format(RESTRICT_REQUIREMENTS)]
@@ -91,8 +92,8 @@ setup(name='fenics-dolfin',
                 "dolfin.multistage",
                 "dolfin.parameter",
                 "dolfin_utils.meshconvert",
-                "dolfin_utils.test"],
-      package_dir={'dolfin' : 'dolfin', 'dolfin_test' : 'dolfin_test'},
+                "dolfin_utils.test",
+                "fenics"],
       ext_modules=[CMakeExtension('dolfin.cpp')],
       cmdclass=dict(build_ext=CMakeBuild),
       install_requires=REQUIREMENTS,

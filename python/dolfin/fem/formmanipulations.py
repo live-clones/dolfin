@@ -20,6 +20,7 @@ import ufl
 import ufl.algorithms.elementtransformations
 import ufl.algorithms.formsplitter
 
+from ufl.geometry import SpatialCoordinate
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.function.function import Function
 from dolfin.function.argument import Argument
@@ -66,11 +67,17 @@ def derivative(form, u, du=None, coefficient_derivatives=None):
         # NOTE : Mixed-domains problems need to have arg.part() != None
         # if any(arg.part() is not None for arg in form_arguments):
         #     raise RuntimeError("Compute derivative of form, cannot automatically create new Argument using parts, please supply one")
+        part = None
 
         if isinstance(u, Function):
-            # u.part() is None expect with mixed-domains
+            # u.part() is None except with mixed-domains
             part = u.part()
             V = u.function_space()
+            du = Argument(V, number, part)
+        elif isinstance(u, SpatialCoordinate):
+            mesh = u.ufl_domain().ufl_cargo()
+            element = u.ufl_domain().ufl_coordinate_element()
+            V = FunctionSpace(mesh, element)
             du = Argument(V, number, part)
         elif isinstance(u, (list, tuple)) and all(isinstance(w, Function) for w in u):
             raise RuntimeError("Taking derivative of form w.r.t. a tuple of Coefficients. Take derivative w.r.t. a single Coefficient on a mixed space instead.")
