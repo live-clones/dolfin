@@ -49,7 +49,6 @@ def test_compiled_subdomains_compilation_failure():
     with pytest.raises(RuntimeError):
         invalidCppCode()
 
-
 def test_creation_and_marking():
 
     class Left(SubDomain):
@@ -118,10 +117,10 @@ def test_creation_and_marking():
 
     PYBIND11_MODULE(SIGNATURE, m) {
        py::object SubDomain = (py::object) py::module::import("dolfin").attr("SubDomain");
-       py::class_<Left, std::shared_ptr<Left>>(m, "Left", SubDomain).def(py::init<>());
-       py::class_<Right, std::shared_ptr<Right>>(m, "Right", SubDomain).def(py::init<>());
-       py::class_<LeftOnBoundary, std::shared_ptr<LeftOnBoundary>>(m, "LeftOnBoundary", SubDomain).def(py::init<>());
-       py::class_<RightOnBoundary, std::shared_ptr<RightOnBoundary>>(m, "RightOnBoundary", SubDomain).def(py::init<>());
+       py::class_<Left, std::shared_ptr<Left>, SubDomain>(m, "Left").def(py::init<>());
+       py::class_<Right, std::shared_ptr<Right>, SubDomain>(m, "Right").def(py::init<>());
+       py::class_<LeftOnBoundary, std::shared_ptr<LeftOnBoundary>, SubDomain>(m, "LeftOnBoundary").def(py::init<>());
+       py::class_<RightOnBoundary, std::shared_ptr<RightOnBoundary>, SubDomain>(m, "RightOnBoundary").def(py::init<>());
     }
     """
 
@@ -133,10 +132,10 @@ def test_creation_and_marking():
                         AutoSubDomain(lambda x, on_boundary: x[0] > 1.0 - DOLFIN_EPS)),
                        (AutoSubDomain(lambda x, on_boundary: x[0] < DOLFIN_EPS and on_boundary),
                         AutoSubDomain(lambda x, on_boundary: x[0] > 1.0 - DOLFIN_EPS and on_boundary)),
-                       (CompiledSubDomain("near(x[0], _a)", _a=0.0),
-                        CompiledSubDomain("near(x[0], _a)", _a=1.0)),
-                       (CompiledSubDomain("near(x[0], _a) and on_boundary", _a=0.0),
-                        CompiledSubDomain("near(x[0], _a) and on_boundary", _a=1.0)),
+                       (CompiledSubDomain("near(x[0], a)", a=0.0),
+                        CompiledSubDomain("near(x[0], a)", a=1.0)),
+                       (CompiledSubDomain("near(x[0], a) and on_boundary", a=0.0),
+                        CompiledSubDomain("near(x[0], a) and on_boundary", a=1.0)),
                        (CompiledSubDomain("near(x[0], 0.0)"),
                         CompiledSubDomain("near(x[0], 1.0)")),
                        (CompiledSubDomain("near(x[0], 0.0) and on_boundary"),

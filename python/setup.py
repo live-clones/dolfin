@@ -18,7 +18,7 @@ RESTRICT_REQUIREMENTS = ">=2019.2.0.dev0,<2019.3"
 
 REQUIREMENTS = ["numpy",
                 "pkgconfig",
-                "pybind11==2.2.4",
+                "pybind11==2.4.3",
                 "fenics-ffc{}".format(RESTRICT_REQUIREMENTS),
                 "fenics-ufl{}".format(RESTRICT_REQUIREMENTS),
                 "fenics-dijitso{}".format(RESTRICT_REQUIREMENTS)]
@@ -74,7 +74,6 @@ class CMakeBuild(build_ext):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp, env=env)
-
 
 setup(name='fenics-dolfin',
       version=VERSION,
