@@ -117,7 +117,7 @@ def test_creation_and_marking():
 
     PYBIND11_MODULE(SIGNATURE, m) {
        //py::object SubDomain = (py::object) py::module::import("dolfin").attr("SubDomain");
-       py::class_<dolfin::SubDomain>(m, "SubDomain");
+       py::class_<dolfin::SubDomain>(m, "SubDomain", py::module_local());
        py::class_<Left, std::unique_ptr<Left>, dolfin::SubDomain>(m, "Left").def(py::init<>());
        py::class_<Right, std::unique_ptr<Right>, dolfin::SubDomain>(m, "Right").def(py::init<>());
        py::class_<LeftOnBoundary, std::unique_ptr<LeftOnBoundary>, dolfin::SubDomain>(m, "LeftOnBoundary").def(py::init<>());
