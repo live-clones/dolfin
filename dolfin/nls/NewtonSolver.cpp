@@ -154,6 +154,9 @@ NewtonSolver::solve(NonlinearProblem& nonlinear_problem,
                  convergence_criterion.c_str());
   }
 
+  // Might need a copy of _matA (nest -> aij)
+  std::shared_ptr<GenericMatrix> _matAc;
+
   // Start iterations
   while (!newton_converged && _newton_iteration < maxiter)
   {
@@ -162,24 +165,22 @@ NewtonSolver::solve(NonlinearProblem& nonlinear_problem,
     nonlinear_problem.J_pc(*_matP, x);
 
     // Setup (linear) solver (including set operators)
-    solver_setup(_matA, _matP, nonlinear_problem, _newton_iteration);
+    if (as_type<PETScMatrix>(_matA)->is_nest())
+    {
+      log(TRACE, "NewtonSolver: setup matrix with MATAIJ type in krylov solver");
+      _matAc = _matA->copy();
+      as_type<PETScMatrix>(*_matAc).convert_to_aij();
+      solver_setup(_matAc, _matP, nonlinear_problem, _newton_iteration);
+    }
+    else
+      solver_setup(_matA, _matP, nonlinear_problem, _newton_iteration);
 
     // Perform linear solve and update total number of Krylov
     // iterations
     if (!_dx->empty())
       _dx->zero();
 
-    // FIXME : MATNEST-type matrices need a PETScLUSolver
-    PetscBool nest;
-    PetscObjectTypeCompare((PetscObject)as_type<PETScMatrix>(*_matA).mat(), MATNEST, &nest);
-    if(solver_type == "lu" && nest)
-    {
-      auto lu_solver = std::make_shared<PETScLUSolver>(x.mpi_comm(), "default");
-      lu_solver->set_operator(as_type<PETScMatrix>(*_matA));
-      _krylov_iterations += lu_solver->solve(*_dx, *_b);
-    }
-    else
-      _krylov_iterations += _solver->solve(*_dx, *_b);
+    _krylov_iterations += _solver->solve(*_dx, *_b);
 
     // Update solution
     update_solution(x, *_dx, _relaxation_parameter,

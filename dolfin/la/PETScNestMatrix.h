@@ -70,9 +70,6 @@ namespace dolfin
     /// @param idx - index of block
     void get_block_dofs(std::vector<dolfin::la_index>& dofs, std::size_t idx) const;
 
-    /// Convert matrix from MATNEST to AIJ format
-    void convert_to_aij();
-
     /// Return size of given dimension
     /// @param dim - dimension (0 or 1)
     std::size_t size(std::size_t dim) const

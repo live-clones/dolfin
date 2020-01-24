@@ -80,6 +80,9 @@ namespace dolfin
     /// Initialize zero tensor using tensor layout
     void init(const TensorLayout& tensor_layout);
 
+    /// Check is the matrix as nest type
+    bool is_nest();
+
     /// Initialize or update a nested matrix from the list of its blocks
     void set_nest(std::vector<Mat> mats);
 
@@ -239,6 +242,9 @@ namespace dolfin
 
     /// Dump matrix to PETSc binary format
     void binary_dump(std::string file_name) const;
+
+    /// Convert matrix to AIJ format
+    void convert_to_aij();
 
   private:
 

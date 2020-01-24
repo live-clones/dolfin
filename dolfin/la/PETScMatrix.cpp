@@ -217,6 +217,14 @@ void PETScMatrix::init(const TensorLayout& tensor_layout)
   if (ierr != 0) petsc_error(ierr, __FILE__, "MatSetOption");
 }
 //-----------------------------------------------------------------------------
+bool PETScMatrix::is_nest()
+{
+  PetscErrorCode ierr;
+  PetscBool nest;
+  PetscObjectTypeCompare((PetscObject)_matA, MATNEST, &nest);
+  return (bool)nest;
+}
+//-----------------------------------------------------------------------------
 void PETScMatrix::set_nest(std::vector<Mat> petsc_mats)
 {
   const unsigned int n = std::sqrt(petsc_mats.size());
@@ -792,6 +800,10 @@ MatNullSpace PETScMatrix::create_petsc_nullspace(const VectorSpaceBasis& nullspa
   return petsc_nullspace;
 }
 //-----------------------------------------------------------------------------
-
-
+void PETScMatrix::convert_to_aij()
+{
+  PetscErrorCode ierr = MatConvert(_matA, MATAIJ, MAT_INITIAL_MATRIX, &_matA);
+  if (ierr != 0) PETScObject::petsc_error(ierr, __FILE__, "MatConvert");
+}
+//-----------------------------------------------------------------------------
 #endif

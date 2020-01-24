@@ -310,6 +310,7 @@ MixedNonlinearDiscreteProblem::J(GenericMatrix& A, const GenericVector& x)
           bcs[i][c]->apply(*(_Js[i*u.size() + i]), *(_bs[i]), _x);
       }
     }
+    _Js[i*u.size() + i]->apply("insert");
   }
 
   // Update A from _Js, as a PETScNestMatrix
@@ -319,4 +320,5 @@ MixedNonlinearDiscreteProblem::J(GenericMatrix& A, const GenericVector& x)
     for(size_t j=0; j<u.size(); ++j)
       petsc_mats[i*u.size() + j] = as_type<PETScMatrix>(_Js[i*u.size() + j])->mat();
   as_type<PETScMatrix>(A).set_nest(petsc_mats);
+  as_type<PETScMatrix>(A).apply("insert");
 }
