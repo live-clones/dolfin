@@ -111,7 +111,7 @@ void MixedAssembler::assemble_cells(
     return;
 
   // Set timer
-  Timer timer("Assemble cells");
+  Timer timer("[MixedAssembler] Assemble cells");
 
   // Extract mesh
   dolfin_assert(a.mesh());
@@ -286,6 +286,7 @@ void MixedAssembler::assemble_cells(
     }
     p++;
   }
+  timer.stop();
 }
 //-----------------------------------------------------------------------------
 void MixedAssembler::assemble_exterior_facets(

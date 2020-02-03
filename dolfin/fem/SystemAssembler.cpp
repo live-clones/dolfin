@@ -19,6 +19,7 @@
 // Modified by Joachim B Haga 2012
 // Modified by Jan Blechta 2013
 // Modified by Martin Alnaes 2013-2015
+// Modified by Cecile Daversin-Catty 2018
 
 #include <algorithm>
 #include <array>

@@ -804,8 +804,16 @@ MatNullSpace PETScMatrix::create_petsc_nullspace(const VectorSpaceBasis& nullspa
 void PETScMatrix::convert_to_aij()
 {
   PetscErrorCode ierr;
-  ierr = MatConvert(_matA, MATAIJ, MAT_INPLACE_MATRIX, &_matA);
-  if (ierr != 0) PETScObject::petsc_error(ierr, __FILE__, "MatConvert");
+  try
+  {
+    ierr = MatConvert(_matA, MATAIJ, MAT_INPLACE_MATRIX, &_matA);
+    if (ierr != 0) PETScObject::petsc_error(ierr, __FILE__, "MatConvert");
+  }
+  catch(...)
+  {
+    ierr = MatConvert(_matA, MATAIJ, MAT_INITIAL_MATRIX, &_matA);
+    if (ierr != 0) PETScObject::petsc_error(ierr, __FILE__, "MatConvert");
+  }
 }
 //-----------------------------------------------------------------------------
 #endif

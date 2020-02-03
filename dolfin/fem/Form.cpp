@@ -17,9 +17,10 @@
 //
 // Modified by Anders Logg 2008-2014
 // Modified by Martin Alnes 2008
+// Modified by Cecile Daversin-Catty 2018
 //
 // First added:  2007-12-10
-// Last changed: 2015-11-08
+// Last changed: 2018-08-09
 
 #include <memory>
 #include <string>

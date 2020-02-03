@@ -20,9 +20,10 @@
 // Modified by Johan Hake, 2009
 // Modified by Joachim B. Haga, 2012
 // Modified by Mikael Mortensen, 2013
+// Modified by Cecile Daversin-Catty, 2018
 //
 // First added:  2007-04-10
-// Last changed: 2014-01-23
+// Last changed: 2018-05-29
 
 #include <cinttypes>
 #include <cmath>

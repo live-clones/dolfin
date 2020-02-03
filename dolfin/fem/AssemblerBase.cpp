@@ -20,6 +20,7 @@
 // Modified by Kent-Andre Mardal, 2008
 // Modified by Johannes Ring, 2012
 // Modified by Martin Alnaes, 2014
+// Modified by Cecile Daversin-Catty, 2018
 
 #include <memory>
 

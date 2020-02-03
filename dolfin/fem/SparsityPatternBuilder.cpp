@@ -17,6 +17,7 @@
 //
 // Modified by Ola Skavhaug 2007
 // Modified by Anders Logg 2008-2014
+// Modified by Cecile Daversin-Catty 2018
 
 #include <algorithm>
 

@@ -17,9 +17,10 @@
 //
 // Modified by Ola Skavhaug 2007.
 // Modified by Anders Logg 2008-2013
+// Modified by Cecile Daversin-Catty 2018
 //
 // First added:  2007-05-24
-// Last changed: 2014-04-25
+// Last changed: 2018-08-24
 
 #ifndef __SPARSITY_PATTERN_BUILDER_H
 #define __SPARSITY_PATTERN_BUILDER_H

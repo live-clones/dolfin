@@ -19,6 +19,7 @@
 // Modified by Johan Hake, 2009.
 // Modified by Joachim B. Haga, 2012.
 // Modified by Martin S. Alnaes, 2013.
+// Modified by Cecile Daversin-Catty, 2018.
 //
 // This file duplicates the Assembler::assemble* and
 // SystemAssembler::assemble* functions in namespace dolfin, and adds

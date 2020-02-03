@@ -18,9 +18,10 @@
 // Modified by Anders Logg 2005-2009
 // Modified by Martin Alnes 2008
 // Modified by Johan Hake 2010
+// Modified by Cecile Daversin-Catty 2018
 //
 // First added:  2005-10-23
-// Last changed: 2014-05-27
+// Last changed: 2020-01-24
 
 #include <cmath>
 #include <string>

@@ -16,9 +16,10 @@
 // along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 //
 // Modified by Anders Logg 2011
+// Modified by Cecile Daversin-Catty  2019
 //
 // First added:  2011-09-17
-// Last changed: 2014-07-02
+// Last changed: 2019-02-12
 
 #include <boost/multi_array.hpp>
 

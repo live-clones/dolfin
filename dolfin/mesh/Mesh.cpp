@@ -24,9 +24,10 @@
 // Modified by Marie E. Rognes 2012
 // Modified by Mikael Mortensen 2012
 // Modified by Jan Blechta 2013
+// Modified by Cecile Daversin-Catty 2018
 //
 // First added:  2006-05-09
-// Last changed: 2016-05-05
+// Last changed: 2019-12-04
 
 #include <dolfin/ale/ALE.h>
 #include <dolfin/common/Array.h>
