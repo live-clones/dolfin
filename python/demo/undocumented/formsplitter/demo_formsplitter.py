@@ -17,9 +17,8 @@ def boundarySub1(x):
 def boundarySub2(x):
     return x[0] > 1.0 - DOLFIN_EPS
 
-#element2D = FiniteElement("Lagrange", triangle, 1)
 W1 = FunctionSpace(submesh1, "Lagrange", 1)
-W2 = FunctionSpace(submesh2, "Lagrange", 2)
+W2 = FunctionSpace(submesh2, "Lagrange", 1)
 
 # Define the mixed function space
 V = MixedFunctionSpace( W1, W2 )

@@ -57,16 +57,8 @@ def test_demos(mpiexec, num_proc, path, name):
                   'demo_time-series.py',
                   'demo_poisson1D-in-2D.py',
                   'demo_coordinates.py',
-                  'demo_meshview-2D2D.py',
-                  'demo_meshview-3D3D.py',
-                  'demo_meshview-3D2D.py',
-                  'demo_meshview-3D1D.py',
-                  'demo_block-assembly-2D2D.py',
                   'demo_block-assembly-2D2D-nonlinear.py',
-                  'demo_block-assembly-3D2D.py',
                   'demo_block-assembly-3D1D.py',
-                  'demo_functionspace-product.py',
-                  'demo_formsplitter.py',
         ]
         if name in broken:
             return

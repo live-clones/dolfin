@@ -21,6 +21,7 @@
 // Modified by Joachim B Haga, 2012
 // Modified by Martin Alnaes, 2013-2015
 // Modified by Chris Richardson, 2014
+// Modified by Cecile Daversin-Catty, 2019
 
 #include <cstdlib>
 #include <random>
@@ -1157,7 +1158,7 @@ std::shared_ptr<const ufc::dofmap> DofMapBuilder::build_ufc_node_graph(
   }
 
   // If mesh is built from MeshView
-  if (!mesh.topology().mapping().empty() && needs_entities[D])
+  if (!mesh.topology().mapping().empty() && needs_entities[0])
   {
     // Extra shared vertex/node that have no global index yet
     const auto shared_vertices = mesh.topology().shared_entities(0);
