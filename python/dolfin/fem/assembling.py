@@ -255,8 +255,8 @@ def assemble_mixed(form,
     assembler.keep_diagonal = keep_diagonal
 
     # Call C++ assemble
-    for k,dolfin_form in enumerate(dolfin_forms):
-        assembler.add_values = bool(k>0)
+    for k, dolfin_form in enumerate(dolfin_forms):
+        assembler.add_values = bool(k > 0)
         assembler.assemble(tensor, dolfin_form)
 
     # Convert to float for scalars
