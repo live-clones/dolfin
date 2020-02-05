@@ -35,6 +35,8 @@ from dolfin.fem.form import Form
 from dolfin import MPI
 from dolfin.function.multimeshfunction import MultiMeshFunction
 
+from ufl.form import sub_forms_by_domain
+
 __all__ = ["assemble", "assemble_mixed", "assemble_local", "assemble_system",
            "assemble_multimesh", "SystemAssembler"]
 
@@ -234,16 +236,15 @@ def assemble_mixed(form,
 
     # Create dolfin Form object referencing all data needed by assembler
     if isinstance(form, cpp.fem.Form):
-        dolfin_form = form
+        dolfin_forms = [form]
     else:
-        dolfin_form = _create_dolfin_form(form, form_compiler_parameters)
-
-    if dolfin_form is None:
-        return dolfin_form
+        dolfin_forms = []
+        for subform in sub_forms_by_domain(form):
+            dolfin_forms.append(_create_dolfin_form(subform, form_compiler_parameters))
 
     # Create tensor
-    comm = dolfin_form.mesh().mpi_comm()
-    tensor = _create_tensor(comm, form, dolfin_form.rank(), backend, tensor)
+    comm = dolfin_forms[0].mesh().mpi_comm()
+    tensor = _create_tensor(comm, form, dolfin_forms[0].rank(), backend, tensor)
 
     # Create C++ mixed assembler
     assembler = cpp.fem.MixedAssembler()
@@ -254,10 +255,12 @@ def assemble_mixed(form,
     assembler.keep_diagonal = keep_diagonal
 
     # Call C++ assemble
-    assembler.assemble(tensor, dolfin_form)
+    for k,dolfin_form in enumerate(dolfin_forms):
+        assembler.add_values = bool(k>0)
+        assembler.assemble(tensor, dolfin_form)
 
     # Convert to float for scalars
-    if dolfin_form.rank() == 0:
+    if dolfin_forms[0].rank() == 0:
         tensor = tensor.get_scalar_value()
 
     # Return value
