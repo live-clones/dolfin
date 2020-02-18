@@ -208,7 +208,7 @@ MixedLinearVariationalSolver::assemble_system()
 	for (size_t j=0; j<u.size(); ++j)
 	{
 	  if(i!=j && a[i*u.size() + j][0]->ufc_form()) // Apply condition to off-diag blocks (zero values)
-	    bcs[i][c]->zero_columns(*(As[i*u.size() + j]), *(bs[i]), 0, true);
+            bcs[i][c]->zero(*(As[i*u.size() + j]));
 	  else // Apply condition to diag blocks
 	    bcs[i][c]->apply(*(As[i*u.size() + i]), *(bs[i]));
 	}

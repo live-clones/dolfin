@@ -212,7 +212,16 @@ MixedNonlinearVariationalProblem::build_mappings()
       {
 	std::cout << "Build mapping between " << _residual[i][j]->mesh()->id()
 		  << " and " << mesh0->id() << std::endl;
-	_residual[i][j]->mesh()->build_mapping(mesh0);
+        try
+        {
+          _residual[i][j]->mesh()->build_mapping(mesh0);
+        }
+        catch (const std::exception& e)
+        {
+          // If no common parent then restrict the integration domain
+          std::cout << e.what() << ", restricting integration domain" << std::endl;
+          _residual[i][j]->mesh() = mesh0;
+        }
       }
 
       // Get meshes associated with coefficients (trial)
@@ -227,7 +236,16 @@ MixedNonlinearVariationalProblem::build_mappings()
           {
             std::cout << "Build mapping between " << _residual[i][j]->mesh()->id()
                       << " and " << mesh1->id() << std::endl;
-            _residual[i][j]->mesh()->build_mapping(mesh1);
+            try
+            {
+              _residual[i][j]->mesh()->build_mapping(mesh1);
+            }
+            catch (const std::exception& e)
+            {
+              // If no common parent then restrict the integration domain
+              std::cout << e.what() << ", restricting integration domain" << std::endl;
+              _residual[i][j]->mesh() = mesh1;
+            }
           }
         }
       }
@@ -250,7 +268,16 @@ MixedNonlinearVariationalProblem::build_mappings()
       {
 	std::cout << "Build mapping between " << _jacobian[i][j]->mesh()->id()
 		  << " and " << mesh0->id() << std::endl;
-	_jacobian[i][j]->mesh()->build_mapping(mesh0);
+        try
+        {
+          _jacobian[i][j]->mesh()->build_mapping(mesh0);
+        }
+        catch (const std::exception& e)
+        {
+          // If no common parent then restrict the integration domain
+          std::cout << e.what() << ", restricting integration domain" << std::endl;
+          _jacobian[i][j]->mesh() = mesh0;
+        }
       }
     }
   }
