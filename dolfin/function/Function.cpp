@@ -469,7 +469,6 @@ void Function::restrict(double* w, const FiniteElement& element,
     // Pick values from vector(s)
     _vector->get_local(w, dofs.size(), dofs.data());
   }
-#if 0 //FIXME
   else if(!dolfin_cell.mesh().topology().mapping().empty())
   {
     std::vector<double> coordinate_dofs_;
@@ -484,8 +483,7 @@ void Function::restrict(double* w, const FiniteElement& element,
         std::size_t cell_index = mapping->cell_map()[dolfin_cell.index()];
         Cell mesh_cell(*(mapping->mesh()), cell_index);
         mesh_cell.get_coordinate_dofs(coordinate_dofs_);
-        // Calling eval with appropriate coord
-        restrict_as_ufc_function(w, element, dolfin_cell, coordinate_dofs_.data(),
+        restrict_as_ufc_function(w, element, mesh_cell, coordinate_dofs_.data(),
                                  ufc_cell);
       }
       else if(codim == 1)
@@ -497,13 +495,11 @@ void Function::restrict(double* w, const FiniteElement& element,
         Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[dolfin_cell.index()]);
         Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[0]);
         mesh_cell.get_coordinate_dofs(coordinate_dofs_);
-        // Calling eval with appropriate coord
-        restrict_as_ufc_function(w, element, dolfin_cell, coordinate_dofs_.data(),
+        restrict_as_ufc_function(w, element, mesh_cell, coordinate_dofs_.data(),
                                  ufc_cell);
       }
     }
   }
-#endif
   else
   {
     // Restrict as UFC function (by calling eval)
