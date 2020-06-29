@@ -166,9 +166,9 @@ NewtonSolver::solve(NonlinearProblem& nonlinear_problem,
     nonlinear_problem.J_pc(*_matP, x);
 
     // Setup (linear) solver (including set operators)
-    if (as_type<PETScMatrix>(_matA)->is_nest())
+    if (as_type<PETScMatrix>(_matA)->is_nest() and (solver_type == "lu" or solver_type == "direct"))
     {
-      log(TRACE, "NewtonSolver: setup matrix with MATAIJ type in krylov solver");
+      log(TRACE, "NewtonSolver: setup matrix with MATAIJ type in direct solver");
       _matAc = _matA->copy();
       as_type<PETScMatrix>(*_matAc).convert_to_aij();
       solver_setup(_matAc, _matP, nonlinear_problem, _newton_iteration);
