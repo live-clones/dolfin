@@ -22,7 +22,7 @@ jobs:
             pip3 install git+https://bitbucket.org/fenics-project/ffc.git@"${DEP_BRANCH_NAME}"
       - run:
           name: Flake8 checks on pybind11 Python code
-          command: python3 -m flake8 python/dolfin
+          command: python3 -m flake8 --append-config=python/setup.cfg python/dolfin
       - run:
           name: Build DOLFIN C++ documentation
           command: cd doc && doxygen

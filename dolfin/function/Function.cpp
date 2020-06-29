@@ -473,6 +473,11 @@ void Function::restrict(double* w, const FiniteElement& element,
   {
     std::vector<double> coordinate_dofs_;
     auto mapping = dolfin_cell.mesh().topology().mapping()[_function_space->mesh()->id()];
+    if(!mapping)
+    {
+      dolfin_cell.mesh().build_mapping(_function_space->mesh());
+      mapping = dolfin_cell.mesh().topology().mapping()[_function_space->mesh()->id()];
+    }
     dolfin_assert(mapping->mesh()->id() == dolfin_cell.mesh().id());
 
     if(_function_space->mesh()->id() != dolfin_cell.mesh().id())
