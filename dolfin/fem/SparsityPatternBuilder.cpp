@@ -28,6 +28,7 @@
 #include <dolfin/log/Progress.h>
 #include <dolfin/mesh/Cell.h>
 #include <dolfin/mesh/Facet.h>
+#include <dolfin/mesh/Edge.h>
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/MultiMesh.h>
 #include <dolfin/mesh/Vertex.h>
@@ -153,9 +154,25 @@ SparsityPatternBuilder::build_mixed(SparsityPattern& sparsity_pattern,
 		cell_index[i].push_back(mesh_cell.index());
 	    }
 	  }
-#if 0 // Confusing when we are considering 3D-1D uncoupled problem
+#if 1 // 3D-1D work in progress #CHECKME
 	  else if(codim[i] == 2)
-	    std::cout << "[SparsityBuilder] codim 2 - Not implemented" << std::endl;
+          {
+	    std::cout << "[SparsityBuilder] codim 2 - work in progress" << std::endl;
+            const std::size_t D = mapping->mesh()->topology().dim();
+            mapping->mesh()->init(D);
+            mapping->mesh()->init(D - 2, D);
+
+            Edge mesh_edge(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
+            for(std::size_t j=0; j<mesh_edge.num_entities(D);j++)
+            {
+              std::vector<double> cell_coordinates;
+              Cell mesh_cell(*(mapping->mesh()), mesh_edge.entities(D)[j]);
+              if(j==0)
+                cell_index[i][0] = mesh_cell.index();
+              else
+                cell_index[i].push_back(mesh_cell.index());
+            }
+          }
 #endif
 	}
       }

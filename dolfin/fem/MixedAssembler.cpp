@@ -27,6 +27,7 @@
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/Cell.h>
 #include <dolfin/mesh/Facet.h>
+#include <dolfin/mesh/Edge.h> //3D-1D
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/MeshData.h>
 #include <dolfin/mesh/MeshFunction.h>
@@ -174,7 +175,7 @@ void MixedAssembler::assemble_cells(
     std::vector<std::vector<std::size_t>> cell_index(form_rank);
     // Mixed-dimensional
     std::vector<std::size_t> codim(form_rank);
-    std::vector<int> local_facets;
+    std::vector<int> local_facets; //, local_edges;
 
     for (size_t i = 0; i < form_rank; ++i)
     {
@@ -186,6 +187,7 @@ void MixedAssembler::assemble_cells(
 	dolfin_assert(mapping->mesh()->id() == mesh_id[i]);
 
 	codim[i] = mapping->mesh()->topology().dim() - mesh.topology().dim();
+
 	if(codim[i] == 0)
 	  cell_index[i][0] = mapping->cell_map()[cell->index()];
 	else if(codim[i] == 1) // 2D-1D or 3D-2D (cells - facets relationships)
@@ -207,32 +209,40 @@ void MixedAssembler::assemble_cells(
 	  }
 	}
 	else if(codim[i] == 2) // 3D-1D (cells - edges relationships)
-	  std::cout << "[MixedAssembler] codim 2 - Not implemented (yet)" << std::endl;
+        {
+          const std::size_t D = mapping->mesh()->topology().dim();
+	  mapping->mesh()->init(D);
+	  mapping->mesh()->init(D - 2, D);
+
+          Edge mesh_edge(*(mapping->mesh()), mapping->cell_map()[cell->index()]);
+#if 1 // work in progress
+          // std::cout << "[MixedAssembler] mesh_edge.num_entities(" << D << ") = " << mesh_edge.num_entities(D) << std::endl;
+	  for(std::size_t j=0; j<mesh_edge.num_entities(D);j++)
+	  {
+            std::vector<double> cell_coordinates;
+	    Cell mesh_cell(*(mapping->mesh()), mesh_edge.entities(D)[j]);
+            // Coordinates look ok
+            // mesh_cell.get_vertex_coordinates(cell_coordinates);
+            // for(int k=0; k<cell_coordinates.size(); ++k)
+            //   std::cout << "cell_coordinates[" << k << "] = " << cell_coordinates[k] << std::endl;
+
+            //local_edges.push_back(mesh_cell.index(mesh_edge));
+            local_facets.push_back(mesh_cell.index(mesh_edge));
+
+	    if(j==0)
+	      cell_index[i][0] = mesh_cell.index();
+	    else
+	      cell_index[i].push_back(mesh_cell.index());
+	  }
+#endif
+        }
       }
     }
 
     if (empty_dofmap)
       continue;
 
-    if(local_facets.empty()) // Not mixed-dimensional - Standard case
-    {
-      integral->tabulate_tensor(ufc.A.data(),
-				ufc.w(),
-				coordinate_dofs.data(),
-				ufc_cell.orientation);
-
-      for(std::size_t i=0; i<form_rank; ++i)
-      {
-	auto dmap = dofmaps[i]->cell_dofs(cell_index[i][0]);
-	dofs[i].set(dmap.size(), dmap.data());
-      }
-
-      if (is_cell_functional)
-	(*values)[cell->index()] = ufc.A[0];
-      else
-	A.add_local(ufc.A.data(), dofs);
-    }
-    else // Mixed-dimensional integrals
+    if(!local_facets.empty()) // Codimension >= 1
     {
       for(std::size_t j=0; j<local_facets.size(); ++j)
       {
@@ -240,7 +250,12 @@ void MixedAssembler::assemble_cells(
 				  ufc.w(),
 				  coordinate_dofs.data(),
 				  ufc_cell.orientation,
+                                  *std::max_element(codim.begin(), codim.end()), // codimension
 				  local_facets[j]); // local index of the lower dim entity involved
+
+        std::cout << "Local tensor : " << std::endl;
+        for(int k=0; k<ufc.A.size(); ++k)
+          std::cout << "A[" << k << "] = " << ufc.A[k] << std::endl;
 
 	for(std::size_t i=0; i<form_rank; ++i)
 	{
@@ -283,6 +298,82 @@ void MixedAssembler::assemble_cells(
 	else
 	  A.add_local(ufc.A.data(), dofs);
       }
+    }
+#if 0 // Codimension 2 - Now included in the previous loop (codimension >= 1)
+    else if(!local_edges.empty())
+    {
+      for(std::size_t j=0; j<local_edges.size(); ++j)
+      {
+
+        integral->tabulate_tensor(ufc.A.data(),
+                                  ufc.w(),
+                                  coordinate_dofs.data(),
+                                  ufc_cell.orientation,
+                                  local_edges[j]); // local index of the lower dim entity involved
+
+        // std::cout << "Local tensor : " << std::endl;
+        // for(int k=0; k<ufc.A.size(); ++k)
+        //   std::cout << "A[" << k << "] = " << ufc.A[k] << std::endl;
+
+        for(std::size_t i=0; i<form_rank; ++i)
+        {
+          std::size_t jidx = (cell_index[i].size() > 1) ? j:0;
+
+          auto dmap = dofmaps[i]->cell_dofs(cell_index[i][jidx]);
+
+          // If there is more than one higher-dimensional contrib, do not consider the same dof twice
+          // #FIXME : This could be more elegant
+          for(std::size_t dof=0; jidx != 0 && dof<dofs[i].size(); ++dof)
+          {
+            for(int rm = 0; rm<dmap.size(); rm++)
+            {
+              if(form_rank > 1 && dmap[rm] == dofs[i][dof]) // This dof (index=rm) has already been set
+              {
+                if(i == 0)
+                {
+                  for(std::size_t col=0; col<dofmaps[1]->max_element_dofs(); ++col)
+                    ufc.A[rm*dofmaps[1]->max_element_dofs() + col] = 0.0;
+                }
+                if(i == 1)
+                {
+                  for(std::size_t row=0; row<dofmaps[0]->max_element_dofs(); ++row)
+                    ufc.A[row*dofmaps[1]->max_element_dofs() + rm] = 0.0;
+                }
+              }
+            }
+          }
+
+          dofs[i].set(dmap.size(), dmap.data());
+          // Not sure about dofs numbering here, but tensor has the right size
+          // for(int k=0; k<dofs[i].size(); ++k)
+          //   std::cout << "[MixedAssembler] dofs[" << i << "][" << k << "] = " << dofs[i][k] << std::endl;
+        }
+
+        if (is_cell_functional)
+          (*values)[cell->index()] = ufc.A[0];
+        else
+          A.add_local(ufc.A.data(), dofs);
+      }
+
+    }
+#endif
+    else // Codimension 0
+    {
+      integral->tabulate_tensor(ufc.A.data(),
+				ufc.w(),
+				coordinate_dofs.data(),
+				ufc_cell.orientation);
+
+      for(std::size_t i=0; i<form_rank; ++i)
+      {
+	auto dmap = dofmaps[i]->cell_dofs(cell_index[i][0]);
+	dofs[i].set(dmap.size(), dmap.data());
+      }
+
+      if (is_cell_functional)
+	(*values)[cell->index()] = ufc.A[0];
+      else
+	A.add_local(ufc.A.data(), dofs);
     }
     p++;
   }
