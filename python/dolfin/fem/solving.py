@@ -318,7 +318,7 @@ def _solve_varproblem_adaptive(*args, **kwargs):
     "Solve variational problem a == L or F == 0 adaptively"
 
     # Extract arguments
-    eq, u, bcs, J, tol, M, form_compiler_parameters, \
+    eq, u, bcs, J, tol, M, preconditioner, form_compiler_parameters, \
         solver_parameters = _extract_args(*args, **kwargs)
 
     print('eq.lhs = ', eq.lhs, ' eq.rhs=', eq.rhs)
