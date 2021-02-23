@@ -34,7 +34,7 @@ For a domain :math:`\Omega \subset \mathbb{R}^N` with boundary
 :math:`\partial \Omega = \Gamma_{D} \cup \Gamma_{N}`, we consider the
 following nonlinear Poisson equation with given boundary conditions:
 
-.. math::n
+.. math::
 
     - \nabla\cdot((1 + u^2) \nabla u) &= f \quad {\rm in}\, \Omega,\\
     u &= 1  \quad  {\rm on}\, \Gamma_D,\\
