@@ -158,7 +158,7 @@ NewtonSolver::solve(NonlinearProblem& nonlinear_problem,
   // Might need a copy of _matA (nest -> aij)
   std::shared_ptr<GenericMatrix> _matAc;
 
-  if (as_type<PETScMatrix>(_matA)->is_nest() and (solver_type == "lu" or solver_type == "direct"))
+  if (as_type<PETScMatrix>(_matA)->is_nest() and (solver_type == "lu" or solver_type == "direct" or solver_type == "default"))
     log(WARNING, "Converting PETScNestMatrix into AIJ (due to direct solver)");
 
   // Start iterations
@@ -169,7 +169,7 @@ NewtonSolver::solve(NonlinearProblem& nonlinear_problem,
     nonlinear_problem.J_pc(*_matP, x);
 
     // Setup (linear) solver (including set operators)
-    if (as_type<PETScMatrix>(_matA)->is_nest() and (solver_type == "lu" or solver_type == "direct"))
+    if (as_type<PETScMatrix>(_matA)->is_nest() and (solver_type == "lu" or solver_type == "direct" or solver_type == "default"))
     {
       log(TRACE, "NewtonSolver: setup matrix with MATAIJ type in direct solver");
       _matAc = _matA->copy();
