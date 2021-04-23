@@ -59,25 +59,16 @@ LocalAssembler::assemble(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
     for (FacetIterator facet(cell); !facet.end(); ++facet)
     {
       ufc_cell.local_facet = facet.pos();
-      const int Ncells = facet->num_entities(cell.dim());
-      if (Ncells == 2)
-      {
-        assemble_interior_facet(A, ufc, coordinate_dofs, ufc_cell, cell,
-                                *facet, facet.pos(), interior_facet_domains,
-                                cell_domains);
-      }
-      else if (Ncells == 1)
+      if (facet->exterior())
       {
         assemble_exterior_facet(A, ufc, coordinate_dofs, ufc_cell, cell,
                                 *facet, facet.pos(), exterior_facet_domains);
       }
       else
       {
-        dolfin_error("LocalAssembler.cpp",
-                     "assemble local problem",
-                     "Cell <-> facet connectivity not initialized, found "
-                     "facet with %d connected cells. Expected 1 or 2 cells",
-                     Ncells);
+        assemble_interior_facet(A, ufc, coordinate_dofs, ufc_cell, cell,
+                                *facet, facet.pos(), interior_facet_domains,
+                                cell_domains);
       }
     }
   }
