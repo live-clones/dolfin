@@ -123,18 +123,33 @@ void MixedAssembler::assemble_cells(
   // Check if form is a functional
   const bool is_cell_functional = (values && form_rank == 0) ? true : false;
 
+  // Iterations depending on rank or coefficients when rank is zero
+  std::size_t rn = form_rank;
+  if (form_rank == 0)
+    rn = ufc.form.num_coefficients();
+
   // Collect pointers to dof maps / id of the involved meshes
   std::vector<const GenericDofMap*> dofmaps;
-  std::vector<unsigned> mesh_id(form_rank);
+  std::vector<unsigned> mesh_id(rn);
 
+  // Meshes and dofmaps from Trial and Test functions if rank>0
   for (std::size_t i = 0; i < form_rank; ++i)
   {
     mesh_id[i] = a.function_space(i)->mesh()->id();
     dofmaps.push_back(a.function_space(i)->dofmap().get());
   }
+  // Meshes from coefficients otherwise
+  if (form_rank == 0)
+  {
+    for (std::size_t i=0; i<a.coefficients().size(); ++i)
+    {
+      mesh_id[i] = a.coefficients()[i]->function_space()->mesh()->id();
+      dofmaps.push_back(a.coefficients()[i]->function_space()->dofmap().get());
+    }
+  }
 
   // Vector to hold dof map for a cell
-  std::vector<ArrayView<const dolfin::la_index>> dofs(form_rank);
+  std::vector<ArrayView<const dolfin::la_index>> dofs(rn);
 
   // Cell integral
   ufc::cell_integral* integral = ufc.default_cell_integral.get();
@@ -171,12 +186,12 @@ void MixedAssembler::assemble_cells(
 
     // Get local-to-global dof maps for cell
     bool empty_dofmap = false;
-    std::vector<std::vector<std::size_t>> cell_index(form_rank);
+    std::vector<std::vector<std::size_t>> cell_index(rn);
     // Mixed-dimensional
-    std::vector<std::size_t> codim(form_rank);
+    std::vector<std::size_t> codim(rn);
     std::vector<int> local_facets;
 
-    for (size_t i = 0; i < form_rank; ++i)
+    for (size_t i = 0; i < rn; ++i)
     {
       cell_index[i].push_back(cell->index());
 
@@ -221,7 +236,7 @@ void MixedAssembler::assemble_cells(
 				coordinate_dofs.data(),
 				ufc_cell.orientation);
 
-      for(std::size_t i=0; i<form_rank; ++i)
+      for(std::size_t i=0; i<rn; ++i)
       {
 	auto dmap = dofmaps[i]->cell_dofs(cell_index[i][0]);
 	dofs[i].set(dmap.size(), dmap.data());
@@ -242,7 +257,8 @@ void MixedAssembler::assemble_cells(
 				  ufc_cell.orientation,
 				  local_facets[j]); // local index of the lower dim entity involved
 
-	for(std::size_t i=0; i<form_rank; ++i)
+
+        for(std::size_t i=0; i<rn; ++i)
 	{
           std::size_t jidx = (cell_index[i].size() > 1) ? j:0;
 
@@ -274,7 +290,7 @@ void MixedAssembler::assemble_cells(
 	}
 
         // TO CHECK/IMPROVE : If we have contributions from adjacent cells from different meshes
-        if(local_facets.size() > 1 && cell_index[0].size() <= 1 && cell_index[form_rank - 1].size() <= 1)
+        if(local_facets.size() > 1 && cell_index[0].size() <= 1 && cell_index[rn - 1].size() <= 1)
           for(auto& m: ufc.A)
             m/=local_facets.size();
 
