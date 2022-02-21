@@ -20,7 +20,7 @@
 #include <vector>
 #include <iomanip>
 #include <boost/cstdint.hpp>
-#include <boost/detail/endian.hpp>
+#include <boost/predef/other/endian.h>
 
 #include "pugixml.hpp"
 
