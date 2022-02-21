@@ -17,6 +17,15 @@ if(DEFINED ENV{DOLFIN_ENABLE_MPI4PY})
   set(DOLFIN_ENABLE_MPI4PY $ENV{DOLFIN_ENABLE_MPI4PY})
 endif()
 
+execute_process(
+  COMMAND
+    "${PYTHON_EXECUTABLE}" -c
+    "import pybind11; print(pybind11.get_cmake_dir())"
+  OUTPUT_VARIABLE _tmp_dir
+  OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ECHO STDOUT)
+list(APPEND CMAKE_PREFIX_PATH "${_tmp_dir}")
+
+
 # Find required packages
 find_package(pybind11 REQUIRED CONFIG HINTS ${PYBIND11_DIR} ${PYBIND11_ROOT}
   $ENV{PYBIND11_DIR} $ENV{PYBIND11_ROOT})
@@ -76,6 +85,24 @@ if(DOLFIN_ENABLE_MPI4PY)
   find_package(MPI4PY)
 endif()
 if (MPI4PY_FOUND)
-  target_include_directories(cpp PRIVATE ${MPI4PY_INCLUDE_DIR})
+  # Don't know, but the standard MPI4PY_INCLUDE_DIR doesn't seem to work?
+  execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "import mpi4py, sys; sys.stdout.write(mpi4py.get_include())"
+    OUTPUT_VARIABLE MPI4PY_INCLUDE_DIR1
+  )
+  target_include_directories(cpp PRIVATE ${MPI4PY_INCLUDE_DIR1})
   target_compile_definitions(cpp PRIVATE HAS_PYBIND11_MPI4PY)
+endif()
+
+# scikit-build specific steps
+if (SKBUILD)
+  # Add relative rpath so _gosscpp can find the Goss::goss libray
+  # when the build is relocated
+  if (APPLE)
+    set_target_properties(cpp PROPERTIES INSTALL_RPATH "@loader_path/lib")
+  else()
+    set_target_properties(cpp PROPERTIES INSTALL_RPATH "$ORIGIN/lib")
+  endif()
+
+  install(TARGETS cpp DESTINATION .)
 endif()
