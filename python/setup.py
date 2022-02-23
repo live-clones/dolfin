@@ -14,15 +14,14 @@ if sys.version_info < (3, 5):
     sys.exit(1)
 
 VERSION = "2019.2.0.dev0"
-RESTRICT_REQUIREMENTS = ">=2019.2.0.dev0,<2019.3"
-UFL_RESTRICT_REQUIREMENTS = ">=2021.1.0" # UFL 2019.2.0.dev0 does not exist
 
 REQUIREMENTS = ["numpy",
                 "pkgconfig",
-                "pybind11==2.4.3",
-                "fenics-ffc{}".format(RESTRICT_REQUIREMENTS),
-                "fenics-ufl{}".format(UFL_RESTRICT_REQUIREMENTS),
-                "fenics-dijitso{}".format(RESTRICT_REQUIREMENTS)]
+                "mpi4py",
+                "petsc4py" ,
+                "dev-fenics-ffc",
+                "dev-fenics-ufl",
+                "dev-fenics-dijitso"]
 
 
 class CMakeExtension(Extension):
