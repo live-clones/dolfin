@@ -20,12 +20,7 @@
 #include <vector>
 #include <iomanip>
 #include <boost/cstdint.hpp>
-#include <boost/version.hpp>
-#if BOOST_VERSION < 107300
-  #include <boost/detail/endian.hpp>
-#else
-  #include <boost/predef/other/endian.h>
-#endif
+#include <boost/detail/endian.hpp>
 
 #include "pugixml.hpp"
 
@@ -619,27 +614,14 @@ void VTKFile::vtk_header_open(std::size_t num_vertices, std::size_t num_cells,
   std::string endianness = "";
   if (encode_string == "binary")
   {
-
-    #if BOOST_VERSION < 107300
-      #if defined BOOST_LITTLE_ENDIAN
-        endianness = "byte_order=\"LittleEndian\"";
-      #elif defined BOOST_BIG_ENDIAN
-        endianness = "byte_order=\"BigEndian\"";;
-      #else
-        dolfin_error("VTKFile.cpp",
-            "write data to VTK file",
-            "Unable to determine the endianness of the machine for VTK binary output");
-       #endif
+    #if defined BOOST_LITTLE_ENDIAN
+    endianness = "byte_order=\"LittleEndian\"";
+    #elif defined BOOST_BIG_ENDIAN
+    endianness = "byte_order=\"BigEndian\"";;
     #else
-       #if defined BOOST_ENDIAN_LITTLE_BYTE
-        endianness = "byte_order=\"LittleEndian\"";
-       #elif defined BOOST_ENDIAN_BIG_BYTE
-        endianness = "byte_order=\"BigEndian\"";;
-       #else
-        dolfin_error("VTKFile.cpp",
-                    "write data to VTK file",
-                    "Unable to determine the endianness of the machine for VTK binary output");
-       #endif
+    dolfin_error("VTKFile.cpp",
+                 "write data to VTK file",
+                 "Unable to determine the endianness of the machine for VTK binary output");
     #endif
   }
 

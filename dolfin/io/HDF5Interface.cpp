@@ -282,13 +282,8 @@ bool HDF5Interface::has_group(const hid_t hdf5_file_handle,
   }
 
   H5O_info_t object_info;
-  #if H5_VERS_MINOR < 12
-    H5Oget_info_by_name(hdf5_file_handle, group_name.c_str(), &object_info,
-                        lapl_id);
-  #else
-    H5Oget_info_by_name(hdf5_file_handle, group_name.c_str(), &object_info,
-                        H5O_INFO_BASIC, lapl_id);
-  #endif
+  H5Oget_info_by_name(hdf5_file_handle, group_name.c_str(), &object_info,
+                      lapl_id);
 
   // Close link access properties
   status = H5Pclose(lapl_id);
