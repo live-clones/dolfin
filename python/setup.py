@@ -17,6 +17,7 @@ VERSION = "2019.2.0.dev0"
 
 REQUIREMENTS = ["numpy",
                 "pkgconfig",
+                "pybind11",
                 "mpi4py",
                 "petsc4py" ,
                 "dev-fenics-ffc",

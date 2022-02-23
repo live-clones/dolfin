@@ -21,16 +21,16 @@ execute_process(
   COMMAND
     "${PYTHON_EXECUTABLE}" -c
     "import pybind11; print(pybind11.get_cmake_dir())"
-  OUTPUT_VARIABLE _tmp_dir
-  OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ECHO STDOUT)
+  OUTPUT_VARIABLE _tmp_dir)
 list(APPEND CMAKE_PREFIX_PATH "${_tmp_dir}")
-
 
 # Find required packages
 find_package(pybind11 REQUIRED CONFIG HINTS ${PYBIND11_DIR} ${PYBIND11_ROOT}
   $ENV{PYBIND11_DIR} $ENV{PYBIND11_ROOT})
 find_package(DOLFIN REQUIRED)
 include(${DOLFIN_USE_FILE})
+
+
 
 # Strict compiler flags
 #include(CheckCXXCompilerFlag)
