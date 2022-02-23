@@ -24,12 +24,7 @@
 #include <sstream>
 #include <vector>
 #include <iomanip>
-#include <boost/version.hpp>
-#if BOOST_VERSION < 107300
-  #include <boost/detail/endian.hpp>
-#else
-  #include <boost/predef/other/endian.h>
-#endif
+#include <boost/detail/endian.hpp>
 
 #include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/fem/FiniteElement.h>

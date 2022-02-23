@@ -17,7 +17,7 @@
 //
 // First added:  2014-02-03
 // Last changed: 2017-12-12
-#include <algorithm>
+
 #include <iomanip>
 #include <dolfin/mesh/MeshEntity.h>
 #include "predicates.h"
