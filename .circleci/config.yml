@@ -48,13 +48,6 @@ jobs:
             cd python
             pip3 -v install . --user
       - run:
-          name: Build DOLFIN Python documentation
-          command: cd python/doc && make html
-      - persist_to_workspace:
-          root: /home/fenics/working
-          paths:
-            - python/doc/build/html/
-      - run:
           name: Run Python unit tests (serial)
           command: python3 -m pytest -n 2 python/test/unit/
       - run:
