@@ -93,16 +93,3 @@ if (MPI4PY_FOUND)
   target_include_directories(cpp PRIVATE ${MPI4PY_INCLUDE_DIR1})
   target_compile_definitions(cpp PRIVATE HAS_PYBIND11_MPI4PY)
 endif()
-
-# scikit-build specific steps
-if (SKBUILD)
-  # Add relative rpath so _gosscpp can find the Goss::goss libray
-  # when the build is relocated
-  if (APPLE)
-    set_target_properties(cpp PROPERTIES INSTALL_RPATH "@loader_path/lib")
-  else()
-    set_target_properties(cpp PROPERTIES INSTALL_RPATH "$ORIGIN/lib")
-  endif()
-
-  install(TARGETS cpp DESTINATION .)
-endif()
