@@ -71,13 +71,6 @@ jobs:
           command: python3 -m pytest -v python/demo/test.py --mpiexec=mpiexec --num-proc=3
 workflows:
   version: 2
-  build-and-pushdoc:
+  build:
     jobs:
       - build
-      - pushdoc:
-          requires:
-            - build
-          filters:
-            branches:
-              only:
-                - master
