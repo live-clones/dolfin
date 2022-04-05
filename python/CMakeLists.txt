@@ -17,11 +17,20 @@ if(DEFINED ENV{DOLFIN_ENABLE_MPI4PY})
   set(DOLFIN_ENABLE_MPI4PY $ENV{DOLFIN_ENABLE_MPI4PY})
 endif()
 
+execute_process(
+  COMMAND
+    "${PYTHON_EXECUTABLE}" -c
+    "import pybind11; print(pybind11.get_cmake_dir())"
+  OUTPUT_VARIABLE _tmp_dir)
+list(APPEND CMAKE_PREFIX_PATH "${_tmp_dir}")
+
 # Find required packages
 find_package(pybind11 REQUIRED CONFIG HINTS ${PYBIND11_DIR} ${PYBIND11_ROOT}
   $ENV{PYBIND11_DIR} $ENV{PYBIND11_ROOT})
 find_package(DOLFIN REQUIRED)
 include(${DOLFIN_USE_FILE})
+
+
 
 # Strict compiler flags
 #include(CheckCXXCompilerFlag)

@@ -19,11 +19,12 @@ UFL_RESTRICT_REQUIREMENTS = ">=2021.1.0" # UFL 2019.2.0.dev0 does not exist
 
 REQUIREMENTS = ["numpy",
                 "pkgconfig",
-                "pybind11==2.4.3",
-                "fenics-ffc{}".format(RESTRICT_REQUIREMENTS),
-                "fenics-ufl{}".format(UFL_RESTRICT_REQUIREMENTS),
-                "fenics-dijitso{}".format(RESTRICT_REQUIREMENTS)]
-
+                "pybind11",
+                "mpi4py",
+                "petsc4py" ,
+                "dev-fenics-ffc",
+                "dev-fenics-ufl",
+                "dev-fenics-dijitso"]
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
