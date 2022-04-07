@@ -22,6 +22,7 @@
 # Modified by Cecile Daversin-Catty 2018
 
 import pytest
+import numpy as np
 from dolfin import *
 from ufl.log import UFLException
 
@@ -79,6 +80,14 @@ def unit_marker_3D2D():
     marker = MeshFunction("size_t", cube, cube.topology().dim() - 1, 0)
     for f in facets(cube):
         marker[f] = 0.5 - DOLFIN_EPS < f.midpoint().z() < 0.5 + DOLFIN_EPS
+    return marker
+
+@fixture
+def unit_marker_ext():
+    square = UnitSquareMesh(1, 1)
+    marker = MeshFunction("size_t", square, square.topology().dim()-1, 0)
+    for f in facets(square):
+        marker[f] = abs(f.midpoint().y()) < 1e-10
     return marker
 
 def meshview(marker, i):
@@ -435,3 +444,32 @@ def test_mixed_assembly_diag(unit_marker_2D2D, unit_marker_3D2D):
 
     _compare_solutions(unit_marker_2D2D, [boundary1, boundary2])
     _compare_solutions(unit_marker_3D2D, [boundary, boundary])
+
+
+@skip_in_parallel
+def test_mixed_assembly_rank0(unit_marker_ext):
+    def _compare_solutions(marker):
+        # Meshes
+        mesh = marker.mesh() # The initial parent mesh
+        submesh = meshview(marker,1)
+
+        Vh0 = FunctionSpace(mesh, "Lagrange", 1)
+        Vh1 = FunctionSpace(submesh, "Lagrange", 1)
+
+        v0 = Function(Vh0)
+        m0 = Function(Vh0)
+        m1 = Function(Vh1)
+
+        v0.vector()[:] = np.random.rand(Vh0.dim())
+        m0.vector()[:] = np.ones(Vh0.dim())
+        m1.vector()[:] = np.ones(Vh1.dim())
+
+        ds = Measure("ds", domain=mesh, subdomain_data=marker)
+        f0 = v0 * m0 * ds(1)
+
+        ds1 = Measure("dx", domain=submesh)
+        f1 = v0 * m1 * ds1
+
+        assert abs(assemble(f0) - assemble_mixed(f1)) < 1e-10
+
+    _compare_solutions(unit_marker_ext)
