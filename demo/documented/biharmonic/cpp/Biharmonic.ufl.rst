@@ -1,6 +1,14 @@
 UFL input for the Biharmonic equation
 =====================================
 
+Import required classes::
+
+   from ufl import (avg, CellDiameter, Coefficient,
+                 div, dot, dS, dx,
+                 FacetNormal, FiniteElement, grad,
+                 inner, jump,
+                 TestFunction, TrialFunction, triangle)
+
 The finite element space is defined::
 
    element = FiniteElement("Lagrange", triangle, 2)

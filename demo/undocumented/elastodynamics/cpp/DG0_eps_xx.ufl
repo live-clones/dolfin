@@ -22,6 +22,9 @@
 #
 # Compile this form with FFC: ffc -l dolfin DG0_eps-xx.ufl
 
+from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+                 triangle, TestFunction, TrialFunction)
+
 vector   = VectorElement("Lagrange", triangle, 1)
 constant = FiniteElement("Discontinuous Lagrange", triangle, 0)
 

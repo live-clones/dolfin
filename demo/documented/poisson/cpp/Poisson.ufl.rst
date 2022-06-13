@@ -5,6 +5,10 @@ The first step is to define the variational problem at hand. We define
 the variational problem in UFL terms in a separate form file
 :download:`Poisson.ufl`.  We begin by defining the finite element::
 
+   from ufl import (Coefficient, ds, dx, FiniteElement,
+                    grad, inner,
+                    triangle, TestFunction, TrialFunction)
+   
    element = FiniteElement("Lagrange", triangle, 1)
 
 The first argument to :py:class:`FiniteElement` is the finite element

@@ -1,3 +1,7 @@
+from ufl import (Coefficient, dx, FiniteElement,
+                 inner, grad,
+                 tetrahedron, TestFunction, TrialFunction)
+
 V = FiniteElement("Lagrange", tetrahedron, 1)
 V1 = FiniteElement("Lagrange", tetrahedron, 1)
 V2 = FiniteElement("Lagrange", tetrahedron, 1)

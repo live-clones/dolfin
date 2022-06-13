@@ -23,6 +23,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin EddyCurrents.ufl
 
+from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+                 curl, inner,
+                 tetrahedron, TestFunction, TrialFunction)
+
 EN = FiniteElement("Nedelec 1st kind H(curl)", tetrahedron, 1)
 EL = VectorElement("Lagrange", tetrahedron, 1)
 

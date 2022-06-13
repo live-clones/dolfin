@@ -20,6 +20,9 @@
 #
 # Poisson's equation in 2D for q = 3
 
+from ufl import (Coefficient, dx, FiniteElement, i,
+                 triangle, TestFunction, TrialFunction)
+
 element = FiniteElement("Lagrange", triangle, 3)
 
 v = TestFunction(element)

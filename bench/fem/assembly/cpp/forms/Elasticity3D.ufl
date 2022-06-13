@@ -1,3 +1,7 @@
+from ufl import (dx, VectorElement,
+                 Identity, inner, grad, tr,
+                 tetrahedron, TestFunction, TrialFunction)
+
 element = VectorElement("Lagrange", tetrahedron, 1)
 
 v = TestFunction(element)

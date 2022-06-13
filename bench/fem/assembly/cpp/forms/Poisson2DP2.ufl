@@ -1,3 +1,7 @@
+from ufl import (dx, FiniteElement,
+                 dot, grad,
+                 triangle, TestFunction, TrialFunction)
+
 element = FiniteElement("Lagrange", triangle, 2)
 
 v = TestFunction(element)

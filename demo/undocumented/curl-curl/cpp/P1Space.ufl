@@ -17,4 +17,6 @@
 #
 # Compile this form with FFC: ffc -l dolfin P1Space.ufl
 
+from ufl import (FiniteElement, tetrahedron)
+
 element = FiniteElement("Lagrange", tetrahedron, 1)

@@ -1,3 +1,7 @@
+from ufl import (dx, FiniteElement, VectorElement,
+                 div, grad, inner,
+                 triangle, TestFunctions, TrialFunctions)
+
 vector  = VectorElement("Lagrange", triangle, 2)
 scalar  = FiniteElement("Lagrange", triangle, 1)
 element = vector * scalar

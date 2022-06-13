@@ -23,6 +23,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin NonlinearPoisson.ufl
 
+from ufl import (Coefficient, dx, FiniteElement,
+                 derivative, grad, inner,
+                 triangle, TestFunction, TrialFunction)
+
 element = FiniteElement("Lagrange", triangle, 1)
 
 f  = Coefficient(element)

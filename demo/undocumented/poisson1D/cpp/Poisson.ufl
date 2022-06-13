@@ -23,6 +23,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin Poisson.ufl
 
+from ufl import (Coefficient, ds, dx, FiniteElement,
+                 dot, grad,
+                 interval, TestFunction, TrialFunction)
+
 element = FiniteElement("Lagrange", interval, 1)
 
 u = TrialFunction(element)

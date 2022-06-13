@@ -1,3 +1,7 @@
+from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+                 div, grad, inner,
+                 triangle, TestFunctions, TrialFunctions)
+
 vector  = VectorElement("Lagrange", triangle, 1)
 scalar  = FiniteElement("Discontinuous Lagrange", triangle, 0)
 element = vector * scalar

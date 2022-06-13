@@ -23,6 +23,9 @@
 #
 # Compile this form with FFC: ffc -l dolfin Projection.ufl
 
+from ufl import (Coefficient, dx, FiniteElement,
+                 tetrahedron, TestFunction, TrialFunction)
+
 element = FiniteElement("Lagrange", tetrahedron, 2)
 
 u = TrialFunction(element)

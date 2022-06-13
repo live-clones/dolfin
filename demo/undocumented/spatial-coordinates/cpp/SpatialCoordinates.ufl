@@ -21,6 +21,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin SpatialCoordinates.ufl
 
+from ufl import (ds, dx, FiniteElement,
+                 exp, sin, grad, inner, SpatialCoordinate,
+                 triangle, TestFunction, TrialFunction)
+
 element = FiniteElement("Lagrange", triangle, 2)
 
 u = TrialFunction(element)

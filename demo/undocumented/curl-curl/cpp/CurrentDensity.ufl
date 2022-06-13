@@ -23,6 +23,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin CurrentDensity.ufl
 
+from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+                 curl, dot,
+                 tetrahedron, TestFunction, TrialFunction)
+
 EL = VectorElement("CG", tetrahedron, 1)
 EN = FiniteElement("Nedelec 1st kind H(curl)", tetrahedron, 1)
 

@@ -24,6 +24,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin Stokes.ufl
 
+from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+                 div, dot, grad, inner,
+                 hexahedron, TestFunctions, TrialFunctions)
+
 P2 = VectorElement("Lagrange", hexahedron, 2)
 P1 = FiniteElement("Lagrange", hexahedron, 1)
 TH = P2 * P1
