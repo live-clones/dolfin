@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
+from ufl import (dx, FiniteElement,
+                 grad, inner, triangle,
+                 TestFunction, TrialFunction)
+
 element = FiniteElement("Lagrange", triangle, 1)
 
 v = TestFunction(element)

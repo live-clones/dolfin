@@ -24,6 +24,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin -O -f split CahnHilliard2D.ufl
 
+from ufl import (Coefficient, derivative, diff, dot, dx,
+                 FiniteElement, grad, quadrilateral, split,
+                 TestFunctions, TrialFunction, variable)
+
 cell = quadrilateral
 
 P1 = FiniteElement("Lagrange", cell, 1)

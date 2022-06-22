@@ -20,6 +20,10 @@
 #
 # The bilinear form for a stiffness matrix (Poisson).
 
+from ufl import (Coefficient, dx, FiniteElement,
+                 dot, grad, sin, SpatialCoordinate,
+                 triangle, TestFunction, TrialFunction)
+
 element = FiniteElement("Lagrange", triangle, 1)
 
 x = SpatialCoordinate(triangle)

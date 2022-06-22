@@ -20,6 +20,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin -f split Stokes.ufl
 
+from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+                 div, dot, inner, grad,
+                 tetrahedron, TestFunction, TrialFunction)
+
 P2 = VectorElement("Lagrange", tetrahedron, 2)
 P1 = FiniteElement("Lagrange", tetrahedron, 1)
 

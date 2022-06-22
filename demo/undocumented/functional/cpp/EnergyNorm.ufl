@@ -20,6 +20,9 @@
 #
 # Compile this form with FFC: ffc -l dolfin EnergyNorm.ufl
 
+from ufl import (Coefficient, dx, FiniteElement,
+                 dot, grad, triangle)
+
 element = FiniteElement("Lagrange", triangle, 2)
 
 v = Coefficient(element)

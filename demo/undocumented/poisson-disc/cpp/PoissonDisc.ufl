@@ -25,6 +25,10 @@
 # -laplace u = 1
 # u(r=1) = 0
 
+from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+                 dot, grad, Mesh, SpatialCoordinate,
+                 triangle, TestFunction, TrialFunction, FunctionSpace)
+
 degree = 2
 cell = triangle
 

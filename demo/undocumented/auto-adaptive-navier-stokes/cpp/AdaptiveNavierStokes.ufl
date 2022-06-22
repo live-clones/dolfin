@@ -20,6 +20,11 @@
 #
 # Compile with ffc -e -l dolfin AdaptiveNavierStokes.ufl
 
+from ufl import (Coefficient, ds, dx, FiniteElement, VectorElement,
+                 as_vector, FacetNormal,
+                 div, dot, grad, inner,
+                 triangle, TestFunctions)
+
 cell = triangle
 V = VectorElement("CG", cell, 2)
 Q = FiniteElement("CG", cell, 1)

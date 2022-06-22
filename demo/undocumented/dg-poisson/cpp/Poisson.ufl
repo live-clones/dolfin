@@ -21,6 +21,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin Poisson.ufl
 
+from ufl import (CellDiameter, Coefficient, dS, ds, dx, FiniteElement,
+                 avg, dot, FacetNormal, grad, jump,
+                 triangle, TestFunction, TrialFunction)
+
 # Elements
 element = FiniteElement("Discontinuous Lagrange", triangle, 1)
 

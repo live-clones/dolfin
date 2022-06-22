@@ -1,3 +1,7 @@
+from ufl import (Cell, Coefficient, dx, FiniteElement,
+                 inner, grad,
+                 tetrahedron, TestFunction, TrialFunction)
+
 intervalIn3D = Cell("interval", 3)
 V1 = FiniteElement("Lagrange", tetrahedron, 1)
 V2 = FiniteElement("Lagrange", intervalIn3D, 1)

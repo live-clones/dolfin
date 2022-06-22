@@ -22,6 +22,11 @@
 #
 # Compile this form with FFC: ffc -l dolfin Conditional.ufl
 
+from ufl import (dx, FiniteElement,
+                 conditional, ge, le, SpatialCoordinate,
+                 grad, inner,
+                 triangle, TestFunction, TrialFunction)
+
 element = FiniteElement("Lagrange", triangle, 2)
 
 u = TrialFunction(element)

@@ -24,6 +24,10 @@
 # The bilinear form for classical linear elasticity (Navier).
 # Compile this form with FFC: ffc -l dolfin Elasticity.ufl
 
+from ufl import (Coefficient, dx, FiniteElement, VectorElement, TensorElement,
+                 dot, FacetNormal, inner, grad, Identity, tr,
+                 tetrahedron, TestFunction, TrialFunction)
+
 cell = tetrahedron
 element = VectorElement("Lagrange", cell, 1)
 R = FiniteElement("Real", cell, 0)

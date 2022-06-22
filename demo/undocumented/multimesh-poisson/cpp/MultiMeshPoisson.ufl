@@ -23,6 +23,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin MultiMeshPoisson.ufl.
 
+from ufl import (Circumradius, Coefficient, dI, dO, dX, dx, FiniteElement,
+                 avg, dot, FacetNormal, grad, jump,
+                 triangle, TestFunction, TrialFunction)
+
 # Define element
 element = FiniteElement("Lagrange", triangle, 1)
 

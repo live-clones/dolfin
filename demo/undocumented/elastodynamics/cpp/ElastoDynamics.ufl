@@ -23,6 +23,10 @@
 #
 # Compile this form with FFC: ffc -l dolfin ElastoDynamics.ufl.
 
+from ufl import (Coefficient, ds, dx, FiniteElement, VectorElement,
+                 Identity, inner, grad, tr, sym,
+                 triangle, TestFunction, TrialFunction)
+
 element = VectorElement("Lagrange", triangle, 1)
 DG0     = FiniteElement("Discontinuous Lagrange", triangle, 0)
 
