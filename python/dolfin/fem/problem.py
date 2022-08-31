@@ -91,8 +91,8 @@ class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
             L = L_tmp
 
         # Check number of blocks in lhs, rhs are consistent
-        assert(len(a) == len(u) * len(u))
-        assert(len(L) == len(u))
+        assert len(a) == len(u) * len(u)
+        assert len(L) == len(u)
 
         # Create list of forms/blocks
         a_list = list()
@@ -196,8 +196,8 @@ class MixedNonlinearVariationalProblem(cpp.fem.MixedNonlinearVariationalProblem)
             F = F_tmp
 
         # Check number of blocks in the residual and solution are coherent
-        assert(len(J) == len(u) * len(u))
-        assert(len(F) == len(u))
+        assert len(J) == len(u) * len(u)
+        assert len(F) == len(u)
 
         # Create list of forms/blocks
         F_list = list()

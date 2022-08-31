@@ -430,7 +430,7 @@ class Function(ufl.Coefficient):
             else:
                 multi_index = None
             linear_comb = _check_and_contract_linear_comb(rhs, self, multi_index)
-            assert(linear_comb)
+            assert linear_comb
 
             # If the assigned Function lives in a different FunctionSpace
             # we cannot operate on this function directly
