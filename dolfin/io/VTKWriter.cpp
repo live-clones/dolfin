@@ -24,7 +24,8 @@
 #include <sstream>
 #include <vector>
 #include <iomanip>
-#include <boost/detail/endian.hpp>
+// #include <boost/detail/endian.hpp>
+#include <boost/predef/other/endian.h>
 
 #include <dolfin/fem/GenericDofMap.h>
 #include <dolfin/fem/FiniteElement.h>
