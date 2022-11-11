@@ -1915,7 +1915,7 @@ void XDMFFile::add_data_item(MPI_Comm comm, pugi::xml_node& xml_node,
     const boost::filesystem::path p(hdf5_filename);
 
     // Add HDF5 filename and HDF5 internal path to XML file
-    const std::string xdmf_path = p.filename().string() + ":" + h5_path;
+    const std::string xdmf_path = std::string(p.filename().c_str()) + ":" + h5_path;
     data_item_node.append_child(pugi::node_pcdata).set_value(xdmf_path.c_str());
 
     // Compute total number of items and check for consistency with shape

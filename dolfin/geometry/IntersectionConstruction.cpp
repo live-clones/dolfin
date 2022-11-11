@@ -27,6 +27,7 @@
 #include "CollisionPredicates.h"
 #include "IntersectionConstruction.h"
 #include "CGALExactArithmetic.h"
+#include <algorithm>
 
 using namespace dolfin;
 
