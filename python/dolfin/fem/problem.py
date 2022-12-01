@@ -216,7 +216,6 @@ class MixedNonlinearVariationalProblem(cpp.fem.MixedNonlinearVariationalProblem)
                     else:
                         Fs.append(Form(Fsub, form_compiler_parameters=form_compiler_parameters))
                 F_list.append(Fs)
-        print("[problem] create list of residual forms OK")
 
         J_list = None
         if J is not None:
@@ -231,7 +230,6 @@ class MixedNonlinearVariationalProblem(cpp.fem.MixedNonlinearVariationalProblem)
                     for Jsub in sub_forms_by_domain(Ji):
                         Js.append(Form(Jsub, form_compiler_parameters=form_compiler_parameters))
                     J_list.append(Js)
-        print("[problem] create list of jacobian forms OK, J_list size = ", len(J_list))
 
         # Initialize C++ base class
         cpp.fem.MixedNonlinearVariationalProblem.__init__(self, F_list, u_comps, bcs, J_list)
