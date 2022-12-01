@@ -147,13 +147,13 @@ def _time_dependent_expressions(rhs_form, time):
 
 def _replace_dict_time_dependent_expression(time_dep_expressions, time,
                                             dt, c):
-    assert(isinstance(c, float))
+    assert (isinstance(c, float))
     replace_dict = {}
     if c == 0.0 or not time_dep_expressions:
         return replace_dict
     new_time = Expression("time + c*dt", time=time, c=c, dt=dt, degree=0)
     for expr, c_names in list(time_dep_expressions.items()):
-        assert(isinstance(expr, Expression))
+        assert (isinstance(expr, Expression))
         kwargs = dict(name=expr.name(), label=expr.label(),
                       element=expr.ufl_element(), **expr._user_parameters)
         for c_name in c_names:

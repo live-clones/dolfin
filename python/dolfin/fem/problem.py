@@ -91,8 +91,8 @@ class MixedLinearVariationalProblem(cpp.fem.MixedLinearVariationalProblem):
             L = L_tmp
 
         # Check number of blocks in lhs, rhs are consistent
-        assert(len(a) == len(u) * len(u))
-        assert(len(L) == len(u))
+        assert (len(a) == len(u) * len(u))
+        assert (len(L) == len(u))
 
         # Create list of forms/blocks
         a_list = list()
@@ -196,8 +196,8 @@ class MixedNonlinearVariationalProblem(cpp.fem.MixedNonlinearVariationalProblem)
             F = F_tmp
 
         # Check number of blocks in the residual and solution are coherent
-        assert(len(J) == len(u) * len(u))
-        assert(len(F) == len(u))
+        assert (len(J) == len(u) * len(u))
+        assert (len(F) == len(u))
 
         # Create list of forms/blocks
         F_list = list()
@@ -216,7 +216,6 @@ class MixedNonlinearVariationalProblem(cpp.fem.MixedNonlinearVariationalProblem)
                     else:
                         Fs.append(Form(Fsub, form_compiler_parameters=form_compiler_parameters))
                 F_list.append(Fs)
-        print("[problem] create list of residual forms OK")
 
         J_list = None
         if J is not None:
@@ -231,7 +230,6 @@ class MixedNonlinearVariationalProblem(cpp.fem.MixedNonlinearVariationalProblem)
                     for Jsub in sub_forms_by_domain(Ji):
                         Js.append(Form(Jsub, form_compiler_parameters=form_compiler_parameters))
                     J_list.append(Js)
-        print("[problem] create list of jacobian forms OK, J_list size = ", len(J_list))
 
         # Initialize C++ base class
         cpp.fem.MixedNonlinearVariationalProblem.__init__(self, F_list, u_comps, bcs, J_list)
