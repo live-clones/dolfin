@@ -41,7 +41,7 @@ Mesh MeshView::create(const MeshFunction<std::size_t>& marker,
   }
 
   // Create a new Mesh of dimension tdim
-  Mesh new_mesh;
+  Mesh new_mesh(mesh->mpi_comm());
   MeshEditor editor;
   editor.open(new_mesh, mesh->type().entity_type(tdim), tdim,
               mesh->geometry().dim());
