@@ -1,6 +1,13 @@
 Change log
 ==========
 
+
+2023.1.0
+--------
+
+- Add support for mixed-dimensional problems
+- Various bug-fixes and build issues
+
 2019.2.0.dev0
 -------------
 

@@ -13,18 +13,18 @@ if sys.version_info < (3, 5):
     print("Python 3.5 or higher required, please upgrade.")
     sys.exit(1)
 
-VERSION = "2019.2.0.dev0"
-RESTRICT_REQUIREMENTS = ">=2019.2.0.dev0,<2019.3"
-UFL_RESTRICT_REQUIREMENTS = ">=2021.1.0" # UFL 2019.2.0.dev0 does not exist
+VERSION = "2023.1.0"
+RESTRICT_REQUIREMENTS = ">2019.1.0"
+UFL_RESTRICT_REQUIREMENTS = ">2019.1.0,<2022.1.0"
 
 REQUIREMENTS = ["numpy",
                 "pkgconfig",
                 "pybind11",
                 "mpi4py",
                 "petsc4py" ,
-                "dev-fenics-ffc",
-                "dev-fenics-ufl",
-                "dev-fenics-dijitso"]
+                f"fenics-ffc{RESTRICT_REQUIREMENTS}",
+                f"fenics-ufl{UFL_RESTRICT_REQUIREMENTS}",
+                f"fenics-dijitso{RESTRICT_REQUIREMENTS}"]
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
