@@ -2134,10 +2134,10 @@ std::vector<T> XDMFFile::compute_value_data(const MeshFunction<T>& meshfunction)
 
   if (MPI::size(comm) == 1 or cell_dim == tdim)
   {
-    // FIXME: fail with ghosts?
-    value_data.resize(meshfunction.size());
+    const std::size_t num_cells_local =  mesh->topology().ghost_offset(cell_dim);
+    value_data.resize( num_cells_local);
     std::copy(meshfunction.values(),
-              meshfunction.values() + meshfunction.size(),
+              meshfunction.values() + num_cells_local,
               value_data.begin());
   }
   else
