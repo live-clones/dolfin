@@ -1,4 +1,4 @@
-from ufl import (dx, FiniteElement,
+from ufl_legacy import (dx, FiniteElement,
                  dot, grad,
                  triangle, TestFunction, TrialFunction)
 

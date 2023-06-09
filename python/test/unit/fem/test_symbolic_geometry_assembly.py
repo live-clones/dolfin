@@ -1,11 +1,11 @@
 from dolfin import *
-import ufl
+import ufl_legacy as ufl
 import numpy
 import sys
 import pytest
 from dolfin_utils.test import set_parameters_fixture, skip_in_parallel, fixture
 
-from ufl.classes import CellOrientation, CellNormal, CellCoordinate, \
+from ufl_legacy.classes import CellOrientation, CellNormal, CellCoordinate, \
 CellOrigin, Jacobian, JacobianInverse, JacobianDeterminant
 
 # This was for debugging, don't enable this permanently here in tests

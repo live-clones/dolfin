@@ -24,7 +24,7 @@ b"""Unit tests for the FunctionSpace class"""
 
 import pytest
 from dolfin import *
-from ufl.log import UFLException
+from ufl_legacy.log import UFLException
 from dolfin_utils.test import fixture
 
 

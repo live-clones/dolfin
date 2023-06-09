@@ -20,7 +20,7 @@
 #
 # Poisson's equation in 3D for q = 4
 
-from ufl import (Coefficient, dx, FiniteElement, i,
+from ufl_legacy import (Coefficient, dx, FiniteElement, i,
                  tetrahedron, TestFunction, TrialFunction)
 
 element = FiniteElement("Lagrange", tetrahedron, 4)

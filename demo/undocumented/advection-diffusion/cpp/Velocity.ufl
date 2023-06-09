@@ -22,6 +22,6 @@
 #
 # Compile this form with FFC: ffc -l dolfin Velocity.form
 
-from ufl import (VectorElement, triangle)
+from ufl_legacy import (VectorElement, triangle)
 
 element = VectorElement("Lagrange", triangle, 2)

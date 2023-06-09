@@ -109,7 +109,7 @@ def f(mesh):
 
 
 def test_UFLCell(interval, square, rectangle, cube, box):
-    import ufl
+    import ufl_legacy as ufl
     assert ufl.interval == interval.ufl_cell()
     assert ufl.triangle == square.ufl_cell()
     assert ufl.triangle == rectangle.ufl_cell()
@@ -118,7 +118,7 @@ def test_UFLCell(interval, square, rectangle, cube, box):
 
 
 def test_UFLDomain(interval, square, rectangle, cube, box):
-    import ufl
+    import ufl_legacy as ufl
 
     def _check_ufl_domain(mesh):
         domain = mesh.ufl_domain()

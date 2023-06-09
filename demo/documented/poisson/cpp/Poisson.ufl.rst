@@ -5,7 +5,7 @@ The first step is to define the variational problem at hand. We define
 the variational problem in UFL terms in a separate form file
 :download:`Poisson.ufl`.  We begin by defining the finite element::
 
-   from ufl import (Coefficient, ds, dx, FiniteElement,
+   from ufl_legacy import (Coefficient, ds, dx, FiniteElement,
                     grad, inner,
                     triangle, TestFunction, TrialFunction)
    

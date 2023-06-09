@@ -20,7 +20,7 @@
 #
 # Linear form the action of a simple reaction-diffusion problem
 
-from ufl import (Coefficient, dot, dx, FiniteElement, grad,
+from ufl_legacy import (Coefficient, dot, dx, FiniteElement, grad,
                  TestFunction, TrialFunction, triangle)
 
 V = FiniteElement("Lagrange", triangle, 1)

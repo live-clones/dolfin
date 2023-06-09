@@ -22,8 +22,8 @@
 import pytest
 import numpy as np
 from dolfin import *
-from ufl import replace
-from ufl.log import UFLException
+from ufl_legacy import replace
+from ufl_legacy.log import UFLException
 from dolfin_utils.test import skip_in_parallel
 
 def test_first_shape_derivative():

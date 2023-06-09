@@ -18,7 +18,7 @@
 
 
 from dolfin import *
-import ufl
+import ufl_legacy as ufl
 import os
 
 exit(0)
