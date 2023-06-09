@@ -20,9 +20,9 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-import ufl
-from ufl.classes import ComponentTensor, Sum, Product, Division
-from ufl.utils.indexflattening import shape_to_strides, flatten_multiindex
+import ufl_legacy as ufl
+from ufl_legacy.classes import ComponentTensor, Sum, Product, Division
+from ufl_legacy.utils.indexflattening import shape_to_strides, flatten_multiindex
 import dolfin.cpp as cpp
 import dolfin.la as la
 from dolfin.function.functionspace import FunctionSpace, MixedFunctionSpace
@@ -39,9 +39,9 @@ def _check_mul_and_division(e, linear_comb, scalar_weight=1.0, multi_index=None)
     Utility func for checking division and multiplication of a Function
     with scalars in linear combinations of Functions
     """
-    from ufl.constantvalue import ScalarValue
-    from ufl.classes import ComponentTensor, MultiIndex, Indexed
-    from ufl.algebra import Division, Product, Sum
+    from ufl_legacy.constantvalue import ScalarValue
+    from ufl_legacy.classes import ComponentTensor, MultiIndex, Indexed
+    from ufl_legacy.algebra import Division, Product, Sum
     # ops = e.ufl_operands
 
     # FIXME: What should be checked!?
@@ -114,7 +114,7 @@ def _check_and_extract_functions(e, linear_comb=None, scalar_weight=1.0,
     Utility func for extracting Functions and scalars in linear
     combinations of Functions
     """
-    from ufl.classes import ComponentTensor, Sum, Product, Division
+    from ufl_legacy.classes import ComponentTensor, Sum, Product, Division
     linear_comb = linear_comb or []
 
     # First check u

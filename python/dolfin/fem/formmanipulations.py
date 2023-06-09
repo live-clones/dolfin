@@ -16,11 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-import ufl
-import ufl.algorithms.elementtransformations
-import ufl.algorithms.formsplitter
+import ufl_legacy as ufl
+from ufl_legacy.algorithms import elementtransformations, formsplitter
 
-from ufl.geometry import SpatialCoordinate
+from ufl_legacy.geometry import SpatialCoordinate
 from dolfin.function.functionspace import FunctionSpace
 from dolfin.function.function import Function
 from dolfin.function.argument import Argument
@@ -101,7 +100,7 @@ def increase_order(V):
 
     """
     mesh = V.mesh()
-    element = ufl.algorithms.elementtransformations.increase_order(V.ufl_element())
+    element = elementtransformations.increase_order(V.ufl_element())
     constrained_domain = V.dofmap().constrained_domain
     return FunctionSpace(mesh, element, constrained_domain=constrained_domain)
 
@@ -113,7 +112,7 @@ def change_regularity(V, family):
 
     """
     mesh = V.mesh()
-    element = ufl.algorithms.elementtransformations.change_regularity(V.ufl_element(), family)
+    element = elementtransformations.change_regularity(V.ufl_element(), family)
     constrained_domain = V.dofmap().constrained_domain
     return FunctionSpace(mesh, element, constrained_domain=constrained_domain)
 
@@ -127,4 +126,4 @@ def tear(V):
 
 
 def extract_blocks(form, i=None, j=None):
-    return ufl.algorithms.formsplitter.extract_blocks(form, i, j)
+    return formsplitter.extract_blocks(form, i, j)

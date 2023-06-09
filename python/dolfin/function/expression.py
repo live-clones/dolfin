@@ -9,9 +9,9 @@
 
 import types
 import numpy
-import ufl
-from ufl import product
-from ufl.utils.indexflattening import (flatten_multiindex,
+import ufl_legacy as ufl
+from ufl_legacy import product
+from ufl_legacy.utils.indexflattening import (flatten_multiindex,
                                        shape_to_strides)
 import dolfin.cpp as cpp
 import dolfin.function.jit as jit

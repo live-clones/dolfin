@@ -7,7 +7,7 @@
 # either version 3 of the License, or (at your option) any later
 # version.
 
-import ufl
+import ufl_legacy as ufl
 import dolfin.cpp as cpp
 from dolfin.jit.jit import dolfin_pc, ffc_jit
 

@@ -1,4 +1,4 @@
-import ufl
+import ufl_legacy as ufl
 
 
 def ufl_cell(mesh):

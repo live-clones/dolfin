@@ -23,7 +23,7 @@ PointIntegralSolver
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import functools
-import ufl
+import ufl_legacy as ufl
 
 from dolfin.function.constant import Constant
 from dolfin.function.function import Function
@@ -37,8 +37,8 @@ from dolfin.multistage.multistagescheme import (MultiStageScheme,
 from dolfin import DOLFIN_EPS
 from dolfin import TrialFunction
 
-import ufl.algorithms
-from ufl.algorithms import (expand_derivatives, expand_indices,
+import ufl_legacy.algorithms
+from ufl_legacy.algorithms import (expand_derivatives, expand_indices,
                             extract_coefficients)
 
 

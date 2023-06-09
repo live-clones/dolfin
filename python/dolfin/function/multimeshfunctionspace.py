@@ -6,7 +6,7 @@
 # either version 3 of the License, or (at your option) any later
 # version.
 
-import ufl
+import ufl_legacy as ufl
 import dolfin.cpp as cpp
 from dolfin.function.functionspace import FunctionSpace
 
