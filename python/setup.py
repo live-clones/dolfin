@@ -22,9 +22,9 @@ REQUIREMENTS = ["numpy",
                 "pybind11",
                 "mpi4py",
                 "petsc4py" ,
-                "dev-fenics-ffc",
-                "dev-fenics-ufl",
-                "dev-fenics-dijitso"]
+                "fenics-ffc",
+                "fenics-ufl",
+                "fenics-dijitso"]
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
