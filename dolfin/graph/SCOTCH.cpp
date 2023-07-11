@@ -187,8 +187,9 @@ void SCOTCH::compute_reordering(const Graph& graph,
 
   // Compute re-ordering
   Timer timer2("SCOTCH: call SCOTCH_graphOrder");
-  if (SCOTCH_graphOrder(&scotch_graph, &strat, permutation_indices.data(),
-                        inverse_permutation_indices.data(), NULL, NULL, NULL))
+  // NOTE: Cannot call graphOrder with an empty graph
+  if ((vertnbr > 0) && (SCOTCH_graphOrder(&scotch_graph, &strat, permutation_indices.data(),
+                                          inverse_permutation_indices.data(), NULL, NULL, NULL)))
   {
     dolfin_error("SCOTCH.cpp",
                  "re-order graph using SCOTCH",
