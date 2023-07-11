@@ -510,25 +510,30 @@ void Mesh::build_mapping(std::shared_ptr<const Mesh> other) const
   std::vector<std::size_t> current_cell_map = this->topology().mapping()[parent_id]->cell_map();
   std::vector<std::size_t> other_cell_map = other->topology().mapping()[parent_id]->cell_map();
   std::vector<std::size_t> new_vertex_map;
-  std::vector<std::size_t> new_cell_map(current_cell_map.size());
+  std::vector<std::size_t> new_cell_map;
+  new_cell_map.reserve(current_cell_map.size());
+
+  // Check if child mesh has no cells on process
+  bool empty_child_mesh = (other_cell_map.size() == 0);
 
   std::vector<std::size_t>::iterator found;
   // Build the new mapping current <-> other from the common parent (cell_map only)
-  for(std::size_t i=0; i<new_cell_map.size(); ++i)
+
+  for (std::size_t i = 0; i < current_cell_map.size(); ++i)
   {
     bool new_idx_found = false;
     // Co-dimension 0
-    if(this->topology().dim() == other->topology().dim())
+    if (this->topology().dim() == other->topology().dim())
     {
       found = std::find(other_cell_map.begin(), other_cell_map.end(), current_cell_map[i]);
-      if(found != other_cell_map.end())
+      if (found != other_cell_map.end())
       {
-	new_idx_found = true;
-	new_cell_map[i] = found - other_cell_map.begin();
+        new_idx_found = true;
+        new_cell_map.push_back(found - other_cell_map.begin());
       }
     }
     // Co-dimension 1
-    else if(this->topology().dim() == other->topology().dim() - 1)
+    else if (this->topology().dim() == other->topology().dim() - 1)
     {
       // current_cell_map[i] is the index of a facet in the parent mesh.
       // We need to find the entities of dimension dim(other) = dim(current) + 1
@@ -540,31 +545,30 @@ void Mesh::build_mapping(std::shared_ptr<const Mesh> other) const
       this->topology().mapping()[parent_id]->mesh()->init(D);
       this->topology().mapping()[parent_id]->mesh()->init(D - 1, D);
       other->init(this->topology().dim());
-
       // Find a cell in <other> owning mesh_facet
-      for(std::size_t j=0; j<mesh_facet.num_entities(D); j++)
+      for (std::size_t j = 0; j < mesh_facet.num_entities(D); j++)
       {
-	Cell mesh_cell(*(this->topology().mapping()[parent_id]->mesh()), mesh_facet.entities(other->topology().dim())[j]);
+        Cell mesh_cell(*(this->topology().mapping()[parent_id]->mesh()), mesh_facet.entities(other->topology().dim())[j]);
         found = std::find(other_cell_map.begin(), other_cell_map.end(), mesh_cell.index());
-	if(found != other_cell_map.end())
-	{
-	  auto position = found - other_cell_map.begin();
-	  Cell other_mesh_cell(*(other), position);
-	  // Find which facet of this cell is the one we are looking for
-	  for(std::size_t k=0; k<other_mesh_cell.num_entities(this->topology().dim()); k++)
-	  {
-	    // NOTE : Comparison based on midpoint coordinates
-	    // Is it still ok with very small mesh size ?
-	    Facet other_mesh_facet(*(other), other_mesh_cell.entities(this->topology().dim())[k]);
-	    if(other_mesh_facet.midpoint() == mesh_facet.midpoint())
-	    {
-	      new_idx_found = true;
-	      new_cell_map[i] = other_mesh_cell.entities(this->topology().dim())[k];
-	      break;
-	    }
-	  }
-	  break;
-	}
+        if (found != other_cell_map.end())
+        {
+          auto position = found - other_cell_map.begin();
+          Cell other_mesh_cell(*(other), position);
+          // Find which facet of this cell is the one we are looking for
+          for (std::size_t k = 0; k < other_mesh_cell.num_entities(this->topology().dim()); k++)
+          {
+            // NOTE : Comparison based on midpoint coordinates
+            // Is it still ok with very small mesh size ?
+            Facet other_mesh_facet(*(other), other_mesh_cell.entities(this->topology().dim())[k]);
+            if (other_mesh_facet.midpoint() == mesh_facet.midpoint())
+            {
+              new_idx_found = true;
+              new_cell_map.push_back(other_mesh_cell.entities(this->topology().dim())[k]);
+              break;
+            }
+          }
+          break;
+        }
       }
     }
     else
@@ -573,10 +577,12 @@ void Mesh::build_mapping(std::shared_ptr<const Mesh> other) const
                   "The dimension of the mesh given as parameter (%d) cannot be lower than the dimension of the current mesh (%d)",
                   other->topology().dim(), this->topology().dim());
 
-    if(!new_idx_found)
+    if ((!empty_child_mesh) && (!new_idx_found))
+    {
       std::cout << "Error in building the mapping ("
-		<< this->id() << ", " << other->id() << ") :"
-		<< "Index not found." << std::endl;
+                << this->id() << ", " << other->id() << ") :"
+                << "Index not found." << std::endl;
+    }
   }
   this->_topology.add_mapping(std::make_pair(other->id(), std::make_shared<MeshView>(other, new_vertex_map, new_cell_map)));
 }
