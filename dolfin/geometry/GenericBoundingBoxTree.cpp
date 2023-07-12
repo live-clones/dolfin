@@ -101,7 +101,8 @@ void GenericBoundingBoxTree::build(const Mesh& mesh, std::size_t tdim)
     leaf_partition[i] = i;
 
   // Recursively build the bounding box tree from the leaves
-  _build(leaf_bboxes, leaf_partition.begin(), leaf_partition.end(), _gdim);
+  if (num_leaves >0)
+    _build(leaf_bboxes, leaf_partition.begin(), leaf_partition.end(), _gdim);
 
   log(PROGRESS,
       "Computed bounding box tree with %d nodes for %d entities.",
@@ -111,8 +112,11 @@ void GenericBoundingBoxTree::build(const Mesh& mesh, std::size_t tdim)
   if (mpi_size > 1)
   {
     // Send root node coordinates to all processes
-    std::vector<double> send_bbox(_bbox_coordinates.end() - _gdim*2,
-                                  _bbox_coordinates.end());
+    // Set all values to initially be infinitely far away to deal with 0 cells case
+    std::vector<double> send_bbox(_gdim*2, std::numeric_limits<double>::max());
+    if (num_leaves > 0)
+      for (std::size_t i=0; i<_gdim*2; ++i)
+       send_bbox[i] = *(_bbox_coordinates.end() - _gdim*2 + i);
     std::vector<double> recv_bbox;
     MPI::all_gather(mesh.mpi_comm(), send_bbox, recv_bbox);
     std::vector<unsigned int> global_leaves(mpi_size);
