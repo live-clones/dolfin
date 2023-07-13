@@ -38,7 +38,7 @@ def create_meshview(mesh_function, value):
         else:
             mesh_view_mf.array()[i] = mesh_function.array()[i]
 
-    mv = dolfin.cpp.mesh.MeshView.create(mesh_view_mf, 1)
+    mv = dolfin.cpp.mesh.MeshView.create(mesh_view_mf, value)
 
     # Create bounding-box tree on all processes to avoid hanging at assembly
     dolfin.cpp.log.set_log_level(dolfin.cpp.log.LogLevel.WARNING)

@@ -33,6 +33,7 @@
 #include <dolfin/graph/BoostGraphOrdering.h>
 #include <dolfin/graph/GraphBuilder.h>
 #include <dolfin/graph/SCOTCH.h>
+#include <dolfin/la/IndexMap.h>
 #include <dolfin/log/log.h>
 #include <dolfin/mesh/DistributedMeshTools.h>
 #include <dolfin/mesh/Facet.h>
@@ -357,8 +358,7 @@ DofMapBuilder::build_sub_map_view(DofMap& sub_dofmap,
     sub_dofmap._ufc_local_to_local = parent_dofmap._ufc_local_to_local;
   else
     sub_dofmap._ufc_local_to_local.clear();
-
-  if (parent_dofmap._ufc_local_to_local.empty())
+  if ((parent_dofmap.index_map()->size(IndexMap::MapSize::OWNED)>0) && (parent_dofmap._ufc_local_to_local.empty()))
   {
     dolfin_error("DofMapBuilder.cpp",
                  "build sub-dofmap view",
