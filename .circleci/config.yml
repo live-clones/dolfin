@@ -22,7 +22,7 @@ jobs:
           name: Install/update python dependencies # Install with sudo as tests not run as superuser in circleci/python
           command: |
             sudo apt-get install python3-pip python3-pybind11
-            sudo pip3 install flake8 pytest pytest-xdist sphinx sphinx_rtd_theme --upgrade
+            pip3 install flake8 pytest pytest-xdist sphinx sphinx_rtd_theme --upgrade
       - run:
           name: Install FEniCS dependencies
           command: |
