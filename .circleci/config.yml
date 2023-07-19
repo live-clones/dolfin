@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/base:current
     working_directory: /home/circleci/fenics
     steps:
       - run:
@@ -12,17 +12,15 @@ jobs:
             sudo apt-get -y upgrade
             sudo apt-get install git-lfs cmake doxygen graphviz
             sudo apt-get install libboost-chrono-dev libboost-dev libboost-filesystem-dev libboost-iostreams-dev libboost-math-dev libboost-mpi-dev libboost-program-options-dev libboost-serialization-dev libboost-thread-dev libboost-timer-dev
-            sudo apt-get install gfortran libeigen3-dev libhdf5-mpi-dev libsuitesparse-dev libscotch-dev libxml2-dev mpi-default-dev
+            sudo apt-get install gfortran libeigen3-dev libhdf5-mpi-dev libsuitesparse-dev libscotch-dev libxml2-dev mpi-default-dev python3-mpi4py
             sudo apt-get install petsc-dev slepc-dev python3-petsc4py python3-slepc4py python3-petsc4py-real python3-slepc4py-real
       - run:
           name: Clone DOLFIN
           command: git lfs clone https://bitbucket.org/"${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}".git .
       - checkout
       - run:
-          name: Install/update python dependencies # Install with sudo as tests not run as superuser in circleci/python
-          command: |
-            sudo apt-get install python3-pip python3-pybind11
-            pip3 install flake8 pytest pytest-xdist sphinx sphinx_rtd_theme --upgrade
+          name: Install/update python dependencies
+          command: sudo apt-get install python3-pip python3-pybind11 python3-flake8 python3-pytest python3-pytest-xdist python3-sphinx python3-sphinx-rtd-theme
       - run:
           name: Install FEniCS dependencies
           command: |
