@@ -7,7 +7,10 @@ jobs:
     steps:
       - run:
           name: Install package dependencies
-          command: sudo apt-get install git-lfs doxygen
+          command: |
+            sudo apt-get update
+            sudo apt-get -y upgrade
+            sudo apt-get install git-lfs doxygen
       - run:
           name: Clone DOLFIN
           command: git lfs clone https://bitbucket.org/"${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}".git .
