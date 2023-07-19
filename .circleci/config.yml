@@ -1,8 +1,8 @@
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
-      - image: quay.io/fenicsproject/dev-env:latest
+      - image: circleci/python:3.8
     working_directory: /home/fenics/working
     steps:
       - run:
@@ -63,7 +63,7 @@ jobs:
           name: Run Python regression tests (MPI)
           command: python3 -m pytest -v python/demo/test.py --mpiexec=mpiexec --num-proc=3
 workflows:
-  version: 2
+  version: 2.1
   build:
     jobs:
       - build
