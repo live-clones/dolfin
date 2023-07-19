@@ -55,6 +55,13 @@ jobs:
           name: Build Python interface
           command: |
             cd python
+            python3 -c "import sys; print(sys.path)"
+            ls -l /home/circleci/.local/lib/python3.10/site-packages/ffc
+            python3 -c "import ffc; print(ffc.__path__)"
+            pip --version
+            pip3 --version
+            which pip
+            which pip3
             pip3 -v install . --user
       - run:
           name: Run Python unit tests (serial)
