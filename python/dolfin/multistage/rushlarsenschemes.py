@@ -39,7 +39,7 @@ from dolfin import TrialFunction
 
 import ufl_legacy.algorithms
 from ufl_legacy.algorithms import (expand_derivatives, expand_indices,
-                            extract_coefficients)
+                                   extract_coefficients)
 
 
 def _rush_larsen_step(rhs_exprs, diff_rhs_exprs, linear_terms,
