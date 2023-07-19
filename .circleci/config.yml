@@ -41,7 +41,7 @@ jobs:
           command: mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDOLFIN_ENABLE_TRILINOS=OFF ../
       - run:
           name: Build DOLFIN and install (C++)
-          command: !
+          command: |
             python3 -c "import sys; print(sys.path)"
             ls -l /home/circleci/.local/lib/python3.10/site-packages/ffc
             python3 -c "import ffc; print(ffc.__path__)"
