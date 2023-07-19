@@ -16,7 +16,7 @@ jobs:
           name: Install FEniCS dependencies
           command: |
             DEP_BRANCH_NAME="master"
-            UFL_DEP_BRANCH_NAME="2021.1.0" # Master branch of UFL is now named main
+            UFL_DEP_BRANCH_NAME="ufl_legacy" # ufl_legacy is UFL 2022
             pip3 install git+https://github.com/FEniCS/fiat.git@"${DEP_BRANCH_NAME}"
             pip3 install git+https://github.com/FEniCS/ufl.git@"${UFL_DEP_BRANCH_NAME}"
             pip3 install git+https://bitbucket.org/fenics-project/dijitso.git@"${DEP_BRANCH_NAME}"
