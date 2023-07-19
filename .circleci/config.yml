@@ -3,7 +3,7 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.8
-    working_directory: /home/fenics/working
+    working_directory: /home/circleci/fenics
     steps:
       - run:
           name: Clone DOLFIN
