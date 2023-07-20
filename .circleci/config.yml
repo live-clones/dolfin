@@ -61,6 +61,11 @@ jobs:
             which pip3
             /usr/bin/python3 -m ffc -V -v
             ffc -V -v
+            ls -l /home/circleci/fenics/dolfin/ale/Poisson2D.ufl
+            cat /home/circleci/fenics/dolfin/ale/Poisson2D.ufl
+            cd /home/circleci/fenics/build/dolfin/ale && /usr/bin/python3 -m ffc -l dolfin -O -r auto -o /home/circleci/fenics/build /home/circleci/fenics/dolfin/ale/Poisson2D.ufl
+            ls -l /home/circleci/fenics/build/*.h
+            head /home/circleci/fenics/build/*.h
             cd build && sudo make -j2 install VERBOSE=1
       - run:
           name: Build and run C++ unit tests (serial)
