@@ -59,6 +59,8 @@ jobs:
             pip3 --version
             which pip
             which pip3
+            /usr/bin/python3 -m ffc -V -v
+            ffc -V -v
             cd build && sudo make -j2 install VERBOSE=1
       - run:
           name: Build and run C++ unit tests (serial)
