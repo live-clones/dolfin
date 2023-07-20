@@ -73,7 +73,7 @@ jobs:
           command: python3 -m pytest -v -n 4 python/demo/test.py
       - run:
           name: Run Python regression tests (MPI)
-          command: python3 -m pytest -v python/demo/test.py --mpiexec=mpiexec --num-proc=3
+          command: python3 -m pytest -v python/demo/test.py --mpiexec=mpiexec --num-proc=3 -k "not contact-vi-snes"
 workflows:
   version: 2.1
   build:
