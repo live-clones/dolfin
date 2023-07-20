@@ -59,7 +59,7 @@ jobs:
             pip3 --version
             which pip
             which pip3
-            cd build && sudo make -j2 install
+            cd build && sudo make -j2 install VERBOSE=1
       - run:
           name: Build and run C++ unit tests (serial)
           command: cd build && make -j2 unittests && ctest -R unittests
