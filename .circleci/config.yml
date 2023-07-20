@@ -38,7 +38,7 @@ jobs:
           command: cd doc && doxygen
       - run:
           name: Configure DOLFIN (C++)
-          command: mkdir -p build && cd build && cmake -DCMAKE_INSTALL_PREFIX=~/.local -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDOLFIN_ENABLE_TRILINOS=OFF ../
+          command: mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDOLFIN_ENABLE_TRILINOS=OFF ../
       - run:
           name: Build DOLFIN and install (C++)
           command: cd build && make -j2 && sudo make -j2 install
