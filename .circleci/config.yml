@@ -20,7 +20,9 @@ jobs:
       - checkout
       - run:
           name: Install/update python dependencies
-          command: sudo apt-get install python3-pip python3-pybind11 python3-flake8 python3-pytest python3-pytest-xdist python3-sphinx python3-sphinx-rtd-theme
+          command: |
+            sudo apt-get install python3-pip python3-pybind11 python3-flake8 python3-sphinx python3-sphinx-rtd-theme
+            sudo apt-get install python3-pytest python3-pytest-xdist python3-decorator python3-matplotlib python3-scipy
       - run:
           name: Install FEniCS dependencies
           command: |
