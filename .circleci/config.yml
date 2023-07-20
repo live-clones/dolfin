@@ -26,10 +26,10 @@ jobs:
           command: |
             DEP_BRANCH_NAME="master"
             UFL_DEP_BRANCH_NAME="ufl_legacy" # ufl_legacy is UFL 2022
-            pip3 install git+https://github.com/FEniCS/fiat.git@"${DEP_BRANCH_NAME}"
-            pip3 install git+https://github.com/FEniCS/ufl.git@"${UFL_DEP_BRANCH_NAME}"
-            pip3 install git+https://bitbucket.org/fenics-project/dijitso.git@"${DEP_BRANCH_NAME}"
-            pip3 install git+https://bitbucket.org/fenics-project/ffc.git@"${DEP_BRANCH_NAME}"
+            pip3 install --user git+https://github.com/FEniCS/fiat.git@"${DEP_BRANCH_NAME}"
+            pip3 install --user git+https://github.com/FEniCS/ufl.git@"${UFL_DEP_BRANCH_NAME}"
+            pip3 install --user git+https://bitbucket.org/fenics-project/dijitso.git@"${DEP_BRANCH_NAME}"
+            pip3 install --user git+https://bitbucket.org/fenics-project/ffc.git@"${DEP_BRANCH_NAME}"
       - run:
           name: Flake8 checks on pybind11 Python code
           command: python3 -m flake8 --append-config=python/setup.cfg python/dolfin
@@ -38,7 +38,7 @@ jobs:
           command: cd doc && doxygen
       - run:
           name: Configure DOLFIN (C++)
-          command: mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDOLFIN_ENABLE_TRILINOS=OFF ../
+          command: mkdir -p build && cd build && cmake -DCMAKE_INSTALL_PREFIX=~/.local -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDOLFIN_ENABLE_TRILINOS=OFF ../
       - run:
           name: Build DOLFIN and install (C++)
           command: |
@@ -67,7 +67,7 @@ jobs:
             cd /home/circleci/fenics
             ls -l /home/circleci/fenics/build/*.h
             head /home/circleci/fenics/build/*.h
-            cd build && sudo make -j2 install VERBOSE=1
+            cd build && make -j2 install VERBOSE=1
       - run:
           name: Build and run C++ unit tests (serial)
           command: cd build && make -j2 unittests && ctest -R unittests
