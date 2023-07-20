@@ -42,15 +42,23 @@ jobs:
       - run:
           name: Build DOLFIN and install (C++)
           command: |
+            python3 --version
             python3 -c "import sys; print(sys.path)"
+            /usr/bin/python3 --version
+            /usr/bin/python3 -c "import sys; print(sys.path)"
+            python --version
+            python -c "import sys; print(sys.path)"
+            /usr/bin/python --version
+            /usr/bin/python -c "import sys; print(sys.path)"
             ls -l /home/circleci/.local/lib/python3.10/site-packages/ffc
             python3 -c "import ffc; print(ffc.__path__)"
+            /usr/bin/python3 -c "import ffc; print(ffc.__path__)"
+            python -c "import ffc; print(ffc.__path__)"
+            /usr/bin/python -c "import ffc; print(ffc.__path__)"
             pip --version
             pip3 --version
             which pip
             which pip3
-            python3 -c "import ffc; print(ffc.__path__)"
-            PYTHONPATH=/home/circleci/.local/lib/python3.10/site-packages python3 -c "import ffc; print(ffc.__path__)"
             cd build && sudo make -j2 install
       - run:
           name: Build and run C++ unit tests (serial)
