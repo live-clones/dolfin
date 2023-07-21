@@ -20,7 +20,7 @@ import os
 
 import dolfin
 import dolfin.cpp as cpp
-import ufl
+import ufl_legacy as ufl
 import numpy as np
 
 __all__ = ['plot']

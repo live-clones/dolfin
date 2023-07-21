@@ -24,7 +24,7 @@
 # The bilinear form for classical linear elasticity (Navier).
 # Compile this form with FFC: ffc -l dolfin Elasticity.ufl
 
-from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+from ufl_legacy import (Coefficient, dx, FiniteElement, VectorElement,
                  grad, inner, Identity, tr,
                  triangle, TestFunction, TrialFunction)
 

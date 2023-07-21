@@ -21,7 +21,7 @@
 # The bilinear form a(phi, v) and linear form L(v) for
 # advection-diffusion. Discontinuous formulation with upwinding.
 
-from ufl import (Coefficient, dS, ds, dx, FiniteElement, VectorElement,
+from ufl_legacy import (Coefficient, dS, ds, dx, FiniteElement, VectorElement,
                  avg, CellDiameter, dot, FacetNormal, grad, jump,
                  triangle, TestFunction, TrialFunction)
 

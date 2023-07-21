@@ -26,7 +26,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin Functionals.ufl
 
-from ufl import (Coefficient, ds, FiniteElement,
+from ufl_legacy import (Coefficient, ds, FiniteElement,
                  FacetNormal, triangle)
 
 cell = triangle

@@ -24,6 +24,8 @@
 #include <vector>
 #include <dolfin/log/log.h>
 
+#include <cstdint>
+
 namespace dolfin
 {
 

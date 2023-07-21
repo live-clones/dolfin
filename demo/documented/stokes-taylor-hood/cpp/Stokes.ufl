@@ -23,7 +23,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin Stokes.ufl
 
-from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+from ufl_legacy import (Coefficient, dx, FiniteElement, VectorElement,
                  div, dot, grad, inner,
                  triangle, TestFunctions, TrialFunctions)
 

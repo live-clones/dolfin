@@ -24,7 +24,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin -O -f split CahnHilliard3D.ufl
 
-from ufl import (Coefficient, derivative, diff, dot, dx,
+from ufl_legacy import (Coefficient, derivative, diff, dot, dx,
                  FiniteElement, grad, split, tetrahedron,
                  TestFunctions, TrialFunction, variable)
 

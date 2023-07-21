@@ -24,7 +24,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin PressureUpdate.ufl.
 
-from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+from ufl_legacy import (Coefficient, dx, FiniteElement, VectorElement,
                  div, grad, inner,
                  triangle, TestFunction, TrialFunction)
 

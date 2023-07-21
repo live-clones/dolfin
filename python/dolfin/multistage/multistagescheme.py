@@ -26,17 +26,17 @@ passed to a RKSolver or PointIntegralSolver
 
 import numpy as np
 import functools
-import ufl
+import ufl_legacy as ufl
 
 import dolfin.cpp as cpp
 from dolfin.function.constant import Constant
 from dolfin.function.expression import Expression
 from dolfin.function.function import Function
 from dolfin.fem.formmanipulations import derivative, adjoint
-from ufl import action as ufl_action
+from ufl_legacy import action as ufl_action
 from dolfin.fem.form import Form
-import ufl.algorithms
-from ufl.algorithms import expand_derivatives
+import ufl_legacy.algorithms
+from ufl_legacy.algorithms import expand_derivatives
 
 # FIXME: Add support for algebraic parts (at least for implicit)
 # FIXME: Add support for implicit/explicit split ala IMEX schemes

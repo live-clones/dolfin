@@ -23,7 +23,7 @@ REQUIREMENTS = ["numpy",
                 "mpi4py",
                 "petsc4py" ,
                 "fenics-ffc",
-                "fenics-ufl",
+                "fenics-ufl-legacy",
                 "fenics-dijitso"]
 
 class CMakeExtension(Extension):

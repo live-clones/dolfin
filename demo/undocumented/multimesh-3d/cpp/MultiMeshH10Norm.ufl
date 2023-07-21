@@ -2,7 +2,7 @@
 
 #M = l2norm(triangle)
 
-from ufl import *
+from ufl_legacy import *
 
 ORDER = 1
 

@@ -9,7 +9,7 @@ We are interested in solving for a discrete vector field in three
 dimensions, so first we need the appropriate finite element space and
 trial and test functions on this space::
 
-    from ufl import (Coefficient, derivative, det, ds, dx,
+    from ufl_legacy import (Coefficient, derivative, det, ds, dx,
                      FiniteElement, grad, Identity, inner, ln,
                      TestFunction, TrialFunction, tr, tetrahedron,
                      VectorElement)

@@ -25,8 +25,8 @@ import dolfin.cpp as cpp
 from dolfin.function.function import Function
 
 # Import UFL
-import ufl
-from ufl.algorithms.ad import expand_derivatives
+import ufl_legacy as ufl
+from ufl_legacy.algorithms.ad import expand_derivatives
 
 # Local imports
 from dolfin.fem.form import Form

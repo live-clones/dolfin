@@ -25,7 +25,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin -feliminate_zeros -fprecompute_basis_const -fprecompute_ip_const HyperElasticity.ufl
 
-from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+from ufl_legacy import (Coefficient, dx, FiniteElement, VectorElement,
                  derivative, det, grad, inner, Identity, ln, tr,
                  triangle, TestFunction, TrialFunction)
 

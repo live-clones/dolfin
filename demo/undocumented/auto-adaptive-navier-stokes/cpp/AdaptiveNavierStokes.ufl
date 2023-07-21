@@ -20,7 +20,7 @@
 #
 # Compile with ffc -e -l dolfin AdaptiveNavierStokes.ufl
 
-from ufl import (Coefficient, ds, dx, FiniteElement, VectorElement,
+from ufl_legacy import (Coefficient, ds, dx, FiniteElement, VectorElement,
                  as_vector, FacetNormal,
                  div, dot, grad, inner,
                  triangle, TestFunctions)

@@ -23,7 +23,7 @@
 import pytest
 from numpy import array
 from dolfin import *
-from ufl import UFLException
+from ufl_legacy import UFLException
 
 def test_name_argument():
     u = Constant(1.0)
@@ -58,7 +58,7 @@ def testConstantInit():
 
 
 def testGrad():
-    import ufl
+    import ufl_legacy as ufl
     zero = ufl.constantvalue.Zero((2, 3))
     c0 = Constant(1.)
     c3 = Constant(array([2, 3]), tetrahedron)

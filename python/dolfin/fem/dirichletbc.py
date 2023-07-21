@@ -7,7 +7,7 @@
 # version.
 
 import types
-import ufl
+import ufl_legacy as ufl
 import dolfin.cpp as cpp
 from dolfin.mesh.subdomain import CompiledSubDomain
 from dolfin.function.constant import Constant

@@ -24,7 +24,7 @@
 import pytest
 import numpy as np
 from dolfin import *
-from ufl.log import UFLException
+from ufl_legacy.log import UFLException
 
 from dolfin_utils.test import skip_in_parallel, fixture
 

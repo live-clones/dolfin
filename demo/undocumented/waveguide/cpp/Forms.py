@@ -19,8 +19,8 @@
 #
 # Compile this form with FFC: ffc -l dolfin Forms.form
 
-from ufl import *
-from ufl.log import set_level
+from ufl_legacy import *
+from ufl_legacy.log import set_level
 from ffc.compiler.compiler import compile
 
 # Set debug level

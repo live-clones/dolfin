@@ -1,6 +1,6 @@
 
 from dolfin.multistage.factorize import extract_tested_expressions, ScalarFactorizer, map_expr_dag
-from ufl import *
+from ufl_legacy import *
 
 def test_scalar_factorizer():
     U = FiniteElement("CG", triangle, 1)
@@ -52,7 +52,7 @@ def test_scalar_factorizer():
         sin(TestFunction(V)[1]),
         ]
 
-    from ufl.classes import Sum, Operator, Expr, Argument
+    from ufl_legacy.classes import Sum, Operator, Expr, Argument
 
     for expr in expressions:
         func = ScalarFactorizer()

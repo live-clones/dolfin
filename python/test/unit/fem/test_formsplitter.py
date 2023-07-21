@@ -26,7 +26,7 @@
 
 import pytest
 from dolfin import *
-from ufl.log import UFLException
+from ufl_legacy.log import UFLException
 
 from dolfin_utils.test import skip_in_parallel, fixture
 from dolfin.fem.assembling import _create_dolfin_form
