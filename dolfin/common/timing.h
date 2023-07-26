@@ -39,7 +39,7 @@ namespace dolfin
   ///
   /// Precision of wall is around 1 microsecond, user and system are around
   /// 10 millisecond (on Linux).
-  enum class TimingType : int32_t { wall = 0, user = 1, system = 2 };
+  enum class TimingType : int { wall = 0, user = 1, system = 2 };
 
   /// Start timing (should not be used internally in DOLFIN!)
   void tic();

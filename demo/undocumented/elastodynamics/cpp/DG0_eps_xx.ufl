@@ -22,7 +22,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin DG0_eps-xx.ufl
 
-from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+from ufl_legacy import (Coefficient, dx, FiniteElement, VectorElement,
                  triangle, TestFunction, TrialFunction)
 
 vector   = VectorElement("Lagrange", triangle, 1)

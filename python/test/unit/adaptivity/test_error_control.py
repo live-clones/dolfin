@@ -18,7 +18,7 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 import pytest
-from ufl.algorithms import replace
+from ufl_legacy.algorithms import replace
 
 from dolfin import *
 from dolfin.fem.adaptivesolving import *

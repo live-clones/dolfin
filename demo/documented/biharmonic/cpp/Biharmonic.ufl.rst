@@ -3,7 +3,7 @@ UFL input for the Biharmonic equation
 
 Import required classes::
 
-   from ufl import (avg, CellDiameter, Coefficient,
+   from ufl_legacy import (avg, CellDiameter, Coefficient,
                  div, dot, dS, dx,
                  FacetNormal, FiniteElement, grad,
                  inner, jump,

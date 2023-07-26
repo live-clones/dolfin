@@ -24,9 +24,9 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
 from math import sqrt
-import ufl
+import ufl_legacy as ufl
 import functools
-from ufl import (grad, div, curl)
+from ufl_legacy import (grad, div, curl)
 import dolfin.cpp as cpp
 from dolfin.fem.assembling import assemble, assemble_multimesh
 from dolfin.fem.interpolation import interpolate

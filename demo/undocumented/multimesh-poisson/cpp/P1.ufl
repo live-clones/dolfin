@@ -23,7 +23,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin P1.ufl
 
-from ufl import (FiniteElement, triangle)
+from ufl_legacy import (FiniteElement, triangle)
 
 element = FiniteElement("Lagrange", triangle, 1)
 

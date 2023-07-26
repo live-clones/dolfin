@@ -1,4 +1,4 @@
-from ufl import (Cell, Coefficient, dx, FiniteElement,
+from ufl_legacy import (Cell, Coefficient, dx, FiniteElement,
                  inner, grad,
                  tetrahedron, TestFunction, TrialFunction)
 

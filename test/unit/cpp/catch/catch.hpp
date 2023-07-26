@@ -6472,6 +6472,17 @@ namespace Catch {
         int id;
         const char* name;
     };
+
+// 32kb for the alternate stack seems to be sufficient. However, this value
+// is experimentally determined, so that's not guaranteed.
+#if defined(_SC_SIGSTKSZ_SOURCE) || defined(_GNU_SOURCE)
+    // on glibc > 2.33 this is no longer constant, see
+    // https://sourceware.org/git/?p=glibc.git;a=blob;f=NEWS;h=85e84fe53699fe9e392edffa993612ce08b2954a;hb=HEAD
+    static constexpr std::size_t altStackSize = 32 * 1024;
+#else
+    static constexpr std::size_t altStackSize = std::max(static_cast<size_t>(SIGSTKSZ), 32 * 1024)
+#endif
+
     extern SignalDefs signalDefs[];
     SignalDefs signalDefs[] = {
             { SIGINT,  "SIGINT - Terminal interrupt signal" },
@@ -6487,7 +6498,7 @@ namespace Catch {
         static bool isSet;
         static struct sigaction oldSigActions [sizeof(signalDefs)/sizeof(SignalDefs)];
         static stack_t oldSigStack;
-        static char altStackMem[SIGSTKSZ];
+        static char altStackMem[altStackSize];
 
         static void handleSignal( int sig ) {
             std::string name = "<unknown signal>";
@@ -6507,7 +6518,7 @@ namespace Catch {
             isSet = true;
             stack_t sigStack;
             sigStack.ss_sp = altStackMem;
-            sigStack.ss_size = SIGSTKSZ;
+            sigStack.ss_size = altStackSize;
             sigStack.ss_flags = 0;
             sigaltstack(&sigStack, &oldSigStack);
             struct sigaction sa = { 0 };
@@ -6538,7 +6549,7 @@ namespace Catch {
     bool FatalConditionHandler::isSet = false;
     struct sigaction FatalConditionHandler::oldSigActions[sizeof(signalDefs)/sizeof(SignalDefs)] = {};
     stack_t FatalConditionHandler::oldSigStack = {};
-    char FatalConditionHandler::altStackMem[SIGSTKSZ] = {};
+    char FatalConditionHandler::altStackMem[altStackSize] = {};
 
 } // namespace Catch
 

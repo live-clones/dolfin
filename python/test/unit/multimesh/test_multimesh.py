@@ -24,7 +24,7 @@
 
 import pytest
 from dolfin import *
-import ufl
+import ufl_legacy as ufl
 import numpy
 
 from dolfin_utils.test import fixture, skip_in_parallel

@@ -19,7 +19,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin Forms.form
 
-from ufl import (dx, Dx, FiniteElement, inner,
+from ufl_legacy import (dx, Dx, FiniteElement, inner,
                  triangle, TestFunction, TrialFunction)
 
 element = FiniteElement("Nedelec 1st kind H(curl)", triangle, 3)

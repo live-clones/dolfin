@@ -23,7 +23,7 @@
 #
 # Compile these forms with FFC: ffc -l dolfin Poisson.ufl
 
-from ufl import (Coefficient, dot, dx, FiniteElement, grad,
+from ufl_legacy import (Coefficient, dot, dx, FiniteElement, grad,
                  TestFunction, TrialFunction, tetrahedron)
 
 element = FiniteElement("Lagrange", tetrahedron, 1)

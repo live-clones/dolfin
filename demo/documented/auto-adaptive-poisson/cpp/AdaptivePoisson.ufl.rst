@@ -3,7 +3,7 @@ UFL input for the auto adaptive Poisson problem
 
 UFL code::
 
-  from ufl import (Coefficient, dot, ds, dx, FiniteElement, grad,
+  from ufl_legacy import (Coefficient, dot, ds, dx, FiniteElement, grad,
                    TestFunction, TrialFunction, triangle)
 
   element = FiniteElement("CG", triangle, 1)

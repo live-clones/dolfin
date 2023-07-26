@@ -26,12 +26,12 @@ component.
 # First added:  2014-11-28
 # Last changed: 2014-11-28
 
-# from ufl import *
-from ufl import as_ufl
-from ufl.corealg.multifunction import MultiFunction
-from ufl.corealg.map_dag import map_expr_dag
-from ufl.classes import Argument, FixedIndex
-from ufl.log import error as ufl_error
+# from ufl_legacy import *
+from ufl_legacy import as_ufl
+from ufl_legacy.corealg.multifunction import MultiFunction
+from ufl_legacy.corealg.map_dag import map_expr_dag
+from ufl_legacy.classes import Argument, FixedIndex
+from ufl_legacy.log import error as ufl_error
 
 __all__ = ["extract_tested_expressions"]
 

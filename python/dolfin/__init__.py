@@ -198,8 +198,8 @@ from .multistage.multistagescheme import (RK4, CN2, CrankNicolson,
 from .multistage.multistagesolvers import PointIntegralSolver, RKSolver
 from .multistage.rushlarsenschemes import RL1, RL2, GRL1, GRL2
 
-# Import from ufl
-from ufl import (FiniteElement, TensorElement, VectorElement,
+# Import from ufl (2022.2 or earlier)
+from ufl_legacy import (FiniteElement, TensorElement, VectorElement,
                  MixedElement, NodalEnrichedElement, rhs, lhs, conditional, le,
                  lt, ge, gt, split, cross, inner, dot, grad, nabla_grad, curl,
                  dx, div, Measure, det, pi, sin, cos, tan, acos, asin, atan,
@@ -209,4 +209,4 @@ from ufl import (FiniteElement, TensorElement, VectorElement,
                  sym, tr, Identity, variable, diff, as_vector,
                  as_tensor, as_matrix, system, outer, dev, skew,
                  elem_mult, elem_div, elem_pow, elem_op, erf, inv)
-from ufl.formoperators import action
+from ufl_legacy.formoperators import action

@@ -23,7 +23,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin ElastoDynamics.ufl.
 
-from ufl import (Coefficient, ds, dx, FiniteElement, VectorElement,
+from ufl_legacy import (Coefficient, ds, dx, FiniteElement, VectorElement,
                  Identity, inner, grad, tr, sym,
                  triangle, TestFunction, TrialFunction)
 

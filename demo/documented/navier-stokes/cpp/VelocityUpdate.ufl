@@ -24,7 +24,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin TentativeVelocity.ufl.
 
-from ufl import (Coefficient, dx, FiniteElement, VectorElement,
+from ufl_legacy import (Coefficient, dx, FiniteElement, VectorElement,
                  grad, inner,
                  triangle, TestFunction, TrialFunction)
 

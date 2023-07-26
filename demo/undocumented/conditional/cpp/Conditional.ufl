@@ -22,7 +22,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin Conditional.ufl
 
-from ufl import (dx, FiniteElement,
+from ufl_legacy import (dx, FiniteElement,
                  conditional, ge, le, SpatialCoordinate,
                  grad, inner,
                  triangle, TestFunction, TrialFunction)

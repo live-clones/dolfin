@@ -19,7 +19,7 @@
 
 import pytest
 from dolfin import *
-import ufl
+import ufl_legacy as ufl
 
 from dolfin_utils.test import skip_in_parallel, pushpop_parameters, fixture
 
@@ -80,7 +80,7 @@ def test_compute_vertex_values(V, W, mesh):
 
 
 def test_assign(V, W):
-    from ufl.algorithms import replace
+    from ufl_legacy.algorithms import replace
 
     for V0, V1, vector_space in [(V, W, False), (W, V, True)]:
         u = Function(V0)

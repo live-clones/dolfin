@@ -8,7 +8,7 @@ We begin by defining the finite element spaces. We define two finite
 element spaces :math:`\Sigma_h = BDM` and :math:`V_h = DG` separately,
 before combining these into a mixed finite element space: ::
 
-    from ufl import (Coefficient, div, dot, dx, FiniteElement,
+    from ufl_legacy import (Coefficient, div, dot, dx, FiniteElement,
                      TestFunctions, TrialFunctions, triangle)
 
     BDM = FiniteElement("BDM", triangle, 1)

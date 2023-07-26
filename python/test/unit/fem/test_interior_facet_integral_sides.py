@@ -1,4 +1,4 @@
-import ufl
+import ufl_legacy as ufl
 from dolfin import *
 from dolfin_utils.test import skip_in_parallel
 

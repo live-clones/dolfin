@@ -23,7 +23,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin MultiMeshStokes.ufl.
 
-from ufl import (Circumradius, Coefficient, dC, dI, dO, dX, FiniteElement, VectorElement,
+from ufl_legacy import (Circumradius, Coefficient, dC, dI, dO, dX, FiniteElement, VectorElement,
                  avg, div, FacetNormal, inner, grad, jump, outer,
                  triangle, TestFunctions, TrialFunctions)
 

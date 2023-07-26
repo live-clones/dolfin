@@ -23,7 +23,7 @@
 #
 # Compile this form with FFC: ffc -l dolfin NonlinearPoisson.ufl
 
-from ufl import (Coefficient, dx, FiniteElement,
+from ufl_legacy import (Coefficient, dx, FiniteElement,
                  derivative, grad, inner,
                  triangle, TestFunction, TrialFunction)
 

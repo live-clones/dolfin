@@ -19,7 +19,7 @@
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import ufl
+import ufl_legacy as ufl
 import dolfin.cpp as cpp
 
 from dolfin.function.multimeshfunctionspace import MultiMeshFunctionSpace

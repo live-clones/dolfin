@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with DOLFIN. If not, see <http://www.gnu.org/licenses/>.
 
-from ufl.form import sub_forms_by_domain
+from ufl_legacy.form import sub_forms_by_domain
 
 import dolfin.cpp as cpp
 import dolfin.fem.solving

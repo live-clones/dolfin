@@ -22,7 +22,7 @@
 
 import pytest
 from dolfin import *
-import ufl
+import ufl_legacy as ufl
 import dolfin
 from dolfin_utils.test import skip_in_parallel
 
