@@ -43,6 +43,10 @@ def create_meshview(mesh_function, value):
     # Create bounding-box tree on all processes to avoid hanging at assembly
     dolfin.cpp.log.set_log_level(dolfin.cpp.log.LogLevel.WARNING)
     mv.bounding_box_tree()
-    dolfin.cpp.log.set_log_level(current_log_level)
 
+    # Create bounding box tree of parent mesh (for interpolation from parent to child)
+    mesh.bounding_box_tree()
+
+    dolfin.cpp.log.set_log_level(current_log_level)
+    
     return mv

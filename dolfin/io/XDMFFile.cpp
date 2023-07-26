@@ -977,6 +977,53 @@ void XDMFFile::read_mesh_value_collection
     }
   }
 
+  // If the mesh has shared entities of the collection's dimension, make sure to distribute
+  // information about markers to all processes sharing them
+  if (_mpi_comm.size() >1)
+  {
+    // Reset send arrays
+    send_data = std::vector<std::vector<T>>(num_processes);
+    send_entities = std::vector<std::vector<std::int32_t>>(num_processes);
+
+    // Distribute entity to processes sharing the entity
+    const std::map<std::int32_t, std::set<unsigned int>> &sharing_map = mesh->topology().shared_entities(cell_dim);
+    for (std::int32_t i = 0; i != num_processes; ++i)
+    {
+      dolfin_assert(recv_entities[i].size() == recv_data[i].size());
+      for (std::size_t j = 0; j != recv_data[i].size(); ++j)
+      {
+        auto processes = sharing_map.find(recv_entities[i][j]);
+        MeshEntity e(*mesh, cell_dim, recv_entities[i][j]);
+        if (processes != sharing_map.end())
+        {
+          for (auto process : processes->second)
+          {
+            send_entities[process].push_back(e.global_index());
+            send_data[process].push_back(recv_data[i][j]);
+          }
+        }
+      }
+    }
+    recv_data = std::vector<std::vector<T>>(num_processes);
+    recv_entities = std::vector<std::vector<std::int32_t>>(num_processes);
+
+    MPI::all_to_all(_mpi_comm.comm(), send_entities, recv_entities);
+    MPI::all_to_all(_mpi_comm.comm(), send_data, recv_data);
+
+    // build global to local map for quick lookup
+    std::map<std::size_t, std::size_t> global_to_local;
+    const std::vector<std::int64_t> &local_to_global = mesh->topology().global_indices(cell_dim);
+    for (std::size_t i = 0; i < local_to_global.size(); i++)
+      global_to_local[local_to_global[i]] = i;
+
+    // Map received global indices to local indices and insert into collection
+    for (std::int32_t i = 0; i != num_processes; ++i)
+    {
+      dolfin_assert(recv_entities[i].size() == recv_data[i].size());
+      for (std::size_t j = 0; j != recv_data[i].size(); ++j)
+        mvc.set_value(global_to_local[recv_entities[i][j]], recv_data[i][j]);
+    }
+  }
 }
 //-----------------------------------------------------------------------------
 void XDMFFile::write(const std::vector<Point>& points,
