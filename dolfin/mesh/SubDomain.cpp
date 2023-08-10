@@ -224,7 +224,7 @@ void SubDomain::apply_markers(S& sub_domains,
 
   // Compute sub domain markers
   Progress p("Computing sub domain markers", mesh.num_entities(dim));
-  for (MeshEntityIterator entity(mesh, dim); !entity.end(); ++entity)
+  for (MeshEntityIterator entity(mesh, dim, "all"); !entity.end(); ++entity)
   {
     // Check if entity is on the boundary if entity is a facet
     if (dim == D - 1)

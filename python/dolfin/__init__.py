@@ -190,6 +190,7 @@ from .mesh.ale import (compute_vertex_map, compute_edge_map,
 from .mesh.meshfunction import (MeshFunction)
 from .mesh.meshvaluecollection import MeshValueCollection
 from .mesh.subdomain import CompiledSubDomain
+from .mesh.meshview import create_meshview
 
 from .multistage.multistagescheme import (RK4, CN2, CrankNicolson,
                                           ExplicitMidPoint,

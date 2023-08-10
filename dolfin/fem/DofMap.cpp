@@ -617,13 +617,16 @@ void DofMap::check_provided_entities(const ufc::dofmap& dofmap,
                                      const Mesh& mesh)
 {
   // Check that we have all mesh entities
-  for (std::size_t d = 0; d <= mesh.topology().dim(); ++d)
+  if (mesh.num_entities(mesh.topology().dim()) > 0)
   {
-    if (dofmap.needs_mesh_entities(d) && mesh.num_entities(d) == 0)
+  for (std::size_t d = 0; d <= mesh.topology().dim(); ++d)
     {
-      dolfin_error("DofMap.cpp",
-                   "initialize mapping of degrees of freedom",
-                   "Missing entities of dimension %d. Try calling mesh.init(%d)", d, d);
+      if (dofmap.needs_mesh_entities(d) && mesh.num_entities(d) == 0)
+      {
+        dolfin_error("DofMap.cpp",
+                     "initialize mapping of degrees of freedom",
+                     "Missing entities of dimension %d. Try calling mesh.init(%d)", d, d);
+      }
     }
   }
 }

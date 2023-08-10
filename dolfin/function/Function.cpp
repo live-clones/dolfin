@@ -469,7 +469,7 @@ void Function::restrict(double* w, const FiniteElement& element,
     // Pick values from vector(s)
     _vector->get_local(w, dofs.size(), dofs.data());
   }
-  else if(!dolfin_cell.mesh().topology().mapping().empty())
+  else if(!_function_space->mesh()->topology().mapping().empty() && _function_space->mesh()->id() != dolfin_cell.mesh().id())
   {
     std::vector<double> coordinate_dofs_;
     auto mapping = dolfin_cell.mesh().topology().mapping()[_function_space->mesh()->id()];
@@ -480,29 +480,26 @@ void Function::restrict(double* w, const FiniteElement& element,
     }
     dolfin_assert(mapping->mesh()->id() == dolfin_cell.mesh().id());
 
-    if(_function_space->mesh()->id() != dolfin_cell.mesh().id())
+    auto codim = mapping->mesh()->topology().dim() - dolfin_cell.mesh().topology().dim();
+    if(codim == 0)
     {
-      auto codim = mapping->mesh()->topology().dim() - dolfin_cell.mesh().topology().dim();
-      if(codim == 0)
-      {
-        std::size_t cell_index = mapping->cell_map()[dolfin_cell.index()];
-        Cell mesh_cell(*(mapping->mesh()), cell_index);
-        mesh_cell.get_coordinate_dofs(coordinate_dofs_);
-        restrict_as_ufc_function(w, element, mesh_cell, coordinate_dofs_.data(),
-                                 ufc_cell);
-      }
-      else if(codim == 1)
-      {
-        const std::size_t D = mapping->mesh()->topology().dim();
-        mapping->mesh()->init(D);
-        mapping->mesh()->init(D - 1, D);
+      std::size_t cell_index = mapping->cell_map()[dolfin_cell.index()];
+      Cell mesh_cell(*(mapping->mesh()), cell_index);
+      mesh_cell.get_coordinate_dofs(coordinate_dofs_);
+      restrict_as_ufc_function(w, element, mesh_cell, coordinate_dofs_.data(),
+			       ufc_cell);
+    }
+    else if(codim == 1)
+    {
+      const std::size_t D = mapping->mesh()->topology().dim();
+      mapping->mesh()->init(D);
+      mapping->mesh()->init(D - 1, D);
 
-        Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[dolfin_cell.index()]);
-        Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[0]);
-        mesh_cell.get_coordinate_dofs(coordinate_dofs_);
-        restrict_as_ufc_function(w, element, mesh_cell, coordinate_dofs_.data(),
-                                 ufc_cell);
-      }
+      Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[dolfin_cell.index()]);
+      Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[0]);
+      mesh_cell.get_coordinate_dofs(coordinate_dofs_);
+      restrict_as_ufc_function(w, element, mesh_cell, coordinate_dofs_.data(),
+			       ufc_cell);
     }
   }
   else
