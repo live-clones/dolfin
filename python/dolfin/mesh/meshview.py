@@ -48,5 +48,5 @@ def create_meshview(mesh_function, value):
     mesh.bounding_box_tree()
 
     dolfin.cpp.log.set_log_level(current_log_level)
-    
+
     return mv
