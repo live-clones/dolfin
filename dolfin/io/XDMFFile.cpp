@@ -979,7 +979,7 @@ void XDMFFile::read_mesh_value_collection
 
   // If the mesh has shared entities of the collection's dimension, make sure to distribute
   // information about markers to all processes sharing them
-  if (_mpi_comm.size() >1)
+  if ((_mpi_comm.size() >1) &&  mesh->topology().have_shared_entities(cell_dim))
   {
     // Reset send arrays
     send_data = std::vector<std::vector<T>>(num_processes);
