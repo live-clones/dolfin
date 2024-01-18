@@ -24,11 +24,7 @@ For detailed instructions, see the file INSTALL.
 Documentation
 =============
 
-Documentation can be viewed at https://fenics-dolfin.readthedocs.org/.
-
-.. image:: https://readthedocs.org/projects/fenics-dolfin/badge/?version=latest
-   :target: https://fenics.readthedocs.io/projects/dolfin/en/latest/?badge=latest
-   :alt: Documentation Status
+Documentation can be viewed at https://fenicsproject.org/olddocs/dolfin/.
 
 
 Automated Testing
