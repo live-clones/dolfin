@@ -51,6 +51,22 @@ class Form(cpp.fem.Form):
         if not self.function_spaces:
             self.function_spaces = [func.ufl_function_space()._cpp_object for func in form.arguments()]
 
+        check_integration_mesh = False
+        check_integrands_dim = list()
+        for argument in form.arguments():
+            check_integration_mesh = bool(check_integration_mesh or argument.function_space().mesh().id() == mesh.id())
+            check_integrands_dim.append(argument.function_space().mesh().topology().dim())
+        for coeff in form.coefficients():
+            check_integration_mesh = bool(check_integration_mesh or coeff.function_space().mesh().id() == mesh.id())
+            check_integrands_dim.append(coeff.function_space().mesh().topology().dim())
+
+        # Check if one of the arguments and/or coefficients belong to the integration mesh
+        if not check_integration_mesh:
+            raise Exception("None of the arguments/coefficients of the form belongs to the integration domain")
+        # Mixed-dimensional integral : check if integration domain is the integrands domain of lowest dimension
+        if mesh.topology().dim() > min(check_integrands_dim):
+            raise Exception("Integration domain should be the mesh of lowest dim integrand")
+
         cpp.fem.Form.__init__(self, ufc_form, self.function_spaces)
 
         original_coefficients = form.coefficients()
