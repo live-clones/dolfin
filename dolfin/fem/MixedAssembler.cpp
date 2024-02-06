@@ -130,12 +130,12 @@ void MixedAssembler::assemble_cells(
 
   // Collect pointers to dof maps / id of the involved meshes
   std::vector<const GenericDofMap*> dofmaps;
-  std::vector<unsigned> mesh_id(rn);
+  std::vector<std::shared_ptr<const Mesh>> meshes(rn);
 
   // Meshes and dofmaps from Trial and Test functions if rank>0
   for (std::size_t i = 0; i < form_rank; ++i)
   {
-    mesh_id[i] = a.function_space(i)->mesh()->id();
+    meshes[i] = a.function_space(i)->mesh();
     dofmaps.push_back(a.function_space(i)->dofmap().get());
   }
   // Meshes from coefficients otherwise
@@ -143,7 +143,7 @@ void MixedAssembler::assemble_cells(
   {
     for (std::size_t i=0; i<a.coefficients().size(); ++i)
     {
-      mesh_id[i] = a.coefficients()[i]->function_space()->mesh()->id();
+      meshes[i] = a.coefficients()[i]->function_space()->mesh();
       dofmaps.push_back(a.coefficients()[i]->function_space()->dofmap().get());
     }
   }
@@ -195,10 +195,15 @@ void MixedAssembler::assemble_cells(
     {
       cell_index[i].push_back(cell->index());
 
-      if (mesh_id[i] != mesh.id() && mapping_map[mesh_id[i]])
+      if (meshes[i]->id() != mesh.id())
       {
-	auto mapping = mapping_map[mesh_id[i]];
-	dolfin_assert(mapping->mesh()->id() == mesh_id[i]);
+        if (!mapping_map[meshes[i]->id()])
+        {
+          mesh.build_mapping(meshes[i]);
+          mapping_map = mesh.topology().mapping();
+        }
+	auto mapping = mapping_map[meshes[i]->id()];
+	dolfin_assert(mapping->mesh()->id() == meshes[i]->id());
 
 	codim[i] = mapping->mesh()->topology().dim() - mesh.topology().dim();
 	if(codim[i] == 0)
