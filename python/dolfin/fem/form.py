@@ -51,7 +51,7 @@ class Form(cpp.fem.Form):
         if not self.function_spaces:
             self.function_spaces = [func.ufl_function_space()._cpp_object for func in form.arguments()]
 
-        check_integration_mesh = False
+        check_integration_mesh = (not form.arguments()) and (not form.coefficients())  # No need to check if coefficients and arguments are empty
         check_integrands_dim = list()
 
         for argument in form.arguments():
