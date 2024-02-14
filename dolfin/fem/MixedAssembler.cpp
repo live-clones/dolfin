@@ -179,6 +179,7 @@ void MixedAssembler::assemble_cells(
         if (!mapping_map[meshes[form_rank+i]->id()])
         {
           mesh.build_mapping(meshes[form_rank+i]);
+          mapping_map = mesh.topology().mapping();
         }
         // Get map to integration domain
         auto cell_map = mapping_map[meshes[form_rank+i]->id()]->cell_map();
