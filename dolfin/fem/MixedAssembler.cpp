@@ -125,12 +125,12 @@ void MixedAssembler::assemble_cells(
 
   // Number of meshes depends on the coefficients + trial/test-functions
   std::size_t rn = form_rank;
-  rn += ufc.form.num_coefficients();
-
+  std::size_t num_coeffs = ufc.form.num_coefficients();
+  dolfin_assert(num_coeffs==a.coefficients().size());
+  
   // Collect pointers to dof maps / id of the involved meshes
   std::vector<const GenericDofMap*> dofmaps;
-  std::vector<std::shared_ptr<const Mesh>> meshes(rn);
-
+  std::vector<std::shared_ptr<const Mesh>> meshes(rn+num_coeffs);
   // Meshes and dofmaps from Trial and Test functions if rank>0
   for (std::size_t i = 0; i < form_rank; ++i)
   {
@@ -138,12 +138,10 @@ void MixedAssembler::assemble_cells(
     dofmaps.push_back(a.function_space(i)->dofmap().get());
   }
   // Meshes from coefficients otherwise
-    for (std::size_t i=0; i<a.coefficients().size(); ++i)
-    {
-
-      meshes[form_rank+i] = a.coefficients()[i]->function_space()->mesh();
-      dofmaps.push_back(a.coefficients()[i]->function_space()->dofmap().get());
-    }
+  for (std::size_t i=0; i<num_coeffs; ++i)
+  {
+    meshes[form_rank+i] = a.coefficients()[i]->function_space()->mesh();
+  }
 
   // Vector to hold dof map for a cell
   std::vector<ArrayView<const dolfin::la_index>> dofs(rn);
@@ -163,12 +161,11 @@ void MixedAssembler::assemble_cells(
   // Array storing coordinate dofs for restricting coefficients
   std::vector<std::vector<double>> coefficient_coordinate_dofs(a.coefficients().size());
   auto mapping_map = mesh.topology().mapping();
-
   for (CellIterator cell(mesh); !cell.end(); ++cell)
   {
     // Gather ufc_cells for all coefficients prior to restriction
     std::vector<ufc::cell> ufc_cells;
-    for (std::size_t i=0; i<a.coefficients().size(); ++i)
+    for (std::size_t i=0; i<num_coeffs; ++i)
     {
       ufc::cell cell_i;
       std::int32_t cell_index;
@@ -227,11 +224,11 @@ void MixedAssembler::assemble_cells(
     
     // Get local-to-global dof maps for cell
     bool empty_dofmap = false;
-    std::vector<std::vector<std::size_t>> cell_index(rn);
+    std::vector<std::vector<std::size_t>> cell_index(rn+num_coeffs);
     // Mixed-dimensional
-    std::vector<std::size_t> codim(rn);
+    std::vector<std::size_t> codim(rn+num_coeffs);
     std::vector<int> local_facets;
-    for (size_t i = 0; i < rn; ++i)
+    for (size_t i = 0; i < rn+num_coeffs; ++i)
     {
       cell_index[i].push_back(cell->index());
 
