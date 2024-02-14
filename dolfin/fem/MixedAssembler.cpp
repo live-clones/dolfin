@@ -139,9 +139,8 @@ void MixedAssembler::assemble_cells(
   }
   // Meshes from coefficients otherwise
   for (std::size_t i=0; i<num_coeffs; ++i)
-  {
-    meshes[form_rank+i] = a.coefficients()[i]->function_space()->mesh();
-  }
+    if (a.coefficients()[i]->function_space())
+      meshes[form_rank+i] = a.coefficients()[i]->function_space()->mesh();
 
   // Vector to hold dof map for a cell
   std::vector<ArrayView<const dolfin::la_index>> dofs(rn);
@@ -170,7 +169,7 @@ void MixedAssembler::assemble_cells(
       ufc::cell cell_i;
       std::int32_t cell_index;
       // Check if mesh from coefficient is a MeshView and if it is different than the integration domain
-      if (!(meshes[form_rank+i]->topology().mapping().empty()) && (meshes[form_rank+i]->id() != mesh.id()))
+      if (a.coefficients()[i]->function_space() && !(meshes[form_rank+i]->topology().mapping().empty()) && (meshes[form_rank+i]->id() != mesh.id()))
       {
         // Check if map exists
         if (!mapping_map[meshes[form_rank+i]->id()])
@@ -231,8 +230,7 @@ void MixedAssembler::assemble_cells(
     for (size_t i = 0; i < rn+num_coeffs; ++i)
     {
       cell_index[i].push_back(cell->index());
-
-      if (meshes[i]->id() != mesh.id())
+      if (meshes[i] && meshes[i]->id() != mesh.id())
       {
         if (!mapping_map[meshes[i]->id()])
         {
