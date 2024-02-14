@@ -478,7 +478,6 @@ void Function::restrict(double* w, const FiniteElement& element,
       dolfin_cell.mesh().build_mapping(_function_space->mesh());
       mapping = dolfin_cell.mesh().topology().mapping()[_function_space->mesh()->id()];
     }
-    dolfin_assert(mapping->mesh()->id() == dolfin_cell.mesh().id());
 
     auto codim = mapping->mesh()->topology().dim() - dolfin_cell.mesh().topology().dim();
     if(codim == 0)
