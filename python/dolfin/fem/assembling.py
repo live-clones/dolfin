@@ -211,10 +211,13 @@ def assemble(form, tensor=None, form_compiler_parameters=None,
     for integral in form._integrals:
         for op in integral.integrand().ufl_operands:
             if isinstance(op, ufl.Coefficient) or isinstance(op, ufl.Argument):
-                same_mesh = bool(same_mesh and op.function_space().mesh().id() == dolfin_form.mesh().id())
+                same_mesh = bool(same_mesh and op.function_space().mesh().id()
+                                 == dolfin_form.mesh().id())
 
     # Create C++ assembler
     if not same_mesh:
+        raise RuntimeError(
+            "assemble() with forms involving integrands belonging to different meshes might be inappropriate.\n If you are using MeshView, please use assemble_mixed() instead")
         cpp.warning("assemble() with forms involving integrands belonging to different meshes might be inappropriate.\n If you are using MeshView, please use assemble_mixed() instead")
 
     assembler = cpp.fem.Assembler()
@@ -244,7 +247,6 @@ def assemble_mixed(form,
                    finalize_tensor=True,
                    keep_diagonal=False,
                    backend=None):
-
 
     # Create dolfin Form object referencing all data needed by assembler
     if isinstance(form, cpp.fem.Form):

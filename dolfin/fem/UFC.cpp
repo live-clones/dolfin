@@ -155,6 +155,22 @@ void UFC::init(const Form& a)
   }
 }
 //-----------------------------------------------------------------------------
+void UFC::update(const Cell& c, const std::vector<std::vector<double>>& coordinate_dofs,
+                 const std::vector<ufc::cell>& ufc_cells,
+                 const std::vector<bool> & enabled_coefficients)
+{
+  dolfin_assert(ufc_cells.size() == enabled_coefficients.size());
+  // Restrict coefficients to facet
+  for (std::size_t i = 0; i < coefficients.size(); ++i)
+  {
+    if (!enabled_coefficients[i])
+      continue;
+    dolfin_assert(coefficients[i]);
+    coefficients[i]->restrict(_w[i].data(), coefficient_elements[i], c,
+                              coordinate_dofs[i].data(), ufc_cells[i]);
+  }
+}
+//-----------------------------------------------------------------------------
 void UFC::update(const Cell& c, const std::vector<double>& coordinate_dofs,
                  const ufc::cell& ufc_cell,
                  const std::vector<bool> & enabled_coefficients)

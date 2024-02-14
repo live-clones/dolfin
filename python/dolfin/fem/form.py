@@ -10,7 +10,7 @@
 import ufl_legacy as ufl
 import dolfin.cpp as cpp
 from dolfin.jit.jit import dolfin_pc, ffc_jit
-
+from dolfin.function import constant
 
 class Form(cpp.fem.Form):
     def __init__(self, form, **kwargs):
@@ -58,6 +58,8 @@ class Form(cpp.fem.Form):
             check_integration_mesh = bool(check_integration_mesh or argument.function_space().mesh().id() == mesh.id())
             check_integrands_dim.append(argument.function_space().mesh().topology().dim())
         for coeff in form.coefficients():
+            if isinstance(coeff, constant.Constant):
+                continue
             check_integration_mesh = bool(check_integration_mesh or coeff.function_space().mesh().id() == mesh.id())
             check_integrands_dim.append(coeff.function_space().mesh().topology().dim())
 
