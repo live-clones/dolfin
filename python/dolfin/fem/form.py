@@ -9,8 +9,8 @@
 
 import ufl_legacy as ufl
 import dolfin.cpp as cpp
+from dolfin.function import function
 from dolfin.jit.jit import dolfin_pc, ffc_jit
-from dolfin.function import constant
 
 class Form(cpp.fem.Form):
     def __init__(self, form, **kwargs):
@@ -53,15 +53,38 @@ class Form(cpp.fem.Form):
 
         check_integration_mesh = (not form.arguments()) and (not form.coefficients())  # No need to check if coefficients and arguments are empty
         check_integrands_dim = list()
+        if hasattr(mesh.topology(), 'mapping'):
+            mvs_int = list(mesh.topology().mapping().values())
 
         for argument in form.arguments():
             check_integration_mesh = bool(check_integration_mesh or argument.function_space().mesh().id() == mesh.id())
             check_integrands_dim.append(argument.function_space().mesh().topology().dim())
+            # Check if argument mesh and integration mapping are sharing same parent mesh
+            if hasattr(argument.function_space().mesh().topology(), 'mapping'):
+                share_parent = False
+                mvs_arg = list(argument.function_space().mesh().topology().mapping().values())
+                if mvs_arg:
+                    if mvs_int:
+                        share_parent = bool(share_parent or mvs_arg[0].mesh().id() == mvs_int[0].mesh().id())
+                    else:
+                        share_parent = bool(share_parent or mvs_arg[0].mesh().id() == mesh().id())
+                    check_integration_mesh = bool(check_integration_mesh or share_parent)
         for coeff in form.coefficients():
-            if isinstance(coeff, constant.Constant):
-                continue
-            check_integration_mesh = bool(check_integration_mesh or coeff.function_space().mesh().id() == mesh.id())
-            check_integrands_dim.append(coeff.function_space().mesh().topology().dim())
+            if hasattr(coeff, 'function_space'):
+                check_integration_mesh = bool(check_integration_mesh or coeff.function_space().mesh().id() == mesh.id())
+                check_integrands_dim.append(coeff.function_space().mesh().topology().dim())
+                # Check if argument mesh and integration mapping are sharing same parent mesh
+                if hasattr(coeff.function_space().mesh().topology(), 'mapping'):
+                    share_parent = False
+                    mvs_arg = list(coeff.function_space().mesh().topology().mapping().values())
+                    if mvs_arg:
+                        if mvs_int:
+                            share_parent = bool(share_parent or mvs_arg[0].mesh().id() == mvs_int[0].mesh().id())
+                        else:
+                            share_parent = bool(share_parent or mvs_arg[0].mesh().id() == mesh().id())
+                    check_integration_mesh = bool(check_integration_mesh or share_parent)
+            else:
+                check_integration_mesh = True
 
         # Check if one of the arguments and/or coefficients belong to the integration mesh
         if not check_integration_mesh:
