@@ -51,48 +51,6 @@ class Form(cpp.fem.Form):
         if not self.function_spaces:
             self.function_spaces = [func.ufl_function_space()._cpp_object for func in form.arguments()]
 
-        check_integration_mesh = (not form.arguments()) and (not form.coefficients())  # No need to check if coefficients and arguments are empty
-        check_integrands_dim = list()
-        if hasattr(mesh.topology(), 'mapping'):
-            mvs_int = list(mesh.topology().mapping().values())
-
-        for argument in form.arguments():
-            check_integration_mesh = bool(check_integration_mesh or argument.function_space().mesh().id() == mesh.id())
-            check_integrands_dim.append(argument.function_space().mesh().topology().dim())
-            # Check if argument mesh and integration mapping are sharing same parent mesh
-            if hasattr(argument.function_space().mesh().topology(), 'mapping'):
-                share_parent = False
-                mvs_arg = list(argument.function_space().mesh().topology().mapping().values())
-                if mvs_arg:
-                    if mvs_int:
-                        share_parent = bool(share_parent or mvs_arg[0].mesh().id() == mvs_int[0].mesh().id())
-                    else:
-                        share_parent = bool(share_parent or mvs_arg[0].mesh().id() == mesh().id())
-                    check_integration_mesh = bool(check_integration_mesh or share_parent)
-        for coeff in form.coefficients():
-            if hasattr(coeff, 'function_space'):
-                check_integration_mesh = bool(check_integration_mesh or coeff.function_space().mesh().id() == mesh.id())
-                check_integrands_dim.append(coeff.function_space().mesh().topology().dim())
-                # Check if argument mesh and integration mapping are sharing same parent mesh
-                if hasattr(coeff.function_space().mesh().topology(), 'mapping'):
-                    share_parent = False
-                    mvs_arg = list(coeff.function_space().mesh().topology().mapping().values())
-                    if mvs_arg:
-                        if mvs_int:
-                            share_parent = bool(share_parent or mvs_arg[0].mesh().id() == mvs_int[0].mesh().id())
-                        else:
-                            share_parent = bool(share_parent or mvs_arg[0].mesh().id() == mesh().id())
-                    check_integration_mesh = bool(check_integration_mesh or share_parent)
-            else:
-                check_integration_mesh = True
-
-        # Check if one of the arguments and/or coefficients belong to the integration mesh
-        if not check_integration_mesh:
-            raise Exception("None of the arguments/coefficients of the form belongs to the integration domain")
-        # Mixed-dimensional integral : check if integration domain is the integrands domain of lowest dimension
-        if check_integrands_dim and mesh.topology().dim() > min(check_integrands_dim):
-            raise Exception("Integration domain should be the mesh of lowest dim integrand")
-
         cpp.fem.Form.__init__(self, ufc_form, self.function_spaces)
 
         original_coefficients = form.coefficients()

@@ -52,6 +52,16 @@ def two_elements():
     return (mesh, marker)
 
 @fixture
+def unitsquare_3x3():
+    mesh = UnitSquareMesh(3,3)
+
+    marker = MeshFunction('size_t', mesh, mesh.topology().dim()-1, 0)
+    for f in facets(mesh):
+        marker[f] = 0.5 - DOLFIN_EPS < f.midpoint().x() < 0.5 + DOLFIN_EPS and 0.5 - DOLFIN_EPS < f.midpoint().y() < 0.5 + DOLFIN_EPS
+
+    return (mesh, marker)
+
+@fixture
 def two_elements_with_interface():
     mesh = UnitSquareMesh(1, 1)
 
@@ -473,3 +483,42 @@ def test_mixed_assembly_rank0(unit_marker_ext):
         assert abs(assemble(f0) - assemble_mixed(f1)) < 1e-10
 
     _compare_solutions(unit_marker_ext)
+
+def test_function_spaces_consistency(one_element, two_elements, unitsquare_3x3):
+    def _integrating_subf_over_parent(case, order):
+        with pytest.raises(Exception, match="codim"):
+            mesh = case[0]
+            submesh = MeshView.create(case[1], 1)
+
+            V = FunctionSpace(mesh, 'CG', order[0])
+            Q = FunctionSpace(submesh, 'CG', order[1])
+            W = MixedFunctionSpace(V, Q)
+
+            (u, p) = TrialFunctions(W)
+            (v, q) = TestFunctions(W)
+
+            dx_ = Measure('dx', domain=W.sub_space(0).mesh())
+
+            assemble_mixed(u*q*dx_)
+
+    _integrating_subf_over_parent(one_element, (1,1))
+    _integrating_subf_over_parent(two_elements, (1,1))
+    _integrating_subf_over_parent(unitsquare_3x3, (1,1))
+
+    def _no_shared_parent(case, order):
+        with pytest.raises(RuntimeError, match="Cannot find common parent mesh"):
+            mesh = case[0]
+            int_mesh = UnitSquareMesh(3,3)
+
+            V = FunctionSpace(mesh, 'CG', order[0])
+            Q = FunctionSpace(int_mesh, 'CG', order[1])
+            W = MixedFunctionSpace(V, Q)
+
+            (u, p) = TrialFunctions(W)
+            (v, q) = TestFunctions(W)
+
+            dx_ = Measure('dx', domain=int_mesh)
+
+            assemble_mixed(u*v*dx_)
+
+    _no_shared_parent(unitsquare_3x3, (1,1))

@@ -217,8 +217,6 @@ def assemble(form, tensor=None, form_compiler_parameters=None,
 
     # Create C++ assembler
     if not same_mesh:
-        raise RuntimeError(
-            "assemble() with forms involving integrands belonging to different meshes might be inappropriate.\n If you are using MeshView, please use assemble_mixed() instead")
         cpp.warning("assemble() with forms involving integrands belonging to different meshes might be inappropriate.\n If you are using MeshView, please use assemble_mixed() instead")
 
     assembler = cpp.fem.Assembler()
