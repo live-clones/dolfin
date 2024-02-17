@@ -9,8 +9,8 @@
 
 import ufl_legacy as ufl
 import dolfin.cpp as cpp
-from dolfin.function import function
 from dolfin.jit.jit import dolfin_pc, ffc_jit
+
 
 class Form(cpp.fem.Form):
     def __init__(self, form, **kwargs):
