@@ -65,6 +65,13 @@ namespace dolfin
                 const ufc::cell& ufc_cell,
                 const std::vector<bool> & enabled_coefficients);
 
+
+    /// Restrict all enabled coefficients of a form to the current cell
+    void update(const Cell& cell,
+                const std::vector<std::vector<double>>& coordinate_dofs0,
+                const std::vector<ufc::cell>& ufc_cells,
+                const std::vector<bool> & enabled_coefficients);
+
     /// Update current pair of cells for macro element
     void update(const Cell& cell0,
                 const std::vector<double>& coordinate_dofs0,

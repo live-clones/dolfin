@@ -478,7 +478,6 @@ void Function::restrict(double* w, const FiniteElement& element,
       dolfin_cell.mesh().build_mapping(_function_space->mesh());
       mapping = dolfin_cell.mesh().topology().mapping()[_function_space->mesh()->id()];
     }
-    dolfin_assert(mapping->mesh()->id() == dolfin_cell.mesh().id());
 
     auto codim = mapping->mesh()->topology().dim() - dolfin_cell.mesh().topology().dim();
     if(codim == 0)
@@ -498,7 +497,7 @@ void Function::restrict(double* w, const FiniteElement& element,
       Facet mesh_facet(*(mapping->mesh()), mapping->cell_map()[dolfin_cell.index()]);
       Cell mesh_cell(*(mapping->mesh()), mesh_facet.entities(D)[0]);
       mesh_cell.get_coordinate_dofs(coordinate_dofs_);
-      restrict_as_ufc_function(w, element, mesh_cell, coordinate_dofs_.data(),
+      restrict_as_ufc_function(w, element, mesh_cell, coordinate_dofs,
 			       ufc_cell);
     }
   }

@@ -205,7 +205,20 @@ def assemble(form, tensor=None, form_compiler_parameters=None,
     comm = dolfin_form.mesh().mpi_comm()
     tensor = _create_tensor(comm, form, dolfin_form.rank(), backend, tensor)
 
+    # Check if the integrands belong to same or different (sub)meshes
+    # Cannot used standard assembler if different submeshes (fom MeshView) are involved
+    same_mesh = True
+    for integral in form._integrals:
+        for op in integral.integrand().ufl_operands:
+            if isinstance(op, ufl.Coefficient) or isinstance(op, ufl.Argument):
+                if hasattr(op, 'function_space'):
+                    same_mesh = bool(same_mesh and op.function_space().mesh().id()
+                                     == dolfin_form.mesh().id())
+
     # Create C++ assembler
+    if not same_mesh:
+        cpp.warning("assemble() with forms involving integrands belonging to different meshes might be inappropriate.\n If you are using MeshView, please use assemble_mixed() instead")
+
     assembler = cpp.fem.Assembler()
 
     # Set assembler options
