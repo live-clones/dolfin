@@ -212,8 +212,8 @@ def assemble(form, tensor=None, form_compiler_parameters=None,
         for op in integral.integrand().ufl_operands:
             if isinstance(op, ufl.Coefficient) or isinstance(op, ufl.Argument):
                 if hasattr(op, 'function_space'):
-                    same_mesh = bool(same_mesh and op.function_space().mesh().id()
-                                     == dolfin_form.mesh().id())
+                    same_mesh = bool(same_mesh and op.function_space(
+                    ).mesh().id() == dolfin_form.mesh().id())
 
     # Create C++ assembler
     if not same_mesh:
@@ -507,8 +507,10 @@ class SystemAssembler(cpp.fem.SystemAssembler):
         """
 
         if isinstance(A_form, list) and isinstance(b_form, list):
-            A_dolfin_forms = [_create_dolfin_form(f, form_compiler_parameters) for f in A_form]
-            b_dolfin_forms = [_create_dolfin_form(f, form_compiler_parameters) for f in b_form]
+            A_dolfin_forms = [_create_dolfin_form(
+                f, form_compiler_parameters) for f in A_form]
+            b_dolfin_forms = [_create_dolfin_form(
+                f, form_compiler_parameters) for f in b_form]
 
             # Call C++ assemble function
             cpp.fem.SystemAssembler.__init__(self, A_dolfin_forms, b_dolfin_forms,
@@ -520,8 +522,10 @@ class SystemAssembler(cpp.fem.SystemAssembler):
         else:
             # Create dolfin Form objects referencing all data needed by
             # assembler
-            A_dolfin_form = _create_dolfin_form(A_form, form_compiler_parameters)
-            b_dolfin_form = _create_dolfin_form(b_form, form_compiler_parameters)
+            A_dolfin_form = _create_dolfin_form(
+                A_form, form_compiler_parameters)
+            b_dolfin_form = _create_dolfin_form(
+                b_form, form_compiler_parameters)
 
             # Check bcs
             bcs = _wrap_in_list(bcs, 'bcs', cpp.fem.DirichletBC)
