@@ -215,7 +215,7 @@ def assemble(form, tensor=None, form_compiler_parameters=None,
                     same_mesh = bool(
                         same_mesh
                         and op.ufl_function_space().ufl_domain().ufl_id()
-                        == form.ufl_domain().ufl_id()
+                        == dolfin_form.ufl_domain().ufl_id()
                     )
 
     # Create C++ assembler
